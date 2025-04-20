@@ -1,5 +1,4 @@
 
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const Hero = () => {
@@ -13,20 +12,20 @@ const Hero = () => {
           backgroundSize: "cover",
         }}
       >
-        <div className="absolute inset-0 bg-realDark/70" />
+        <div className="absolute inset-0 bg-[#1a1a1a]/70" />
       </div>
       
       <div className="container relative z-10 px-4 py-32 text-center text-white">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          Elevating Boston's Real Estate Experience
+          ELEVATING BOSTON'S REAL ESTATE EXPERIENCE
         </h1>
         <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-          Helping Boston homeowners sell fast with confidence through personalized service and market expertise.
+          HELPING BOSTON HOMEOWNERS SELL FAST WITH CONFIDENCE THROUGH PERSONALIZED SERVICE AND MARKET EXPERTISE.
         </p>
-        <Button size="lg" className="bg-realPurple hover:bg-white hover:text-realDark">
-          Book a Free Consultation
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <button className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300">
+          <span className="uppercase">BOOK A FREE CONSULTATION</span>
+          <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
     </section>
   );
