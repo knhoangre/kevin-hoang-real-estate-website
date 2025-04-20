@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Stats from "@/components/Stats";
 import Contact from "@/components/Contact";
+import FAQ from "@/components/FAQ";
 import { Element } from "react-scroll";
 
 const Index = () => {
@@ -17,6 +18,9 @@ const Index = () => {
         <About />
       </Element>
       <Stats />
+      <Element name="faq">
+        <FAQ />
+      </Element>
       <Element name="contact">
         <Contact />
       </Element>
