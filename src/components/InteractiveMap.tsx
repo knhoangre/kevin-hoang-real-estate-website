@@ -22,8 +22,8 @@ const SAMPLE_LISTINGS = [
     sqft: 1200,
     address: "120 Tremont St, Boston, MA",
     neighborhood: "Downtown",
-    lat: -71.0605,
-    lng: 42.3562,
+    lng: -71.0605,
+    lat: 42.3562,
     walkability: 95,
     schools: 4.2,
   },
@@ -36,8 +36,8 @@ const SAMPLE_LISTINGS = [
     sqft: 850,
     address: "180 Newbury St, Boston, MA",
     neighborhood: "Back Bay",
-    lat: -71.0789,
-    lng: 42.3493,
+    lng: -71.0789,
+    lat: 42.3493,
     walkability: 90,
     schools: 4.5,
   },
@@ -50,8 +50,8 @@ const SAMPLE_LISTINGS = [
     sqft: 1800,
     address: "50 Liberty Dr, Boston, MA",
     neighborhood: "Seaport",
-    lat: -71.0478,
-    lng: 42.3537,
+    lng: -71.0478,
+    lat: 42.3537,
     walkability: 88,
     schools: 4.0,
   },
@@ -64,8 +64,8 @@ const SAMPLE_LISTINGS = [
     sqft: 2400,
     address: "34 Beacon St, Boston, MA",
     neighborhood: "Beacon Hill",
-    lat: -71.0698,
-    lng: 42.3578,
+    lng: -71.0698,
+    lat: 42.3578,
     walkability: 93,
     schools: 4.8,
   },
@@ -78,8 +78,8 @@ const SAMPLE_LISTINGS = [
     sqft: 1950,
     address: "125 Cambridge St, Cambridge, MA",
     neighborhood: "Cambridge",
-    lat: -71.0842,
-    lng: 42.3736,
+    lng: -71.0842,
+    lat: 42.3736,
     walkability: 91,
     schools: 4.7,
   },
@@ -124,7 +124,7 @@ const InteractiveMap = () => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/light-v11',
-      center: BOSTON_CENTER,
+      center: BOSTON_CENTER as [number, number],
       zoom: 12.5,
     });
 
@@ -168,9 +168,9 @@ const InteractiveMap = () => {
         </div>
       `);
       
-      // Create marker
+      // Create marker with properly formatted coordinates
       const marker = new mapboxgl.Marker({ color: '#1a1a1a' })
-        .setLngLat([listing.lat, listing.lng])
+        .setLngLat([listing.lng, listing.lat] as [number, number])
         .setPopup(popup)
         .addTo(map.current);
       
