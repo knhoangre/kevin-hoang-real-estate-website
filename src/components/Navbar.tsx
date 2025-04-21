@@ -1,6 +1,7 @@
 
 import { Link as ScrollLink } from "react-scroll";
 import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const location = useLocation();
@@ -30,7 +31,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   ABOUT
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
               
@@ -40,7 +41,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   NEIGHBORHOODS
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
               
@@ -50,7 +51,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   BLOG
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
               
@@ -62,7 +63,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   CONTACT
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
 
@@ -74,9 +75,15 @@ const Navbar = () => {
               >
                 <span className="relative">
                   FAQ
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
+              
+              <RouterLink to="/login">
+                <Button variant="outline" className="font-medium">
+                  LOGIN
+                </Button>
+              </RouterLink>
             </>
           ) : (
             <>
@@ -86,7 +93,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   ABOUT
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
               
@@ -96,7 +103,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   NEIGHBORHOODS
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
               
@@ -106,7 +113,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   BLOG
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
               
@@ -116,7 +123,7 @@ const Navbar = () => {
               >
                 <span className="relative">
                   CONTACT
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
 
@@ -126,8 +133,14 @@ const Navbar = () => {
               >
                 <span className="relative">
                   FAQ
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
+              </RouterLink>
+              
+              <RouterLink to="/login">
+                <Button variant="outline" className="font-medium">
+                  LOGIN
+                </Button>
               </RouterLink>
             </>
           )}
