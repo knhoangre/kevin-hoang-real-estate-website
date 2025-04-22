@@ -1,7 +1,6 @@
 
 import { Link as ScrollLink } from "react-scroll";
 import { Link as RouterLink, useLocation } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const location = useLocation();
@@ -34,6 +33,26 @@ const Navbar = () => {
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
+              
+              <RouterLink 
+                to="/buyer" 
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase"
+              >
+                <span className="relative">
+                  BUYER
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                </span>
+              </RouterLink>
+              
+              <RouterLink 
+                to="/seller" 
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase"
+              >
+                <span className="relative">
+                  SELLER
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                </span>
+              </RouterLink>
               
               <RouterLink 
                 to="/neighborhoods" 
@@ -78,12 +97,6 @@ const Navbar = () => {
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
-              
-              <RouterLink to="/login">
-                <Button variant="outline" className="font-medium">
-                  LOGIN
-                </Button>
-              </RouterLink>
             </>
           ) : (
             <>
@@ -93,6 +106,26 @@ const Navbar = () => {
               >
                 <span className="relative">
                   ABOUT
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                </span>
+              </RouterLink>
+              
+              <RouterLink 
+                to="/buyer" 
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}
+              >
+                <span className="relative">
+                  BUYER
+                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                </span>
+              </RouterLink>
+              
+              <RouterLink 
+                to="/seller" 
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/seller' ? 'font-semibold' : ''}`}
+              >
+                <span className="relative">
+                  SELLER
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
@@ -135,12 +168,6 @@ const Navbar = () => {
                   FAQ
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
-              </RouterLink>
-              
-              <RouterLink to="/login">
-                <Button variant="outline" className="font-medium">
-                  LOGIN
-                </Button>
               </RouterLink>
             </>
           )}
