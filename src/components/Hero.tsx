@@ -1,5 +1,6 @@
 
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -22,10 +23,10 @@ const Hero = () => {
         <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
           HELPING BOSTON HOMEOWNERS SELL FAST WITH CONFIDENCE THROUGH PERSONALIZED SERVICE AND MARKET EXPERTISE.
         </p>
-        <button className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300">
+        <Link to="/contact" className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300">
           <span className="uppercase">BOOK A FREE CONSULTATION</span>
           <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </button>
+        </Link>
       </div>
     </section>
   );

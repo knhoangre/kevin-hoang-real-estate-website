@@ -15,6 +15,7 @@ import Seller from "./pages/Seller";
 import FAQPage from "./pages/FAQPage";
 import Auth from "./pages/Auth";
 import Contact from "./pages/Contact";
+import FirstTimeBuyers from "./pages/FirstTimeBuyers";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/first-time-buyers" element={<FirstTimeBuyers />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

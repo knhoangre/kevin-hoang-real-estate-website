@@ -2,9 +2,55 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ArrowRight } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+
+const formSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Invalid email format'),
+  phone: z.string().optional(),
+  message: z.string().min(1, 'Message is required'),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const Contact = () => {
+  const { toast } = useToast();
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      message: '',
+    },
+  });
+
+  const onSubmit = (data: FormValues) => {
+    // Simulate form submission
+    setTimeout(() => {
+      toast({
+        title: 'Message sent!',
+        description: 'Thank you for contacting us. We\'ll respond shortly.',
+      });
+      form.reset();
+    }, 1000);
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -30,49 +76,59 @@ const Contact = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a]">Contact Information</h2>
+                <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 p-6">
+                    <h2 className="text-2xl font-semibold text-white">Contact Information</h2>
+                  </div>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  <div className="flex items-start">
+                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Mail className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[#1a1a1a]">Email</h3>
+                      <a href="mailto:kevin@kevinhoang.com" className="text-gray-600 hover:text-[#1a1a1a] transition-colors">kevin@kevinhoang.com</a>
+                    </div>
+                  </div>
                   
-                  <div className="space-y-6">
-                    <div className="flex items-start">
-                      <div className="bg-green-50 p-3 rounded-full mr-4">
-                        <Mail className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-[#1a1a1a]">Email</h3>
-                        <p className="text-gray-600">kevin@kevinhoang.com</p>
-                      </div>
+                  <div className="flex items-start">
+                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Phone className="w-5 h-5 text-green-600" />
                     </div>
-                    
-                    <div className="flex items-start">
-                      <div className="bg-green-50 p-3 rounded-full mr-4">
-                        <Phone className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-[#1a1a1a]">Phone</h3>
-                        <p className="text-gray-600">(617) 555-1234</p>
-                      </div>
+                    <div>
+                      <h3 className="font-medium text-[#1a1a1a]">Phone</h3>
+                      <a href="tel:6175551234" className="text-gray-600 hover:text-[#1a1a1a] transition-colors">(617) 555-1234</a>
                     </div>
-                    
-                    <div className="flex items-start">
-                      <div className="bg-green-50 p-3 rounded-full mr-4">
-                        <MapPin className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-[#1a1a1a]">Office</h3>
-                        <p className="text-gray-600">123 Beacon Street, Boston, MA 02116</p>
-                      </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-green-600" />
                     </div>
-                    
-                    <div className="flex items-start">
-                      <div className="bg-green-50 p-3 rounded-full mr-4">
-                        <Clock className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-[#1a1a1a]">Hours</h3>
-                        <p className="text-gray-600">Monday - Friday: 9am - 6pm</p>
-                        <p className="text-gray-600">Weekends: By appointment</p>
-                      </div>
+                    <div>
+                      <h3 className="font-medium text-[#1a1a1a]">Office</h3>
+                      <a 
+                        href="https://maps.google.com/?q=123+Beacon+Street,+Boston,+MA+02116" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-gray-600 hover:text-[#1a1a1a] transition-colors"
+                      >
+                        123 Beacon Street, Boston, MA 02116
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Clock className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[#1a1a1a]">Hours</h3>
+                      <p className="text-gray-600">Monday - Friday: 9am - 6pm</p>
+                      <p className="text-gray-600">Weekends: By appointment</p>
                     </div>
                   </div>
                 </div>
@@ -88,38 +144,90 @@ const Contact = () => {
                 <div className="p-6">
                   <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a]">Send a Message</h2>
                   
-                  <form className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                        <input type="text" id="first-name" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" />
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="firstName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder="First Name" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="lastName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder="Last Name" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                       
-                      <div>
-                        <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input type="text" id="last-name" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input type="email" id="email" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <input type="tel" id="phone" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500" />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                      <textarea id="message" rows={4} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"></textarea>
-                    </div>
-                    
-                    <button type="submit" className="w-full bg-[#1a1a1a] text-white py-3 px-6 rounded-md hover:bg-black transition-colors font-medium">
-                      Send Message
-                    </button>
-                  </form>
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input type="email" placeholder="Email" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input type="tel" placeholder="Phone (optional)" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="message"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Your message" 
+                                rows={4} 
+                                className="border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <button 
+                        type="submit" 
+                        className="w-full bg-[#1a1a1a] text-white py-3 px-6 rounded-md hover:bg-black transition-colors font-medium flex items-center justify-center group"
+                        disabled={form.formState.isSubmitting}
+                      >
+                        <span>Send Message</span>
+                        <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </form>
+                  </Form>
                 </div>
               </div>
             </motion.div>

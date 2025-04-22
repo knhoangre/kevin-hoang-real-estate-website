@@ -7,8 +7,14 @@ import Contact from "@/components/Contact";
 import RealEstateCalculators from "@/components/RealEstateCalculators";
 import { Element } from "react-scroll";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 const Index = () => {
+  // Reset scroll position when navigating to home page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />

@@ -1,110 +1,96 @@
 
-import { BookOpen, Map, Flag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { BookOpen, Calculator, FileText, Home, BarChart3, Eye, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const resources = [
   {
-    title: "First-Time Buyer Guide",
-    description: "Everything you need to know about buying your first home in the Boston area, from financing options to what to expect during the closing process.",
     icon: BookOpen,
-    content: [
-      "Understanding mortgage pre-approval",
-      "Hidden costs of homeownership",
-      "First-time buyer assistance programs in Massachusetts",
-      "The home inspection process explained",
-      "Negotiation strategies for your first purchase"
-    ],
-    link: "/blog?category=first-time-buyers"
+    title: "First-Time Buyer Guide",
+    description: "A comprehensive guide to help first-time homebuyers navigate the process with confidence.",
+    color: "bg-blue-500",
+    link: "/first-time-buyers"
   },
   {
-    title: "Neighborhood Guides",
-    description: "Detailed information about Boston's diverse neighborhoods and surrounding communities, helping you find the perfect location for your lifestyle.",
-    icon: Map,
-    content: [
-      "School district ratings and information",
-      "Transportation options and commute times",
-      "Local amenities and attractions",
-      "Crime statistics and safety information",
-      "Property value trends by neighborhood"
-    ],
-    link: "/neighborhoods"
+    icon: Calculator,
+    title: "Mortgage Calculator",
+    description: "Estimate your monthly mortgage payments based on home price, down payment, and interest rate.",
+    color: "bg-green-500",
+    link: "#"
   },
   {
+    icon: FileText,
+    title: "Pre-Approval Checklist",
+    description: "Essential documents and steps to prepare for your mortgage pre-approval.",
+    color: "bg-purple-500",
+    link: "#"
+  },
+  {
+    icon: Home,
+    title: "Home Inspection Guide",
+    description: "What to look for and questions to ask during your home inspection.",
+    color: "bg-red-500",
+    link: "#"
+  },
+  {
+    icon: BarChart3,
     title: "Market Reports",
-    description: "Stay informed with the latest Greater Boston market trends, pricing data, and forecasts to make confident real estate decisions.",
-    icon: Flag,
-    content: [
-      "Monthly housing market updates",
-      "Price per square foot analysis by neighborhood",
-      "Days on market trends",
-      "Absorption rate and inventory levels",
-      "Interest rate impacts on the local market"
-    ],
-    link: "/blog?category=market-reports"
+    description: "Stay updated with the latest real estate market trends and statistics in Boston.",
+    color: "bg-amber-500",
+    link: "#"
+  },
+  {
+    icon: Eye,
+    title: "Neighborhood Profiles",
+    description: "Detailed information about Boston's diverse neighborhoods to help you find the perfect fit.",
+    color: "bg-indigo-500",
+    link: "/neighborhoods"
   },
 ];
 
 const BuyerResources = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" } }
-  };
-
   return (
     <div className="py-12">
-      <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">HELPFUL RESOURCES</h2>
-      
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-3 gap-8"
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: "-50px" }}
-      >
-        {resources.map((resource, index) => (
-          <motion.div 
-            key={index} 
-            className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow"
-            variants={itemVariants}
-          >
-            <div className="p-6">
-              <div className="bg-green-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                <resource.icon className="w-8 h-8 text-green-600" />
+      <div className="container mx-auto px-4">
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">BUYER RESOURCES</h2>
+          <p className="text-gray-600">
+            Access these helpful resources to make informed decisions throughout your home buying journey.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {resources.map((resource, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="p-6">
+                <div className={`w-12 h-12 ${resource.color} text-white rounded-lg flex items-center justify-center mb-4`}>
+                  <resource.icon size={24} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-[#1a1a1a]">{resource.title}</h3>
+                <p className="text-gray-600 mb-4">{resource.description}</p>
+                <Link 
+                  to={resource.link} 
+                  className="inline-flex items-center text-[#1a1a1a] font-medium group relative"
+                >
+                  <span className="relative">
+                    View Resource
+                    <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300" />
+                  </span>
+                  <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
-              
-              <h3 className="text-xl font-semibold mb-3">{resource.title}</h3>
-              <p className="text-gray-600 mb-6">{resource.description}</p>
-              
-              <div className="space-y-2 mb-6">
-                {resource.content.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    </div>
-                    <p className="text-sm text-gray-700">{item}</p>
-                  </div>
-                ))}
-              </div>
-              
-              <Button asChild className="w-full bg-[#1a1a1a] hover:bg-black">
-                <Link to={resource.link}>View Resource</Link>
-              </Button>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
