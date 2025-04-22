@@ -17,28 +17,28 @@ const resources = [
     title: "Mortgage Calculator",
     description: "Estimate your monthly mortgage payments based on home price, down payment, and interest rate.",
     color: "bg-green-500",
-    link: "#"
+    link: "/#real-estate-calculators"
   },
   {
     icon: FileText,
     title: "Pre-Approval Checklist",
     description: "Essential documents and steps to prepare for your mortgage pre-approval.",
     color: "bg-purple-500",
-    link: "#"
+    link: "/blog/pre-approval-checklist"
   },
   {
     icon: Home,
     title: "Home Inspection Guide",
     description: "What to look for and questions to ask during your home inspection.",
     color: "bg-red-500",
-    link: "#"
+    link: "/blog/home-inspection-guide"
   },
   {
     icon: BarChart3,
     title: "Market Reports",
     description: "Stay updated with the latest real estate market trends and statistics in Boston.",
     color: "bg-amber-500",
-    link: "#"
+    link: "/blog/market-reports"
   },
   {
     icon: Eye,

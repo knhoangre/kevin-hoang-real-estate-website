@@ -60,7 +60,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b">
+    <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b" style={{ scrollbarGutter: "stable" }}>
       <div className="container mx-auto flex justify-between items-center h-16 px-4">
         <Logo />
         
@@ -175,15 +175,15 @@ const Navbar = () => {
           </Sheet>
         </div>
         
-        <div className="hidden md:flex space-x-5 items-center">
+        <div className="hidden md:flex space-x-5 items-center text-xs">
           {isHomePage ? (
             <>
-              <ScrollLink 
-                to="about" 
-                smooth={true} 
+              <ScrollLink
+                to="about"
+                smooth={true}
                 duration={500}
                 offset={-80}
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   ABOUT
@@ -192,7 +192,7 @@ const Navbar = () => {
               </ScrollLink>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
@@ -201,16 +201,16 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full">Buyer Resources</RouterLink>
+                    <RouterLink to="/buyer" className="w-full uppercase">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full">First-Time Buyer Guide</RouterLink>
+                    <RouterLink to="/first-time-buyers" className="w-full uppercase">FIRST-TIME BUYER GUIDE</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
@@ -219,17 +219,17 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full">Seller Resources</RouterLink>
+                    <RouterLink to="/seller" className="w-full uppercase">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full">Selling Tips</RouterLink>
+                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase">SELLING TIPS</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
               <RouterLink 
                 to="/neighborhoods" 
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   NEIGHBORHOODS
@@ -238,7 +238,7 @@ const Navbar = () => {
               </RouterLink>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
@@ -257,7 +257,7 @@ const Navbar = () => {
               
               <RouterLink 
                 to="/contact" 
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   CONTACT
@@ -283,9 +283,9 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <RouterLink 
-                to="/" 
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm"
+              <RouterLink
+                to="/"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   ABOUT
@@ -294,7 +294,7 @@ const Navbar = () => {
               </RouterLink>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
@@ -303,16 +303,16 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full">Buyer Resources</RouterLink>
+                    <RouterLink to="/buyer" className="w-full uppercase">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full">First-Time Buyer Guide</RouterLink>
+                    <RouterLink to="/first-time-buyers" className="w-full uppercase">FIRST-TIME BUYER GUIDE</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
@@ -321,17 +321,17 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full">Seller Resources</RouterLink>
+                    <RouterLink to="/seller" className="w-full uppercase">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full">Selling Tips</RouterLink>
+                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase">SELLING TIPS</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               
               <RouterLink 
                 to="/neighborhoods" 
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
               >
                 <span className="relative">
                   NEIGHBORHOODS
@@ -340,7 +340,7 @@ const Navbar = () => {
               </RouterLink>
               
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-sm ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
@@ -359,7 +359,7 @@ const Navbar = () => {
               
               <RouterLink 
                 to="/contact" 
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-sm ${location.pathname === '/contact' ? 'font-semibold' : ''}`}
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/contact' ? 'font-semibold' : ''}`}
               >
                 <span className="relative">
                   CONTACT

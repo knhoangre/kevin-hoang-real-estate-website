@@ -1,9 +1,35 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { blogPosts } from "@/data/blogData";
 import { ArrowRight } from "lucide-react";
+
+const additionalPosts = [
+  {
+    id: 9991,
+    slug: "pre-approval-checklist",
+    title: "Pre-Approval Checklist for Boston Home Buyers",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+    excerpt: "Essential documents and tips to ace your mortgage pre-approval process.",
+    date: "2025-04-20",
+  },
+  {
+    id: 9992,
+    slug: "home-inspection-guide",
+    title: "Home Inspection Guide for First-Time Buyers",
+    image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80",
+    excerpt: "What to look for and ask during your home inspection.",
+    date: "2025-04-21",
+  },
+  {
+    id: 9993,
+    slug: "market-reports",
+    title: "Boston Real Estate Market Reports 2025",
+    image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&w=400&q=80",
+    excerpt: "Latest trends and stats every Boston buyer and seller must know.",
+    date: "2025-04-22",
+  },
+];
 
 const Blog = () => {
   useEffect(() => {
@@ -20,7 +46,7 @@ const Blog = () => {
           </h1>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.map((post) => (
+            {[...blogPosts, ...additionalPosts].map((post) => (
               <div 
                 key={post.id}
                 className="group bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100"

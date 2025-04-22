@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
@@ -40,8 +39,14 @@ const Contact = () => {
     },
   });
 
+  const formatPhoneNumber = (input: string) => {
+    const numbers = input.replace(/\D/g, "");
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+  };
+
   const onSubmit = (data: FormValues) => {
-    // Simulate form submission
     setTimeout(() => {
       toast({
         title: 'Message sent!',
@@ -79,44 +84,55 @@ const Contact = () => {
                 <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-6">
-                    <h2 className="text-2xl font-semibold text-white">Contact Information</h2>
+                    <h2 className="text-2xl font-semibold text-white uppercase">CONTACT INFORMATION</h2>
                   </div>
                 </div>
                 
                 <div className="p-6 space-y-6">
-                  <div className="flex items-start">
+                  <div className="flex items-start group">
                     <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
                       <Mail className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a]">Email</h3>
-                      <a href="mailto:kevin@kevinhoang.com" className="text-gray-600 hover:text-[#1a1a1a] transition-colors">kevin@kevinhoang.com</a>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">EMAIL</h3>
+                      <a href="mailto:kevin@kevinhoang.com"
+                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
+                      >
+                        kevin@kevinhoang.com
+                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                      </a>
                     </div>
                   </div>
                   
-                  <div className="flex items-start">
+                  <div className="flex items-start group">
                     <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
                       <Phone className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a]">Phone</h3>
-                      <a href="tel:6175551234" className="text-gray-600 hover:text-[#1a1a1a] transition-colors">(617) 555-1234</a>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">PHONE</h3>
+                      <a href="tel:6175551234"
+                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
+                      >
+                        (617) 555-1234
+                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                      </a>
                     </div>
                   </div>
                   
-                  <div className="flex items-start">
+                  <div className="flex items-start group">
                     <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
                       <MapPin className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a]">Office</h3>
-                      <a 
-                        href="https://maps.google.com/?q=123+Beacon+Street,+Boston,+MA+02116" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-gray-600 hover:text-[#1a1a1a] transition-colors"
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">OFFICE</h3>
+                      <a
+                        href="https://maps.google.com/?q=123+Beacon+Street,+Boston,+MA+02116"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
                       >
                         123 Beacon Street, Boston, MA 02116
+                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                       </a>
                     </div>
                   </div>
@@ -126,7 +142,7 @@ const Contact = () => {
                       <Clock className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a]">Hours</h3>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">HOURS</h3>
                       <p className="text-gray-600">Monday - Friday: 9am - 6pm</p>
                       <p className="text-gray-600">Weekends: By appointment</p>
                     </div>
@@ -142,7 +158,7 @@ const Contact = () => {
             >
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a]">Send a Message</h2>
+                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">SEND A MESSAGE</h2>
                   
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -186,14 +202,25 @@ const Contact = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="phone"
-                        render={({ field }) => (
+                        render={({ field: { onChange, value, ...rest } }) => (
                           <FormItem>
                             <FormControl>
-                              <Input type="tel" placeholder="Phone (optional)" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                              <Input
+                                type="tel"
+                                placeholder="Phone (optional)"
+                                className="border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                value={value}
+                                onChange={e => {
+                                  const formatted = formatPhoneNumber(e.target.value);
+                                  onChange(formatted);
+                                }}
+                                maxLength={12}
+                                {...rest}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -223,7 +250,7 @@ const Contact = () => {
                         className="w-full bg-[#1a1a1a] text-white py-3 px-6 rounded-md hover:bg-black transition-colors font-medium flex items-center justify-center group"
                         disabled={form.formState.isSubmitting}
                       >
-                        <span>Send Message</span>
+                        <span>SEND MESSAGE</span>
                         <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                       </button>
                     </form>
