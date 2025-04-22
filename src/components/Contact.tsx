@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +27,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneDropdown, setPhoneDropdown] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -42,7 +42,6 @@ const Contact = () => {
 
   const onSubmit = (data: FormValues) => {
     setIsSubmitting(true);
-    // Simulate form submission
     setTimeout(() => {
       toast({
         title: "Message sent!",
@@ -54,10 +53,7 @@ const Contact = () => {
   };
 
   const formatPhoneNumber = (value: string) => {
-    // Strip all non-numeric characters
     const numbers = value.replace(/\D/g, "");
-    
-    // Format as XXX-XXX-XXXX
     if (numbers.length <= 3) return numbers;
     if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
@@ -68,27 +64,33 @@ const Contact = () => {
       <div className="container px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-[#1a1a1a]">GET IN TOUCH</h2>
-            
+            <h2 className="text-4xl font-bold text-[#1a1a1a] uppercase">Contact Information</h2>
             <div className="space-y-6">
-              <div className="flex items-center space-x-4 w-fit group">
+              <div className="flex items-center space-x-4 w-fit group relative"
+                   onMouseEnter={() => setPhoneDropdown(true)}
+                   onMouseLeave={() => setPhoneDropdown(false)}
+              >
                 <Phone className="h-5 w-5 text-[#1a1a1a]" />
-                <div className="relative dropdown">
-                  <span className="text-[#1a1a1a] uppercase cursor-pointer">
-                    (860) 682-2251
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                  <div className="dropdown-content opacity-0 invisible group-hover:opacity-100 group-hover:visible absolute left-0 mt-2 w-24 bg-white shadow-lg rounded-md transition-all duration-300 z-10">
-                    <a href="tel:8606822251" className="block px-4 py-2 text-sm hover:bg-gray-100">Call</a>
-                    <a href="sms:8606822251" className="block px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                <span className="text-[#1a1a1a] uppercase relative cursor-pointer select-all">
+                  (860) 682-2251
+                  <span
+                    className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2"
+                  />
+                </span>
+                {phoneDropdown && (
+                  <div className="dropdown-content opacity-100 visible absolute left-1/2 top-full mt-3 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300">
+                    <div className="flex flex-col items-center py-2">
+                      <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
+                      <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
               
               <div className="flex items-center space-x-4 w-fit group">
                 <Mail className="h-5 w-5 text-[#1a1a1a]" />
-                <a href="mailto:KNHOANGRE@GMAIL.COM" className="relative">
-                  <span className="text-[#1a1a1a] uppercase">
+                <a href="mailto:KNHOANGRE@GMAIL.COM" className="relative group">
+                  <span className="text-[#1a1a1a] uppercase relative">
                     KNHOANGRE@GMAIL.COM
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
@@ -101,9 +103,9 @@ const Contact = () => {
                   href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="relative"
+                  className="relative group"
                 >
-                  <span className="text-[#1a1a1a] uppercase">
+                  <span className="text-[#1a1a1a] uppercase relative">
                     150 WEST ST, NEEDHAM, MA 02494
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>

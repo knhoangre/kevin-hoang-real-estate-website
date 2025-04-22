@@ -183,16 +183,16 @@ const Navbar = () => {
                 smooth={true}
                 duration={500}
                 offset={-80}
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
               >
                 <span className="relative">
                   ABOUT
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </ScrollLink>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
@@ -201,16 +201,16 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full uppercase">BUYER RESOURCES</RouterLink>
+                    <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full uppercase">FIRST-TIME BUYER GUIDE</RouterLink>
+                    <RouterLink to="/first-time-buyers" className="w-full uppercase text-xs">FIRST-TIME BUYER GUIDE</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
@@ -219,26 +219,26 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full uppercase">SELLER RESOURCES</RouterLink>
+                    <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase">SELLING TIPS</RouterLink>
+                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase text-xs">SELLING TIPS</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
-              <RouterLink 
-                to="/neighborhoods" 
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
+
+              <RouterLink
+                to="/neighborhoods"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
               >
                 <span className="relative">
                   NEIGHBORHOODS
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
@@ -247,10 +247,10 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog" className="w-full">BLOG</RouterLink>
+                    <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/faq" className="w-full">FAQ</RouterLink>
+                    <RouterLink to="/faq" className="w-full uppercase text-xs">FAQ</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -285,16 +285,16 @@ const Navbar = () => {
             <>
               <RouterLink
                 to="/"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
               >
                 <span className="relative">
                   ABOUT
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
@@ -303,16 +303,16 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full uppercase">BUYER RESOURCES</RouterLink>
+                    <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full uppercase">FIRST-TIME BUYER GUIDE</RouterLink>
+                    <RouterLink to="/first-time-buyers" className="w-full uppercase text-xs">FIRST-TIME BUYER GUIDE</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
@@ -321,26 +321,26 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full uppercase">SELLER RESOURCES</RouterLink>
+                    <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase">SELLING TIPS</RouterLink>
+                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase text-xs">SELLING TIPS</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <RouterLink 
                 to="/neighborhoods" 
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px] ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
               >
                 <span className="relative">
                   NEIGHBORHOODS
                   <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </span>
               </RouterLink>
-              
+
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
@@ -349,14 +349,14 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center">
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/blog" className="w-full">BLOG</RouterLink>
+                    <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <RouterLink to="/faq" className="w-full">FAQ</RouterLink>
+                    <RouterLink to="/faq" className="w-full uppercase text-xs">FAQ</RouterLink>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               <RouterLink 
                 to="/contact" 
                 className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/contact' ? 'font-semibold' : ''}`}

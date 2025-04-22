@@ -84,7 +84,7 @@ const Contact = () => {
                 <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-6">
-                    <h2 className="text-2xl font-semibold text-white uppercase">CONTACT INFORMATION</h2>
+                    <h2 className="text-2xl font-semibold text-white uppercase">Contact Information</h2>
                   </div>
                 </div>
                 
@@ -97,14 +97,29 @@ const Contact = () => {
                       <h3 className="font-medium text-[#1a1a1a] uppercase">EMAIL</h3>
                       <a href="mailto:kevin@kevinhoang.com"
                         className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
+                        style={{ borderBottom: "none" }}
                       >
-                        kevin@kevinhoang.com
-                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        <span className="relative">
+                          kevin@kevinhoang.com
+                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        </span>
                       </a>
                     </div>
                   </div>
                   
-                  <div className="flex items-start group">
+                  <div
+                    className="flex items-start group relative"
+                    onMouseEnter={e => {
+                      const id = setTimeout(() => {
+                        (e.currentTarget as HTMLDivElement).setAttribute("data-dropdown", "true");
+                      }, 80);
+                      (e.currentTarget as any)._timeout = id;
+                    }}
+                    onMouseLeave={e => {
+                      clearTimeout((e.currentTarget as any)._timeout);
+                      (e.currentTarget as HTMLDivElement).removeAttribute("data-dropdown");
+                    }}
+                  >
                     <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
                       <Phone className="w-5 h-5 text-green-600" />
                     </div>
@@ -112,10 +127,21 @@ const Contact = () => {
                       <h3 className="font-medium text-[#1a1a1a] uppercase">PHONE</h3>
                       <a href="tel:6175551234"
                         className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
+                        style={{ borderBottom: "none", position: "relative" }}
                       >
-                        (617) 555-1234
-                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        <span className="relative select-all">
+                          (617) 555-1234
+                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        </span>
                       </a>
+                      {(typeof window !== "undefined" && (document.querySelector('[data-dropdown="true"]'))) && (
+                        <div className="absolute left-1/2 top-8 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300">
+                          <div className="flex flex-col items-center py-2">
+                            <a href="tel:6175551234" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
+                            <a href="sms:6175551234" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -130,9 +156,12 @@ const Contact = () => {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
+                        style={{ borderBottom: "none" }}
                       >
-                        123 Beacon Street, Boston, MA 02116
-                        <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        <span className="relative">
+                          123 Beacon Street, Boston, MA 02116
+                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                        </span>
                       </a>
                     </div>
                   </div>
@@ -156,9 +185,10 @@ const Contact = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative">
+                <div className="absolute top-0 left-0 right-0 h-4 shadow-lg shadow-black/25 rounded-t-xl z-10 pointer-events-none" style={{ filter: "blur(2px)", opacity: 0.9 }} />
                 <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">SEND A MESSAGE</h2>
+                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">Send a Message</h2>
                   
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
