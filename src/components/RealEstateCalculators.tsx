@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -80,19 +80,64 @@ const MortgageCalculator = () => {
     };
   };
   
-  const handleHomepriceChange = (value: number) => {
+  const handleHomePriceChange = (value: number) => {
     setHomePrice(value);
+    // Update down payment amount while maintaining percentage
     setDownPayment((value * downPaymentPercent) / 100);
+  };
+  
+  const handleHomePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value.replace(/,/g, ''));
+    if (!isNaN(value)) {
+      setHomePrice(value);
+      // Update down payment amount while maintaining percentage
+      setDownPayment((value * downPaymentPercent) / 100);
+    }
   };
   
   const handleDownPaymentChange = (value: number) => {
     setDownPayment(value);
-    setDownPaymentPercent((value / homePrice) * 100);
+    // Update down payment percentage
+    if (homePrice > 0) {
+      setDownPaymentPercent((value / homePrice) * 100);
+    }
+  };
+  
+  const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value.replace(/,/g, ''));
+    if (!isNaN(value)) {
+      setDownPayment(value);
+      // Update down payment percentage
+      if (homePrice > 0) {
+        setDownPaymentPercent((value / homePrice) * 100);
+      }
+    }
   };
   
   const handleDownPaymentPercentChange = (value: number) => {
     setDownPaymentPercent(value);
+    // Update down payment amount
     setDownPayment((homePrice * value) / 100);
+  };
+  
+  const handleDownPaymentPercentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 100) {
+      setDownPaymentPercent(value);
+      // Update down payment amount
+      setDownPayment((homePrice * value) / 100);
+    }
+  };
+  
+  const handleInterestRateChange = (value: number) => {
+    setInterestRate(value);
+  };
+  
+  const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      setInterestRate(value);
+    }
   };
   
   const payment = calculateMonthlyPayment();
@@ -109,52 +154,79 @@ const MortgageCalculator = () => {
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Home Price: ${homePrice.toLocaleString()}
+              Home Price
             </label>
-            <Slider
-              value={[homePrice]}
-              min={100000}
-              max={2000000}
-              step={10000}
-              onValueChange={(values) => handleHomepriceChange(values[0])}
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>$100k</span>
-              <span>$2M</span>
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[homePrice]}
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  onValueChange={(values) => handleHomePriceChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input
+                  type="text"
+                  value={homePrice.toLocaleString()}
+                  onChange={handleHomePriceInputChange}
+                  className="pl-7"
+                />
+              </div>
             </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment: ${downPayment.toLocaleString()} ({downPaymentPercent.toFixed(0)}%)
+              Down Payment
             </label>
-            <Slider
-              value={[downPayment]}
-              min={0}
-              max={homePrice}
-              step={5000}
-              onValueChange={(values) => handleDownPaymentChange(values[0])}
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>$0</span>
-              <span>${homePrice.toLocaleString()}</span>
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[downPayment]}
+                  min={0}
+                  max={homePrice}
+                  step={5000}
+                  onValueChange={(values) => handleDownPaymentChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input
+                  type="text"
+                  value={downPayment.toLocaleString()}
+                  onChange={handleDownPaymentInputChange}
+                  className="pl-7"
+                />
+              </div>
             </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment Percentage: {downPaymentPercent.toFixed(0)}%
+              Down Payment Percentage
             </label>
-            <Slider
-              value={[downPaymentPercent]}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={(values) => handleDownPaymentPercentChange(values[0])}
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>0%</span>
-              <span>100%</span>
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[downPaymentPercent]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={(values) => handleDownPaymentPercentChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={downPaymentPercent.toFixed(1)}
+                  onChange={handleDownPaymentPercentInputChange}
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
             </div>
           </div>
           
@@ -179,18 +251,28 @@ const MortgageCalculator = () => {
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Interest Rate: {interestRate}%
+              Interest Rate
             </label>
-            <Slider
-              value={[interestRate]}
-              min={2}
-              max={10}
-              step={0.125}
-              onValueChange={(values) => setInterestRate(values[0])}
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>2%</span>
-              <span>10%</span>
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[interestRate]}
+                  min={0}
+                  max={15}
+                  step={0.125}
+                  onValueChange={(values) => handleInterestRateChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={interestRate.toFixed(3)}
+                  onChange={handleInterestRateInputChange}
+                  step="0.125"
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
             </div>
           </div>
           
@@ -198,33 +280,45 @@ const MortgageCalculator = () => {
             <label className="block text-sm font-medium mb-1">
               Property Tax (yearly)
             </label>
-            <Input
-              type="number"
-              value={propertyTax}
-              onChange={(e) => setPropertyTax(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="number"
+                value={propertyTax}
+                onChange={(e) => setPropertyTax(Number(e.target.value))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Homeowner's Insurance (yearly)
             </label>
-            <Input
-              type="number"
-              value={insurance}
-              onChange={(e) => setInsurance(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="number"
+                value={insurance}
+                onChange={(e) => setInsurance(Number(e.target.value))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               HOA Fees (monthly)
             </label>
-            <Input
-              type="number"
-              value={hoa}
-              onChange={(e) => setHoa(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="number"
+                value={hoa}
+                onChange={(e) => setHoa(Number(e.target.value))}
+                className="pl-7"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -243,14 +337,14 @@ const MortgageCalculator = () => {
               <p className="text-gray-500">Total payment each month</p>
             </div>
             <div className="text-3xl font-bold text-[#1a1a1a]">
-              ${payment.total.toFixed(2)}
+              ${isNaN(payment.total) ? "0.00" : payment.total.toFixed(2)}
             </div>
           </div>
           
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">Principal & Interest:</span>
-              <span>${payment.principalAndInterest.toFixed(2)}</span>
+              <span>${isNaN(payment.principalAndInterest) ? "0.00" : payment.principalAndInterest.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">Property Tax:</span>
@@ -273,7 +367,7 @@ const MortgageCalculator = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="font-medium">Down Payment:</span>
-              <span>${downPayment.toLocaleString()} ({downPaymentPercent.toFixed(0)}%)</span>
+              <span>${downPayment.toLocaleString()} ({downPaymentPercent.toFixed(1)}%)</span>
             </div>
           </div>
         </CardContent>
@@ -302,6 +396,28 @@ const SellerProceedsCalculator = () => {
       netProceeds
     };
   };
+
+  const handleSalePriceChange = (value: number) => {
+    setSalePrice(value);
+  };
+  
+  const handleSalePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value.replace(/,/g, ''));
+    if (!isNaN(value)) {
+      setSalePrice(value);
+    }
+  };
+  
+  const handleAgentCommissionChange = (value: number) => {
+    setAgentCommission(value);
+  };
+  
+  const handleAgentCommissionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      setAgentCommission(value);
+    }
+  };
   
   const proceeds = calculateProceeds();
   
@@ -317,72 +433,115 @@ const SellerProceedsCalculator = () => {
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Sale Price: ${salePrice.toLocaleString()}
+              Sale Price
             </label>
-            <Slider
-              value={[salePrice]}
-              min={100000}
-              max={2000000}
-              step={10000}
-              onValueChange={(values) => setSalePrice(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[salePrice]}
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  onValueChange={(values) => handleSalePriceChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input
+                  type="text"
+                  value={salePrice.toLocaleString()}
+                  onChange={handleSalePriceInputChange}
+                  className="pl-7"
+                />
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Remaining Mortgage Balance
             </label>
-            <Input
-              type="number"
-              value={mortgageBalance}
-              onChange={(e) => setMortgageBalance(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={mortgageBalance.toLocaleString()}
+                onChange={(e) => setMortgageBalance(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Agent Commission: {agentCommission}%
+              Agent Commission
             </label>
-            <Slider
-              value={[agentCommission]}
-              min={0}
-              max={7}
-              step={0.5}
-              onValueChange={(values) => setAgentCommission(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[agentCommission]}
+                  min={0}
+                  max={10}
+                  step={0.25}
+                  onValueChange={(values) => handleAgentCommissionChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={agentCommission.toFixed(2)}
+                  onChange={handleAgentCommissionInputChange}
+                  step="0.25"
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Closing Costs
             </label>
-            <Input
-              type="number"
-              value={closingCosts}
-              onChange={(e) => setClosingCosts(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={closingCosts.toLocaleString()}
+                onChange={(e) => setClosingCosts(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Repair Costs
             </label>
-            <Input
-              type="number"
-              value={repairs}
-              onChange={(e) => setRepairs(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={repairs.toLocaleString()}
+                onChange={(e) => setRepairs(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Other Fees
             </label>
-            <Input
-              type="number"
-              value={otherFees}
-              onChange={(e) => setOtherFees(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={otherFees.toLocaleString()}
+                onChange={(e) => setOtherFees(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -466,10 +625,11 @@ const RentalIncomeCalculator = () => {
     const monthlyInterest = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
     
-    const monthlyPrincipalAndInterest = 
-      principal * 
-      (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) / 
-      (Math.pow(1 + monthlyInterest, numberOfPayments) - 1);
+    const monthlyPrincipalAndInterest = (principal > 0 && monthlyInterest > 0)
+      ? principal * 
+        (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) / 
+        (Math.pow(1 + monthlyInterest, numberOfPayments) - 1)
+      : 0;
     
     const monthlyPropertyTax = propertyTax / 12;
     const monthlyInsurance = insurance / 12;
@@ -486,7 +646,7 @@ const RentalIncomeCalculator = () => {
     
     const monthlyCashFlow = effectiveRent - totalMonthlyExpenses;
     const annualCashFlow = monthlyCashFlow * 12;
-    const cashOnCash = (annualCashFlow / downPayment) * 100;
+    const cashOnCash = downPayment > 0 ? (annualCashFlow / downPayment) * 100 : 0;
     
     return {
       effectiveRent,
@@ -500,6 +660,61 @@ const RentalIncomeCalculator = () => {
       annualCashFlow,
       cashOnCash
     };
+  };
+  
+  const handlePurchasePriceChange = (value: number) => {
+    setPurchasePrice(value);
+  };
+  
+  const handlePurchasePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value.replace(/,/g, ''));
+    if (!isNaN(value)) {
+      setPurchasePrice(value);
+    }
+  };
+  
+  const handleDownPaymentChange = (value: number) => {
+    setDownPayment(value);
+  };
+  
+  const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value.replace(/,/g, ''));
+    if (!isNaN(value)) {
+      setDownPayment(value);
+    }
+  };
+  
+  const handleInterestRateChange = (value: number) => {
+    setInterestRate(value);
+  };
+  
+  const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      setInterestRate(value);
+    }
+  };
+  
+  const handleVacancyRateChange = (value: number) => {
+    setVacancyRate(value);
+  };
+  
+  const handleVacancyRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0 && value <= 100) {
+      setVacancyRate(value);
+    }
+  };
+  
+  const handlePropertyManagementChange = (value: number) => {
+    setPropertyManagement(value);
+  };
+  
+  const handlePropertyManagementInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 0) {
+      setPropertyManagement(value);
+    }
   };
   
   const rentalCalc = calculateRentalIncome();
@@ -516,41 +731,81 @@ const RentalIncomeCalculator = () => {
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Purchase Price: ${purchasePrice.toLocaleString()}
+              Purchase Price
             </label>
-            <Slider
-              value={[purchasePrice]}
-              min={100000}
-              max={2000000}
-              step={10000}
-              onValueChange={(values) => setPurchasePrice(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[purchasePrice]}
+                  min={0}
+                  max={5000000}
+                  step={10000}
+                  onValueChange={(values) => handlePurchasePriceChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input
+                  type="text"
+                  value={purchasePrice.toLocaleString()}
+                  onChange={handlePurchasePriceInputChange}
+                  className="pl-7"
+                />
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment: ${downPayment.toLocaleString()}
+              Down Payment
             </label>
-            <Slider
-              value={[downPayment]}
-              min={0}
-              max={purchasePrice}
-              step={5000}
-              onValueChange={(values) => setDownPayment(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[downPayment]}
+                  min={0}
+                  max={purchasePrice}
+                  step={5000}
+                  onValueChange={(values) => handleDownPaymentChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                <Input
+                  type="text"
+                  value={downPayment.toLocaleString()}
+                  onChange={handleDownPaymentInputChange}
+                  className="pl-7"
+                />
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Interest Rate: {interestRate}%
+              Interest Rate
             </label>
-            <Slider
-              value={[interestRate]}
-              min={2}
-              max={10}
-              step={0.125}
-              onValueChange={(values) => setInterestRate(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[interestRate]}
+                  min={0}
+                  max={15}
+                  step={0.125}
+                  onValueChange={(values) => handleInterestRateChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={interestRate.toFixed(3)}
+                  onChange={handleInterestRateInputChange}
+                  step="0.125"
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
+            </div>
           </div>
           
           <div>
@@ -576,81 +831,128 @@ const RentalIncomeCalculator = () => {
             <label className="block text-sm font-medium mb-1">
               Monthly Rent
             </label>
-            <Input
-              type="number"
-              value={monthlyRent}
-              onChange={(e) => setMonthlyRent(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={monthlyRent.toLocaleString()}
+                onChange={(e) => setMonthlyRent(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Vacancy Rate: {vacancyRate}%
+              Vacancy Rate
             </label>
-            <Slider
-              value={[vacancyRate]}
-              min={0}
-              max={20}
-              step={1}
-              onValueChange={(values) => setVacancyRate(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[vacancyRate]}
+                  min={0}
+                  max={30}
+                  step={1}
+                  onValueChange={(values) => handleVacancyRateChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={vacancyRate.toFixed(1)}
+                  onChange={handleVacancyRateInputChange}
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Property Tax (yearly)
             </label>
-            <Input
-              type="number"
-              value={propertyTax}
-              onChange={(e) => setPropertyTax(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={propertyTax.toLocaleString()}
+                onChange={(e) => setPropertyTax(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Insurance (yearly)
             </label>
-            <Input
-              type="number"
-              value={insurance}
-              onChange={(e) => setInsurance(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={insurance.toLocaleString()}
+                onChange={(e) => setInsurance(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Maintenance (yearly)
             </label>
-            <Input
-              type="number"
-              value={maintenance}
-              onChange={(e) => setMaintenance(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={maintenance.toLocaleString()}
+                onChange={(e) => setMaintenance(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
-              Property Management: {propertyManagement}%
+              Property Management
             </label>
-            <Slider
-              value={[propertyManagement]}
-              min={0}
-              max={15}
-              step={1}
-              onValueChange={(values) => setPropertyManagement(values[0])}
-            />
+            <div className="flex gap-4 mb-1">
+              <div className="flex-1">
+                <Slider
+                  value={[propertyManagement]}
+                  min={0}
+                  max={20}
+                  step={0.5}
+                  onValueChange={(values) => handlePropertyManagementChange(values[0])}
+                />
+              </div>
+              <div className="relative w-36">
+                <Input
+                  type="number"
+                  value={propertyManagement.toFixed(1)}
+                  onChange={handlePropertyManagementInputChange}
+                  step="0.5"
+                  className="pr-7"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+              </div>
+            </div>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-1">
               Utilities (monthly)
             </label>
-            <Input
-              type="number"
-              value={utilities}
-              onChange={(e) => setUtilities(Number(e.target.value))}
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+              <Input
+                type="text"
+                value={utilities.toLocaleString()}
+                onChange={(e) => setUtilities(Number(e.target.value.replace(/,/g, '')))}
+                className="pl-7"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
