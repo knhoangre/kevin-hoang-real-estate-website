@@ -36,21 +36,21 @@ const BuyerRoadmap = () => {
       
       <div className="relative">
         {/* Vertical Timeline Line */}
-        <div className="absolute left-4 top-3 bottom-0 w-0.5 bg-green-500 hidden md:block"></div>
+        <div className="absolute left-4 md:left-1/2 top-3 bottom-0 w-0.5 bg-green-500 md:transform md:-translate-x-1/2 hidden md:block"></div>
         
         <div className="space-y-16">
           {steps.map((step, index) => (
             <motion.div 
               key={index} 
-              className="flex flex-col md:flex-row gap-6"
+              className="flex flex-col md:flex-row md:items-center gap-6"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <div className="flex-shrink-0 relative z-10">
+              <div className={`flex-shrink-0 relative md:absolute md:left-1/2 md:transform md:-translate-x-1/2 z-10 ${index % 2 === 0 ? 'md:order-1' : 'md:order-1'}`}>
                 <motion.div 
-                  className="bg-white p-2 rounded-full" 
+                  className="bg-white p-2 rounded-full shadow-md" 
                   initial={{ scale: 0.8 }}
                   whileInView={{ scale: 1 }}
                   transition={{ 
@@ -73,7 +73,7 @@ const BuyerRoadmap = () => {
               </div>
               
               <motion.div 
-                className="bg-white p-6 rounded-xl shadow-lg flex-1 z-10 border border-gray-100 hover:shadow-xl transition-shadow"
+                className={`bg-white p-6 rounded-xl shadow-lg md:w-[calc(50%-40px)] z-10 border border-gray-100 hover:shadow-xl transition-shadow ${index % 2 === 0 ? 'md:mr-auto' : 'md:ml-auto'}`}
                 whileHover={{ y: -5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -83,12 +83,12 @@ const BuyerRoadmap = () => {
                 {/* Arrow pointing to next step */}
                 {index < steps.length - 1 && (
                   <motion.div 
-                    className="hidden md:block absolute right-0 top-1/2 transform translate-x-3 -translate-y-1/2"
-                    initial={{ opacity: 0, x: -10 }}
+                    className={`hidden md:block absolute top-1/2 transform -translate-y-1/2 ${index % 2 === 0 ? 'right-0 translate-x-[30px]' : 'left-0 -translate-x-[30px]'}`}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -10 : 10 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 + 0.4 }}
                   >
-                    <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`w-6 h-6 text-green-500 ${index % 2 === 0 ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </motion.div>
