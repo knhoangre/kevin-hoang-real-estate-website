@@ -1,4 +1,3 @@
-
 const About = () => {
   return (
     <section id="about" className="py-24 bg-white">
@@ -16,13 +15,13 @@ const About = () => {
               Whether you're a first-time homebuyer, seasoned investor, or looking to sell your property, Kevin's innovative approach and dedication to client success make him the ideal partner for your real estate journey in Massachusetts.
             </p>
           </div>
-          
+
           <div className="relative">
             <div className="aspect-square bg-[#1a1a1a]/10 rounded-2xl overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d"
+              <img
+                src="/public/kevin_hoang.jpg"
                 alt="Kevin Hoang - Boston Real Estate Agent"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top scale-125"
               />
             </div>
           </div>
