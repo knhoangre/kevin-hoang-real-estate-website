@@ -86,7 +86,7 @@ const Contact = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex items-center space-x-4 w-fit group">
                 <Mail className="h-5 w-5 text-[#1a1a1a]" />
                 <a href="mailto:KNHOANGRE@GMAIL.COM" className="relative group">
@@ -96,12 +96,12 @@ const Contact = () => {
                   </span>
                 </a>
               </div>
-              
+
               <div className="flex items-center space-x-4 w-fit group">
                 <MapPin className="h-5 w-5 text-[#1a1a1a]" />
-                <a 
-                  href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494" 
-                  target="_blank" 
+                <a
+                  href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="relative group"
                 >
@@ -113,7 +113,7 @@ const Contact = () => {
               </div>
             </div>
           </div>
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -135,11 +135,11 @@ const Contact = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="EMAIL" 
-                        className="uppercase" 
-                        {...field} 
+                      <Input
+                        type="email"
+                        placeholder="EMAIL"
+                        className="uppercase"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -153,8 +153,8 @@ const Contact = () => {
                 render={({ field: { onChange, ...rest } }) => (
                   <FormItem>
                     <FormControl>
-                      <Input 
-                        placeholder="PHONE NUMBER (XXX-XXX-XXXX)" 
+                      <Input
+                        placeholder="PHONE NUMBER (XXX-XXX-XXXX)"
                         className="uppercase"
                         onChange={(e) => {
                           const formatted = formatPhoneNumber(e.target.value);
@@ -183,7 +183,7 @@ const Contact = () => {
                 )}
               />
 
-              <button 
+              <button
                 className="w-full bg-[#1a1a1a] text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
                 disabled={isSubmitting}
                 type="submit"

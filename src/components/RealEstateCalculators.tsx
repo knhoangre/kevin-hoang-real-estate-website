@@ -1,15 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from "@/components/ui/card";
 
 const RealEstateCalculators = () => {
@@ -17,23 +16,23 @@ const RealEstateCalculators = () => {
     <div className="bg-gray-50 py-16">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">REAL ESTATE CALCULATORS</h2>
-        
+
         <Tabs defaultValue="mortgage">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
             <TabsTrigger value="mortgage">Mortgage Calculator</TabsTrigger>
             <TabsTrigger value="seller">Seller Proceeds</TabsTrigger>
             <TabsTrigger value="rental">Rental Income</TabsTrigger>
           </TabsList>
-          
+
           <div className="mt-8">
             <TabsContent value="mortgage">
               <MortgageCalculator />
             </TabsContent>
-            
+
             <TabsContent value="seller">
               <SellerProceedsCalculator />
             </TabsContent>
-            
+
             <TabsContent value="rental">
               <RentalIncomeCalculator />
             </TabsContent>
@@ -53,24 +52,24 @@ const MortgageCalculator = () => {
   const [propertyTax, setPropertyTax] = useState(5000);
   const [insurance, setInsurance] = useState(1200);
   const [hoa, setHoa] = useState(0);
-  
+
   // Calculate monthly payment
   const calculateMonthlyPayment = () => {
     const principal = homePrice - downPayment;
     const monthlyInterest = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
-    
-    const monthlyPrincipalAndInterest = 
-      principal * 
-      (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) / 
+
+    const monthlyPrincipalAndInterest =
+      principal *
+      (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) /
       (Math.pow(1 + monthlyInterest, numberOfPayments) - 1);
-    
+
     const monthlyPropertyTax = propertyTax / 12;
     const monthlyInsurance = insurance / 12;
     const monthlyHOA = hoa;
-    
+
     const totalMonthlyPayment = monthlyPrincipalAndInterest + monthlyPropertyTax + monthlyInsurance + monthlyHOA;
-    
+
     return {
       principalAndInterest: monthlyPrincipalAndInterest,
       propertyTax: monthlyPropertyTax,
@@ -79,13 +78,13 @@ const MortgageCalculator = () => {
       total: totalMonthlyPayment
     };
   };
-  
+
   const handleHomePriceChange = (value: number) => {
     setHomePrice(value);
     // Update down payment amount while maintaining percentage
     setDownPayment((value * downPaymentPercent) / 100);
   };
-  
+
   const handleHomePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value.replace(/,/g, ''));
     if (!isNaN(value)) {
@@ -94,7 +93,7 @@ const MortgageCalculator = () => {
       setDownPayment((value * downPaymentPercent) / 100);
     }
   };
-  
+
   const handleDownPaymentChange = (value: number) => {
     setDownPayment(value);
     // Update down payment percentage
@@ -102,7 +101,7 @@ const MortgageCalculator = () => {
       setDownPaymentPercent((value / homePrice) * 100);
     }
   };
-  
+
   const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value.replace(/,/g, ''));
     if (!isNaN(value)) {
@@ -113,13 +112,13 @@ const MortgageCalculator = () => {
       }
     }
   };
-  
+
   const handleDownPaymentPercentChange = (value: number) => {
     setDownPaymentPercent(value);
     // Update down payment amount
     setDownPayment((homePrice * value) / 100);
   };
-  
+
   const handleDownPaymentPercentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0 && value <= 100) {
@@ -128,20 +127,20 @@ const MortgageCalculator = () => {
       setDownPayment((homePrice * value) / 100);
     }
   };
-  
+
   const handleInterestRateChange = (value: number) => {
     setInterestRate(value);
   };
-  
+
   const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0) {
       setInterestRate(value);
     }
   };
-  
+
   const payment = calculateMonthlyPayment();
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
@@ -156,7 +155,7 @@ const MortgageCalculator = () => {
             <label className="block text-sm font-medium mb-1">
               Home Price
             </label>
-            <div className="flex gap-4 mb-1">
+            <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
                 <Slider
                   value={[homePrice]}
@@ -177,12 +176,12 @@ const MortgageCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Down Payment
             </label>
-            <div className="flex gap-4 mb-1">
+            <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
                 <Slider
                   value={[downPayment]}
@@ -203,12 +202,12 @@ const MortgageCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Down Payment Percentage
             </label>
-            <div className="flex gap-4 mb-1">
+            <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
                 <Slider
                   value={[downPaymentPercent]}
@@ -229,7 +228,7 @@ const MortgageCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Loan Term: {loanTerm} years
@@ -248,12 +247,12 @@ const MortgageCalculator = () => {
               ))}
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Interest Rate
             </label>
-            <div className="flex gap-4 mb-1">
+            <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
                 <Slider
                   value={[interestRate]}
@@ -275,7 +274,7 @@ const MortgageCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Property Tax (yearly)
@@ -290,7 +289,7 @@ const MortgageCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Homeowner's Insurance (yearly)
@@ -305,7 +304,7 @@ const MortgageCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               HOA Fees (monthly)
@@ -322,7 +321,7 @@ const MortgageCalculator = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Payment Breakdown</CardTitle>
@@ -340,7 +339,7 @@ const MortgageCalculator = () => {
               ${isNaN(payment.total) ? "0.00" : payment.total.toFixed(2)}
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">Principal & Interest:</span>
@@ -359,7 +358,7 @@ const MortgageCalculator = () => {
               <span>${payment.hoa.toFixed(2)}</span>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span className="font-medium">Loan Amount:</span>
@@ -383,13 +382,13 @@ const SellerProceedsCalculator = () => {
   const [closingCosts, setClosingCosts] = useState(5000);
   const [repairs, setRepairs] = useState(0);
   const [otherFees, setOtherFees] = useState(0);
-  
+
   // Calculate proceeds
   const calculateProceeds = () => {
     const commissionAmount = (salePrice * agentCommission) / 100;
     const totalCosts = commissionAmount + closingCosts + repairs + otherFees + mortgageBalance;
     const netProceeds = salePrice - totalCosts;
-    
+
     return {
       commissionAmount,
       totalCosts,
@@ -400,27 +399,27 @@ const SellerProceedsCalculator = () => {
   const handleSalePriceChange = (value: number) => {
     setSalePrice(value);
   };
-  
+
   const handleSalePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value.replace(/,/g, ''));
     if (!isNaN(value)) {
       setSalePrice(value);
     }
   };
-  
+
   const handleAgentCommissionChange = (value: number) => {
     setAgentCommission(value);
   };
-  
+
   const handleAgentCommissionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0) {
       setAgentCommission(value);
     }
   };
-  
+
   const proceeds = calculateProceeds();
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
@@ -456,7 +455,7 @@ const SellerProceedsCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Remaining Mortgage Balance
@@ -471,7 +470,7 @@ const SellerProceedsCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Agent Commission
@@ -498,7 +497,7 @@ const SellerProceedsCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Closing Costs
@@ -513,7 +512,7 @@ const SellerProceedsCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Repair Costs
@@ -528,7 +527,7 @@ const SellerProceedsCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Other Fees
@@ -545,7 +544,7 @@ const SellerProceedsCalculator = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Seller Proceeds</CardTitle>
@@ -563,7 +562,7 @@ const SellerProceedsCalculator = () => {
               ${proceeds.netProceeds.toLocaleString()}
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">Sale Price:</span>
@@ -590,7 +589,7 @@ const SellerProceedsCalculator = () => {
               <span>- ${otherFees.toLocaleString()}</span>
             </div>
           </div>
-          
+
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
               <strong>Note:</strong> This calculation is an estimate only. Actual fees and proceeds may vary.
@@ -615,39 +614,39 @@ const RentalIncomeCalculator = () => {
   const [maintenance, setMaintenance] = useState(2400);
   const [propertyManagement, setPropertyManagement] = useState(10);
   const [utilities, setUtilities] = useState(0);
-  
+
   // Calculate rental income
   const calculateRentalIncome = () => {
     const effectiveRent = monthlyRent * (1 - vacancyRate / 100);
-    
+
     // Calculate mortgage payment
     const principal = purchasePrice - downPayment;
     const monthlyInterest = interestRate / 100 / 12;
     const numberOfPayments = loanTerm * 12;
-    
+
     const monthlyPrincipalAndInterest = (principal > 0 && monthlyInterest > 0)
-      ? principal * 
-        (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) / 
+      ? principal *
+        (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) /
         (Math.pow(1 + monthlyInterest, numberOfPayments) - 1)
       : 0;
-    
+
     const monthlyPropertyTax = propertyTax / 12;
     const monthlyInsurance = insurance / 12;
     const monthlyMaintenance = maintenance / 12;
     const monthlyPropertyManagementFee = (monthlyRent * propertyManagement) / 100;
-    
-    const totalMonthlyExpenses = 
-      monthlyPrincipalAndInterest + 
-      monthlyPropertyTax + 
-      monthlyInsurance + 
-      monthlyMaintenance + 
+
+    const totalMonthlyExpenses =
+      monthlyPrincipalAndInterest +
+      monthlyPropertyTax +
+      monthlyInsurance +
+      monthlyMaintenance +
       monthlyPropertyManagementFee +
       utilities;
-    
+
     const monthlyCashFlow = effectiveRent - totalMonthlyExpenses;
     const annualCashFlow = monthlyCashFlow * 12;
     const cashOnCash = downPayment > 0 ? (annualCashFlow / downPayment) * 100 : 0;
-    
+
     return {
       effectiveRent,
       monthlyPrincipalAndInterest,
@@ -661,64 +660,64 @@ const RentalIncomeCalculator = () => {
       cashOnCash
     };
   };
-  
+
   const handlePurchasePriceChange = (value: number) => {
     setPurchasePrice(value);
   };
-  
+
   const handlePurchasePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value.replace(/,/g, ''));
     if (!isNaN(value)) {
       setPurchasePrice(value);
     }
   };
-  
+
   const handleDownPaymentChange = (value: number) => {
     setDownPayment(value);
   };
-  
+
   const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value.replace(/,/g, ''));
     if (!isNaN(value)) {
       setDownPayment(value);
     }
   };
-  
+
   const handleInterestRateChange = (value: number) => {
     setInterestRate(value);
   };
-  
+
   const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0) {
       setInterestRate(value);
     }
   };
-  
+
   const handleVacancyRateChange = (value: number) => {
     setVacancyRate(value);
   };
-  
+
   const handleVacancyRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0 && value <= 100) {
       setVacancyRate(value);
     }
   };
-  
+
   const handlePropertyManagementChange = (value: number) => {
     setPropertyManagement(value);
   };
-  
+
   const handlePropertyManagementInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 0) {
       setPropertyManagement(value);
     }
   };
-  
+
   const rentalCalc = calculateRentalIncome();
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
@@ -754,7 +753,7 @@ const RentalIncomeCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Down Payment
@@ -780,7 +779,7 @@ const RentalIncomeCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Interest Rate
@@ -807,7 +806,7 @@ const RentalIncomeCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Loan Term: {loanTerm} years
@@ -826,7 +825,7 @@ const RentalIncomeCalculator = () => {
               ))}
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Monthly Rent
@@ -841,7 +840,7 @@ const RentalIncomeCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Vacancy Rate
@@ -867,7 +866,7 @@ const RentalIncomeCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Property Tax (yearly)
@@ -882,7 +881,7 @@ const RentalIncomeCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Insurance (yearly)
@@ -897,7 +896,7 @@ const RentalIncomeCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Maintenance (yearly)
@@ -912,7 +911,7 @@ const RentalIncomeCalculator = () => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Property Management
@@ -939,7 +938,7 @@ const RentalIncomeCalculator = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium mb-1">
               Utilities (monthly)
@@ -956,7 +955,7 @@ const RentalIncomeCalculator = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Rental Income Analysis</CardTitle>
@@ -974,7 +973,7 @@ const RentalIncomeCalculator = () => {
               ${rentalCalc.monthlyCashFlow.toFixed(2)}
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">Monthly Rent:</span>
@@ -989,7 +988,7 @@ const RentalIncomeCalculator = () => {
               <span>${rentalCalc.effectiveRent.toFixed(2)}</span>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="font-bold text-lg">Monthly Expenses</h3>
             <div className="flex justify-between items-center border-b pb-2">
@@ -1021,7 +1020,7 @@ const RentalIncomeCalculator = () => {
               <span>${rentalCalc.totalMonthlyExpenses.toFixed(2)}</span>
             </div>
           </div>
-          
+
           <div className="space-y-4">
             <h3 className="font-bold text-lg">Investment Returns</h3>
             <div className="flex justify-between items-center border-b pb-2">

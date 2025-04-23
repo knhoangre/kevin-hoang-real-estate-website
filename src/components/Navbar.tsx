@@ -6,7 +6,7 @@ import { Menu, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "./Logo";
-import { 
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -32,8 +32,8 @@ const Navbar = () => {
 
   const mobileMenuVariants = {
     hidden: { opacity: 0, height: 0 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       height: "auto",
       transition: {
         duration: 0.3,
@@ -41,8 +41,8 @@ const Navbar = () => {
         staggerChildren: 0.1
       }
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       height: 0,
       transition: {
         duration: 0.3,
@@ -63,7 +63,7 @@ const Navbar = () => {
     <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b" style={{ scrollbarGutter: "stable" }}>
       <div className="container mx-auto flex justify-between items-center h-16 px-4">
         <Logo />
-        
+
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
@@ -76,77 +76,77 @@ const Navbar = () => {
                 <div className="mb-8">
                   <Logo />
                 </div>
-                
+
                 {isHomePage ? (
-                  <ScrollLink 
-                    to="about" 
-                    smooth={true} 
+                  <ScrollLink
+                    to="about"
+                    smooth={true}
                     duration={500}
                     offset={-80}
-                    className="block py-2 text-[#1a1a1a] uppercase"
+                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
                     onClick={() => document.querySelector('[data-radix-popper-content-wrapper]')?.remove()}
                   >
                     ABOUT
                   </ScrollLink>
                 ) : (
-                  <RouterLink 
-                    to="/" 
-                    className="block py-2 text-[#1a1a1a] uppercase"
+                  <RouterLink
+                    to="/"
+                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
                   >
                     ABOUT
                   </RouterLink>
                 )}
-                
-                <RouterLink 
-                  to="/buyer" 
-                  className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}
+
+                <RouterLink
+                  to="/buyer"
+                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}
                 >
                   BUYER
                 </RouterLink>
-                
-                <RouterLink 
-                  to="/seller" 
-                  className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/seller' ? 'font-semibold' : ''}`}
+
+                <RouterLink
+                  to="/seller"
+                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/seller' ? 'font-semibold' : ''}`}
                 >
                   SELLER
                 </RouterLink>
-                
-                <RouterLink 
-                  to="/neighborhoods" 
-                  className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
+
+                <RouterLink
+                  to="/neighborhoods"
+                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
                 >
                   NEIGHBORHOODS
                 </RouterLink>
-                
-                <RouterLink 
-                  to="/blog" 
-                  className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/blog' ? 'font-semibold' : ''}`}
+
+                <RouterLink
+                  to="/blog"
+                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/blog' ? 'font-semibold' : ''}`}
                 >
                   BLOG
                 </RouterLink>
-                
-                <RouterLink 
-                  to="/faq" 
-                  className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/faq' ? 'font-semibold' : ''}`}
+
+                <RouterLink
+                  to="/faq"
+                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/faq' ? 'font-semibold' : ''}`}
                 >
                   FAQ
                 </RouterLink>
-                
+
                 {isHomePage ? (
-                  <ScrollLink 
-                    to="contact" 
-                    smooth={true} 
+                  <ScrollLink
+                    to="contact"
+                    smooth={true}
                     duration={500}
                     offset={-80}
-                    className="block py-2 text-[#1a1a1a] uppercase"
+                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
                     onClick={() => document.querySelector('[data-radix-popper-content-wrapper]')?.remove()}
                   >
                     CONTACT
                   </ScrollLink>
                 ) : (
-                  <RouterLink 
-                    to="/contact" 
-                    className="block py-2 text-[#1a1a1a] uppercase"
+                  <RouterLink
+                    to="/contact"
+                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
                   >
                     CONTACT
                   </RouterLink>
@@ -155,7 +155,7 @@ const Navbar = () => {
                 {user ? (
                   <div className="flex items-center py-2 justify-between">
                     <UserAvatar />
-                    <button 
+                    <button
                       onClick={() => signOut()}
                       className="text-sm text-gray-600"
                     >
@@ -163,9 +163,9 @@ const Navbar = () => {
                     </button>
                   </div>
                 ) : (
-                  <RouterLink 
-                    to="/auth" 
-                    className={`block py-2 text-[#1a1a1a] uppercase ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
+                  <RouterLink
+                    to="/auth"
+                    className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
                   >
                     LOGIN
                   </RouterLink>
@@ -174,7 +174,7 @@ const Navbar = () => {
             </SheetContent>
           </Sheet>
         </div>
-        
+
         <div className="hidden md:flex space-x-5 items-center text-xs">
           {isHomePage ? (
             <>
@@ -183,7 +183,7 @@ const Navbar = () => {
                 smooth={true}
                 duration={500}
                 offset={-80}
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   ABOUT
@@ -192,14 +192,14 @@ const Navbar = () => {
               </ScrollLink>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
@@ -210,14 +210,14 @@ const Navbar = () => {
               </DropdownMenu>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
@@ -229,7 +229,7 @@ const Navbar = () => {
 
               <RouterLink
                 to="/neighborhoods"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   NEIGHBORHOODS
@@ -238,14 +238,14 @@ const Navbar = () => {
               </RouterLink>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal">
+                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
                   </DropdownMenuItem>
@@ -254,9 +254,9 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
-              <RouterLink 
-                to="/contact" 
+
+              <RouterLink
+                to="/contact"
                 className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
@@ -270,8 +270,8 @@ const Navbar = () => {
                   <UserAvatar />
                 </RouterLink>
               ) : (
-                <RouterLink 
-                  to="/auth" 
+                <RouterLink
+                  to="/auth"
                   className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
                 >
                   <span className="relative">
@@ -285,7 +285,7 @@ const Navbar = () => {
             <>
               <RouterLink
                 to="/"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px]"
+                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
               >
                 <span className="relative">
                   ABOUT
@@ -294,14 +294,14 @@ const Navbar = () => {
               </RouterLink>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     BUYER
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
                   </DropdownMenuItem>
@@ -312,14 +312,14 @@ const Navbar = () => {
               </DropdownMenu>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     SELLER
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
                   </DropdownMenuItem>
@@ -329,9 +329,9 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <RouterLink 
-                to="/neighborhoods" 
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-[11px] ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
+              <RouterLink
+                to="/neighborhoods"
+                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
               >
                 <span className="relative">
                   NEIGHBORHOODS
@@ -340,14 +340,14 @@ const Navbar = () => {
               </RouterLink>
 
               <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-[11px] font-normal ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
+                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
                   <span className="relative flex items-center">
                     RESOURCES
                     <ChevronDown size={16} className="ml-1" />
                     <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center">
+                <DropdownMenuContent align="center" className="overflow-y-auto">
                   <DropdownMenuItem asChild>
                     <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
                   </DropdownMenuItem>
@@ -357,8 +357,8 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <RouterLink 
-                to="/contact" 
+              <RouterLink
+                to="/contact"
                 className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/contact' ? 'font-semibold' : ''}`}
               >
                 <span className="relative">
@@ -372,8 +372,8 @@ const Navbar = () => {
                   <UserAvatar />
                 </RouterLink>
               ) : (
-                <RouterLink 
-                  to="/auth" 
+                <RouterLink
+                  to="/auth"
                   className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
                 >
                   <span className="relative">
