@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Form,
   FormControl,
@@ -56,16 +57,76 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const { data: firstNameData, error: firstNameError } = await supabase
+        .from('contact_first_names')
+        .insert({ first_name: data.firstName })
+        .select()
+        .single();
+      if (firstNameError) throw firstNameError;
+
+      const { data: lastNameData, error: lastNameError } = await supabase
+        .from('contact_last_names')
+        .insert({ last_name: data.lastName })
+        .select()
+        .single();
+      if (lastNameError) throw lastNameError;
+
+      const { data: emailData, error: emailError } = await supabase
+        .from('contact_emails')
+        .insert({ email: data.email })
+        .select()
+        .single();
+      if (emailError) throw emailError;
+
+      const { data: phoneData, error: phoneError } = await supabase
+        .from('contact_phones')
+        .insert({ phone: data.phone })
+        .select()
+        .single();
+      if (phoneError) throw phoneError;
+
+      const { error: messageError } = await supabase
+        .from('contact_messages')
+        .insert({
+          first_name_id: firstNameData.id,
+          last_name_id: lastNameData.id,
+          email_id: emailData.id,
+          phone_id: phoneData.id,
+          message: data.message
+        });
+      if (messageError) throw messageError;
+
+      const response = await supabase.functions.invoke('submit-contact', {
+        body: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          message: data.message
+        }
+      });
+
+      if (response.error) throw response.error;
+
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll respond shortly.",
       });
+      
       form.reset();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem sending your message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   const formatPhoneNumber = (value: string) => {

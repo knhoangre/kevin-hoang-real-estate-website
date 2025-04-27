@@ -9,7 +9,137 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contact_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      contact_first_names: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      contact_last_names: {
+        Row: {
+          created_at: string
+          id: string
+          last_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_name?: string
+        }
+        Relationships: []
+      }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email_id: string
+          first_name_id: string
+          id: string
+          last_name_id: string
+          message: string
+          phone_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_id: string
+          first_name_id: string
+          id?: string
+          last_name_id: string
+          message: string
+          phone_id: string
+        }
+        Update: {
+          created_at?: string
+          email_id?: string
+          first_name_id?: string
+          id?: string
+          last_name_id?: string
+          message?: string
+          phone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_messages_email_id_fkey"
+            columns: ["email_id"]
+            isOneToOne: false
+            referencedRelation: "contact_emails"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_messages_first_name_id_fkey"
+            columns: ["first_name_id"]
+            isOneToOne: false
+            referencedRelation: "contact_first_names"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_messages_last_name_id_fkey"
+            columns: ["last_name_id"]
+            isOneToOne: false
+            referencedRelation: "contact_last_names"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_messages_phone_id_fkey"
+            columns: ["phone_id"]
+            isOneToOne: false
+            referencedRelation: "contact_phones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_phones: {
+        Row: {
+          created_at: string
+          id: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
