@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/form";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email format"),
   phone: z
     .string()
@@ -29,11 +30,26 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phoneDropdown, setPhoneDropdown] = useState(false);
   const { toast } = useToast();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setPhoneDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       phone: "",
       message: "",
@@ -67,11 +83,13 @@ const Contact = () => {
             <h2 className="text-4xl font-bold text-[#1a1a1a] uppercase">Contact Information</h2>
             <div className="space-y-6">
               <div className="flex items-center space-x-4 w-fit group relative"
-                   onMouseEnter={() => setPhoneDropdown(true)}
-                   onMouseLeave={() => setPhoneDropdown(false)}
+                   ref={dropdownRef}
               >
                 <Phone className="h-5 w-5 text-[#1a1a1a]" />
-                <span className="text-[#1a1a1a] uppercase relative cursor-pointer select-all">
+                <span
+                  className="text-[#1a1a1a] uppercase relative cursor-pointer select-all"
+                  onClick={() => setPhoneDropdown(!phoneDropdown)}
+                >
                   (860) 682-2251
                   <span
                     className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2"
@@ -116,18 +134,33 @@ const Contact = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input placeholder="NAME" className="uppercase" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="FIRST NAME" className="uppercase" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input placeholder="LAST NAME" className="uppercase" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

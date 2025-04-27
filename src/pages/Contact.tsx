@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Clock, Send, ArrowRight } from 'lucide-react';
@@ -39,6 +39,37 @@ const Contact = () => {
     },
   });
 
+  // Add state for dropdown visibility
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Add event listeners for ESC key and clicks outside
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false);
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const dropdown = document.getElementById('phone-dropdown');
+      const phoneButton = document.getElementById('phone-button');
+
+      if (dropdown && phoneButton &&
+          !dropdown.contains(event.target as Node) &&
+          !phoneButton.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const formatPhoneNumber = (input: string) => {
     const numbers = input.replace(/\D/g, "");
     if (numbers.length <= 3) return numbers;
@@ -59,9 +90,9 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      
-      <div className="pt-24 pb-16">
-        <div className="container mx-auto px-4">
+
+      <div className="pt-16">
+        <div className="container mx-auto px-4 py-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -87,111 +118,97 @@ const Contact = () => {
                     <h2 className="text-2xl font-semibold text-white uppercase">Contact Information</h2>
                   </div>
                 </div>
-                
+
                 <div className="p-6 space-y-6">
-                  <div className="flex items-start group">
-                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Mail className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">EMAIL</h3>
-                      <a href="mailto:kevin@kevinhoang.com"
-                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
-                        style={{ borderBottom: "none" }}
-                      >
-                        <span className="relative">
-                          kevin@kevinhoang.com
-                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                        </span>
-                      </a>
-                    </div>
-                  </div>
-                  
                   <div
-                    className="flex items-start group relative"
-                    onMouseEnter={e => {
-                      const id = setTimeout(() => {
-                        (e.currentTarget as HTMLDivElement).setAttribute("data-dropdown", "true");
-                      }, 80);
-                      (e.currentTarget as any)._timeout = id;
-                    }}
-                    onMouseLeave={e => {
-                      clearTimeout((e.currentTarget as any)._timeout);
-                      (e.currentTarget as HTMLDivElement).removeAttribute("data-dropdown");
-                    }}
+                    className="flex items-start relative"
                   >
-                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Phone className="w-5 h-5 text-green-600" />
+                    <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Phone className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
                     <div>
                       <h3 className="font-medium text-[#1a1a1a] uppercase">PHONE</h3>
-                      <a href="tel:6175551234"
-                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
-                        style={{ borderBottom: "none", position: "relative" }}
-                      >
-                        <span className="relative select-all">
-                          (617) 555-1234
-                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                        </span>
-                      </a>
-                      {(typeof window !== "undefined" && (document.querySelector('[data-dropdown="true"]'))) && (
-                        <div className="absolute left-1/2 top-8 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300">
+                      <div className="relative">
+                        <button
+                          id="phone-button"
+                          onClick={() => setDropdownOpen(!dropdownOpen)}
+                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
+                        >
+                          <span className="relative select-all">
+                            (860) 682-2251
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                          </span>
+                        </button>
+                        <div
+                          id="phone-dropdown"
+                          className={`absolute left-1/2 top-8 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300 ${dropdownOpen ? '' : 'hidden'}`}
+                        >
                           <div className="flex flex-col items-center py-2">
-                            <a href="tel:6175551234" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
-                            <a href="sms:6175551234" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                            <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
+                            <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start group">
-                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-green-600" />
+                    <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Mail className="w-5 h-5 text-[#1a1a1a]" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">EMAIL</h3>
+                      <div className="relative">
+                        <button
+                          onClick={() => window.location.href = "mailto:knhoangre@gmail.com"}
+                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
+                        >
+                          <span className="relative select-all">
+                            KNHOANGRE@GMAIL.COM
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start group">
+                    <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
                     <div>
                       <h3 className="font-medium text-[#1a1a1a] uppercase">OFFICE</h3>
-                      <a
-                        href="https://maps.google.com/?q=123+Beacon+Street,+Boston,+MA+02116"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative group-hover:underline transition-all duration-300 text-gray-600 hover:text-[#1a1a1a]"
-                        style={{ borderBottom: "none" }}
-                      >
-                        <span className="relative">
-                          123 Beacon Street, Boston, MA 02116
-                          <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                        </span>
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <div className="bg-green-50 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Clock className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">HOURS</h3>
-                      <p className="text-gray-600">Monday - Friday: 9am - 6pm</p>
-                      <p className="text-gray-600">Weekends: By appointment</p>
+                      <div className="relative">
+                        <button
+                          onClick={() => window.open("https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494", "_blank")}
+                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
+                        >
+                          <span className="relative select-all">
+                            150 WEST ST, NEEDHAM, MA 02494
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                          </span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative">
-                <div className="absolute top-0 left-0 right-0 h-4 shadow-lg shadow-black/25 rounded-t-xl z-10 pointer-events-none" style={{ filter: "blur(2px)", opacity: 0.9 }} />
-                <div className="p-6">
+              <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative border border-gray-100">
+                <div className="p-6 bg-gray-50/50">
                   <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">Send a Message</h2>
-                  
+
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -199,34 +216,39 @@ const Contact = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="First Name" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                                <Input placeholder="FIRST NAME" className="uppercase" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="Last Name" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                                <Input placeholder="LAST NAME" className="uppercase" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                      
+
                       <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input type="email" placeholder="Email" className="border-gray-300 focus:ring-green-500 focus:border-green-500" {...field} />
+                              <Input
+                                type="email"
+                                placeholder="EMAIL"
+                                className="uppercase"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -236,16 +258,15 @@ const Contact = () => {
                       <FormField
                         control={form.control}
                         name="phone"
-                        render={({ field: { onChange, value, ...rest } }) => (
+                        render={({ field: { onChange, ...rest } }) => (
                           <FormItem>
                             <FormControl>
                               <Input
-                                type="tel"
-                                placeholder="Phone (optional)"
-                                className="border-gray-300 focus:ring-green-500 focus:border-green-500"
-                                value={value}
-                                onChange={e => {
+                                placeholder="PHONE NUMBER (XXX-XXX-XXXX)"
+                                className="uppercase"
+                                onChange={(e) => {
                                   const formatted = formatPhoneNumber(e.target.value);
+                                  e.target.value = formatted;
                                   onChange(formatted);
                                 }}
                                 maxLength={12}
@@ -256,32 +277,28 @@ const Contact = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="message"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Your message" 
-                                rows={4} 
-                                className="border-gray-300 focus:ring-green-500 focus:border-green-500"
-                                {...field} 
-                              />
+                              <Textarea placeholder="MESSAGE" className="h-32 uppercase" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
-                      <button 
-                        type="submit" 
-                        className="w-full bg-[#1a1a1a] text-white py-3 px-6 rounded-md hover:bg-black transition-colors font-medium flex items-center justify-center group"
+
+                      <button
+                        className="w-full bg-[#1a1a1a] text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
                         disabled={form.formState.isSubmitting}
+                        type="submit"
                       >
-                        <span>SEND MESSAGE</span>
-                        <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                        <span className="group-hover:-translate-x-2 transition-transform duration-300">SEND MESSAGE</span>
+                        <ArrowRight className="ml-2 h-4 w-4 transform opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                        <span className="absolute bottom-0 left-0 w-0 h-1 bg-white group-hover:w-full transition-all duration-700"></span>
                       </button>
                     </form>
                   </Form>

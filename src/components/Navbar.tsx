@@ -1,34 +1,25 @@
-import { Link as ScrollLink } from "react-scroll";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserAvatar } from "./UserAvatar";
-import { Menu, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "./Logo";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isHomePage = location.pathname === "/";
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    if (isHomePage) {
-      window.scrollTo(0, 0);
-    }
-  }, [isHomePage]);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const mobileMenuVariants = {
     hidden: { opacity: 0, height: 0 },
@@ -59,333 +50,268 @@ const Navbar = () => {
     exit: { opacity: 0, y: -10 }
   };
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b" style={{ scrollbarGutter: "stable" }}>
-      <div className="container mx-auto flex justify-between items-center h-16 px-4">
-        <Logo />
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white shadow-md" : "bg-transparent"
+      }`}
+    >
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-20">
+          <RouterLink to="/" className="relative z-10">
+            <Logo className="h-12 w-auto" />
+          </RouterLink>
 
-        <div className="md:hidden">
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="p-2" aria-label="Toggle menu">
-                <Menu size={24} />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0">
-              <div className="p-6 space-y-4">
-                <div className="mb-8">
-                  <Logo />
-                </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <button
+              onClick={() => handleNavigation('/buyer')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/buyer' ? 'font-bold' : ''
+              }`}
+            >
+              BUYER
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/buyer' ? 'w-full' : ''
+                }`}
+              />
+            </button>
 
-                {isHomePage ? (
-                  <ScrollLink
-                    to="about"
-                    smooth={true}
-                    duration={500}
-                    offset={-80}
-                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
-                    onClick={() => document.querySelector('[data-radix-popper-content-wrapper]')?.remove()}
-                  >
-                    ABOUT
-                  </ScrollLink>
-                ) : (
-                  <RouterLink
-                    to="/"
-                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
-                  >
-                    ABOUT
-                  </RouterLink>
-                )}
+            <button
+              onClick={() => handleNavigation('/seller')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/seller' ? 'font-bold' : ''
+              }`}
+            >
+              SELLER
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/seller' ? 'w-full' : ''
+                }`}
+              />
+            </button>
 
-                <RouterLink
-                  to="/buyer"
-                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}
+            <button
+              onClick={() => handleNavigation('/neighborhoods')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/neighborhoods' ? 'font-bold' : ''
+              }`}
+            >
+              NEIGHBORHOODS
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/neighborhoods' ? 'w-full' : ''
+                }`}
+              />
+            </button>
+
+            <button
+              onClick={() => handleNavigation('/blog')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/blog' ? 'font-bold' : ''
+              }`}
+            >
+              BLOG
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/blog' ? 'w-full' : ''
+                }`}
+              />
+            </button>
+
+            <button
+              onClick={() => handleNavigation('/faq')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/faq' ? 'font-bold' : ''
+              }`}
+            >
+              FAQ
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/faq' ? 'w-full' : ''
+                }`}
+              />
+            </button>
+
+            <button
+              onClick={() => handleNavigation('/contact')}
+              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                location.pathname === '/contact' ? 'font-bold' : ''
+              }`}
+            >
+              CONTACT
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/contact' ? 'w-full' : ''
+                }`}
+              />
+            </button>
+
+            {user ? (
+              <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
+                <UserAvatar />
+              </RouterLink>
+            ) : (
+              <RouterLink
+                to="/auth"
+                className="text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group"
+              >
+                LOGIN
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+              </RouterLink>
+            )}
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="relative z-10 p-2"
+              aria-label="Toggle menu"
+            >
+              <div className="w-6 h-5 relative">
+                <span
+                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ${
+                    mobileMenuOpen ? "rotate-45 top-2" : "rotate-0 top-0"
+                  }`}
+                />
+                <span
+                  className={`absolute h-0.5 w-6 bg-black top-2 transition-all duration-300 ${
+                    mobileMenuOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                />
+                <span
+                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ${
+                    mobileMenuOpen ? "-rotate-45 top-2" : "rotate-0 top-4"
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            className="fixed inset-0 bg-white z-40"
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={mobileMenuVariants}
+          >
+            <div className="container mx-auto px-4 pt-24 pb-8">
+              <motion.div className="flex flex-col space-y-6" variants={itemVariants}>
+                <button
+                  onClick={() => handleNavigation('/buyer')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/buyer' ? 'font-bold' : ''
+                  }`}
                 >
                   BUYER
-                </RouterLink>
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/buyer' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
-                <RouterLink
-                  to="/seller"
-                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/seller' ? 'font-semibold' : ''}`}
+                <button
+                  onClick={() => handleNavigation('/seller')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/seller' ? 'font-bold' : ''
+                  }`}
                 >
                   SELLER
-                </RouterLink>
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/seller' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
-                <RouterLink
-                  to="/neighborhoods"
-                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
+                <button
+                  onClick={() => handleNavigation('/neighborhoods')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/neighborhoods' ? 'font-bold' : ''
+                  }`}
                 >
                   NEIGHBORHOODS
-                </RouterLink>
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/neighborhoods' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
-                <RouterLink
-                  to="/blog"
-                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/blog' ? 'font-semibold' : ''}`}
+                <button
+                  onClick={() => handleNavigation('/blog')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/blog' ? 'font-bold' : ''
+                  }`}
                 >
                   BLOG
-                </RouterLink>
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/blog' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
-                <RouterLink
-                  to="/faq"
-                  className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/faq' ? 'font-semibold' : ''}`}
+                <button
+                  onClick={() => handleNavigation('/faq')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/faq' ? 'font-bold' : ''
+                  }`}
                 >
                   FAQ
-                </RouterLink>
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/faq' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
-                {isHomePage ? (
-                  <ScrollLink
-                    to="contact"
-                    smooth={true}
-                    duration={500}
-                    offset={-80}
-                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
-                    onClick={() => document.querySelector('[data-radix-popper-content-wrapper]')?.remove()}
-                  >
-                    CONTACT
-                  </ScrollLink>
-                ) : (
-                  <RouterLink
-                    to="/contact"
-                    className="block py-2 text-[#1a1a1a] uppercase text-xs"
-                  >
-                    CONTACT
-                  </RouterLink>
-                )}
+                <button
+                  onClick={() => handleNavigation('/contact')}
+                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                    location.pathname === '/contact' ? 'font-bold' : ''
+                  }`}
+                >
+                  CONTACT
+                  <span
+                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                      location.pathname === '/contact' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
 
                 {user ? (
-                  <div className="flex items-center py-2 justify-between">
+                  <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
                     <UserAvatar />
-                    <button
-                      onClick={() => signOut()}
-                      className="text-sm text-gray-600"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
+                  </RouterLink>
                 ) : (
                   <RouterLink
                     to="/auth"
-                    className={`block py-2 text-[#1a1a1a] uppercase text-xs ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
+                    className="text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group"
                   >
                     LOGIN
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </RouterLink>
                 )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-
-        <div className="hidden md:flex space-x-5 items-center text-xs">
-          {isHomePage ? (
-            <>
-              <ScrollLink
-                to="about"
-                smooth={true}
-                duration={500}
-                offset={-80}
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
-              >
-                <span className="relative">
-                  ABOUT
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </ScrollLink>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
-                  <span className="relative flex items-center">
-                    BUYER
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full uppercase text-xs">FIRST-TIME BUYER GUIDE</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
-                  <span className="relative flex items-center">
-                    SELLER
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase text-xs">SELLING TIPS</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <RouterLink
-                to="/neighborhoods"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
-              >
-                <span className="relative">
-                  NEIGHBORHOODS
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </RouterLink>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal">
-                  <span className="relative flex items-center">
-                    RESOURCES
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/faq" className="w-full uppercase text-xs">FAQ</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <RouterLink
-                to="/contact"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
-              >
-                <span className="relative">
-                  CONTACT
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </RouterLink>
-
-              {user ? (
-                <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
-                  <UserAvatar />
-                </RouterLink>
-              ) : (
-                <RouterLink
-                  to="/auth"
-                  className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
-                >
-                  <span className="relative">
-                    LOGIN
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </RouterLink>
-              )}
-            </>
-          ) : (
-            <>
-              <RouterLink
-                to="/"
-                className="text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs"
-              >
-                <span className="relative">
-                  ABOUT
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </RouterLink>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/buyer' ? 'font-semibold' : ''}`}>
-                  <span className="relative flex items-center">
-                    BUYER
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/buyer" className="w-full uppercase text-xs">BUYER RESOURCES</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/first-time-buyers" className="w-full uppercase text-xs">FIRST-TIME BUYER GUIDE</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/seller' ? 'font-semibold' : ''}`}>
-                  <span className="relative flex items-center">
-                    SELLER
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/seller" className="w-full uppercase text-xs">SELLER RESOURCES</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/blog?category=selling-tips" className="w-full uppercase text-xs">SELLING TIPS</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <RouterLink
-                to="/neighborhoods"
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/neighborhoods' ? 'font-semibold' : ''}`}
-              >
-                <span className="relative">
-                  NEIGHBORHOODS
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </RouterLink>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase flex items-center text-xs font-normal ${location.pathname === '/blog' || location.pathname === '/faq' ? 'font-semibold' : ''}`}>
-                  <span className="relative flex items-center">
-                    RESOURCES
-                    <ChevronDown size={16} className="ml-1" />
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="overflow-y-auto">
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/blog" className="w-full uppercase text-xs">BLOG</RouterLink>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <RouterLink to="/faq" className="w-full uppercase text-xs">FAQ</RouterLink>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <RouterLink
-                to="/contact"
-                className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase text-xs ${location.pathname === '/contact' ? 'font-semibold' : ''}`}
-              >
-                <span className="relative">
-                  CONTACT
-                  <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </span>
-              </RouterLink>
-
-              {user ? (
-                <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
-                  <UserAvatar />
-                </RouterLink>
-              ) : (
-                <RouterLink
-                  to="/auth"
-                  className={`text-[#1a1a1a] hover:text-[#1a1a1a] relative group uppercase ${location.pathname === '/auth' ? 'font-semibold' : ''}`}
-                >
-                  <span className="relative">
-                    LOGIN
-                    <span className="absolute -bottom-[6px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </RouterLink>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
