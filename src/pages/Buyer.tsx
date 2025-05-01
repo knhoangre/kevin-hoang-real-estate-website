@@ -9,7 +9,10 @@ const Buyer = () => {
       <Navbar />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-12">BUYER'S GUIDE</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">BUYER'S GUIDE</h1>
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
+            Your comprehensive resource for navigating the home buying process in Greater Boston, from pre-approval to closing.
+          </p>
           <Element name="roadmap">
             <BuyerRoadmap />
           </Element>

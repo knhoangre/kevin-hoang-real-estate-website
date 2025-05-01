@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <section className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      <div 
+      <div
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: "url('https://images.unsplash.com/photo-1487958449943-2429e8be8625')",
@@ -15,7 +15,7 @@ const Hero = () => {
       >
         <div className="absolute inset-0 bg-[#1a1a1a]/70" />
       </div>
-      
+
       <div className="container relative z-10 px-4 py-32 text-center text-white">
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
           ELEVATING BOSTON'S REAL ESTATE EXPERIENCE

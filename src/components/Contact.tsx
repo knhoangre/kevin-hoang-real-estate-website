@@ -60,68 +60,50 @@ const Contact = () => {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      const { data: firstNameData, error: firstNameError } = await supabase
-        .from('contact_first_names')
-        .insert({ first_name: data.firstName })
-        .select()
-        .single();
-      if (firstNameError) throw firstNameError;
+      // Format phone number if provided
+      let formattedPhone = data.phone;
+      if (formattedPhone) {
+        // Remove any non-digit characters
+        const numbers = formattedPhone.replace(/\D/g, "");
+        // Format as XXX-XXX-XXXX
+        if (numbers.length === 10) {
+          formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+        }
+      }
 
-      const { data: lastNameData, error: lastNameError } = await supabase
-        .from('contact_last_names')
-        .insert({ last_name: data.lastName })
-        .select()
-        .single();
-      if (lastNameError) throw lastNameError;
-
-      const { data: emailData, error: emailError } = await supabase
-        .from('contact_emails')
-        .insert({ email: data.email })
-        .select()
-        .single();
-      if (emailError) throw emailError;
-
-      const { data: phoneData, error: phoneError } = await supabase
-        .from('contact_phones')
-        .insert({ phone: data.phone })
-        .select()
-        .single();
-      if (phoneError) throw phoneError;
-
-      const { error: messageError } = await supabase
-        .from('contact_messages')
-        .insert({
-          first_name_id: firstNameData.id,
-          last_name_id: lastNameData.id,
-          email_id: emailData.id,
-          phone_id: phoneData.id,
-          message: data.message
-        });
-      if (messageError) throw messageError;
-
-      const response = await supabase.functions.invoke('submit-contact', {
-        body: {
+      // Send the form data directly to the Edge Function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
-          phone: data.phone,
+          phone: formattedPhone,
           message: data.message
-        }
+        }),
       });
 
-      if (response.error) throw response.error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server response:', errorData);
+        throw new Error(errorData.error || 'Failed to submit form');
+      }
 
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll respond shortly.",
       });
-      
+
       form.reset();
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
         title: "Error",
-        description: "There was a problem sending your message. Please try again.",
+        description: error instanceof Error ? error.message : "There was a problem sending your message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -202,7 +184,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="FIRST NAME" className="uppercase" {...field} />
+                        <Input placeholder="First Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -215,7 +197,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="LAST NAME" className="uppercase" {...field} />
+                        <Input placeholder="Last Name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -231,8 +213,7 @@ const Contact = () => {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="EMAIL"
-                        className="uppercase"
+                        placeholder="Email"
                         {...field}
                       />
                     </FormControl>
@@ -248,8 +229,7 @@ const Contact = () => {
                   <FormItem>
                     <FormControl>
                       <Input
-                        placeholder="PHONE NUMBER (XXX-XXX-XXXX)"
-                        className="uppercase"
+                        placeholder="Phone Number (XXX-XXX-XXXX)"
                         onChange={(e) => {
                           const formatted = formatPhoneNumber(e.target.value);
                           e.target.value = formatted;
@@ -270,7 +250,7 @@ const Contact = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea placeholder="MESSAGE" className="h-32 uppercase" {...field} />
+                      <Textarea placeholder="Message" className="h-32" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

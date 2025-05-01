@@ -1,17 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createClient, User, Session } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://zvipgykolpoxukyjgffx.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2aXBneWtvbHBveHVreWpnZmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTQwMDQ4NzIsImV4cCI6MjAyOTU4MDg3Mn0.jpHt9I0DKjgpU8EjbXIhEStHYH0hl4O1VPNQZtG9cCg';
-
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-});
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 type AuthContextType = {
   user: User | null;
@@ -22,6 +11,8 @@ type AuthContextType = {
   signInWithGoogle: () => Promise<any>;
   signUp: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<any>;
+  refreshUser: () => Promise<void>;
+  updateAvatarUrl: (url: string) => Promise<void>;
   loading: boolean;
 };
 
@@ -34,13 +25,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [avatarInitials, setAvatarInitials] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to refresh user data
+  const refreshUser = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setUser(data.session.user);
+        updateUserAvatar(data.session.user);
+      }
+    } catch (error) {
+      console.error("Error refreshing user:", error);
+    }
+  };
+
+  // Function to update the user's avatar URL
+  const updateAvatarUrl = async (url: string) => {
+    if (!user) return;
+
+    try {
+      // Update the user's metadata with the new avatar URL
+      const { error } = await supabase.auth.updateUser({
+        data: { avatar_url: url }
+      });
+
+      if (error) throw error;
+
+      // Update the local state
+      setAvatarUrl(url);
+      setAvatarInitials(null);
+
+      // Refresh the user data to ensure everything is in sync
+      await refreshUser();
+    } catch (error) {
+      console.error("Error updating avatar URL:", error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.user_metadata);
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
           // Use timeout to prevent potential deadlocks
           setTimeout(() => {
@@ -54,15 +83,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        updateUserAvatar(session.user);
+    const initializeAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+
+        if (data.session?.user) {
+          updateUserAvatar(data.session.user);
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -74,11 +111,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAvatarInitials(null);
       return;
     }
-    
+
+    // Check if user has a custom avatar URL
+    if (user.user_metadata?.avatar_url) {
+      setAvatarUrl(user.user_metadata.avatar_url);
+      setAvatarInitials(null);
+      return;
+    }
+
     // Otherwise generate initials from user metadata or email
     const firstName = user.user_metadata?.first_name || '';
     const lastName = user.user_metadata?.last_name || '';
-    
+
     if (firstName && lastName) {
       setAvatarInitials(`${firstName.charAt(0)}${lastName.charAt(0)}`);
     } else {
@@ -91,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAvatarInitials('U'); // Default if no email
       }
     }
-    
+
     setAvatarUrl(null);
   };
 
@@ -109,8 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    return supabase.auth.signUp({ 
-      email, 
+    return supabase.auth.signUp({
+      email,
       password,
       options: {
         emailRedirectTo: window.location.origin,
@@ -131,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signUp,
     signOut,
+    refreshUser,
+    updateAvatarUrl,
     loading,
   };
 
@@ -144,5 +190,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-export { supabase };

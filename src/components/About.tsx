@@ -19,7 +19,7 @@ const About = () => {
           <div className="relative">
             <div className="aspect-square bg-[#1a1a1a]/10 rounded-2xl overflow-hidden">
               <img
-                src="/public/kevin_hoang.jpg"
+                src="/kevin_hoang.jpg"
                 alt="Kevin Hoang - Boston Real Estate Agent"
                 className="w-full h-full object-cover object-top scale-125"
               />

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import { blogPosts } from "@/data/blogData";
 import { ArrowRight } from "lucide-react";
 
@@ -38,16 +37,18 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-12">
-            REAL ESTATE INSIGHTS
+          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">
+            BLOG
           </h1>
-          
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
+            Stay informed with the latest insights, market trends, and expert advice on real estate in the Greater Boston area.
+          </p>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...blogPosts, ...additionalPosts].map((post) => (
-              <div 
+              <div
                 key={post.id}
                 className="group bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100"
               >

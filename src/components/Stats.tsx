@@ -1,4 +1,3 @@
-
 import { Home, Users, Calendar, Award } from "lucide-react";
 
 const Stats = () => {
@@ -12,8 +11,8 @@ const Stats = () => {
             <div className="flex justify-center mb-4">
               <Home className="h-8 w-8 text-realPurple" />
             </div>
-            <div className="text-3xl font-bold mb-2">150+</div>
-            <div className="text-gray-400">HOMES SOLD</div>
+            <div className="text-3xl font-bold mb-2">100%</div>
+            <div className="text-gray-400">PERSONALIZED SERVICE</div>
           </div>
 
           <div className="text-center">

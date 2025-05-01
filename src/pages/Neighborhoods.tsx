@@ -58,9 +58,12 @@ const Neighborhoods = () => {
       <Navbar />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">
             NEIGHBORHOODS SERVED
           </h1>
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
+            Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes.
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {neighborhoods.map((neighborhood) => (

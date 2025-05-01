@@ -9,7 +9,10 @@ const Seller = () => {
       <Navbar />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-12">SELLER'S GUIDE</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">SELLER'S GUIDE</h1>
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
+            Everything you need to know about selling your home in Greater Boston, from preparation to maximizing your property's value.
+          </p>
           <Element name="roadmap">
             <SellerRoadmap />
           </Element>

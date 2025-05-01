@@ -1,9 +1,9 @@
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserAvatar } from "./UserAvatar";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Logo from "./Logo";
+import ProfileDropdown from "./ProfileDropdown";
 
 const Navbar = () => {
   const location = useLocation();
@@ -11,6 +11,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,6 +21,30 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Determine text color based on page and scroll position
+  const getTextColorClass = () => {
+    if (isHomePage && !isScrolled) {
+      return "text-white";
+    }
+    return "text-black";
+  };
+
+  // Determine hover color based on page and scroll position
+  const getHoverColorClass = () => {
+    if (isHomePage && !isScrolled) {
+      return "hover:text-gray-200";
+    }
+    return "hover:text-gray-600";
+  };
+
+  // Determine underline color based on page and scroll position
+  const getUnderlineColorClass = () => {
+    if (isHomePage && !isScrolled) {
+      return "bg-white";
+    }
+    return "bg-black";
+  };
 
   const mobileMenuVariants = {
     hidden: { opacity: 0, height: 0 },
@@ -72,13 +97,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <button
               onClick={() => handleNavigation('/buyer')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/buyer' ? 'font-bold' : ''
               }`}
             >
               BUYER
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/buyer' ? 'w-full' : ''
                 }`}
               />
@@ -86,13 +111,13 @@ const Navbar = () => {
 
             <button
               onClick={() => handleNavigation('/seller')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/seller' ? 'font-bold' : ''
               }`}
             >
               SELLER
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/seller' ? 'w-full' : ''
                 }`}
               />
@@ -100,13 +125,13 @@ const Navbar = () => {
 
             <button
               onClick={() => handleNavigation('/neighborhoods')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/neighborhoods' ? 'font-bold' : ''
               }`}
             >
               NEIGHBORHOODS
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/neighborhoods' ? 'w-full' : ''
                 }`}
               />
@@ -114,13 +139,13 @@ const Navbar = () => {
 
             <button
               onClick={() => handleNavigation('/blog')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/blog' ? 'font-bold' : ''
               }`}
             >
               BLOG
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/blog' ? 'w-full' : ''
                 }`}
               />
@@ -128,13 +153,13 @@ const Navbar = () => {
 
             <button
               onClick={() => handleNavigation('/faq')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/faq' ? 'font-bold' : ''
               }`}
             >
               FAQ
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/faq' ? 'w-full' : ''
                 }`}
               />
@@ -142,29 +167,27 @@ const Navbar = () => {
 
             <button
               onClick={() => handleNavigation('/contact')}
-              className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
                 location.pathname === '/contact' ? 'font-bold' : ''
               }`}
             >
               CONTACT
               <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/contact' ? 'w-full' : ''
                 }`}
               />
             </button>
 
             {user ? (
-              <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
-                <UserAvatar />
-              </RouterLink>
+              <ProfileDropdown />
             ) : (
               <RouterLink
                 to="/auth"
-                className="text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group"
+                className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group`}
               >
                 LOGIN
-                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                <span className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2`} />
               </RouterLink>
             )}
           </div>
@@ -178,17 +201,17 @@ const Navbar = () => {
             >
               <div className="w-6 h-5 relative">
                 <span
-                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ${
+                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} transform transition-all duration-300 ${
                     mobileMenuOpen ? "rotate-45 top-2" : "rotate-0 top-0"
                   }`}
                 />
                 <span
-                  className={`absolute h-0.5 w-6 bg-black top-2 transition-all duration-300 ${
+                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} top-2 transition-all duration-300 ${
                     mobileMenuOpen ? "opacity-0" : "opacity-100"
                   }`}
                 />
                 <span
-                  className={`absolute h-0.5 w-6 bg-black transform transition-all duration-300 ${
+                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} transform transition-all duration-300 ${
                     mobileMenuOpen ? "-rotate-45 top-2" : "rotate-0 top-4"
                   }`}
                 />
@@ -212,7 +235,7 @@ const Navbar = () => {
               <motion.div className="flex flex-col space-y-6" variants={itemVariants}>
                 <button
                   onClick={() => handleNavigation('/buyer')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/buyer' ? 'font-bold' : ''
                   }`}
                 >
@@ -226,7 +249,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/seller')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/seller' ? 'font-bold' : ''
                   }`}
                 >
@@ -240,7 +263,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/neighborhoods')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/neighborhoods' ? 'font-bold' : ''
                   }`}
                 >
@@ -254,7 +277,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/blog')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/blog' ? 'font-bold' : ''
                   }`}
                 >
@@ -268,7 +291,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/faq')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/faq' ? 'font-bold' : ''
                   }`}
                 >
@@ -282,7 +305,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/contact')}
-                  className={`text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
                     location.pathname === '/contact' ? 'font-bold' : ''
                   }`}
                 >
@@ -295,13 +318,11 @@ const Navbar = () => {
                 </button>
 
                 {user ? (
-                  <RouterLink to="/" onClick={() => signOut()} className="flex items-center gap-2">
-                    <UserAvatar />
-                  </RouterLink>
+                  <ProfileDropdown />
                 ) : (
                   <RouterLink
                     to="/auth"
-                    className="text-sm uppercase tracking-wider hover:text-gray-600 transition-colors relative group"
+                    className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group"
                   >
                     LOGIN
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />

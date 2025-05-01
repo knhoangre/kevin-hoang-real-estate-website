@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -77,14 +78,56 @@ const Contact = () => {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
-  const onSubmit = (data: FormValues) => {
-    setTimeout(() => {
-      toast({
-        title: 'Message sent!',
-        description: 'Thank you for contacting us. We\'ll respond shortly.',
+  const onSubmit = async (data: FormValues) => {
+    try {
+      // Format phone number if provided
+      let formattedPhone = data.phone;
+      if (formattedPhone) {
+        // Remove any non-digit characters
+        const numbers = formattedPhone.replace(/\D/g, "");
+        // Format as XXX-XXX-XXXX
+        if (numbers.length === 10) {
+          formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+        }
+      }
+
+      // Send the form data to the Edge Function
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: formattedPhone,
+          message: data.message
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Server response:', errorData);
+        throw new Error(errorData.error || 'Failed to submit form');
+      }
+
+      toast({
+        title: "Message sent!",
+        description: "Thank you for contacting us. We'll respond shortly.",
+      });
+
+      // Reset form
       form.reset();
-    }, 1000);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -97,10 +140,10 @@ const Contact = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            className="text-left mb-12"
           >
             <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">GET IN TOUCH</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl">
               Let's discuss your real estate goals. Whether you're looking to buy, sell, or just have questions about the Boston market, I'm here to help.
             </p>
           </motion.div>
@@ -216,7 +259,7 @@ const Contact = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="FIRST NAME" className="uppercase" {...field} />
+                                <Input placeholder="First Name" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -229,7 +272,7 @@ const Contact = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="LAST NAME" className="uppercase" {...field} />
+                                <Input placeholder="Last Name" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -245,8 +288,7 @@ const Contact = () => {
                             <FormControl>
                               <Input
                                 type="email"
-                                placeholder="EMAIL"
-                                className="uppercase"
+                                placeholder="Email"
                                 {...field}
                               />
                             </FormControl>
@@ -262,8 +304,7 @@ const Contact = () => {
                           <FormItem>
                             <FormControl>
                               <Input
-                                placeholder="PHONE NUMBER (XXX-XXX-XXXX)"
-                                className="uppercase"
+                                placeholder="Phone Number (XXX-XXX-XXXX)"
                                 onChange={(e) => {
                                   const formatted = formatPhoneNumber(e.target.value);
                                   e.target.value = formatted;
@@ -284,7 +325,7 @@ const Contact = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Textarea placeholder="MESSAGE" className="h-32 uppercase" {...field} />
+                              <Textarea placeholder="Message" className="h-32" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
