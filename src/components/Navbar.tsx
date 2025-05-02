@@ -90,7 +90,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           <RouterLink to="/" className="relative z-10">
-            <Logo className="h-12 w-auto" />
+            <Logo className="h-16 w-auto" />
           </RouterLink>
 
           {/* Desktop Navigation */}
