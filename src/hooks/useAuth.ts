@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { safeSupabase, supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 
 export const useAuth = () => {
@@ -9,7 +9,7 @@ export const useAuth = () => {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await safeSupabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -26,7 +26,7 @@ export const useAuth = () => {
   const signUp = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await safeSupabase.auth.signUp({
         email,
         password,
       });
@@ -46,11 +46,7 @@ export const useAuth = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) throw error;
@@ -70,6 +66,7 @@ export const useAuth = () => {
       setUser(null);
       return { error: null };
     } catch (error) {
+      console.error('Sign out error:', error);
       return { error };
     } finally {
       setLoading(false);

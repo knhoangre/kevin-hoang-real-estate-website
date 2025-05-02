@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, X } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 
 const Auth = () => {

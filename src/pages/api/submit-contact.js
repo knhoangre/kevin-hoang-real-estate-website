@@ -1,10 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client with service role key for elevated permissions
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing Supabase credentials');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'real-estate-website-api',
+    },
+  },
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -134,11 +148,10 @@ export default async function handler(req, res) {
     if (messageError) throw messageError;
 
     // Send email notification using the Edge Function
-    const response = await fetch(`${supabaseUrl}/functions/v1/submit-contact`, {
+    const response = await fetch('/api/functions/submit-contact', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseServiceKey}`
       },
       body: JSON.stringify({
         firstName,
@@ -150,8 +163,7 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Edge function error:', errorData);
+      console.error('Function call failed:', response.status);
       // Continue anyway, as the message was saved to the database
     }
 

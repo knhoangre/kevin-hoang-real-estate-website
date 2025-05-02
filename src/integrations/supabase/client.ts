@@ -2,14 +2,71 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://zvipgykolpoxukyjgffx.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// This should only be used in client-side code
+if (typeof window === 'undefined') {
+  throw new Error('This module should only be used in client-side code');
+}
 
-if (!SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+// Use Vite's import.meta.env for environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+// Log environment variables for debugging
+console.log('Supabase environment variables:', {
+  url: SUPABASE_URL ? 'Set' : 'Missing',
+  key: SUPABASE_ANON_KEY ? 'Set' : 'Missing',
+  importMetaEnv: {
+    url: import.meta.env.VITE_SUPABASE_URL,
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY
+  },
+  processEnv: {
+    url: process.env.VITE_SUPABASE_URL,
+    key: process.env.VITE_SUPABASE_ANON_KEY
+  }
+});
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('Missing Supabase environment variables. Please check your .env file.');
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce', // Use PKCE flow for better security
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'real-estate-website',
+    },
+  },
+});
+
+// Add error handling wrapper
+export const safeSupabase = {
+  ...supabase,
+  auth: {
+    ...supabase.auth,
+    signInWithPassword: async (credentials: { email: string; password: string }) => {
+      try {
+        return await supabase.auth.signInWithPassword(credentials);
+      } catch (error) {
+        console.error('Authentication error:', error);
+        throw new Error('Authentication failed. Please try again.');
+      }
+    },
+    signUp: async (credentials: { email: string; password: string }) => {
+      try {
+        return await supabase.auth.signUp(credentials);
+      } catch (error) {
+        console.error('Signup error:', error);
+        throw new Error('Signup failed. Please try again.');
+      }
+    },
+  },
+};

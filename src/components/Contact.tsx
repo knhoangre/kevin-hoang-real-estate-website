@@ -32,6 +32,8 @@ const Contact = () => {
   const [phoneDropdown, setPhoneDropdown] = useState(false);
   const { toast } = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,55 +59,33 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    try {
-      // Format phone number if provided
-      let formattedPhone = data.phone;
-      if (formattedPhone) {
-        // Remove any non-digit characters
-        const numbers = formattedPhone.replace(/\D/g, "");
-        // Format as XXX-XXX-XXXX
-        if (numbers.length === 10) {
-          formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-        }
-      }
+    setError(null);
 
-      // Send the form data directly to the Edge Function
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`, {
+    try {
+      const response = await fetch('/api/submit-contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: formattedPhone,
-          message: data.message
+          name: `${form.getValues('firstName').trim()} ${form.getValues('lastName').trim()}`,
+          email: form.getValues('email').trim().toLowerCase(),
+          phone: form.getValues('phone') ? form.getValues('phone').trim() : null,
+          message: form.getValues('message').trim(),
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Server response:', errorData);
-        throw new Error(errorData.error || 'Failed to submit form');
+        throw new Error('Failed to submit form');
       }
 
-      toast({
-        title: "Message sent!",
-        description: "Thank you for contacting us. We'll respond shortly.",
-      });
-
+      setSuccess(true);
       form.reset();
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "There was a problem sending your message. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      setError('Failed to submit form. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -176,7 +156,7 @@ const Contact = () => {
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}

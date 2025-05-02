@@ -42,6 +42,9 @@ const Contact = () => {
 
   // Add state for dropdown visibility
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   // Add event listeners for ESC key and clicks outside
   useEffect(() => {
@@ -78,55 +81,41 @@ const Contact = () => {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
-  const onSubmit = async (data: FormValues) => {
-    try {
-      // Format phone number if provided
-      let formattedPhone = data.phone;
-      if (formattedPhone) {
-        // Remove any non-digit characters
-        const numbers = formattedPhone.replace(/\D/g, "");
-        // Format as XXX-XXX-XXXX
-        if (numbers.length === 10) {
-          formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-        }
-      }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-      // Send the form data to the Edge Function
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-contact`, {
+    try {
+      const response = await fetch('/api/submit-contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: formattedPhone,
-          message: data.message
-        }),
+          firstName: form.getValues('firstName'),
+          lastName: form.getValues('lastName'),
+          email: form.getValues('email'),
+          phone: form.getValues('phone'),
+          message: form.getValues('message')
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Server response:', errorData);
         throw new Error(errorData.error || 'Failed to submit form');
       }
 
+      setSuccess(true);
+      form.reset();
       toast({
         title: "Message sent!",
         description: "Thank you for contacting us. We'll respond shortly.",
       });
-
-      // Reset form
-      form.reset();
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -251,7 +240,7 @@ const Contact = () => {
                   <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">Send a Message</h2>
 
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
