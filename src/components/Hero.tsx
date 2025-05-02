@@ -1,4 +1,3 @@
-
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -20,8 +19,8 @@ const Hero = () => {
         <h1 className="text-4xl md:text-6xl font-bold mb-6">
           ELEVATING BOSTON'S REAL ESTATE EXPERIENCE
         </h1>
-        <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
-          HELPING BOSTON HOMEOWNERS SELL FAST WITH CONFIDENCE THROUGH PERSONALIZED SERVICE AND MARKET EXPERTISE.
+        <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto">
+          YOUR REAL ESTATE PARTNER FOR BUYING, SELLING, AND INVESTING IN BOSTON'S MOST DESIRABLE PROPERTIES THROUGH MARKET EXPERTISE AND INNOVATIVE STRATEGIES.
         </p>
         <Link to="/contact" className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300">
           <span className="uppercase">BOOK A FREE CONSULTATION</span>
