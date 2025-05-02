@@ -94,15 +94,26 @@ const Contact = () => {
       <div className="pt-16">
         <div className="container mx-auto px-4 py-24">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">GET IN TOUCH</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <motion.h1
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
+            >
+              GET IN TOUCH
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-xl text-gray-600 mb-12 max-w-2xl"
+            >
               Let's discuss your real estate goals. Whether you're looking to buy, sell, or just have questions about the Boston market, I'm here to help.
-            </p>
+            </motion.p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
