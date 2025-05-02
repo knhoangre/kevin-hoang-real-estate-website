@@ -1,7 +1,8 @@
+import React from "react";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Stats from "@/components/Stats";
-import Contact from "@/components/Contact";
+import Contact from "@/pages/Contact";
 import RealEstateCalculators from "@/components/RealEstateCalculators";
 import { Element } from "react-scroll";
 import { motion } from "framer-motion";

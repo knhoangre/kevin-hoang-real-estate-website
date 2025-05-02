@@ -9,45 +9,30 @@ export default defineConfig(({ mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
 
+  // Log environment variables (in development only)
+  if (mode === 'development') {
+    console.log('Environment variables loaded:', {
+      SUPABASE_URL: env.SUPABASE_URL ? 'Present' : 'Missing',
+      SUPABASE_SERVICE_KEY: env.SUPABASE_SERVICE_KEY ? 'Present' : 'Missing',
+      VITE_SUPABASE_URL: env.VITE_SUPABASE_URL ? 'Present' : 'Missing',
+      VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
+    });
+  }
+
   return {
-    server: {
-      host: "::",
-      port: 8080,
-      proxy: {
-        '/api': {
-          target: 'http://localhost:8080',
-          changeOrigin: true,
-          secure: false,
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
-              console.log('proxy error', err);
-            });
-            proxy.on('proxyReq', (proxyReq, req, _res) => {
-              console.log('Sending Request to the Target:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-            });
-          },
-        },
-      }
-    },
-    plugins: [
-      react(),
-      mode === 'development' &&
-      componentTagger(),
-    ].filter(Boolean),
+    plugins: [react()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    server: {
+      port: 8080,
+    },
     define: {
-      // Expose environment variables to the client
+      // Only expose VITE_ prefixed variables to the client
       'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
     },
   };
 });
