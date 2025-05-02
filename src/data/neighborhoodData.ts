@@ -5,7 +5,7 @@ export const neighborhoods = [
   },
   {
     name: "Somerville",
-    image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=500&h=300"
+    image: "https://images.unsplash.com/photo-1564013799919-ab616027ffc6?auto=format&fit=crop&w=500&h=300"
   },
   {
     name: "Newton",
