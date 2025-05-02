@@ -1,52 +1,7 @@
 import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
-
-const neighborhoods = [
-  {
-    name: "Cambridge",
-    image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Somerville",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Newton",
-    image: "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Lexington",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Weston",
-    image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Wellesley",
-    image: "https://images.unsplash.com/photo-1558036117-15d82a90b9b1?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Dover",
-    image: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Medford",
-    image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Braintree",
-    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Quincy",
-    image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=500&h=300"
-  },
-  {
-    name: "Malden",
-    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=500&h=300"
-  }
-];
+import { motion } from "framer-motion";
+import { neighborhoods } from "../data/neighborhoodData";
 
 const Neighborhoods = () => {
   useEffect(() => {
@@ -58,12 +13,28 @@ const Neighborhoods = () => {
       <Navbar />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">
-            NEIGHBORHOODS SERVED
-          </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
-            Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes.
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
+            >
+              NEIGHBORHOODS SERVED
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-xl text-gray-600 mb-12 max-w-3xl"
+            >
+              Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes.
+            </motion.p>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {neighborhoods.map((neighborhood) => (

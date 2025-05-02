@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { blogPosts } from "@/data/blogData";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
+import { useLocation } from "react-router-dom";
 
 const additionalPosts = [
   {
@@ -31,49 +34,154 @@ const additionalPosts = [
 ];
 
 const Blog = () => {
+  const location = useLocation();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    // Check if we have a hash in the URL (e.g., #post-1)
+    if (location.hash) {
+      // Extract the post ID from the hash
+      const postId = location.hash.replace('#post-', '');
+      // Find the element with the matching ID
+      const element = document.getElementById(`post-${postId}`);
+      if (element) {
+        // Scroll to the element
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }, [location]);
 
   return (
     <div className="min-h-screen bg-white">
+      <Navbar />
       <div className="pt-16">
-        <div className="container px-4 py-24">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4">
-            BLOG
-          </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl">
-            Stay informed with the latest insights, market trends, and expert advice on real estate in the Greater Boston area.
-          </p>
+        <div className="px-8 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="mb-16"
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
+            >
+              BLOG
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-xl text-gray-600 mb-12 max-w-3xl"
+            >
+              Stay informed with the latest insights, market trends, and expert advice on real estate in the Greater Boston area.
+            </motion.p>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...blogPosts, ...additionalPosts].map((post) => (
-              <div
+            {blogPosts.map((post) => (
+              <motion.div
                 key={post.id}
-                className="group bg-white rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100"
+                id={`post-${post.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
               >
-                <Link to={`/blog/${post.slug}`}>
+                <Link to={`/blog/${post.slug}`} className="block">
                   <div className="relative h-48 overflow-hidden">
                     <img
                       src={post.image}
                       alt={post.title}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   </div>
                   <div className="p-6">
-                    <p className="text-sm text-gray-500 mb-2">{post.date}</p>
-                    <h2 className="text-xl font-semibold mb-3 text-[#1a1a1a] group-hover:text-[#1a1a1a]/80 transition-colors">
+                    <div className="flex items-center text-sm text-gray-500 mb-3">
+                      <span>{post.date}</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-[#1a1a1a] mb-3 line-clamp-2">
                       {post.title}
                     </h2>
-                    <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                    <div className="flex items-center text-[#1a1a1a] font-medium group-hover:text-[#1a1a1a]/80 transition-colors">
-                      <span>SHOW MORE</span>
-                      <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center text-[#1a1a1a] font-medium group">
+                      <span className="mr-2">Read More</span>
+                      <svg
+                        className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </div>
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
+          </div>
+
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Additional Resources</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {additionalPosts.map((post) => (
+                <motion.div
+                  key={post.id}
+                  id={`post-${post.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <Link to={`/blog/${post.slug}`} className="block">
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center text-sm text-gray-500 mb-3">
+                        <span>{post.date}</span>
+                      </div>
+                      <h2 className="text-xl font-bold text-[#1a1a1a] mb-3 line-clamp-2">
+                        {post.title}
+                      </h2>
+                      <p className="text-gray-600 mb-4 line-clamp-3">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center text-[#1a1a1a] font-medium group">
+                        <span className="mr-2">Read More</span>
+                        <svg
+                          className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
