@@ -8,25 +8,10 @@ if (typeof window === 'undefined') {
 }
 
 // Use Vite's import.meta.env for environment variables
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
-
-// Log environment variables for debugging
-console.log('Supabase environment variables:', {
-  url: SUPABASE_URL ? 'Set' : 'Missing',
-  key: SUPABASE_ANON_KEY ? 'Set' : 'Missing',
-  importMetaEnv: {
-    url: import.meta.env.VITE_SUPABASE_URL,
-    key: import.meta.env.VITE_SUPABASE_ANON_KEY
-  },
-  processEnv: {
-    url: process.env.VITE_SUPABASE_URL,
-    key: process.env.VITE_SUPABASE_ANON_KEY
-  }
-});
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Missing Supabase environment variables. Please check your .env file.');
   throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
