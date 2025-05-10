@@ -14,6 +14,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import ContactQRCode from "./ContactQRCode";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -159,6 +160,10 @@ const Contact = () => {
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
+              </div>
+
+              <div className="pt-4">
+                <ContactQRCode />
               </div>
             </div>
           </div>

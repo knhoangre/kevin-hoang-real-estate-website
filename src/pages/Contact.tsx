@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import ContactQRCode from '@/components/ContactQRCode';
 
 const formSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -204,6 +205,10 @@ const Contact = () => {
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="pt-4 flex justify-center">
+                    <ContactQRCode />
                   </div>
                 </div>
               </div>
