@@ -30,7 +30,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
-    },
+    }
   });
 
 export default i18n;

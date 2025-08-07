@@ -22,7 +22,8 @@ const LanguageSwitcher = () => {
     i18n.changeLanguage(newLanguage);
   };
 
-  const buttonText = i18n.language === 'en' ? 'TIẾNG VIỆT' : 'ENGLISH';
+  // Always show Vietnamese first, then English
+  const buttonText = i18n.language === 'vi' ? 'ENGLISH' : 'TIẾNG VIỆT';
 
   // Determine text color based on page and scroll position
   const getTextColorClass = () => {
