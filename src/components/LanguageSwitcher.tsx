@@ -18,7 +18,9 @@ const LanguageSwitcher = () => {
   }, []);
 
   const toggleLanguage = () => {
-    const newLanguage = i18n.language === 'en' ? 'vi' : 'en';
+    // If we see "TIẾNG VIỆT" (current language is 'en'), switch to 'vi'
+    // If we see "ENGLISH" (current language is 'vi'), switch to 'en'
+    const newLanguage = i18n.language === 'vi' ? 'en' : 'vi';
     i18n.changeLanguage(newLanguage);
   };
 
