@@ -42,11 +42,7 @@ const Seller = () => {
           <div className="py-8">
             <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
               <p className="text-gray-700 text-sm leading-relaxed">
-                <strong>Important Notice:</strong> Every home selling situation is unique, and this roadmap serves as a general guideline only.
-                Your specific circumstances may require additional steps, different timing, or alternative approaches not covered here.
-                This information is provided for educational purposes and should not be considered as legal, financial, or professional advice.
-                We strongly recommend consulting with qualified professionals including real estate agents, lenders, attorneys, and other specialists
-                who can provide guidance tailored to your specific situation and local market conditions.
+                <strong>{t('seller_guide.important_notice')}</strong> {t('seller_guide.important_notice_text')}
               </p>
             </div>
           </div>

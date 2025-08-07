@@ -59,7 +59,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/about" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  About
+                  {t('footer.about')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
@@ -77,13 +77,13 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/blog" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  Blog
+                  {t('nav.blog')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
                 <Link to="/contact" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  Contact
+                  {t('footer.contact')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
@@ -95,19 +95,19 @@ const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/privacy-policy" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  Privacy Policy
+                  {t('footer.privacy_policy')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
                 <Link to="/terms-of-service" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  Terms of Service
+                  {t('footer.terms_of_service')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
                 <Link to="/disclaimer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-                  Disclaimer
+                  {t('footer.disclaimer')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>

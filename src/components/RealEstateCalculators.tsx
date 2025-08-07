@@ -464,30 +464,30 @@ const MortgageCalculator = () => {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Principal & Interest:</span>
+              <span className="font-medium">{t('calculators.principal_interest')}</span>
               <span>${isNaN(payment.principalAndInterest) ? "0.00" : payment.principalAndInterest.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Property Tax:</span>
+              <span className="font-medium">{t('calculators.property_tax')}</span>
               <span>${payment.propertyTax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Insurance:</span>
+              <span className="font-medium">{t('calculators.insurance')}</span>
               <span>${payment.insurance.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">HOA Fees:</span>
+              <span className="font-medium">{t('calculators.hoa_fees_short')}</span>
               <span>${payment.hoa.toFixed(2)}</span>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="font-medium">Loan Amount:</span>
+              <span className="font-medium">{t('calculators.loan_amount')}</span>
               <span>${(homePrice - downPayment).toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-medium">Down Payment:</span>
+              <span className="font-medium">{t('calculators.down_payment_display')}</span>
               <span>${downPayment.toLocaleString()} ({downPaymentPercent.toFixed(1)}%)</span>
             </div>
           </div>
@@ -599,15 +599,15 @@ const SellerProceedsCalculator = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Seller Proceeds Inputs</CardTitle>
+          <CardTitle>{t('calculators.seller_proceeds_inputs')}</CardTitle>
           <CardDescription>
-            Calculate how much you'll receive after selling your home
+            {t('calculators.seller_proceeds_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Sale Price
+              {t('calculators.sale_price')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -635,7 +635,7 @@ const SellerProceedsCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Remaining Mortgage Balance
+              {t('calculators.remaining_mortgage')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -652,7 +652,7 @@ const SellerProceedsCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Agent Commission
+              {t('calculators.agent_commission')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -680,7 +680,7 @@ const SellerProceedsCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Closing Costs
+              {t('calculators.closing_costs')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -697,7 +697,7 @@ const SellerProceedsCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Repair Costs
+              {t('calculators.repair_costs')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -714,7 +714,7 @@ const SellerProceedsCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Other Fees
+              {t('calculators.other_fees')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -741,8 +741,8 @@ const SellerProceedsCalculator = () => {
         <CardContent className="space-y-6">
           <div className="flex justify-between items-center bg-gray-50 p-6 rounded-lg">
             <div>
-              <h3 className="text-xl font-bold">Net Proceeds</h3>
-              <p className="text-gray-500">Estimated cash at closing</p>
+              <h3 className="text-xl font-bold">{t('calculators.net_proceeds')}</h3>
+              <p className="text-gray-500">{t('calculators.estimated_closing')}</p>
             </div>
             <div className="text-3xl font-bold text-[#1a1a1a]">
               ${proceeds.netProceeds.toLocaleString()}
@@ -996,15 +996,15 @@ const RentalIncomeCalculator = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Rental Income Inputs</CardTitle>
+          <CardTitle>{t('calculators.rental_inputs')}</CardTitle>
           <CardDescription>
-            Calculate potential returns on your investment property
+            {t('calculators.rental_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Purchase Price
+              {t('calculators.home_price')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -1032,7 +1032,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment
+              {t('calculators.down_payment')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -1060,7 +1060,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Interest Rate
+              {t('calculators.interest_rate')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -1107,7 +1107,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Monthly Rent
+              {t('calculators.monthly_rent')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -1124,7 +1124,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Vacancy Rate
+              {t('calculators.vacancy_rate')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -1169,7 +1169,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Insurance (yearly)
+              {t('calculators.homeowners_insurance')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -1186,7 +1186,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Maintenance (yearly)
+              {t('calculators.maintenance')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -1203,7 +1203,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Property Management
+              {t('calculators.property_management')}
             </label>
             <div className="flex gap-4 mb-1">
               <div className="flex-1">
@@ -1231,7 +1231,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Utilities (monthly)
+              {t('calculators.utilities')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -1250,16 +1250,16 @@ const RentalIncomeCalculator = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Rental Income Analysis</CardTitle>
+          <CardTitle>{t('calculators.rental_analysis')}</CardTitle>
           <CardDescription>
-            Projected returns on your rental property
+            {t('calculators.rental_returns')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-between items-center bg-gray-50 p-6 rounded-lg">
             <div>
-              <h3 className="text-xl font-bold">Monthly Cash Flow</h3>
-              <p className="text-gray-500">Income after all expenses</p>
+              <h3 className="text-xl font-bold">{t('calculators.monthly_cashflow')}</h3>
+              <p className="text-gray-500">{t('calculators.income_after_expenses')}</p>
             </div>
             <div className={`text-3xl font-bold ${rentalCalc.monthlyCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               ${rentalCalc.monthlyCashFlow.toFixed(2)}

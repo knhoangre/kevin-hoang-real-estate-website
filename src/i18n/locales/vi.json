@@ -4,7 +4,7 @@
     "buyer": "Người Mua",
     "seller": "Người Bán",
     "neighborhoods": "Khu Vực",
-    "blog": "Blog",
+    "blog": "Bài Viết",
     "contact": "Liên Hệ",
     "faq": "Câu Hỏi Thường Gặp",
     "profile": "Hồ Sơ",
@@ -46,23 +46,36 @@
     "average_days": "Số Ngày Trung Bình Trên Thị Trường"
   },
   "contact": {
-    "title": "THÔNG TIN LIÊN HỆ",
-    "subtitle": "Sẵn sàng bắt đầu hành trình bất động sản của bạn? Hãy kết nối với chúng tôi.",
-    "phone": "Số Điện Thoại (XXX-XXX-XXXX)",
-    "email": "Email",
-    "address": "Địa Chỉ",
-    "send_message": "GỬI TIN NHẮN",
-    "name": "Tên",
-    "message": "Tin Nhắn",
-    "form_subtitle": "Gửi cho chúng tôi một tin nhắn và chúng tôi sẽ phản hồi bạn sớm nhất có thể.",
-    "first_name": "Tên",
-    "last_name": "Họ",
+    "title": "LIÊN HỆ",
+    "subtitle": "Hãy thảo luận về mục tiêu bất động sản của bạn. Dù bạn đang tìm kiếm để mua, bán, hay chỉ có câu hỏi về thị trường Boston, tôi ở đây để giúp đỡ.",
+    "contact_information": "Thông Tin Liên Hệ",
+    "phone": "ĐIỆN THOẠI",
+    "email": "EMAIL",
+    "office": "VĂN PHÒNG",
     "call": "Gọi điện",
-    "text": "Nhắn tin"
+    "text": "Nhắn tin",
+    "send_message": "Gửi Tin Nhắn",
+    "scan_qr_code": "Quét để lưu thông tin liên hệ",
+    "form": {
+      "first_name": "TÊN",
+      "last_name": "HỌ",
+      "email": "EMAIL",
+      "phone_number": "SỐ ĐIỆN THOẠI (XXX-XXX-XXXX)",
+      "message": "TIN NHẮN",
+      "send_message": "GỬI TIN NHẮN",
+      "first_name_required": "Tên là bắt buộc",
+      "last_name_required": "Họ là bắt buộc",
+      "email_invalid": "Định dạng email không hợp lệ",
+      "message_required": "Tin nhắn là bắt buộc",
+      "message_sent_title": "Tin nhắn đã gửi!",
+      "message_sent_description": "Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ phản hồi sớm."
+    }
   },
   "footer": {
     "quick_links": "LIÊN KẾT NHANH",
     "legal": "PHÁP LÝ",
+    "about": "Về Chúng Tôi",
+    "contact": "Liên Hệ",
     "privacy_policy": "Chính Sách Bảo Mật",
     "terms_of_service": "Điều Khoản Dịch Vụ",
     "disclaimer": "Tuyên Bố Từ Chối",
@@ -80,7 +93,191 @@
     "subtitle": "Tìm câu trả lời cho các câu hỏi thường gặp về mua và bán bất động sản tại khu vực Greater Boston.",
     "general": "Câu Hỏi Chung",
     "sellers": "Câu Hỏi Cho Người Bán",
-    "buyers": "Câu Hỏi Cho Người Mua"
+    "buyers": "Câu Hỏi Cho Người Mua",
+    "general_items": {
+      "item1": {
+        "question": "Điều gì làm cho dịch vụ bất động sản của bạn trở nên độc đáo?",
+        "answer": "Dịch vụ bất động sản của chúng tôi nổi bật nhờ cách tiếp cận cá nhân hóa, kiến thức thị trường sâu rộng và cam kết thỏa mãn khách hàng. Chúng tôi dành thời gian để hiểu nhu cầu và mục tiêu cụ thể của bạn, cung cấp hướng dẫn phù hợp trong suốt quá trình và tận dụng chuyên môn địa phương rộng rãi để đạt được kết quả tốt nhất có thể."
+      },
+      "item2": {
+        "question": "Bạn phục vụ những khu vực nào trong và xung quanh Boston?",
+        "answer": "Chúng tôi phục vụ toàn bộ khu vực Greater Boston, bao gồm Cambridge, Somerville, Newton, Brookline, Wellesley, Needham, Lexington, Winchester, Arlington, Medford, Malden, Weston, Dover và nhiều nơi khác. Kiến thức rộng rãi về các khu phố đa dạng này cho phép chúng tôi cung cấp hướng dẫn chuyên môn bất kể bạn đang mua hay bán ở đâu."
+      },
+      "item3": {
+        "question": "Sự khác biệt giữa đại lý người mua và đại lý người bán là gì?",
+        "answer": "Đại lý người mua đại diện riêng cho lợi ích của người mua nhà, giúp họ tìm tài sản phù hợp, thương lượng giá và điều khoản tốt nhất có thể, và hướng dẫn họ qua các cuộc kiểm tra và đóng cửa. Đại lý người bán (hoặc đại lý niêm yết) đại diện cho người bán, tiếp thị tài sản của họ, tư vấn về chiến lược định giá và làm việc để đảm bảo các điều khoản thuận lợi nhất cho người bán. Tại Massachusetts, các đại lý phải tiết lộ người họ đại diện trong một giao dịch."
+      },
+      "item4": {
+        "question": "Tôi có cần luật sư bất động sản cho giao dịch của mình không?",
+        "answer": "Tại Massachusetts, việc có luật sư bất động sản đại diện cho bạn là phổ biến và nên làm dù bạn đang mua hay bán. Không giống một số tiểu bang, luật sư thường xử lý quá trình đóng cửa ở đây thay vì các công ty title. Luật sư sẽ xem xét thỏa thuận mua bán, tiến hành nghiên cứu title, giải quyết bất kỳ vấn đề pháp lý nào và đảm bảo tất cả tài liệu được chuẩn bị và nộp đúng cách."
+      },
+      "item5": {
+        "question": "Tình trạng hiện tại của thị trường nhà ở Boston như thế nào?",
+        "answer": "Thị trường nhà ở Boston vẫn cạnh tranh, đặc trưng bởi nguồn cung hạn chế và nhu cầu mạnh mẽ ở nhiều khu phố. Điều kiện thị trường có thể thay đổi đáng kể theo vị trí, loại tài sản và mức giá. Chúng tôi cung cấp cho khách hàng phân tích thị trường cập nhật cụ thể cho khu vực quan tâm của họ, bao gồm dữ liệu bán hàng gần đây, ngày trên thị trường và xu hướng định giá để thông báo quyết định chiến lược."
+      },
+      "item6": {
+        "question": "Làm thế nào để bạn cập nhật thông tin về thị trường bất động sản địa phương?",
+        "answer": "Chúng tôi duy trì tư cách thành viên tích cực trong các tổ chức chuyên môn, tham dự các cập nhật thị trường thường xuyên và các buổi đào tạo, đăng ký các ấn phẩm ngành và phân tích dữ liệu MLS hàng ngày. Ngoài ra, chúng tôi kết nối với các chuyên gia bất động sản khác và tham dự các sự kiện cộng đồng địa phương để cập nhật thông tin về phát triển khu phố và xu hướng thị trường."
+      },
+      "item7": {
+        "question": "Cách tiếp cận của bạn đối với giao tiếp khách hàng như thế nào?",
+        "answer": "Chúng tôi tin vào giao tiếp minh bạch, nhất quán và phản hồi nhanh chóng. Chúng tôi cung cấp cập nhật thường xuyên qua phương pháp bạn ưa thích (email, tin nhắn hoặc điện thoại), phản hồi các câu hỏi kịp thời và thiết lập kỳ vọng rõ ràng về quá trình và thời gian. Chúng tôi cũng sử dụng công nghệ để giữ bạn thông tin về các buổi xem tài sản, đề nghị và các thời hạn quan trọng."
+      },
+      "item8": {
+        "question": "Làm thế nào để bạn xử lý nhiều đề nghị trên một tài sản?",
+        "answer": "Khi một tài sản nhận được nhiều đề nghị, chúng tôi hướng dẫn khách hàng qua một quy trình có cấu trúc. Đối với người bán, chúng tôi trình bày tất cả đề nghị với phân tích chi tiết từng đề nghị, bao gồm giá, điều kiện và trình độ người mua. Đối với người mua, chúng tôi giúp tạo ra các đề nghị cạnh tranh nổi bật trong khi bảo vệ lợi ích của bạn. Chúng tôi duy trì tiêu chuẩn đạo đức và đối xử công bằng với tất cả các bên trong suốt quá trình thương lượng."
+      },
+      "item9": {
+        "question": "Điều gì xảy ra nếu một giao dịch không đóng cửa như mong đợi?",
+        "answer": "Trong khi hầu hết các giao dịch đóng cửa thành công, các vấn đề có thể phát sinh. Chúng tôi có kinh nghiệm rộng rãi trong việc xử lý các tình huống bất ngờ như vấn đề kiểm tra, vấn đề tài chính hoặc lo ngại về title. Chúng tôi làm việc chủ động để xác định các vấn đề tiềm ẩn sớm, giao tiếp rõ ràng về bất kỳ vấn đề nào và phát triển các giải pháp sáng tạo để giữ giao dịch tiến tới khi có thể."
+      },
+      "item10": {
+        "question": "Làm thế nào để bạn đảm bảo quá trình đóng cửa suôn sẻ?",
+        "answer": "Chúng tôi phối hợp chặt chẽ với tất cả các bên tham gia vào giao dịch, bao gồm luật sư, người cho vay, thanh tra viên và các công ty title. Chúng tôi tạo ra các thời gian biểu chi tiết, theo dõi các thời hạn quan trọng và đảm bảo tất cả tài liệu cần thiết được hoàn thành chính xác và đúng thời gian. Cách tiếp cận có hệ thống của chúng tôi giúp giảm thiểu bất ngờ và giữ quá trình đóng cửa đi đúng hướng."
+      },
+      "item11": {
+        "question": "Điều gì xảy ra sau khi bán hàng hoàn tất?",
+        "answer": "Mối quan hệ của chúng tôi không kết thúc khi đóng cửa. Chúng tôi cung cấp hỗ trợ sau đóng cửa, bao gồm khuyến nghị cho các dịch vụ địa phương, mẹo bảo trì và tài nguyên cộng đồng. Chúng tôi giữ liên lạc với khách hàng và sẵn sàng trả lời câu hỏi hoặc hỗ trợ nhu cầu bất động sản trong tương lai. Nhiều khách hàng của chúng tôi trở thành khách hàng lặp lại hoặc giới thiệu bạn bè và gia đình cho chúng tôi."
+      },
+      "item12": {
+        "question": "Làm thế nào để bạn xử lý tính bảo mật của khách hàng?",
+        "answer": "Chúng tôi coi trọng tính bảo mật của khách hàng rất nghiêm túc. Tất cả thông tin được chia sẻ với chúng tôi trong quá trình mua hoặc bán được giữ bí mật tuyệt đối. Chúng tôi không bao giờ tiết lộ thông tin tài chính cá nhân, động cơ hoặc các chi tiết nhạy cảm khác mà không có sự cho phép rõ ràng. Cam kết này về quyền riêng tư giúp xây dựng niềm tin và đảm bảo khách hàng cảm thấy thoải mái chia sẻ thông tin quan trọng với chúng tôi."
+      }
+    },
+    "seller_items": {
+      "item1": {
+        "question": "Thường mất bao lâu để bán một ngôi nhà ở khu vực Boston?",
+        "answer": "Thời gian để bán một ngôi nhà ở khu vực Boston thay đổi tùy thuộc vào điều kiện thị trường, loại tài sản, vị trí và định giá. Trung bình, những ngôi nhà được định giá tốt ở các khu phố mong muốn có thể bán trong vòng 30-45 ngày. Tuy nhiên, tài sản sang trọng hoặc nhà ở các khu vực ít cạnh tranh hơn có thể mất nhiều thời gian hơn. Chúng tôi phát triển một kế hoạch tiếp thị chiến lược cho mỗi tài sản để đảm bảo tiếp xúc tối đa và thời gian ngắn nhất có thể trên thị trường."
+      },
+      "item2": {
+        "question": "Tôi nên làm gì để chuẩn bị ngôi nhà của mình để bán?",
+        "answer": "Để chuẩn bị ngôi nhà của bạn để bán, tập trung vào việc tăng cường sức hấp dẫn bên ngoài, dọn dẹp và loại bỏ cá nhân hóa nội thất, sửa chữa nhỏ, dọn dẹp sâu và xem xét việc trang trí chuyên nghiệp. Chúng tôi cung cấp tư vấn trước niêm yết cá nhân hóa để xác định các cải tiến cụ thể sẽ tối đa hóa giá trị tài sản của bạn và thu hút người mua mục tiêu trong khu vực của bạn."
+      },
+      "item3": {
+        "question": "Làm thế nào để bạn xác định giá niêm yết đúng cho ngôi nhà của tôi?",
+        "answer": "Chúng tôi xác định giá niêm yết tối ưu thông qua phân tích thị trường so sánh toàn diện xem xét các giao dịch bán gần đây của các tài sản tương tự, điều kiện thị trường hiện tại, các tính năng và cải tiến độc đáo của ngôi nhà của bạn, lợi thế vị trí và xu hướng người mua. Mục tiêu của chúng tôi là khuyến nghị một mức giá cạnh tranh thu hút người mua nghiêm túc trong khi tối đa hóa lợi nhuận của bạn."
+      },
+      "item4": {
+        "question": "Tôi nên mong đợi những chi phí nào khi bán nhà?",
+        "answer": "Khi bán nhà, các chi phí điển hình bao gồm hoa hồng bất động sản (thường 5-6% giá bán), chi phí đóng cửa (1-3%), các sửa chữa tiềm ẩn được xác định trong quá trình kiểm tra, các nhượng bộ người bán có thể, chi phí di chuyển và bất kỳ số dư thế chấp chưa thanh toán nào. Chúng tôi cung cấp ước tính thu nhập ròng chi tiết trong quá trình tư vấn ban đầu để bạn có hiểu biết rõ ràng về kết quả tài chính của mình."
+      },
+      "item5": {
+        "question": "Làm thế nào để bạn tiếp thị tài sản để đảm bảo tiếp xúc tối đa?",
+        "answer": "Chiến lược tiếp thị toàn diện của chúng tôi bao gồm chụp ảnh chuyên nghiệp, tour ảo, chiến dịch mạng xã hội có mục tiêu, vị trí cao cấp trên các nền tảng bất động sản, tiếp thị email đến cơ sở dữ liệu người mua của chúng tôi, kết nối môi giới và nhà mở cửa chiến lược. Đối với tài sản sang trọng, chúng tôi cũng triển khai các cách tiếp cận tiếp thị chuyên biệt để tiếp cận người mua có trình độ."
+      },
+      "item6": {
+        "question": "Tôi có nên sửa chữa trước khi niêm yết nhà không?",
+        "answer": "Quyết định sửa chữa trước khi niêm yết phụ thuộc vào loại và mức độ của các vấn đề. Nói chung, chúng tôi khuyến nghị giải quyết các vấn đề cấu trúc lớn, lo ngại về an toàn và các vấn đề thẩm mỹ rõ ràng có thể ngăn cản người mua hoặc ảnh hưởng đáng kể đến giá trị. Đối với các vấn đề nhỏ, chúng tôi có thể thảo luận xem có nên sửa chữa chúng hay điều chỉnh giá tương ứng. Chúng tôi có thể giúp bạn ưu tiên các sửa chữa dựa trên chi phí so với lợi nhuận đầu tư tiềm năng."
+      },
+      "item7": {
+        "question": "Làm thế nào để bạn xử lý các buổi xem và nhà mở cửa?",
+        "answer": "Chúng tôi phối hợp tất cả các buổi xem thông qua một hệ thống trực tuyến an toàn cho phép bạn phê duyệt hoặc từ chối yêu cầu dựa trên lịch trình của bạn. Đối với nhà mở cửa, chúng tôi đảm bảo nhà của bạn được trang trí và tiếp thị đúng cách để thu hút người mua có trình độ. Chúng tôi cung cấp phản hồi chi tiết sau mỗi buổi xem để giúp bạn hiểu sự quan tâm của người mua và các khu vực tiềm năng để cải thiện. Chúng tôi cũng triển khai các biện pháp bảo mật để bảo vệ tài sản của bạn trong các buổi xem."
+      },
+      "item8": {
+        "question": "Điều gì xảy ra trong quá trình thương lượng?",
+        "answer": "Trong quá trình thương lượng, chúng tôi hành động như người ủng hộ của bạn trong khi duy trì mối quan hệ chuyên môn với tất cả các bên. Chúng tôi trình bày các đề nghị với phân tích chi tiết, giải thích ưu và nhược điểm của từng đề nghị và giúp bạn đưa ra quyết định sáng suốt. Chúng tôi có kỹ năng tạo ra các đề nghị phản đối bảo vệ lợi ích của bạn trong khi giữ giao dịch tiến tới. Mục tiêu của chúng tôi là đạt được các điều khoản tốt nhất có thể trong khi đảm bảo một quá trình suôn sẻ."
+      },
+      "item9": {
+        "question": "Làm thế nào để bạn xử lý các vấn đề kiểm tra?",
+        "answer": "Khi các vấn đề kiểm tra phát sinh, chúng tôi giúp bạn đánh giá tầm quan trọng của chúng và xác định phản hồi tốt nhất. Chúng tôi có thể khuyến nghị các nhà thầu đáng tin cậy để ước tính, thương lượng sửa chữa hoặc tín dụng với người mua, hoặc khám phá các giải pháp khác phù hợp với cả hai bên. Kinh nghiệm của chúng tôi giúp chúng tôi phân biệt giữa các vấn đề nhỏ và các lo ngại đáng kể có thể ảnh hưởng đến giao dịch."
+      },
+      "item10": {
+        "question": "Tôi nên biết gì về quá trình đóng cửa?",
+        "answer": "Quá trình đóng cửa thường mất 30-45 ngày từ khi thỏa thuận mua bán được ký. Trong thời gian này, chúng tôi phối hợp với luật sư, người cho vay và các chuyên gia khác để đảm bảo tất cả điều kiện được đáp ứng và tài liệu được hoàn thành. Chúng tôi giữ bạn thông tin về các thời hạn và yêu cầu quan trọng, và chúng tôi có mặt tại buổi đóng cửa để giải quyết bất kỳ câu hỏi hoặc lo ngại phút cuối nào."
+      },
+      "item11": {
+        "question": "Làm thế nào để bạn xử lý các tài sản không bán nhanh?",
+        "answer": "Nếu một tài sản không thu hút đề nghị trong khung thời gian mong đợi, chúng tôi triển khai một đánh giá lại chiến lược. Điều này có thể bao gồm điều chỉnh giá, tăng cường nỗ lực tiếp thị, thực hiện cải tiến tài sản bổ sung hoặc khám phá các chiến lược bán hàng thay thế. Chúng tôi cung cấp cập nhật thị trường thường xuyên và phản hồi từ các buổi xem để giúp bạn đưa ra quyết định sáng suốt về các bước tiếp theo."
+      },
+      "item12": {
+        "question": "Các tác động thuế của việc bán nhà là gì?",
+        "answer": "Tác động thuế thay đổi dựa trên các yếu tố như bạn đã sở hữu tài sản bao lâu, liệu nó có phải là nơi cư trú chính của bạn hay không và bất kỳ cải tiến vốn nào bạn đã thực hiện. Nói chung, bạn có thể đủ điều kiện cho việc loại trừ lãi vốn lên đến $250,000 (độc thân) hoặc $500,000 (đã kết hôn) nếu nhà là nơi cư trú chính của bạn trong ít nhất hai năm trong năm năm qua. Chúng tôi khuyến nghị tham khảo ý kiến với một chuyên gia thuế để được tư vấn cụ thể về tình huống của bạn."
+      }
+    },
+    "buyer_items": {
+      "item1": {
+        "question": "Người mua nhà lần đầu nên biết gì về thị trường Boston?",
+        "answer": "Người mua nhà lần đầu ở Boston nên hiểu rằng thị trường di chuyển nhanh chóng, cạnh tranh có thể gay gắt và việc chuẩn bị tài chính là điều cần thiết. Chúng tôi khuyến nghị được phê duyệt trước cho tài chính, hiểu rõ nhu cầu thiết yếu so với mong muốn, sẵn sàng hành động quyết đoán và có kỳ vọng thực tế về những gì ngân sách của bạn có thể mua ở các khu phố khác nhau."
+      },
+      "item2": {
+        "question": "Làm thế nào để tôi được phê duyệt trước cho khoản vay mua nhà?",
+        "answer": "Để được phê duyệt trước cho khoản vay mua nhà, bạn sẽ cần liên hệ với người cho vay và cung cấp tài liệu tài chính như bằng chứng thu nhập, xác minh việc làm, lịch sử tín dụng và sao kê ngân hàng. Người cho vay sẽ xem xét tình hình tài chính của bạn và xác định họ sẵn sàng cho vay bao nhiêu. Chúng tôi làm việc với các người cho vay địa phương đáng tin cậy hiểu thị trường Boston và có thể hướng dẫn bạn qua quá trình này một cách hiệu quả."
+      },
+      "item3": {
+        "question": "Quá trình mua nhà điển hình ở Boston như thế nào?",
+        "answer": "Quá trình mua nhà thường bắt đầu với việc được phê duyệt trước cho khoản vay mua nhà, xác định ưu tiên và sở thích của bạn, tham quan tài sản, đưa ra đề nghị, thương lượng điều khoản, tiến hành kiểm tra, đảm bảo tài chính cuối cùng và đóng cửa. Toàn bộ quá trình thường mất 2-3 tháng từ đầu đến cuối, mặc dù điều này có thể thay đổi dựa trên điều kiện thị trường và hoàn cảnh cụ thể. Chúng tôi hướng dẫn bạn qua từng bước, giải thích những gì mong đợi và giúp bạn đưa ra quyết định sáng suốt."
+      },
+      "item4": {
+        "question": "Làm thế nào để bạn giúp người mua tìm tài sản phù hợp?",
+        "answer": "Chúng tôi bắt đầu bằng cách hiểu nhu cầu, sở thích và ngân sách cụ thể của bạn thông qua các cuộc tư vấn chi tiết. Sau đó chúng tôi sử dụng kiến thức rộng rãi về khu vực Boston và quyền truy cập vào dữ liệu niêm yết toàn diện để xác định các tài sản phù hợp với tiêu chí của bạn. Chúng tôi lên lịch các buổi xem, cung cấp thông tin chi tiết về khu phố và giúp bạn đánh giá ưu và nhược điểm của mỗi tài sản. Mục tiêu của chúng tôi là tìm cho bạn một ngôi nhà đáp ứng nhu cầu và đại diện cho một khoản đầu tư tốt."
+      },
+      "item5": {
+        "question": "Tôi nên tìm kiếm gì trong các buổi xem tài sản?",
+        "answer": "Trong các buổi xem, chúng tôi giúp bạn đánh giá cả bản thân tài sản và vị trí của nó. Chúng tôi xem xét các yếu tố cấu trúc, bố cục, ánh sáng tự nhiên, lưu trữ và tiềm năng cải thiện. Chúng tôi cũng đánh giá các yếu tố khu phố như an toàn, trường học, giao thông và kế hoạch phát triển trong tương lai. Chúng tôi khuyến khích bạn ghi chú và chụp ảnh, và chúng tôi rất vui khi chỉ ra các tính năng bạn có thể không nhận thấy."
+      },
+      "item6": {
+        "question": "Làm thế nào để bạn giúp với quá trình đề nghị?",
+        "answer": "Khi bạn sẵn sàng đưa ra đề nghị, chúng tôi cung cấp phân tích thị trường chi tiết để giúp xác định mức giá phù hợp. Chúng tôi giải thích các thành phần của một đề nghị mạnh, bao gồm giá, điều kiện và thời gian. Chúng tôi soạn thảo đề nghị, trình bày cho đại lý người bán và thương lượng thay mặt bạn. Kinh nghiệm của chúng tôi giúp chúng tôi dự đoán các vấn đề tiềm ẩn và tạo ra các đề nghị nổi bật trong các tình huống cạnh tranh."
+      },
+      "item7": {
+        "question": "Tôi nên bao gồm những điều kiện nào trong đề nghị của mình?",
+        "answer": "Các điều kiện phổ biến bao gồm tài chính, kiểm tra nhà và bán nhà hiện tại của bạn. Các điều kiện cụ thể bạn bao gồm phụ thuộc vào tình huống và tài sản của bạn. Chúng tôi giúp bạn hiểu mục đích và tác động của từng điều kiện và khuyến nghị những điều kiện nào để bao gồm dựa trên nhu cầu và điều kiện thị trường hiện tại. Chúng tôi cũng giải thích cách cấu trúc các điều kiện để làm cho đề nghị của bạn hấp dẫn hơn đối với người bán."
+      },
+      "item8": {
+        "question": "Làm thế nào để bạn xử lý quá trình kiểm tra nhà?",
+        "answer": "Chúng tôi khuyến nghị kiểm tra nhà kỹ lưỡng bởi một chuyên gia có trình độ. Chúng tôi có thể gợi ý các thanh tra viên đáng tin cậy và tham dự cuộc kiểm tra với bạn để giúp giải thích các phát hiện. Nếu phát hiện vấn đề, chúng tôi giúp bạn đánh giá tầm quan trọng của chúng và xác định phản hồi tốt nhất, cho dù đó là yêu cầu sửa chữa, thương lượng điều chỉnh giá hoặc trong một số trường hợp, từ bỏ tài sản."
+      },
+      "item9": {
+        "question": "Tôi nên biết gì về chi phí đóng cửa?",
+        "answer": "Chi phí đóng cửa thường dao động từ 2-5% giá mua và có thể bao gồm phí phát hành khoản vay, bảo hiểm title, phí luật sư, thuế tài sản và tiền gửi escrow. Chúng tôi cung cấp ước tính chi tiết về các chi phí này sớm trong quá trình để bạn có thể lập ngân sách phù hợp. Chúng tôi cũng giải thích chi phí nào có thể thương lượng và chi phí nào cố định, giúp bạn hiểu nơi bạn có thể tiết kiệm tiền."
+      },
+      "item10": {
+        "question": "Làm thế nào để bạn giúp với các tình huống đấu giá cạnh tranh?",
+        "answer": "Trong các thị trường cạnh tranh như Boston, các tình huống nhiều đề nghị là phổ biến. Chúng tôi giúp bạn tạo ra một đề nghị mạnh nổi bật trong khi bảo vệ lợi ích của bạn. Điều này có thể bao gồm đưa ra mức giá cao hơn, giảm thiểu các điều kiện, cung cấp tiền đặt cọc lớn hơn hoặc viết thư cá nhân cho người bán. Chúng tôi giải thích ưu và nhược điểm của từng chiến lược và giúp bạn quyết định cách tiếp cận nào phù hợp với mục tiêu và khả năng chấp nhận rủi ro của bạn."
+      },
+      "item11": {
+        "question": "Tôi nên biết gì về thuế tài sản ở Boston?",
+        "answer": "Thuế tài sản ở Boston và các cộng đồng xung quanh thay đổi đáng kể. Chúng tôi cung cấp thông tin về tỷ lệ thuế hiện tại, quy trình đánh giá và các thay đổi tiềm ẩn có thể ảnh hưởng đến gánh nặng thuế của bạn. Chúng tôi cũng giải thích cách tính thuế tài sản và những yếu tố nào có thể khiến chúng tăng theo thời gian. Thông tin này giúp bạn lập ngân sách chính xác và hiểu chi phí thực sự của việc sở hữu nhà."
+      },
+      "item12": {
+        "question": "Làm thế nào để bạn giúp với buổi xem cuối cùng và đóng cửa?",
+        "answer": "Trước khi đóng cửa, chúng tôi lên lịch một buổi xem cuối cùng để đảm bảo tài sản ở trong tình trạng đã thỏa thuận. Chúng tôi tham dự buổi đóng cửa với bạn để giải quyết bất kỳ câu hỏi hoặc lo ngại phút cuối nào. Chúng tôi giải thích tất cả các tài liệu bạn sẽ ký và đảm bảo mọi thứ tiến hành suôn sẻ. Sự hiện diện của chúng tôi giúp đảm bảo tất cả các điều khoản của thỏa thuận được thực hiện và bạn được chuẩn bị đầy đủ cho bước quan trọng này."
+      }
+    },
+    "component_items": {
+      "item1": {
+        "question": "Điều gì làm cho dịch vụ bất động sản của bạn trở nên độc đáo?",
+        "answer": "Dịch vụ bất động sản của chúng tôi nổi bật nhờ cách tiếp cận cá nhân hóa, kiến thức thị trường sâu rộng và cam kết thỏa mãn khách hàng. Chúng tôi dành thời gian để hiểu nhu cầu và mục tiêu cụ thể của bạn, cung cấp hướng dẫn phù hợp trong suốt quá trình và tận dụng chuyên môn địa phương rộng rãi để đạt được kết quả tốt nhất có thể."
+      },
+      "item2": {
+        "question": "Thường mất bao lâu để bán một ngôi nhà ở khu vực Boston?",
+        "answer": "Thời gian để bán một ngôi nhà ở khu vực Boston thay đổi tùy thuộc vào điều kiện thị trường, loại tài sản, vị trí và định giá. Trung bình, những ngôi nhà được định giá tốt ở các khu phố mong muốn có thể bán trong vòng 30-45 ngày. Tuy nhiên, tài sản sang trọng hoặc nhà ở các khu vực ít cạnh tranh hơn có thể mất nhiều thời gian hơn. Chúng tôi phát triển một kế hoạch tiếp thị chiến lược cho mỗi tài sản để đảm bảo tiếp xúc tối đa và thời gian ngắn nhất có thể trên thị trường."
+      },
+      "item3": {
+        "question": "Tôi nên làm gì để chuẩn bị ngôi nhà của mình để bán?",
+        "answer": "Để chuẩn bị ngôi nhà của bạn để bán, tập trung vào việc tăng cường sức hấp dẫn bên ngoài, dọn dẹp và loại bỏ cá nhân hóa nội thất, sửa chữa nhỏ, dọn dẹp sâu và xem xét việc trang trí chuyên nghiệp. Chúng tôi cung cấp tư vấn trước niêm yết cá nhân hóa để xác định các cải tiến cụ thể sẽ tối đa hóa giá trị tài sản của bạn và thu hút người mua mục tiêu trong khu vực của bạn."
+      },
+      "item4": {
+        "question": "Làm thế nào để bạn xác định giá niêm yết đúng cho ngôi nhà của tôi?",
+        "answer": "Chúng tôi xác định giá niêm yết tối ưu thông qua phân tích thị trường so sánh toàn diện xem xét các giao dịch bán gần đây của các tài sản tương tự, điều kiện thị trường hiện tại, các tính năng và cải tiến độc đáo của ngôi nhà của bạn, lợi thế vị trí và xu hướng người mua. Mục tiêu của chúng tôi là khuyến nghị một mức giá cạnh tranh thu hút người mua nghiêm túc trong khi tối đa hóa lợi nhuận của bạn."
+      },
+      "item5": {
+        "question": "Tôi nên mong đợi những chi phí nào khi bán nhà?",
+        "answer": "Khi bán nhà, các chi phí điển hình bao gồm hoa hồng bất động sản (thường 5-6% giá bán), chi phí đóng cửa (1-3%), các sửa chữa tiềm ẩn được xác định trong quá trình kiểm tra, các nhượng bộ người bán có thể, chi phí di chuyển và bất kỳ số dư thế chấp chưa thanh toán nào. Chúng tôi cung cấp ước tính thu nhập ròng chi tiết trong quá trình tư vấn ban đầu để bạn có hiểu biết rõ ràng về kết quả tài chính của mình."
+      },
+      "item6": {
+        "question": "Làm thế nào để bạn tiếp thị tài sản để đảm bảo tiếp xúc tối đa?",
+        "answer": "Chiến lược tiếp thị toàn diện của chúng tôi bao gồm chụp ảnh chuyên nghiệp, tour ảo, chiến dịch mạng xã hội có mục tiêu, vị trí cao cấp trên các nền tảng bất động sản, tiếp thị email đến cơ sở dữ liệu người mua của chúng tôi, kết nối môi giới và nhà mở cửa chiến lược. Đối với tài sản sang trọng, chúng tôi cũng triển khai các cách tiếp cận tiếp thị chuyên biệt để tiếp cận người mua có trình độ."
+      },
+      "item7": {
+        "question": "Bạn phục vụ những khu vực nào trong và xung quanh Boston?",
+        "answer": "Chúng tôi phục vụ toàn bộ khu vực Greater Boston, bao gồm Cambridge, Somerville, Newton, Brookline, Wellesley, Needham, Lexington, Winchester, Arlington, Medford, Malden, Weston, Dover và nhiều nơi khác. Kiến thức rộng rãi về các khu phố đa dạng này cho phép chúng tôi cung cấp hướng dẫn chuyên môn bất kể bạn đang mua hay bán ở đâu."
+      },
+      "item8": {
+        "question": "Người mua nhà lần đầu nên biết gì về thị trường Boston?",
+        "answer": "Người mua nhà lần đầu ở Boston nên hiểu rằng thị trường di chuyển nhanh chóng, cạnh tranh có thể gay gắt và việc chuẩn bị tài chính là điều cần thiết. Chúng tôi khuyến nghị được phê duyệt trước cho tài chính, hiểu rõ nhu cầu thiết yếu so với mong muốn, sẵn sàng hành động quyết đoán và có kỳ vọng thực tế về những gì ngân sách của bạn có thể mua ở các khu phố khác nhau."
+      }
+    }
   },
   "calculators": {
     "title": "MÁY TÍNH BẤT ĐỘNG SẢN",
@@ -113,19 +310,247 @@
     "insurance": "Bảo Hiểm:",
     "hoa_fees_short": "Phí HOA:",
     "loan_amount": "Số Tiền Vay:",
-    "down_payment_display": "Tiền Trả Trước:"
+    "down_payment_display": "Tiền Trả Trước:",
+    "seller_proceeds_inputs": "Thông Tin Thu Nhập Người Bán",
+    "seller_proceeds_desc": "Tính toán số tiền bạn sẽ nhận được sau khi bán nhà",
+    "sale_price": "Giá Bán",
+    "remaining_mortgage": "Số Dư Khoản Vay Còn Lại",
+    "agent_commission": "Hoa Hồng Môi Giới",
+    "closing_costs": "Chi Phí Đóng Cửa",
+    "repair_costs": "Chi Phí Sửa Chữa",
+    "other_fees": "Phí Khác",
+    "net_proceeds": "Thu Nhập Ròng",
+    "estimated_closing": "Ước tính tiền mặt khi đóng cửa",
+    "rental_inputs": "Thông Tin Thu Nhập Cho Thuê",
+    "rental_desc": "Tính toán lợi nhuận tiềm năng trên bất động sản đầu tư của bạn",
+    "monthly_rent": "Tiền Thuê Hàng Tháng",
+    "vacancy_rate": "Tỷ Lệ Trống",
+    "maintenance": "Bảo Trì (hàng năm)",
+    "property_management": "Quản Lý Bất Động Sản",
+    "utilities": "Tiện Ích (hàng tháng)",
+    "rental_analysis": "Phân Tích Thu Nhập Cho Thuê",
+    "rental_returns": "Lợi nhuận dự kiến từ bất động sản cho thuê của bạn",
+    "monthly_cashflow": "Dòng Tiền Hàng Tháng",
+    "income_after_expenses": "Thu nhập sau tất cả chi phí",
+    "effective_rent": "Tiền Thuê Hiệu Quả",
+    "monthly_expenses": "Chi Phí Hàng Tháng",
+    "mortgage_payment": "Thanh Toán Thế Chấp",
+    "investment_returns": "Lợi Nhuận Đầu Tư",
+    "annual_cashflow": "Dòng Tiền Hàng Năm",
+    "cash_on_cash": "Tỷ Suất Lợi Nhuận Trên Vốn"
   },
   "buyer_guide": {
     "title": "NGƯỜI MUA",
     "subtitle": "Tài nguyên toàn diện của bạn để điều hướng quá trình mua nhà tại Greater Boston, từ phê duyệt trước đến đóng cửa.",
     "roadmap_title": "LỘ TRÌNH MUA NHÀ CỦA BẠN",
-    "resources_title": "TÀI NGUYÊN CHO NGƯỜI MUA"
+    "resources_title": "TÀI NGUYÊN CHO NGƯỜI MUA",
+    "important_notice": "Lưu Ý Quan Trọng:",
+    "important_notice_text": "Mỗi tình huống mua nhà là duy nhất, và lộ trình này chỉ là hướng dẫn chung. Hoàn cảnh cụ thể của bạn có thể cần thêm các bước, thời gian khác nhau, hoặc cách tiếp cận thay thế không được đề cập ở đây. Thông tin này được cung cấp cho mục đích giáo dục và không nên được coi là tư vấn pháp lý, tài chính hoặc chuyên môn. Chúng tôi khuyến nghị mạnh mẽ việc tham khảo ý kiến với các chuyên gia có trình độ bao gồm đại lý bất động sản, người cho vay, luật sư và các chuyên gia khác có thể cung cấp hướng dẫn phù hợp với tình huống cụ thể của bạn và điều kiện thị trường địa phương.",
+    "resources_subtitle": "Truy cập các tài nguyên hữu ích này để đưa ra quyết định sáng suốt trong suốt hành trình mua nhà của bạn.",
+    "view_resource": "Xem Tài Nguyên",
+    "roadmap_steps": {
+      "step1": {
+        "title": "1. Chuẩn Bị & Sẵn Sàng Tài Chính",
+        "description": "Kiểm tra điểm tín dụng – Nhắm đến 620+ cho khoản vay thông thường (điểm cao hơn = điều khoản tốt hơn).",
+        "details": [
+          "Thiết lập ngân sách – Sử dụng máy tính trực tuyến hoặc nói chuyện với người cho vay để xác định bạn có thể chi trả bao nhiêu (bao gồm thuế, bảo hiểm và phí HOA nếu có).",
+          "Tiết kiệm cho chi phí trước – Tiền trả trước (3–20%), chi phí đóng cửa (2–5%), kiểm tra và chi phí di chuyển.",
+          "Được phê duyệt trước – Người cho vay cấp thư phê duyệt trước cho thấy người bán rằng bạn đủ điều kiện tài chính.",
+          "Xác định nhu cầu thiết yếu vs. mong muốn – Vị trí, kích thước, bố cục, tiện nghi, thời gian di chuyển, khu học chánh."
+        ]
+      },
+      "step2": {
+        "title": "2. Thuê Chuyên Gia",
+        "description": "Chọn đại lý người mua – Họ đại diện cho lợi ích của bạn, thương lượng thay mặt bạn và hướng dẫn bạn qua quá trình (được trả từ hoa hồng người bán trong hầu hết các trường hợp).",
+        "details": [
+          "Chọn người cho vay/môi giới thế chấp – So sánh lãi suất, phí và chương trình (FHA, VA, USDA, thông thường).",
+          "Chuyên gia tùy chọn – Luật sư bất động sản (phổ biến ở một số tiểu bang), cố vấn tài chính, thanh tra viên."
+        ]
+      },
+      "step3": {
+        "title": "3. Tìm Kiếm Nhà",
+        "description": "Tìm kiếm trực tuyến & tham quan tài sản – MLS, Zillow, Redfin, nhà mở cửa.",
+        "details": [
+          "Thu hẹp tìm kiếm – Xem xét xu hướng thị trường, thuế tài sản, an toàn khu phố và giá trị bán lại trong tương lai.",
+          "Theo dõi bán hàng tương tự – Hiểu những ngôi nhà tương tự bán với giá bao nhiêu để tránh trả quá cao."
+        ]
+      },
+      "step4": {
+        "title": "4. Đưa Ra Đề Nghị",
+        "description": "Xem xét bán hàng tương tự – Giúp xác định giá công bằng và cạnh tranh.",
+        "details": [
+          "Thiết lập điều khoản – Giá, số tiền đặt cọc (tiền đặt cọc), điều kiện (kiểm tra, tài chính, định giá), ngày đóng cửa.",
+          "Gửi đề nghị – Đại lý của bạn giao nó cho đại lý người bán.",
+          "Thương lượng – Đề nghị phản đối có thể qua lại cho đến khi đạt được thỏa thuận."
+        ]
+      },
+      "step5": {
+        "title": "5. Dưới Hợp Đồng",
+        "description": "Đặt cọc tiền đặt cọc – Thường 1–3% giá mua; được giữ trong tài khoản ủy thác.",
+        "details": [
+          "Lên lịch kiểm tra – Kiểm tra nhà chung, cộng với các kiểm tra chuyên biệt (radon, nấm mốc, bể phốt, côn trùng) nếu cần.",
+          "Thương lượng sửa chữa hoặc tín dụng – Dựa trên kết quả kiểm tra.",
+          "Người cho vay đặt hàng định giá – Đảm bảo tài sản có giá trị bằng giá đã thỏa thuận."
+        ]
+      },
+      "step6": {
+        "title": "6. Tài Chính & Thẩm Tra",
+        "description": "Cung cấp tài liệu cho người cho vay – Phiếu lương, khai thuế, sao kê ngân hàng.",
+        "details": [
+          "Bảo hiểm chủ nhà – Yêu cầu của người cho vay trước khi đóng cửa.",
+          "Xem xét tài liệu quyền sở hữu & HOA – Đảm bảo không có thế chấp, phí chưa thanh toán hoặc hạn chế ảnh hưởng đến kế hoạch của bạn.",
+          "Được phê duyệt khoản vay cuối cùng – Được gọi là 'sẵn sàng đóng cửa.'"
+        ]
+      },
+      "step7": {
+        "title": "7. Đóng Cửa",
+        "description": "Đi kiểm tra cuối cùng – Xác nhận sửa chữa hoàn thành và nhà ở tình trạng đã thỏa thuận.",
+        "details": [
+          "Ký tài liệu đóng cửa – Thế chấp, chứng thư, tiết lộ.",
+          "Trả chi phí đóng cửa & tiền trả trước – Thường qua séc ngân hàng hoặc chuyển khoản.",
+          "Nhận chìa khóa – Chúc mừng, bạn chính thức sở hữu ngôi nhà!"
+        ]
+      },
+      "step8": {
+        "title": "8. Sau Đóng Cửa",
+        "description": "Thay khóa & cập nhật bảo mật – An toàn trước tiên.",
+        "details": [
+          "Chuyển tiện ích – Gas, điện, nước, internet.",
+          "Nộp miễn trừ nhà ở – Ở các tiểu bang giảm thuế tài sản.",
+          "Thiết lập lịch bảo trì – Bảo vệ khoản đầu tư của bạn."
+        ]
+      }
+    },
+    "resources": {
+      "first_time_guide": {
+        "title": "Hướng Dẫn Người Mua Lần Đầu",
+        "description": "Hướng dẫn toàn diện để giúp người mua nhà lần đầu điều hướng quá trình với sự tự tin."
+      },
+      "mortgage_calculator": {
+        "title": "Máy Tính Thế Chấp",
+        "description": "Ước tính khoản thanh toán thế chấp hàng tháng dựa trên giá nhà, tiền trả trước và lãi suất."
+      },
+      "pre_approval_checklist": {
+        "title": "Danh Sách Kiểm Tra Phê Duyệt Trước",
+        "description": "Tài liệu thiết yếu và các bước để chuẩn bị cho việc phê duyệt thế chấp trước."
+      },
+      "home_inspection_guide": {
+        "title": "Hướng Dẫn Kiểm Tra Nhà",
+        "description": "Những gì cần tìm và câu hỏi cần hỏi trong quá trình kiểm tra nhà."
+      },
+      "market_reports": {
+        "title": "Báo Cáo Thị Trường",
+        "description": "Cập nhật với xu hướng thị trường bất động sản mới nhất và thống kê tại Boston."
+      },
+      "neighborhood_profiles": {
+        "title": "Hồ Sơ Khu Phố",
+        "description": "Thông tin chi tiết về các khu phố đa dạng của Boston để giúp bạn tìm được sự phù hợp hoàn hảo."
+      }
+    }
   },
   "seller_guide": {
     "title": "NGƯỜI BÁN",
     "subtitle": "Mọi thứ bạn cần biết về việc bán nhà tại Greater Boston, từ chuẩn bị đến tối đa hóa giá trị tài sản của bạn.",
     "roadmap_title": "LỘ TRÌNH BÁN NHÀ CỦA BẠN",
-    "resources_title": "TÀI NGUYÊN CHO NGƯỜI BÁN"
+    "resources_title": "TÀI NGUYÊN CHO NGƯỜI BÁN",
+    "important_notice": "Lưu Ý Quan Trọng:",
+    "important_notice_text": "Mỗi tình huống bán nhà là duy nhất, và lộ trình này chỉ là hướng dẫn chung. Hoàn cảnh cụ thể của bạn có thể cần thêm các bước, thời gian khác nhau, hoặc cách tiếp cận thay thế không được đề cập ở đây. Thông tin này được cung cấp cho mục đích giáo dục và không nên được coi là tư vấn pháp lý, tài chính hoặc chuyên môn. Chúng tôi khuyến nghị mạnh mẽ việc tham khảo ý kiến với các chuyên gia có trình độ bao gồm đại lý bất động sản, người cho vay, luật sư và các chuyên gia khác có thể cung cấp hướng dẫn phù hợp với tình huống cụ thể của bạn và điều kiện thị trường địa phương.",
+    "resources_subtitle": "Truy cập các tài nguyên này để tự tin chuẩn bị, định giá và hoàn thành việc bán tài sản của bạn.",
+    "view_resource": "Xem Tài Nguyên",
+    "roadmap_steps": {
+      "step1": {
+        "title": "1. Chuẩn Bị & Lập Kế Hoạch",
+        "description": "Đánh giá động lực & thời gian của bạn – Bạn đang nhắm đến giá cao nhất, bán nhanh nhất, hay cả hai?",
+        "details": [
+          "Nghiên cứu thị trường – Xem xét các giao dịch bán tương tự gần đây (comps) để hiểu xu hướng định giá.",
+          "Ước tính chi phí bán – Hoa hồng đại lý, chi phí đóng cửa, sửa chữa, dàn dựng, thuế, có thể trả nợ thế chấp.",
+          "Thu thập tài liệu tài sản – Chứng thư, giấy phép, bảo hành, quy tắc HOA, hóa đơn tiện ích."
+        ]
+      },
+      "step2": {
+        "title": "2. Thuê Chuyên Gia",
+        "description": "Chọn đại lý niêm yết – Họ sẽ tiếp thị, thương lượng và hướng dẫn bạn qua quá trình bán (phí tiêu chuẩn 5–6% chia giữa đại lý niêm yết và đại lý người mua).",
+        "details": [
+          "Chuyên gia tùy chọn – Luật sư bất động sản (phổ biến ở các tiểu bang như MA), người dàn dựng nhà, nhiếp ảnh gia.",
+          "Thảo luận chiến lược định giá – Định giá hơi cao hơn, bằng, hoặc thấp hơn giá trị thị trường tùy thuộc vào điều kiện thị trường."
+        ]
+      },
+      "step3": {
+        "title": "3. Chuẩn Bị Tài Sản",
+        "description": "Dọn dẹp & lau chùi sâu – Làm cho các phòng trông lớn hơn và hấp dẫn hơn.",
+        "details": [
+          "Hoàn thành sửa chữa & chạm sửa – Sửa các khiếm khuyết rõ ràng có thể khiến người mua từ chối.",
+          "Tăng cường sức hấp dẫn bên ngoài – Cảnh quan, sơn, ánh sáng.",
+          "Dàn dựng nhà – Dàn dựng chuyên nghiệp hoặc tự làm để làm nổi bật các tính năng chính.",
+          "Ảnh & video chuyên nghiệp – Ấn tượng đầu tiên được tạo ra trực tuyến."
+        ]
+      },
+      "step4": {
+        "title": "4. Niêm Yết & Tiếp Thị",
+        "description": "Niêm yết trên MLS – Đại lý của bạn đăng nhà với chi tiết đầy đủ, ảnh chuyên nghiệp và có thể là tour 3D.",
+        "details": [
+          "Kế hoạch tiếp thị – Nhà mở cửa, quảng cáo mạng xã hội, chiến dịch email, trang web bất động sản.",
+          "Tham quan – Linh hoạt với thời gian tham quan; giữ nhà gọn gàng và sẵn sàng."
+        ]
+      },
+      "step5": {
+        "title": "5. Nhận & Thương Lượng Đề Nghị",
+        "description": "Xem xét đề nghị với đại lý của bạn – Nhìn xa hơn giá: điều kiện, ngày đóng cửa, loại tài chính, tiền đặt cọc.",
+        "details": [
+          "Đề nghị phản đối nếu cần – Điều chỉnh giá, điều khoản hoặc tín dụng để tìm điểm chung.",
+          "Chấp nhận đề nghị tốt nhất – Ký thỏa thuận mua bán."
+        ]
+      },
+      "step6": {
+        "title": "6. Dưới Hợp Đồng",
+        "description": "Kiểm tra của người mua – Người mua thường sẽ tiến hành kiểm tra nhà trong thời gian nhất định.",
+        "details": [
+          "Thương lượng sửa chữa hoặc tín dụng – Quyết định những gì cần sửa hoặc tín dụng lại cho người mua.",
+          "Định giá – Được đặt hàng bởi người cho vay của người mua để xác nhận giá trị.",
+          "Tìm kiếm quyền sở hữu – Đảm bảo không có thế chấp hoặc vấn đề pháp lý."
+        ]
+      },
+      "step7": {
+        "title": "7. Chuẩn Bị Đóng Cửa",
+        "description": "Xử lý điều kiện – Thực hiện bất kỳ sửa chữa đã thỏa thuận nào, thu thập biên lai.",
+        "details": [
+          "Phối hợp di chuyển ra ngoài – Dựa trên ngày đóng cửa và sở hữu đã thỏa thuận.",
+          "Đọc số cuối cùng tiện ích – Gas, điện, nước.",
+          "Ký tài liệu đóng cửa – Chứng thư, bảng kê thanh toán, bản khai có tuyên thệ."
+        ]
+      },
+      "step8": {
+        "title": "8. Ngày Đóng Cửa",
+        "description": "Người mua đi kiểm tra cuối cùng – Xác nhận tình trạng tài sản phù hợp với thỏa thuận.",
+        "details": [
+          "Tham dự đóng cửa (hoặc ký từ xa) – Ký tài liệu cuối cùng chuyển quyền sở hữu.",
+          "Nhận tiền bán – Tiền được chuyển khoản hoặc cung cấp qua séc sau khi đóng cửa hoàn tất.",
+          "Giao chìa khóa – Bao gồm bộ mở cửa nhà để xe, chìa khóa thư, fob HOA."
+        ]
+      },
+      "step9": {
+        "title": "9. Sau Đóng Cửa",
+        "description": "Hủy bảo hiểm – Sau khi người mua chính thức sở hữu nhà.",
+        "details": [
+          "Nộp thay đổi địa chỉ – USPS, ngân hàng, đăng ký.",
+          "Giữ tài liệu đóng cửa – Cho mục đích thuế và tham khảo trong tương lai."
+        ]
+      }
+    },
+    "resources": {
+      "home_preparation": {
+        "title": "Hướng Dẫn Chuẩn Bị Nhà",
+        "description": "Hướng dẫn toàn diện để chuẩn bị nhà khu vực Boston của bạn để bán nhằm tối đa hóa sức hấp dẫn và giá trị đối với người mua tiềm năng."
+      },
+      "pricing_strategy": {
+        "title": "Hướng Dẫn Chiến Lược Định Giá",
+        "description": "Học cách định giá nhà hiệu quả trong thị trường Greater Boston cạnh tranh để thu hút người mua nghiêm túc."
+      },
+      "seller_documentation": {
+        "title": "Hướng Dẫn Tài Liệu Người Bán",
+        "description": "Tổng quan về tất cả tài liệu và tiết lộ cần thiết khi bán nhà tại Massachusetts."
+      }
+    }
   },
   "reviews": {
     "title": "ĐÁNH GIÁ KHÁCH HÀNG",
@@ -139,5 +564,21 @@
     "back_to_top": "Về Đầu Trang",
     "loading": "Đang tải...",
     "error": "Đã xảy ra lỗi"
+  },
+  "blog": {
+    "title": "BÀI VIẾT",
+    "subtitle": "Cập nhật thông tin với những hiểu biết mới nhất, xu hướng thị trường và lời khuyên chuyên môn về bất động sản tại khu vực Greater Boston.",
+    "read_more": "Đọc Thêm",
+    "additional_resources": "Tài Nguyên Bổ Sung",
+    "back_to_articles": "QUAY LẠI TẤT CẢ BÀI VIẾT",
+    "share_article": "Chia sẻ bài viết này",
+    "share_twitter": "Chia sẻ trên Twitter",
+    "share_facebook": "Chia sẻ trên Facebook",
+    "share_linkedin": "Chia sẻ trên LinkedIn"
+  },
+  "neighborhoods": {
+    "title": "CÁC KHU VỰC PHỤC VỤ",
+    "subtitle": "Khám phá các khu vực đa dạng và sôi động khắp Greater Boston nơi chúng tôi giúp khách hàng tìm ngôi nhà hoàn hảo.",
+    "and_many_more": "VÀ NHIỀU HƠN NỮA..."
   }
 }

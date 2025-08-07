@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app:delegated
+      - /app/node_modules
+      - ./src:/app/src:delegated
+      - ./public:/app/public:delegated
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - SUPABASE_URL=
+      - SUPABASE_SERVICE_KEY=
+      - VITE_SUPABASE_URL=
+      - VITE_SUPABASE_ANON_KEY=
+    stdin_open: true
+    tty: true
+    restart: unless-stopped

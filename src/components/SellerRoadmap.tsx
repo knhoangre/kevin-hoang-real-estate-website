@@ -1,91 +1,93 @@
 import { CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
-
-const steps = [
-  {
-    title: "1. Preparation & Planning",
-    description: "Assess your motivation & timing – Are you aiming for the highest price, quickest sale, or both?",
-    details: [
-      "Research the market – Review recent comparable sales (comps) to understand pricing trends.",
-      "Estimate costs of selling – Agent commission, closing costs, repairs, staging, taxes, possible mortgage payoff.",
-      "Gather property documents – Deed, permits, warranties, HOA rules, utility bills."
-    ]
-  },
-  {
-    title: "2. Hiring Professionals",
-    description: "Choose a listing agent – They'll market, negotiate, and guide you through the sale (standard fee 5–6% split between listing and buyer agents).",
-    details: [
-      "Optional specialists – Real estate attorney (common in states like MA), home stager, photographer.",
-      "Discuss pricing strategy – Pricing slightly above, at, or below market value depending on market conditions."
-    ]
-  },
-  {
-    title: "3. Preparing the Property",
-    description: "Declutter & deep clean – Make rooms look larger and more inviting.",
-    details: [
-      "Complete repairs & touch-ups – Fix obvious defects that could turn buyers away.",
-      "Enhance curb appeal – Landscaping, paint, lighting.",
-      "Stage the home – Professional staging or DIY to highlight key features.",
-      "Professional photos & videos – First impressions are made online."
-    ]
-  },
-  {
-    title: "4. Listing & Marketing",
-    description: "List on MLS – Your agent posts your home with full details, professional photos, and possibly a 3D tour.",
-    details: [
-      "Marketing plan – Open houses, social media ads, email campaigns, real estate websites.",
-      "Showings – Be flexible with showing times; keep the home tidy and ready."
-    ]
-  },
-  {
-    title: "5. Receiving & Negotiating Offers",
-    description: "Review offers with your agent – Look beyond price: contingencies, closing date, financing type, earnest money.",
-    details: [
-      "Counteroffer if needed – Adjust price, terms, or credits to find common ground.",
-      "Accept the best offer – Sign the purchase agreement."
-    ]
-  },
-  {
-    title: "6. Under Contract",
-    description: "Buyer inspections – Buyer will typically conduct a home inspection within a set time.",
-    details: [
-      "Negotiate repairs or credits – Decide what to fix or credit back to the buyer.",
-      "Appraisal – Ordered by the buyer's lender to confirm value.",
-      "Title search – Ensures no liens or legal issues."
-    ]
-  },
-  {
-    title: "7. Preparing for Closing",
-    description: "Address contingencies – Make any agreed repairs, gather receipts.",
-    details: [
-      "Coordinate move-out – Based on agreed closing and possession dates.",
-      "Final utility readings – Gas, electric, water.",
-      "Sign closing documents – Deed, settlement statement, affidavits."
-    ]
-  },
-  {
-    title: "8. Closing Day",
-    description: "Buyer does final walkthrough – Confirms property condition matches agreement.",
-    details: [
-      "Attend closing (or sign remotely) – Sign final documents transferring ownership.",
-      "Receive sale proceeds – Funds are wired or provided via check after closing is complete.",
-      "Hand over keys – Including garage openers, mail keys, HOA fobs."
-    ]
-  },
-  {
-    title: "9. Post-Closing",
-    description: "Cancel insurance – After the buyer officially owns the home.",
-    details: [
-      "File address change – USPS, banks, subscriptions.",
-      "Keep closing documents – For tax purposes and future reference."
-    ]
-  }
-];
+import { useTranslation } from "react-i18next";
 
 const SellerRoadmap = () => {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      title: t('seller_guide.roadmap_steps.step1.title'),
+      description: t('seller_guide.roadmap_steps.step1.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step1.details.0'),
+        t('seller_guide.roadmap_steps.step1.details.1'),
+        t('seller_guide.roadmap_steps.step1.details.2')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step2.title'),
+      description: t('seller_guide.roadmap_steps.step2.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step2.details.0'),
+        t('seller_guide.roadmap_steps.step2.details.1')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step3.title'),
+      description: t('seller_guide.roadmap_steps.step3.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step3.details.0'),
+        t('seller_guide.roadmap_steps.step3.details.1'),
+        t('seller_guide.roadmap_steps.step3.details.2'),
+        t('seller_guide.roadmap_steps.step3.details.3')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step4.title'),
+      description: t('seller_guide.roadmap_steps.step4.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step4.details.0'),
+        t('seller_guide.roadmap_steps.step4.details.1')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step5.title'),
+      description: t('seller_guide.roadmap_steps.step5.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step5.details.0'),
+        t('seller_guide.roadmap_steps.step5.details.1')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step6.title'),
+      description: t('seller_guide.roadmap_steps.step6.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step6.details.0'),
+        t('seller_guide.roadmap_steps.step6.details.1'),
+        t('seller_guide.roadmap_steps.step6.details.2')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step7.title'),
+      description: t('seller_guide.roadmap_steps.step7.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step7.details.0'),
+        t('seller_guide.roadmap_steps.step7.details.1'),
+        t('seller_guide.roadmap_steps.step7.details.2')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step8.title'),
+      description: t('seller_guide.roadmap_steps.step8.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step8.details.0'),
+        t('seller_guide.roadmap_steps.step8.details.1'),
+        t('seller_guide.roadmap_steps.step8.details.2')
+      ]
+    },
+    {
+      title: t('seller_guide.roadmap_steps.step9.title'),
+      description: t('seller_guide.roadmap_steps.step9.description'),
+      details: [
+        t('seller_guide.roadmap_steps.step9.details.0'),
+        t('seller_guide.roadmap_steps.step9.details.1')
+      ]
+    }
+  ];
   return (
     <div className="py-12">
-      <h2 className="text-3xl font-bold text-[#1a1a1a] mb-12">YOUR SELLING ROADMAP</h2>
+      <h2 className="text-3xl font-bold text-[#1a1a1a] mb-12">{t('seller_guide.roadmap_title')}</h2>
 
       <div className="relative">
         {/* Vertical Timeline Line */}

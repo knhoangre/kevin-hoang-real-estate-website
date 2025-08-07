@@ -179,7 +179,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder={t('contact.first_name')} {...field} />
+                        <Input placeholder={t('contact.form.first_name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -192,7 +192,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder={t('contact.last_name')} {...field} />
+                        <Input placeholder={t('contact.form.last_name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -245,7 +245,7 @@ const Contact = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea placeholder={t('contact.message')} className="h-32" {...field} />
+                      <Textarea placeholder={t('contact.form.message')} className="h-32" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

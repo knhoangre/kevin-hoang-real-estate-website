@@ -330,7 +330,7 @@ const Navbar = () => {
                     to="/auth"
                     className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group"
                   >
-                    LOGIN
+                    {t('nav.login')}
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </RouterLink>
                 )}

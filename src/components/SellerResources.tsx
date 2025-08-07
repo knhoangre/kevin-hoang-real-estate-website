@@ -4,42 +4,41 @@ import { motion } from "framer-motion";
 import { Home, TrendingUp, FileCheck } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const resources = [
-  {
-    icon: Home,
-    title: "Home Preparation Guide",
-    description:
-      "Comprehensive guide to preparing your Boston area home for sale to maximize its appeal and value to potential buyers.",
-    color: "bg-blue-500",
-    link: "/blog?category=home-preparation",
-  },
-  {
-    icon: TrendingUp,
-    title: "Pricing Strategy Guide",
-    description:
-      "Learn how to price your home effectively in the competitive Greater Boston market to attract serious buyers.",
-    color: "bg-green-500",
-    link: "/blog?category=pricing-strategy",
-  },
-  {
-    icon: FileCheck,
-    title: "Seller Documentation Guide",
-    description:
-      "Overview of all the documents and disclosures required when selling your home in Massachusetts.",
-    color: "bg-purple-500",
-    link: "/blog?category=seller-documentation",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 const SellerResources = () => {
+  const { t } = useTranslation();
+
+  const resources = [
+    {
+      icon: Home,
+      title: t('seller_guide.resources.home_preparation.title'),
+      description: t('seller_guide.resources.home_preparation.description'),
+      color: "bg-blue-500",
+      link: "/blog?category=home-preparation",
+    },
+    {
+      icon: TrendingUp,
+      title: t('seller_guide.resources.pricing_strategy.title'),
+      description: t('seller_guide.resources.pricing_strategy.description'),
+      color: "bg-green-500",
+      link: "/blog?category=pricing-strategy",
+    },
+    {
+      icon: FileCheck,
+      title: t('seller_guide.resources.seller_documentation.title'),
+      description: t('seller_guide.resources.seller_documentation.description'),
+      color: "bg-purple-500",
+      link: "/blog?category=seller-documentation",
+    },
+  ];
   return (
     <div className="py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">SELLER RESOURCES</h2>
+          <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">{t('seller_guide.resources_title')}</h2>
           <p className="text-gray-600">
-            Access these resources to confidently prepare, price, and complete the sale of your property.
+            {t('seller_guide.resources_subtitle')}
           </p>
         </div>
 
@@ -68,7 +67,7 @@ const SellerResources = () => {
                   className="inline-flex items-center text-[#1a1a1a] font-medium group relative"
                 >
                   <span className="relative">
-                    View Resource
+                    {t('seller_guide.view_resource')}
                     <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300" />
                   </span>
                   <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />

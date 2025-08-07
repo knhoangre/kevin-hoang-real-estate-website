@@ -47,22 +47,35 @@
   },
   "contact": {
     "title": "GET IN TOUCH",
-    "subtitle": "Ready to start your real estate journey? Let's connect.",
-    "phone": "Phone Number (XXX-XXX-XXXX)",
-    "email": "Email",
-    "address": "Address",
-    "send_message": "SEND MESSAGE",
-    "name": "Name",
-    "message": "Message",
-    "form_subtitle": "Send us a message and we'll get back to you as soon as possible.",
-    "first_name": "First Name",
-    "last_name": "Last Name",
+    "subtitle": "Let's discuss your real estate goals. Whether you're looking to buy, sell, or just have questions about the Boston market, I'm here to help.",
+    "contact_information": "Contact Information",
+    "phone": "PHONE",
+    "email": "EMAIL",
+    "office": "OFFICE",
     "call": "Call",
-    "text": "Text"
+    "text": "Text",
+    "send_message": "Send a Message",
+    "scan_qr_code": "Scan to save contact information",
+    "form": {
+      "first_name": "FIRST NAME",
+      "last_name": "LAST NAME",
+      "email": "EMAIL",
+      "phone_number": "PHONE NUMBER (XXX-XXX-XXXX)",
+      "message": "MESSAGE",
+      "send_message": "SEND MESSAGE",
+      "first_name_required": "First name is required",
+      "last_name_required": "Last name is required",
+      "email_invalid": "Invalid email format",
+      "message_required": "Message is required",
+      "message_sent_title": "Message sent!",
+      "message_sent_description": "Thank you for contacting us. We'll respond shortly."
+    }
   },
   "footer": {
     "quick_links": "QUICK LINKS",
     "legal": "LEGAL",
+    "about": "About",
+    "contact": "Contact",
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
     "disclaimer": "Disclaimer",
@@ -80,7 +93,191 @@
     "subtitle": "Find answers to common questions about buying and selling real estate in the Greater Boston area.",
     "general": "General Questions",
     "sellers": "Questions for Sellers",
-    "buyers": "Questions for Buyers"
+    "buyers": "Questions for Buyers",
+    "general_items": {
+      "item1": {
+        "question": "What makes your real estate services unique?",
+        "answer": "Our real estate services stand out because of our personalized approach, deep market knowledge, and commitment to client satisfaction. We take the time to understand your specific needs and goals, provide tailored guidance throughout the process, and leverage our extensive local expertise to achieve the best possible outcomes."
+      },
+      "item2": {
+        "question": "What areas in and around Boston do you serve?",
+        "answer": "We serve the entire Greater Boston area, including Cambridge, Somerville, Newton, Brookline, Wellesley, Needham, Lexington, Winchester, Arlington, Medford, Malden, Weston, Dover, and many more. Our extensive knowledge of these diverse neighborhoods allows us to provide expert guidance regardless of where you're buying or selling."
+      },
+      "item3": {
+        "question": "What's the difference between a buyer's agent and a seller's agent?",
+        "answer": "A buyer's agent exclusively represents the interests of the home buyer, helping them find suitable properties, negotiating the best possible price and terms, and guiding them through inspections and closing. A seller's agent (or listing agent) represents the seller, marketing their property, advising on pricing strategy, and working to secure the most favorable terms for the seller. In Massachusetts, agents must disclose who they represent in a transaction."
+      },
+      "item4": {
+        "question": "Do I need a real estate attorney for my transaction?",
+        "answer": "In Massachusetts, it's common and advisable to have a real estate attorney represent you whether buying or selling. Unlike some states, attorneys typically handle the closing process here rather than title companies. An attorney will review the purchase and sale agreement, conduct title research, resolve any legal issues, and ensure that all documents are properly prepared and filed."
+      },
+      "item5": {
+        "question": "What's the current state of the Boston housing market?",
+        "answer": "The Boston housing market remains competitive, characterized by limited inventory and strong demand in many neighborhoods. Market conditions can vary significantly by location, property type, and price point. We provide clients with up-to-date market analyses specific to their areas of interest, including recent sales data, days on market, and pricing trends to inform strategic decisions."
+      },
+      "item6": {
+        "question": "How do you stay informed about the local real estate market?",
+        "answer": "We maintain active memberships in professional organizations, attend regular market updates and training sessions, subscribe to industry publications, and analyze MLS data daily. Additionally, we network with other real estate professionals and attend local community events to stay informed about neighborhood developments and market trends."
+      },
+      "item7": {
+        "question": "What is your approach to client communication?",
+        "answer": "We believe in transparent, consistent, and responsive communication. We provide regular updates via your preferred method (email, text, or phone), respond to inquiries promptly, and set clear expectations about the process and timeline. We also use technology to keep you informed about property viewings, offers, and important deadlines."
+      },
+      "item8": {
+        "question": "How do you handle multiple offers on a property?",
+        "answer": "When a property receives multiple offers, we guide our clients through a structured process. For sellers, we present all offers with a detailed analysis of each, including price, contingencies, and buyer qualifications. For buyers, we help craft competitive offers that stand out while protecting your interests. We maintain ethical standards and treat all parties fairly throughout the negotiation process."
+      },
+      "item9": {
+        "question": "What happens if a transaction doesn't close as expected?",
+        "answer": "While most transactions close successfully, issues can arise. We have extensive experience handling unexpected situations such as inspection issues, financing problems, or title concerns. We work proactively to identify potential issues early, communicate clearly about any problems, and develop creative solutions to keep the transaction moving forward when possible."
+      },
+      "item10": {
+        "question": "How do you ensure a smooth closing process?",
+        "answer": "We coordinate closely with all parties involved in the transaction, including attorneys, lenders, inspectors, and title companies. We create detailed timelines, track important deadlines, and ensure all required documentation is completed accurately and on time. Our systematic approach helps minimize surprises and keeps the closing process on track."
+      },
+      "item11": {
+        "question": "What happens after the sale is complete?",
+        "answer": "Our relationship doesn't end at closing. We provide post-closing support, including recommendations for local services, maintenance tips, and community resources. We stay in touch with our clients and are available to answer questions or assist with future real estate needs. Many of our clients become repeat customers or refer friends and family to us."
+      },
+      "item12": {
+        "question": "How do you handle client confidentiality?",
+        "answer": "We take client confidentiality very seriously. All information shared with us during the buying or selling process is kept strictly confidential. We never disclose personal financial information, motivations, or other sensitive details without explicit permission. This commitment to privacy helps build trust and ensures our clients feel comfortable sharing important information with us."
+      }
+    },
+    "seller_items": {
+      "item1": {
+        "question": "How long does it typically take to sell a home in the Boston area?",
+        "answer": "The time it takes to sell a home in the Boston area varies depending on market conditions, property type, location, and pricing. On average, well-priced homes in desirable neighborhoods can sell within 30-45 days. However, luxury properties or homes in less competitive areas may take longer. We develop a strategic marketing plan for each property to ensure maximum exposure and the shortest possible time on market."
+      },
+      "item2": {
+        "question": "What should I do to prepare my home for sale?",
+        "answer": "To prepare your home for sale, focus on enhancing curb appeal, decluttering and depersonalizing interiors, making minor repairs, deep cleaning, and considering professional staging. We provide a personalized pre-listing consultation to identify specific improvements that will maximize your property's value and appeal to target buyers in your area."
+      },
+      "item3": {
+        "question": "How do you determine the right listing price for my home?",
+        "answer": "We determine the optimal listing price through a comprehensive comparative market analysis that considers recent sales of similar properties, current market conditions, your home's unique features and improvements, location advantages, and buyer trends. Our goal is to recommend a competitive price that attracts serious buyers while maximizing your return."
+      },
+      "item4": {
+        "question": "What costs should I expect when selling my home?",
+        "answer": "When selling your home, typical costs include real estate commission (usually 5-6% of the sale price), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
+      },
+      "item5": {
+        "question": "How do you market properties to ensure maximum exposure?",
+        "answer": "Our comprehensive marketing strategy includes professional photography, virtual tours, targeted social media campaigns, premium placement on real estate platforms, email marketing to our buyer database, broker networking, and strategic open houses. For luxury properties, we also implement specialized marketing approaches to reach qualified buyers."
+      },
+      "item6": {
+        "question": "Should I make repairs before listing my home?",
+        "answer": "The decision to make repairs before listing depends on the type and extent of the issues. Generally, we recommend addressing major structural problems, safety concerns, and obvious cosmetic issues that could deter buyers or significantly impact value. For minor issues, we can discuss whether to repair them or adjust the price accordingly. We can help you prioritize repairs based on cost versus potential return on investment."
+      },
+      "item7": {
+        "question": "How do you handle showings and open houses?",
+        "answer": "We coordinate all showings through a secure online system that allows you to approve or decline requests based on your schedule. For open houses, we ensure your home is properly staged and marketed to attract qualified buyers. We provide detailed feedback after each showing to help you understand buyer interest and potential areas for improvement. We also implement security measures to protect your property during showings."
+      },
+      "item8": {
+        "question": "What happens during the negotiation process?",
+        "answer": "During negotiations, we act as your advocate while maintaining professional relationships with all parties. We present offers with detailed analysis, explain the pros and cons of each, and help you make informed decisions. We're skilled at crafting counter-offers that protect your interests while keeping the transaction moving forward. Our goal is to achieve the best possible terms while ensuring a smooth process."
+      },
+      "item9": {
+        "question": "How do you handle inspection issues?",
+        "answer": "When inspection issues arise, we help you evaluate their significance and determine the best response. We can recommend trusted contractors for estimates, negotiate repairs or credits with the buyer, or explore other solutions that work for both parties. Our experience helps us distinguish between minor issues and significant concerns that might affect the transaction."
+      },
+      "item10": {
+        "question": "What should I know about the closing process?",
+        "answer": "The closing process typically takes 30-45 days from the time a purchase and sale agreement is signed. During this period, we coordinate with attorneys, lenders, and other professionals to ensure all conditions are met and documentation is completed. We keep you informed about important deadlines and requirements, and we're present at the closing to address any last-minute questions or concerns."
+      },
+      "item11": {
+        "question": "How do you handle properties that aren't selling quickly?",
+        "answer": "If a property isn't attracting offers within the expected timeframe, we implement a strategic reassessment. This may include adjusting the price, enhancing marketing efforts, making additional property improvements, or exploring alternative selling strategies. We provide regular market updates and feedback from showings to help you make informed decisions about next steps."
+      },
+      "item12": {
+        "question": "What are the tax implications of selling my home?",
+        "answer": "Tax implications vary based on factors such as how long you've owned the property, whether it was your primary residence, and any capital improvements you've made. Generally, you may be eligible for a capital gains exclusion of up to $250,000 (single) or $500,000 (married) if the home was your primary residence for at least two of the past five years. We recommend consulting with a tax professional for specific advice about your situation."
+      }
+    },
+    "buyer_items": {
+      "item1": {
+        "question": "What should first-time homebuyers know about the Boston market?",
+        "answer": "First-time homebuyers in Boston should understand that the market moves quickly, competition can be intense, and being financially prepared is essential. We recommend getting pre-approved for financing, understanding your must-haves versus nice-to-haves, being prepared to act decisively, and having realistic expectations about what your budget can purchase in different neighborhoods."
+      },
+      "item2": {
+        "question": "How can I get pre-approved for a mortgage?",
+        "answer": "To get pre-approved for a mortgage, you'll need to contact a lender and provide financial documentation such as proof of income, employment verification, credit history, and bank statements. The lender will review your financial situation and determine how much they're willing to lend you. We work with trusted local lenders who understand the Boston market and can guide you through this process efficiently."
+      },
+      "item3": {
+        "question": "What's the typical home buying process in Boston?",
+        "answer": "The home buying process typically begins with getting pre-approved for a mortgage, identifying your priorities and preferences, touring properties, making an offer, negotiating terms, conducting inspections, securing final financing, and closing. The entire process usually takes 2-3 months from start to finish, though this can vary based on market conditions and specific circumstances. We guide you through each step, explaining what to expect and helping you make informed decisions."
+      },
+      "item4": {
+        "question": "How do you help buyers find the right property?",
+        "answer": "We begin by understanding your specific needs, preferences, and budget through detailed consultations. We then use our extensive knowledge of the Boston area and access to comprehensive listing data to identify properties that match your criteria. We schedule viewings, provide neighborhood insights, and help you evaluate each property's pros and cons. Our goal is to find you a home that meets your needs and represents a good investment."
+      },
+      "item5": {
+        "question": "What should I look for during property viewings?",
+        "answer": "During viewings, we help you evaluate both the property itself and its location. We look at structural elements, layout, natural light, storage, and potential for improvements. We also assess neighborhood factors such as safety, schools, transportation, and future development plans. We encourage you to take notes and photos, and we're happy to point out features you might not notice on your own."
+      },
+      "item6": {
+        "question": "How do you help with the offer process?",
+        "answer": "When you're ready to make an offer, we provide a detailed market analysis to help determine an appropriate price. We explain the components of a strong offer, including price, contingencies, and timing. We draft the offer, present it to the seller's agent, and negotiate on your behalf. Our experience helps us anticipate potential issues and craft offers that stand out in competitive situations."
+      },
+      "item7": {
+        "question": "What contingencies should I include in my offer?",
+        "answer": "Common contingencies include financing, home inspection, and sale of your current home. The specific contingencies you include depend on your situation and the property. We help you understand the purpose and implications of each contingency and recommend which ones to include based on your needs and the current market conditions. We also explain how to structure contingencies to make your offer more attractive to sellers."
+      },
+      "item8": {
+        "question": "How do you handle the home inspection process?",
+        "answer": "We recommend a thorough home inspection by a qualified professional. We can suggest trusted inspectors and attend the inspection with you to help interpret the findings. If issues are discovered, we help you evaluate their significance and determine the best response, whether that's requesting repairs, negotiating a price adjustment, or, in some cases, walking away from the property."
+      },
+      "item9": {
+        "question": "What should I know about closing costs?",
+        "answer": "Closing costs typically range from 2-5% of the purchase price and may include loan origination fees, title insurance, attorney fees, property taxes, and escrow deposits. We provide a detailed estimate of these costs early in the process so you can budget accordingly. We also explain which costs are negotiable and which are fixed, helping you understand where you might save money."
+      },
+      "item10": {
+        "question": "How do you help with competitive bidding situations?",
+        "answer": "In competitive markets like Boston, multiple-offer situations are common. We help you craft a strong offer that stands out while protecting your interests. This may include offering a higher price, minimizing contingencies, providing a larger earnest money deposit, or writing a personal letter to the seller. We explain the pros and cons of each strategy and help you decide which approach aligns with your goals and risk tolerance."
+      },
+      "item11": {
+        "question": "What should I know about property taxes in Boston?",
+        "answer": "Property taxes in Boston and surrounding communities vary significantly. We provide information about current tax rates, assessment processes, and potential changes that might affect your tax burden. We also explain how property taxes are calculated and what factors might cause them to increase over time. This information helps you budget accurately and understand the true cost of homeownership."
+      },
+      "item12": {
+        "question": "How do you help with the final walkthrough and closing?",
+        "answer": "Before closing, we schedule a final walkthrough to ensure the property is in the agreed-upon condition. We attend the closing with you to address any last-minute questions or concerns. We explain all the documents you'll be signing and ensure everything proceeds smoothly. Our presence helps ensure that all terms of the agreement are fulfilled and that you're fully prepared for this important step."
+      }
+    },
+    "component_items": {
+      "item1": {
+        "question": "What makes your real estate services unique?",
+        "answer": "Our real estate services stand out because of our personalized approach, deep market knowledge, and commitment to client satisfaction. We take the time to understand your specific needs and goals, provide tailored guidance throughout the process, and leverage our extensive local expertise to achieve the best possible outcomes."
+      },
+      "item2": {
+        "question": "How long does it typically take to sell a home in the Boston area?",
+        "answer": "The time it takes to sell a home in the Boston area varies depending on market conditions, property type, location, and pricing. On average, well-priced homes in desirable neighborhoods can sell within 30-45 days. However, luxury properties or homes in less competitive areas may take longer. We develop a strategic marketing plan for each property to ensure maximum exposure and the shortest possible time on market."
+      },
+      "item3": {
+        "question": "What should I do to prepare my home for sale?",
+        "answer": "To prepare your home for sale, focus on enhancing curb appeal, decluttering and depersonalizing interiors, making minor repairs, deep cleaning, and considering professional staging. We provide a personalized pre-listing consultation to identify specific improvements that will maximize your property's value and appeal to target buyers in your area."
+      },
+      "item4": {
+        "question": "How do you determine the right listing price for my home?",
+        "answer": "We determine the optimal listing price through a comprehensive comparative market analysis that considers recent sales of similar properties, current market conditions, your home's unique features and improvements, location advantages, and buyer trends. Our goal is to recommend a competitive price that attracts serious buyers while maximizing your return."
+      },
+      "item5": {
+        "question": "What costs should I expect when selling my home?",
+        "answer": "When selling your home, typical costs include real estate commission (usually 5-6% of the sale price), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
+      },
+      "item6": {
+        "question": "How do you market properties to ensure maximum exposure?",
+        "answer": "Our comprehensive marketing strategy includes professional photography, virtual tours, targeted social media campaigns, premium placement on real estate platforms, email marketing to our buyer database, broker networking, and strategic open houses. For luxury properties, we also implement specialized marketing approaches to reach qualified buyers."
+      },
+      "item7": {
+        "question": "What areas in and around Boston do you serve?",
+        "answer": "We serve the entire Greater Boston area, including Cambridge, Somerville, Newton, Brookline, Wellesley, Needham, Lexington, Winchester, Arlington, Medford, Malden, Weston, Dover, and many more. Our extensive knowledge of these diverse neighborhoods allows us to provide expert guidance regardless of where you're buying or selling."
+      },
+      "item8": {
+        "question": "What should first-time homebuyers know about the Boston market?",
+        "answer": "First-time homebuyers in Boston should understand that the market moves quickly, competition can be intense, and being financially prepared is essential. We recommend getting pre-approved for financing, understanding your must-haves versus nice-to-haves, being prepared to act decisively, and having realistic expectations about what your budget can purchase in different neighborhoods."
+      }
+    }
   },
   "calculators": {
     "title": "REAL ESTATE CALCULATORS",
@@ -109,19 +306,247 @@
     "hoa_fees_short": "HOA Fees:",
     "loan_amount": "Loan Amount:",
     "down_payment_display": "Down Payment:",
+    "seller_proceeds_inputs": "Seller Proceeds Inputs",
+    "seller_proceeds_desc": "Calculate how much you'll receive after selling your home",
+    "sale_price": "Sale Price",
+    "remaining_mortgage": "Remaining Mortgage Balance",
+    "agent_commission": "Agent Commission",
+    "closing_costs": "Closing Costs",
+    "repair_costs": "Repair Costs",
+    "other_fees": "Other Fees",
+    "net_proceeds": "Net Proceeds",
+    "estimated_closing": "Estimated cash at closing",
+    "rental_inputs": "Rental Income Inputs",
+    "rental_desc": "Calculate potential returns on your investment property",
+    "monthly_rent": "Monthly Rent",
+    "vacancy_rate": "Vacancy Rate",
+    "maintenance": "Maintenance (yearly)",
+    "property_management": "Property Management",
+    "utilities": "Utilities (monthly)",
+    "rental_analysis": "Rental Income Analysis",
+    "rental_returns": "Projected returns on your rental property",
+    "monthly_cashflow": "Monthly Cash Flow",
+    "income_after_expenses": "Income after all expenses",
+    "effective_rent": "Effective Rent",
+    "monthly_expenses": "Monthly Expenses",
+    "mortgage_payment": "Mortgage Payment",
+    "investment_returns": "Investment Returns",
+    "annual_cashflow": "Annual Cash Flow",
+    "cash_on_cash": "Cash-on-Cash Return",
     "years": "Years"
   },
   "buyer_guide": {
     "title": "BUYER",
     "subtitle": "Your comprehensive resource for navigating the home buying process in Greater Boston, from pre-approval to closing.",
     "roadmap_title": "YOUR BUYING ROADMAP",
-    "resources_title": "BUYER RESOURCES"
+    "resources_title": "BUYER RESOURCES",
+    "important_notice": "Important Notice:",
+    "important_notice_text": "Every home buying situation is unique, and this roadmap serves as a general guideline only. Your specific circumstances may require additional steps, different timing, or alternative approaches not covered here. This information is provided for educational purposes and should not be considered as legal, financial, or professional advice. We strongly recommend consulting with qualified professionals including real estate agents, lenders, attorneys, and other specialists who can provide guidance tailored to your specific situation and local market conditions.",
+    "resources_subtitle": "Access these helpful resources to make informed decisions throughout your home buying journey.",
+    "view_resource": "View Resource",
+    "roadmap_steps": {
+      "step1": {
+        "title": "1. Preparation & Financial Readiness",
+        "description": "Check your credit score – Aim for 620+ for conventional loans (higher score = better terms).",
+        "details": [
+          "Set a budget – Use online calculators or speak with a lender to determine how much you can afford (including taxes, insurance, and HOA fees if applicable).",
+          "Save for upfront costs – Down payment (3–20%), closing costs (2–5%), inspections, and moving expenses.",
+          "Get pre-approved – A lender issues a pre-approval letter showing sellers you're financially qualified.",
+          "Identify must-haves vs. nice-to-haves – Location, size, layout, amenities, commute, school district."
+        ]
+      },
+      "step2": {
+        "title": "2. Hiring Professionals",
+        "description": "Choose a buyer's agent – They represent your interests, negotiate on your behalf, and guide you through the process (paid from seller's commission in most cases).",
+        "details": [
+          "Select a lender/mortgage broker – Compare rates, fees, and programs (FHA, VA, USDA, conventional).",
+          "Optional specialists – Real estate attorney (common in some states), financial advisor, inspector."
+        ]
+      },
+      "step3": {
+        "title": "3. House Hunting",
+        "description": "Search online & tour properties – MLS, Zillow, Redfin, open houses.",
+        "details": [
+          "Narrow your search – Consider market trends, property taxes, neighborhood safety, and future resale value.",
+          "Track comparable sales – Understand what similar homes sell for to avoid overpaying."
+        ]
+      },
+      "step4": {
+        "title": "4. Making an Offer",
+        "description": "Review comparable sales – Helps determine a fair and competitive price.",
+        "details": [
+          "Set terms – Price, deposit amount (earnest money), contingencies (inspection, financing, appraisal), closing date.",
+          "Submit offer – Your agent delivers it to the seller's agent.",
+          "Negotiate – Counteroffers may go back and forth until an agreement is reached."
+        ]
+      },
+      "step5": {
+        "title": "5. Under Contract",
+        "description": "Deposit earnest money – Usually 1–3% of purchase price; held in escrow.",
+        "details": [
+          "Schedule inspections – General home inspection, plus specialized ones (radon, mold, septic, pests) if needed.",
+          "Negotiate repairs or credits – Based on inspection results.",
+          "Lender orders appraisal – Ensures the property is worth the agreed price."
+        ]
+      },
+      "step6": {
+        "title": "6. Financing & Due Diligence",
+        "description": "Provide documents to lender – Pay stubs, tax returns, bank statements.",
+        "details": [
+          "Secure homeowner's insurance – Required by lenders before closing.",
+          "Review title & HOA docs – Ensure no liens, unpaid fees, or restrictions that impact your plans.",
+          "Get final loan approval – Known as 'clear to close.'"
+        ]
+      },
+      "step7": {
+        "title": "7. Closing",
+        "description": "Do final walkthrough – Confirm repairs are complete and home is in agreed condition.",
+        "details": [
+          "Sign closing documents – Mortgage, deed, disclosures.",
+          "Pay closing costs & down payment – Usually via cashier's check or wire transfer.",
+          "Receive keys – Congratulations, you officially own the home!"
+        ]
+      },
+      "step8": {
+        "title": "8. Post-Closing",
+        "description": "Change locks & update security – Safety first.",
+        "details": [
+          "Transfer utilities – Gas, electric, water, internet.",
+          "File homestead exemption – In states where it lowers property taxes.",
+          "Set a maintenance schedule – Protect your investment."
+        ]
+      }
+    },
+    "resources": {
+      "first_time_guide": {
+        "title": "First-Time Buyer Guide",
+        "description": "A comprehensive guide to help first-time homebuyers navigate the process with confidence."
+      },
+      "mortgage_calculator": {
+        "title": "Mortgage Calculator",
+        "description": "Estimate your monthly mortgage payments based on home price, down payment, and interest rate."
+      },
+      "pre_approval_checklist": {
+        "title": "Pre-Approval Checklist",
+        "description": "Essential documents and steps to prepare for your mortgage pre-approval."
+      },
+      "home_inspection_guide": {
+        "title": "Home Inspection Guide",
+        "description": "What to look for and questions to ask during your home inspection."
+      },
+      "market_reports": {
+        "title": "Market Reports",
+        "description": "Stay updated with the latest real estate market trends and statistics in Boston."
+      },
+      "neighborhood_profiles": {
+        "title": "Neighborhood Profiles",
+        "description": "Detailed information about Boston's diverse neighborhoods to help you find the perfect fit."
+      }
+    }
   },
   "seller_guide": {
     "title": "SELLER",
     "subtitle": "Everything you need to know about selling your home in Greater Boston, from preparation to maximizing your property's value.",
     "roadmap_title": "YOUR SELLING ROADMAP",
-    "resources_title": "SELLER RESOURCES"
+    "resources_title": "SELLER RESOURCES",
+    "important_notice": "Important Notice:",
+    "important_notice_text": "Every home selling situation is unique, and this roadmap serves as a general guideline only. Your specific circumstances may require additional steps, different timing, or alternative approaches not covered here. This information is provided for educational purposes and should not be considered as legal, financial, or professional advice. We strongly recommend consulting with qualified professionals including real estate agents, lenders, attorneys, and other specialists who can provide guidance tailored to your specific situation and local market conditions.",
+    "resources_subtitle": "Access these resources to confidently prepare, price, and complete the sale of your property.",
+    "view_resource": "View Resource",
+    "roadmap_steps": {
+      "step1": {
+        "title": "1. Preparation & Planning",
+        "description": "Assess your motivation & timing – Are you aiming for the highest price, quickest sale, or both?",
+        "details": [
+          "Research the market – Review recent comparable sales (comps) to understand pricing trends.",
+          "Estimate costs of selling – Agent commission, closing costs, repairs, staging, taxes, possible mortgage payoff.",
+          "Gather property documents – Deed, permits, warranties, HOA rules, utility bills."
+        ]
+      },
+      "step2": {
+        "title": "2. Hiring Professionals",
+        "description": "Choose a listing agent – They'll market, negotiate, and guide you through the sale (standard fee 5–6% split between listing and buyer agents).",
+        "details": [
+          "Optional specialists – Real estate attorney (common in states like MA), home stager, photographer.",
+          "Discuss pricing strategy – Pricing slightly above, at, or below market value depending on market conditions."
+        ]
+      },
+      "step3": {
+        "title": "3. Preparing the Property",
+        "description": "Declutter & deep clean – Make rooms look larger and more inviting.",
+        "details": [
+          "Complete repairs & touch-ups – Fix obvious defects that could turn buyers away.",
+          "Enhance curb appeal – Landscaping, paint, lighting.",
+          "Stage the home – Professional staging or DIY to highlight key features.",
+          "Professional photos & videos – First impressions are made online."
+        ]
+      },
+      "step4": {
+        "title": "4. Listing & Marketing",
+        "description": "List on MLS – Your agent posts your home with full details, professional photos, and possibly a 3D tour.",
+        "details": [
+          "Marketing plan – Open houses, social media ads, email campaigns, real estate websites.",
+          "Showings – Be flexible with showing times; keep the home tidy and ready."
+        ]
+      },
+      "step5": {
+        "title": "5. Receiving & Negotiating Offers",
+        "description": "Review offers with your agent – Look beyond price: contingencies, closing date, financing type, earnest money.",
+        "details": [
+          "Counteroffer if needed – Adjust price, terms, or credits to find common ground.",
+          "Accept the best offer – Sign the purchase agreement."
+        ]
+      },
+      "step6": {
+        "title": "6. Under Contract",
+        "description": "Buyer inspections – Buyer will typically conduct a home inspection within a set time.",
+        "details": [
+          "Negotiate repairs or credits – Decide what to fix or credit back to the buyer.",
+          "Appraisal – Ordered by the buyer's lender to confirm value.",
+          "Title search – Ensures no liens or legal issues."
+        ]
+      },
+      "step7": {
+        "title": "7. Preparing for Closing",
+        "description": "Address contingencies – Make any agreed repairs, gather receipts.",
+        "details": [
+          "Coordinate move-out – Based on agreed closing and possession dates.",
+          "Final utility readings – Gas, electric, water.",
+          "Sign closing documents – Deed, settlement statement, affidavits."
+        ]
+      },
+      "step8": {
+        "title": "8. Closing Day",
+        "description": "Buyer does final walkthrough – Confirms property condition matches agreement.",
+        "details": [
+          "Attend closing (or sign remotely) – Sign final documents transferring ownership.",
+          "Receive sale proceeds – Funds are wired or provided via check after closing is complete.",
+          "Hand over keys – Including garage openers, mail keys, HOA fobs."
+        ]
+      },
+      "step9": {
+        "title": "9. Post-Closing",
+        "description": "Cancel insurance – After the buyer officially owns the home.",
+        "details": [
+          "File address change – USPS, banks, subscriptions.",
+          "Keep closing documents – For tax purposes and future reference."
+        ]
+      }
+    },
+    "resources": {
+      "home_preparation": {
+        "title": "Home Preparation Guide",
+        "description": "Comprehensive guide to preparing your Boston area home for sale to maximize its appeal and value to potential buyers."
+      },
+      "pricing_strategy": {
+        "title": "Pricing Strategy Guide",
+        "description": "Learn how to price your home effectively in the competitive Greater Boston market to attract serious buyers."
+      },
+      "seller_documentation": {
+        "title": "Seller Documentation Guide",
+        "description": "Overview of all the documents and disclosures required when selling your home in Massachusetts."
+      }
+    }
   },
   "reviews": {
     "title": "CLIENT REVIEWS",
@@ -135,5 +560,21 @@
     "back_to_top": "Back to Top",
     "loading": "Loading...",
     "error": "An error occurred"
+  },
+  "blog": {
+    "title": "BLOG",
+    "subtitle": "Stay informed with the latest insights, market trends, and expert advice on real estate in the Greater Boston area.",
+    "read_more": "Read More",
+    "additional_resources": "Additional Resources",
+    "back_to_articles": "BACK TO ALL ARTICLES",
+    "share_article": "Share this article",
+    "share_twitter": "Share on Twitter",
+    "share_facebook": "Share on Facebook",
+    "share_linkedin": "Share on LinkedIn"
+  },
+  "neighborhoods": {
+    "title": "NEIGHBORHOODS SERVED",
+    "subtitle": "Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes.",
+    "and_many_more": "AND MANY MORE..."
   }
 }

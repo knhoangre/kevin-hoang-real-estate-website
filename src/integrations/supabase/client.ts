@@ -11,26 +11,51 @@ if (typeof window === 'undefined') {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error('Missing Supabase environment variables. Please check your .env file.');
-}
+// Check if we have valid Supabase credentials
+const hasValidSupabaseConfig = SUPABASE_URL && 
+  SUPABASE_ANON_KEY && 
+  SUPABASE_URL !== 'placeholder' && 
+  SUPABASE_ANON_KEY !== 'placeholder' &&
+  SUPABASE_URL.startsWith('http');
+
+// Create a mock client if Supabase is not configured
+const createMockClient = () => {
+  console.warn('Supabase not configured. Using mock client.');
+  return {
+    auth: {
+      signInWithPassword: async () => ({ error: { message: 'Supabase not configured' } }),
+      signUp: async () => ({ error: { message: 'Supabase not configured' } }),
+      signOut: async () => ({ error: { message: 'Supabase not configured' } }),
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: null } }),
+    },
+    from: () => ({
+      select: () => ({ data: [], error: null }),
+      insert: () => ({ data: null, error: { message: 'Supabase not configured' } }),
+      update: () => ({ data: null, error: { message: 'Supabase not configured' } }),
+      delete: () => ({ data: null, error: { message: 'Supabase not configured' } }),
+    }),
+  } as any;
+};
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce', // Use PKCE flow for better security
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'real-estate-website',
-    },
-  },
-});
+export const supabase = hasValidSupabaseConfig 
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce', // Use PKCE flow for better security
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'real-estate-website',
+        },
+      },
+    })
+  : createMockClient();
 
 // Add error handling wrapper
 export const safeSupabase = {

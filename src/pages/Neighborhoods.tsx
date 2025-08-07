@@ -2,8 +2,11 @@ import { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { neighborhoods } from "../data/neighborhoodData";
+import { useTranslation } from "react-i18next";
 
 const Neighborhoods = () => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -24,7 +27,7 @@ const Neighborhoods = () => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
             >
-              NEIGHBORHOODS SERVED
+              {t('neighborhoods.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -30 }}
@@ -32,7 +35,7 @@ const Neighborhoods = () => {
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
               className="text-xl text-gray-600 mb-12 max-w-3xl"
             >
-              Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes.
+              {t('neighborhoods.subtitle')}
             </motion.p>
           </motion.div>
 
@@ -57,7 +60,7 @@ const Neighborhoods = () => {
 
             <div className="overflow-hidden rounded-lg shadow-md">
               <div className="p-6 bg-gray-50 h-full flex items-center justify-center">
-                <h3 className="text-2xl font-semibold text-gray-500 uppercase">AND MANY MORE...</h3>
+                <h3 className="text-2xl font-semibold text-gray-500 uppercase">{t('neighborhoods.and_many_more')}</h3>
               </div>
             </div>
           </div>

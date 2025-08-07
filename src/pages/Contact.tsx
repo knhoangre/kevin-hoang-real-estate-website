@@ -16,19 +16,22 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ContactQRCode from '@/components/ContactQRCode';
-
-const formSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email format'),
-  phone: z.string().optional(),
-  message: z.string().min(1, 'Message is required'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useTranslation } from 'react-i18next';
 
 const Contact = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
+  
+  const formSchema = z.object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email format'),
+    phone: z.string().optional(),
+    message: z.string().min(1, 'Message is required'),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -81,8 +84,8 @@ const Contact = () => {
   const onSubmit = (data: FormValues) => {
     setTimeout(() => {
       toast({
-        title: 'Message sent!',
-        description: 'Thank you for contacting us. We\'ll respond shortly.',
+        title: t('contact.form.message_sent_title'),
+        description: t('contact.form.message_sent_description'),
       });
       form.reset();
     }, 1000);
@@ -105,7 +108,7 @@ const Contact = () => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
             >
-              GET IN TOUCH
+              {t('contact.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -30 }}
@@ -113,7 +116,7 @@ const Contact = () => {
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
               className="text-xl text-gray-600 mb-12 max-w-2xl"
             >
-              Let's discuss your real estate goals. Whether you're looking to buy, sell, or just have questions about the Boston market, I'm here to help.
+              {t('contact.subtitle')}
             </motion.p>
           </motion.div>
 
@@ -127,7 +130,7 @@ const Contact = () => {
                 <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-6">
-                    <h2 className="text-2xl font-semibold text-white uppercase">Contact Information</h2>
+                    <h2 className="text-2xl font-semibold text-white uppercase">{t('contact.contact_information')}</h2>
                   </div>
                 </div>
 
@@ -139,7 +142,7 @@ const Contact = () => {
                       <Phone className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">PHONE</h3>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.phone')}</h3>
                       <div className="relative">
                         <button
                           id="phone-button"
@@ -157,8 +160,8 @@ const Contact = () => {
                           className={`absolute left-1/2 top-8 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300 ${dropdownOpen ? '' : 'hidden'}`}
                         >
                           <div className="flex flex-col items-center py-2">
-                            <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
-                            <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                            <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
+                            <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
                           </div>
                         </div>
                       </div>
@@ -170,7 +173,7 @@ const Contact = () => {
                       <Mail className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">EMAIL</h3>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.email')}</h3>
                       <div className="relative">
                         <button
                           onClick={() => window.location.href = "mailto:knhoangre@gmail.com"}
@@ -191,7 +194,7 @@ const Contact = () => {
                       <MapPin className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">OFFICE</h3>
+                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.office')}</h3>
                       <div className="relative">
                         <button
                           onClick={() => window.open("https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494", "_blank")}
@@ -221,7 +224,7 @@ const Contact = () => {
             >
               <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative border border-gray-100">
                 <div className="p-6 bg-gray-50/50">
-                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">Send a Message</h2>
+                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">{t('contact.send_message')}</h2>
 
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -232,7 +235,7 @@ const Contact = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="FIRST NAME" className="uppercase" {...field} />
+                                <Input placeholder={t('contact.form.first_name')} className="uppercase" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -245,7 +248,7 @@ const Contact = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="LAST NAME" className="uppercase" {...field} />
+                                <Input placeholder={t('contact.form.last_name')} className="uppercase" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -261,7 +264,7 @@ const Contact = () => {
                             <FormControl>
                               <Input
                                 type="email"
-                                placeholder="EMAIL"
+                                placeholder={t('contact.form.email')}
                                 className="uppercase"
                                 {...field}
                               />
@@ -278,7 +281,7 @@ const Contact = () => {
                           <FormItem>
                             <FormControl>
                               <Input
-                                placeholder="PHONE NUMBER (XXX-XXX-XXXX)"
+                                placeholder={t('contact.form.phone_number')}
                                 className="uppercase"
                                 onChange={(e) => {
                                   const formatted = formatPhoneNumber(e.target.value);
@@ -300,7 +303,7 @@ const Contact = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Textarea placeholder="MESSAGE" className="h-32 uppercase" {...field} />
+                              <Textarea placeholder={t('contact.form.message')} className="h-32 uppercase" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -312,7 +315,7 @@ const Contact = () => {
                         disabled={form.formState.isSubmitting}
                         type="submit"
                       >
-                        <span className="group-hover:-translate-x-2 transition-transform duration-300">SEND MESSAGE</span>
+                        <span className="group-hover:-translate-x-2 transition-transform duration-300">{t('contact.form.send_message')}</span>
                         <ArrowRight className="ml-2 h-4 w-4 transform opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                         <span className="absolute bottom-0 left-0 w-0 h-1 bg-white group-hover:w-full transition-all duration-700"></span>
                       </button>

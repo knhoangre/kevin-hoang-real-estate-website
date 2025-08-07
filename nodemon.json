@@ -1,0 +1,10 @@
+{
+  "watch": ["src/", "public/", "vite.config.ts"],
+  "ext": "ts,tsx,js,jsx,json,css,html",
+  "ignore": ["node_modules", "dist", ".git", "*.test.ts", "*.test.tsx"],
+  "delay": "1000",
+  "exec": "npm run dev -- --host 0.0.0.0 --port 5173",
+  "events": {
+    "restart": "echo \"[nodemon] App restarted due to changes\""
+  }
+}
