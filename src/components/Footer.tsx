@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import useScrollToTop from "@/hooks/useScrollToTop";
 import ContactQRCode from "./ContactQRCode";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const scrollToTop = useScrollToTop();
+  const { t } = useTranslation();
 
   // Function to handle link clicks
   const handleLinkClick = () => {
@@ -20,14 +22,16 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">KEVIN HOANG</h3>
             <div className="flex items-center space-x-4 mb-2">
               <Phone className="h-4 w-4" />
-              <a href="tel:+16175551234" className="text-gray-300 hover:text-white transition-colors">
+              <a href="tel:+16175551234" className="group relative text-gray-300 hover:text-white transition-colors">
                 (860) 682-2251
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-center space-x-4 mb-2">
               <Mail className="h-4 w-4" />
-              <a href="mailto:KNHOANGRE@GMAIL.COM" className="text-gray-300 hover:text-white transition-colors">
+              <a href="mailto:KNHOANGRE@GMAIL.COM" className="group relative text-gray-300 hover:text-white transition-colors">
                 KNHOANGRE@GMAIL.COM
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-center space-x-4">
@@ -36,65 +40,75 @@ const Footer = () => {
                 href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition-colors"
+                className="group relative text-gray-300 hover:text-white transition-colors"
               >
                 150 WEST ST, NEEDHAM, MA 02494
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
           </div>
 
           <div>
-            <h3 className="text-xl font-bold mb-4">QUICK LINKS</h3>
+            <h3 className="text-xl font-bold mb-4">{t('footer.quick_links')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
-                  Home
+                <Link to="/" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+{t('nav.home')}
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/about" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/about" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   About
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/buyer" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
-                  Buyer's Guide
+                <Link to="/buyer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+{t('nav.buyer')}
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/seller" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
-                  Seller's Guide
+                <Link to="/seller" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+{t('nav.seller')}
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/blog" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/blog" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   Blog
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/contact" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/contact" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   Contact
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-xl font-bold mb-4">LEGAL</h3>
+            <h3 className="text-xl font-bold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy-policy" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/privacy-policy" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   Privacy Policy
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/terms-of-service" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/terms-of-service" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   Terms of Service
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/disclaimer" onClick={handleLinkClick} className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/disclaimer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
                   Disclaimer
+                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
             </ul>

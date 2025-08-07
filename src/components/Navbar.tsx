@@ -2,13 +2,16 @@ import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import Logo from "./Logo";
 import ProfileDropdown from "./ProfileDropdown";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const isHomePage = location.pathname === '/';
@@ -101,7 +104,7 @@ const Navbar = () => {
                 location.pathname === '/buyer' ? 'font-bold' : ''
               }`}
             >
-              BUYER
+              {t('nav.buyer')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/buyer' ? 'w-full' : ''
@@ -115,7 +118,7 @@ const Navbar = () => {
                 location.pathname === '/seller' ? 'font-bold' : ''
               }`}
             >
-              SELLER
+              {t('nav.seller')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/seller' ? 'w-full' : ''
@@ -129,7 +132,7 @@ const Navbar = () => {
                 location.pathname === '/neighborhoods' ? 'font-bold' : ''
               }`}
             >
-              NEIGHBORHOODS
+              {t('nav.neighborhoods')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/neighborhoods' ? 'w-full' : ''
@@ -143,7 +146,7 @@ const Navbar = () => {
                 location.pathname === '/blog' ? 'font-bold' : ''
               }`}
             >
-              BLOG
+              {t('nav.blog')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/blog' ? 'w-full' : ''
@@ -157,7 +160,7 @@ const Navbar = () => {
                 location.pathname === '/faq' ? 'font-bold' : ''
               }`}
             >
-              FAQ
+              {t('nav.faq')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/faq' ? 'w-full' : ''
@@ -171,13 +174,16 @@ const Navbar = () => {
                 location.pathname === '/contact' ? 'font-bold' : ''
               }`}
             >
-              CONTACT
+              {t('nav.contact')}
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/contact' ? 'w-full' : ''
                 }`}
               />
             </button>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
             {user ? (
               <ProfileDropdown />
@@ -186,7 +192,7 @@ const Navbar = () => {
                 to="/auth"
                 className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group`}
               >
-                LOGIN
+                {t('nav.login')}
                 <span className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2`} />
               </RouterLink>
             )}
@@ -239,7 +245,7 @@ const Navbar = () => {
                     location.pathname === '/buyer' ? 'font-bold' : ''
                   }`}
                 >
-                  BUYER
+                  {t('nav.buyer')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/buyer' ? 'w-full' : ''
@@ -253,7 +259,7 @@ const Navbar = () => {
                     location.pathname === '/seller' ? 'font-bold' : ''
                   }`}
                 >
-                  SELLER
+                  {t('nav.seller')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/seller' ? 'w-full' : ''
@@ -267,7 +273,7 @@ const Navbar = () => {
                     location.pathname === '/neighborhoods' ? 'font-bold' : ''
                   }`}
                 >
-                  NEIGHBORHOODS
+                  {t('nav.neighborhoods')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/neighborhoods' ? 'w-full' : ''
@@ -281,7 +287,7 @@ const Navbar = () => {
                     location.pathname === '/blog' ? 'font-bold' : ''
                   }`}
                 >
-                  BLOG
+                  {t('nav.blog')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/blog' ? 'w-full' : ''
@@ -295,7 +301,7 @@ const Navbar = () => {
                     location.pathname === '/faq' ? 'font-bold' : ''
                   }`}
                 >
-                  FAQ
+                  {t('nav.faq')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/faq' ? 'w-full' : ''
@@ -309,7 +315,7 @@ const Navbar = () => {
                     location.pathname === '/contact' ? 'font-bold' : ''
                   }`}
                 >
-                  CONTACT
+                  {t('nav.contact')}
                   <span
                     className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                       location.pathname === '/contact' ? 'w-full' : ''

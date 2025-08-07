@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,30 +13,73 @@ import {
 } from "@/components/ui/card";
 
 const RealEstateCalculators = () => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("mortgage");
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const getSliderTransform = () => {
+    switch (activeTab) {
+      case "mortgage":
+        return "translateX(0%)";
+      case "seller":
+        return "translateX(100%)";
+      case "rental":
+        return "translateX(200%)";
+      default:
+        return "translateX(0%)";
+    }
+  };
+
   return (
     <div className="bg-gray-50 py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">REAL ESTATE CALCULATORS</h2>
+        <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">{t('calculators.title')}</h2>
 
-        <Tabs defaultValue="mortgage">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
-            <TabsTrigger value="mortgage">Mortgage Calculator</TabsTrigger>
-            <TabsTrigger value="seller">Seller Proceeds</TabsTrigger>
-            <TabsTrigger value="rental">Rental Income</TabsTrigger>
+        <Tabs defaultValue="mortgage" className="w-full" onValueChange={handleTabChange}>
+          <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-lg relative border border-gray-200">
+                        <TabsTrigger
+              value="mortgage"
+              className="relative z-30 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=active]:bg-transparent transition-all duration-300 ease-in-out"
+            >
+              {t('calculators.mortgage')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="seller"
+              className="relative z-30 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-gray-700 transition-all duration-300 ease-in-out"
+            >
+              {t('calculators.seller_proceeds')}
+            </TabsTrigger>
+            <TabsTrigger
+              value="rental"
+              className="relative z-30 data-[state=active]:text-white data-[state=inactive]:text-gray-700 data-[state=active]:bg-transparent transition-all duration-300 ease-in-out"
+            >
+              {t('calculators.rental_income')}
+            </TabsTrigger>
+                                    <div className="absolute inset-1 bg-gray-800 rounded-md transition-transform duration-300 ease-in-out"
+                 style={{
+                   transform: getSliderTransform(),
+                   width: 'calc(33.333% - 0.125rem)',
+                 }}
+            />
           </TabsList>
 
-          <div className="mt-8">
-            <TabsContent value="mortgage">
-              <MortgageCalculator />
-            </TabsContent>
+          <div className="mt-8 relative overflow-hidden">
+            <div className="transition-transform duration-300 ease-in-out">
+              <TabsContent value="mortgage" className="animate-in slide-in-from-right-4 duration-300">
+                <MortgageCalculator />
+              </TabsContent>
 
-            <TabsContent value="seller">
-              <SellerProceedsCalculator />
-            </TabsContent>
+              <TabsContent value="seller" className="animate-in slide-in-from-right-4 duration-300">
+                <SellerProceedsCalculator />
+              </TabsContent>
 
-            <TabsContent value="rental">
-              <RentalIncomeCalculator />
-            </TabsContent>
+              <TabsContent value="rental" className="animate-in slide-in-from-right-4 duration-300">
+                <RentalIncomeCalculator />
+              </TabsContent>
+            </div>
           </div>
         </Tabs>
       </div>
@@ -44,6 +88,7 @@ const RealEstateCalculators = () => {
 };
 
 const MortgageCalculator = () => {
+  const { t } = useTranslation();
   const [homePrice, setHomePrice] = useState(500000);
   const [downPayment, setDownPayment] = useState(100000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
@@ -51,7 +96,40 @@ const MortgageCalculator = () => {
   const [interestRate, setInterestRate] = useState(5.5);
   const [propertyTax, setPropertyTax] = useState(5000);
   const [insurance, setInsurance] = useState(1200);
-  const [hoa, setHoa] = useState(0);
+    const [hoa, setHoa] = useState(0);
+
+  // Track input focus to prevent reformatting while typing
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  // Track raw input values for decimal inputs
+  const [rawInputValues, setRawInputValues] = useState<{[key: string]: string}>({
+    downPaymentPercent: downPaymentPercent.toString(),
+    interestRate: interestRate.toString()
+  });
+
+  // Handlers for property tax, insurance, and HOA
+  const handlePropertyTaxInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setPropertyTax(value);
+    }
+  };
+
+  const handleInsuranceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setInsurance(value);
+    }
+  };
+
+  const handleHoaInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setHoa(value);
+    }
+  };
 
   // Calculate monthly payment
   const calculateMonthlyPayment = () => {
@@ -86,7 +164,8 @@ const MortgageCalculator = () => {
   };
 
   const handleHomePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value.replace(/,/g, ''));
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
     if (!isNaN(value)) {
       setHomePrice(value);
       // Update down payment amount while maintaining percentage
@@ -103,7 +182,8 @@ const MortgageCalculator = () => {
   };
 
   const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value.replace(/,/g, ''));
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
     if (!isNaN(value)) {
       setDownPayment(value);
       // Update down payment percentage
@@ -115,16 +195,32 @@ const MortgageCalculator = () => {
 
   const handleDownPaymentPercentChange = (value: number) => {
     setDownPaymentPercent(value);
+    // Update raw input value
+    setRawInputValues(prev => ({ ...prev, downPaymentPercent: value.toString() }));
     // Update down payment amount
     setDownPayment((homePrice * value) / 100);
   };
 
-  const handleDownPaymentPercentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0 && value <= 100) {
-      setDownPaymentPercent(value);
-      // Update down payment amount
-      setDownPayment((homePrice * value) / 100);
+    const handleDownPaymentPercentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, downPaymentPercent: rawValue }));
+
+      if (rawValue === '') {
+        setDownPaymentPercent(0);
+        setDownPayment(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0 && value <= 100) {
+          setDownPaymentPercent(value);
+          // Update down payment amount
+          setDownPayment((homePrice * value) / 100);
+        }
+        // Always update the raw input value even if validation fails
+        // This allows typing partial decimals like "20.6" while typing "20.67"
+      }
     }
   };
 
@@ -132,10 +228,23 @@ const MortgageCalculator = () => {
     setInterestRate(value);
   };
 
-  const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setInterestRate(value);
+    const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, interestRate: rawValue }));
+
+      if (rawValue === '') {
+        setInterestRate(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0) {
+          setInterestRate(value);
+        }
+        // Always update the raw input value even if validation fails
+        // This allows typing partial decimals like "5.56" while typing "5.567"
+      }
     }
   };
 
@@ -145,15 +254,15 @@ const MortgageCalculator = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Mortgage Inputs</CardTitle>
+          <CardTitle>{t('calculators.mortgage_inputs')}</CardTitle>
           <CardDescription>
-            Adjust the values to calculate your monthly mortgage payment
+            {t('calculators.mortgage_inputs_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
             <label className="block text-sm font-medium mb-1">
-              Home Price
+              {t('calculators.home_price')}
             </label>
             <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
@@ -169,8 +278,10 @@ const MortgageCalculator = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <Input
                   type="text"
-                  value={homePrice.toLocaleString()}
+                  value={focusedInput === 'homePrice' ? homePrice.toString() : homePrice.toLocaleString()}
                   onChange={handleHomePriceInputChange}
+                  onFocus={() => setFocusedInput('homePrice')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pl-7"
                 />
               </div>
@@ -179,7 +290,7 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment
+              {t('calculators.down_payment')}
             </label>
             <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
@@ -195,8 +306,10 @@ const MortgageCalculator = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <Input
                   type="text"
-                  value={downPayment.toLocaleString()}
+                  value={focusedInput === 'downPayment' ? downPayment.toString() : downPayment.toLocaleString()}
                   onChange={handleDownPaymentInputChange}
+                  onFocus={() => setFocusedInput('downPayment')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pl-7"
                 />
               </div>
@@ -205,7 +318,7 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Down Payment Percentage
+              {t('calculators.down_payment_percent')}
             </label>
             <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
@@ -219,9 +332,11 @@ const MortgageCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={downPaymentPercent.toFixed(1)}
+                  type="text"
+                  value={focusedInput === 'downPaymentPercent' ? rawInputValues.downPaymentPercent : (Math.round(downPaymentPercent * 10) / 10).toFixed(1)}
                   onChange={handleDownPaymentPercentInputChange}
+                  onFocus={() => setFocusedInput('downPaymentPercent')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -250,7 +365,7 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Interest Rate
+              {t('calculators.interest_rate')}
             </label>
             <div className="grid grid-cols-[1fr_auto] gap-4 items-center mb-1">
               <div className="flex-1">
@@ -264,10 +379,11 @@ const MortgageCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={interestRate.toFixed(3)}
+                  type="text"
+                  value={focusedInput === 'interestRate' ? rawInputValues.interestRate : (Math.round(interestRate * 1000) / 1000).toFixed(3)}
                   onChange={handleInterestRateInputChange}
-                  step="0.125"
+                  onFocus={() => setFocusedInput('interestRate')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -282,9 +398,11 @@ const MortgageCalculator = () => {
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
-                type="number"
-                value={propertyTax}
-                onChange={(e) => setPropertyTax(Number(e.target.value))}
+                type="text"
+                value={focusedInput === 'propertyTax' ? propertyTax.toString() : propertyTax.toLocaleString()}
+                onChange={handlePropertyTaxInputChange}
+                onFocus={() => setFocusedInput('propertyTax')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -292,14 +410,16 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Homeowner's Insurance (yearly)
+{t('calculators.homeowners_insurance')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
-                type="number"
-                value={insurance}
-                onChange={(e) => setInsurance(Number(e.target.value))}
+                type="text"
+                value={focusedInput === 'insurance' ? insurance.toString() : insurance.toLocaleString()}
+                onChange={handleInsuranceInputChange}
+                onFocus={() => setFocusedInput('insurance')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -307,14 +427,16 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              HOA Fees (monthly)
+{t('calculators.hoa_fees')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
-                type="number"
-                value={hoa}
-                onChange={(e) => setHoa(Number(e.target.value))}
+                type="text"
+                value={focusedInput === 'hoa' ? hoa.toString() : hoa.toLocaleString()}
+                onChange={handleHoaInputChange}
+                onFocus={() => setFocusedInput('hoa')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -324,16 +446,16 @@ const MortgageCalculator = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Payment Breakdown</CardTitle>
+          <CardTitle>{t('calculators.payment_breakdown')}</CardTitle>
           <CardDescription>
-            Your estimated monthly mortgage payment details
+            {t('calculators.payment_breakdown_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex justify-between items-center bg-gray-50 p-6 rounded-lg">
             <div>
-              <h3 className="text-xl font-bold">Monthly Payment</h3>
-              <p className="text-gray-500">Total payment each month</p>
+              <h3 className="text-xl font-bold">{t('calculators.monthly_payment')}</h3>
+              <p className="text-gray-500">{t('calculators.total_payment_desc')}</p>
             </div>
             <div className="text-3xl font-bold text-[#1a1a1a]">
               ${isNaN(payment.total) ? "0.00" : payment.total.toFixed(2)}
@@ -376,12 +498,20 @@ const MortgageCalculator = () => {
 };
 
 const SellerProceedsCalculator = () => {
+  const { t } = useTranslation();
   const [salePrice, setSalePrice] = useState(500000);
   const [mortgageBalance, setMortgageBalance] = useState(300000);
   const [agentCommission, setAgentCommission] = useState(6);
   const [closingCosts, setClosingCosts] = useState(5000);
   const [repairs, setRepairs] = useState(0);
   const [otherFees, setOtherFees] = useState(0);
+
+  // Track input focus to prevent reformatting while typing
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  // Track raw input values for decimal inputs
+  const [rawInputValues, setRawInputValues] = useState<{[key: string]: string}>({
+    agentCommission: agentCommission.toString()
+  });
 
   // Calculate proceeds
   const calculateProceeds = () => {
@@ -401,20 +531,65 @@ const SellerProceedsCalculator = () => {
   };
 
   const handleSalePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value.replace(/,/g, ''));
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
     if (!isNaN(value)) {
       setSalePrice(value);
     }
   };
 
+  const handleMortgageBalanceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setMortgageBalance(value);
+    }
+  };
+
+  const handleClosingCostsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setClosingCosts(value);
+    }
+  };
+
+  const handleRepairsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setRepairs(value);
+    }
+  };
+
+  const handleOtherFeesInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setOtherFees(value);
+    }
+  };
+
   const handleAgentCommissionChange = (value: number) => {
     setAgentCommission(value);
+    setRawInputValues(prev => ({ ...prev, agentCommission: value.toString() }));
   };
 
   const handleAgentCommissionInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setAgentCommission(value);
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, agentCommission: rawValue }));
+
+      if (rawValue === '') {
+        setAgentCommission(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0) {
+          setAgentCommission(value);
+        }
+      }
     }
   };
 
@@ -448,8 +623,10 @@ const SellerProceedsCalculator = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <Input
                   type="text"
-                  value={salePrice.toLocaleString()}
+                  value={focusedInput === 'salePrice' ? salePrice.toString() : salePrice.toLocaleString()}
                   onChange={handleSalePriceInputChange}
+                  onFocus={() => setFocusedInput('salePrice')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pl-7"
                 />
               </div>
@@ -464,8 +641,10 @@ const SellerProceedsCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={mortgageBalance.toLocaleString()}
-                onChange={(e) => setMortgageBalance(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'mortgageBalance' ? mortgageBalance.toString() : mortgageBalance.toLocaleString()}
+                onChange={handleMortgageBalanceInputChange}
+                onFocus={() => setFocusedInput('mortgageBalance')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -487,10 +666,11 @@ const SellerProceedsCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={agentCommission.toFixed(2)}
+                  type="text"
+                  value={focusedInput === 'agentCommission' ? rawInputValues.agentCommission : agentCommission.toFixed(2)}
                   onChange={handleAgentCommissionInputChange}
-                  step="0.25"
+                  onFocus={() => setFocusedInput('agentCommission')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -506,8 +686,10 @@ const SellerProceedsCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={closingCosts.toLocaleString()}
-                onChange={(e) => setClosingCosts(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'closingCosts' ? closingCosts.toString() : closingCosts.toLocaleString()}
+                onChange={handleClosingCostsInputChange}
+                onFocus={() => setFocusedInput('closingCosts')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -521,8 +703,10 @@ const SellerProceedsCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={repairs.toLocaleString()}
-                onChange={(e) => setRepairs(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'repairs' ? repairs.toString() : repairs.toLocaleString()}
+                onChange={handleRepairsInputChange}
+                onFocus={() => setFocusedInput('repairs')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -536,8 +720,10 @@ const SellerProceedsCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={otherFees.toLocaleString()}
-                onChange={(e) => setOtherFees(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'otherFees' ? otherFees.toString() : otherFees.toLocaleString()}
+                onChange={handleOtherFeesInputChange}
+                onFocus={() => setFocusedInput('otherFees')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -603,6 +789,7 @@ const SellerProceedsCalculator = () => {
 };
 
 const RentalIncomeCalculator = () => {
+  const { t } = useTranslation();
   const [purchasePrice, setPurchasePrice] = useState(500000);
   const [downPayment, setDownPayment] = useState(100000);
   const [interestRate, setInterestRate] = useState(5.5);
@@ -614,6 +801,15 @@ const RentalIncomeCalculator = () => {
   const [maintenance, setMaintenance] = useState(2400);
   const [propertyManagement, setPropertyManagement] = useState(10);
   const [utilities, setUtilities] = useState(0);
+
+  // Track input focus to prevent reformatting while typing
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  // Track raw input values for decimal inputs
+  const [rawInputValues, setRawInputValues] = useState<{[key: string]: string}>({
+    interestRate: interestRate.toString(),
+    vacancyRate: vacancyRate.toString(),
+    propertyManagement: propertyManagement.toString()
+  });
 
   // Calculate rental income
   const calculateRentalIncome = () => {
@@ -666,7 +862,8 @@ const RentalIncomeCalculator = () => {
   };
 
   const handlePurchasePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value.replace(/,/g, ''));
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
     if (!isNaN(value)) {
       setPurchasePrice(value);
     }
@@ -677,7 +874,8 @@ const RentalIncomeCalculator = () => {
   };
 
   const handleDownPaymentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value.replace(/,/g, ''));
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
     if (!isNaN(value)) {
       setDownPayment(value);
     }
@@ -685,34 +883,110 @@ const RentalIncomeCalculator = () => {
 
   const handleInterestRateChange = (value: number) => {
     setInterestRate(value);
+    setRawInputValues(prev => ({ ...prev, interestRate: value.toString() }));
   };
 
   const handleInterestRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setInterestRate(value);
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, interestRate: rawValue }));
+
+      if (rawValue === '') {
+        setInterestRate(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0) {
+          setInterestRate(value);
+        }
+      }
+    }
+  };
+
+  const handleMonthlyRentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setMonthlyRent(value);
+    }
+  };
+
+  const handlePropertyTaxInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setPropertyTax(value);
+    }
+  };
+
+  const handleInsuranceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setInsurance(value);
+    }
+  };
+
+  const handleMaintenanceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setMaintenance(value);
+    }
+  };
+
+  const handleUtilitiesInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, '');
+    const value = Number(rawValue);
+    if (!isNaN(value)) {
+      setUtilities(value);
     }
   };
 
   const handleVacancyRateChange = (value: number) => {
     setVacancyRate(value);
+    setRawInputValues(prev => ({ ...prev, vacancyRate: value.toString() }));
   };
 
   const handleVacancyRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0 && value <= 100) {
-      setVacancyRate(value);
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, vacancyRate: rawValue }));
+
+      if (rawValue === '') {
+        setVacancyRate(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0 && value <= 100) {
+          setVacancyRate(value);
+        }
+      }
     }
   };
 
   const handlePropertyManagementChange = (value: number) => {
     setPropertyManagement(value);
+    setRawInputValues(prev => ({ ...prev, propertyManagement: value.toString() }));
   };
 
   const handlePropertyManagementInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    if (!isNaN(value) && value >= 0) {
-      setPropertyManagement(value);
+    const rawValue = e.target.value.replace(/[^\d.]/g, '');
+    // Allow empty string or valid decimal numbers
+    if (rawValue === '' || /^\d*\.?\d*$/.test(rawValue)) {
+      // Store the raw input value
+      setRawInputValues(prev => ({ ...prev, propertyManagement: rawValue }));
+
+      if (rawValue === '') {
+        setPropertyManagement(0);
+      } else {
+        const value = Number(rawValue);
+        if (!isNaN(value) && value >= 0) {
+          setPropertyManagement(value);
+        }
+      }
     }
   };
 
@@ -746,8 +1020,10 @@ const RentalIncomeCalculator = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <Input
                   type="text"
-                  value={purchasePrice.toLocaleString()}
+                  value={focusedInput === 'purchasePrice' ? purchasePrice.toString() : purchasePrice.toLocaleString()}
                   onChange={handlePurchasePriceInputChange}
+                  onFocus={() => setFocusedInput('purchasePrice')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pl-7"
                 />
               </div>
@@ -772,8 +1048,10 @@ const RentalIncomeCalculator = () => {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
                 <Input
                   type="text"
-                  value={downPayment.toLocaleString()}
+                  value={focusedInput === 'downPayment' ? downPayment.toString() : downPayment.toLocaleString()}
                   onChange={handleDownPaymentInputChange}
+                  onFocus={() => setFocusedInput('downPayment')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pl-7"
                 />
               </div>
@@ -796,10 +1074,11 @@ const RentalIncomeCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={interestRate.toFixed(3)}
+                  type="text"
+                  value={focusedInput === 'interestRate' ? rawInputValues.interestRate : interestRate.toFixed(3)}
                   onChange={handleInterestRateInputChange}
-                  step="0.125"
+                  onFocus={() => setFocusedInput('interestRate')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -834,8 +1113,10 @@ const RentalIncomeCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={monthlyRent.toLocaleString()}
-                onChange={(e) => setMonthlyRent(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'monthlyRent' ? monthlyRent.toString() : monthlyRent.toLocaleString()}
+                onChange={handleMonthlyRentInputChange}
+                onFocus={() => setFocusedInput('monthlyRent')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -857,9 +1138,11 @@ const RentalIncomeCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={vacancyRate.toFixed(1)}
+                  type="text"
+                  value={focusedInput === 'vacancyRate' ? rawInputValues.vacancyRate : vacancyRate.toFixed(1)}
                   onChange={handleVacancyRateInputChange}
+                  onFocus={() => setFocusedInput('vacancyRate')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -875,8 +1158,10 @@ const RentalIncomeCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={propertyTax.toLocaleString()}
-                onChange={(e) => setPropertyTax(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'propertyTax' ? propertyTax.toString() : propertyTax.toLocaleString()}
+                onChange={handlePropertyTaxInputChange}
+                onFocus={() => setFocusedInput('propertyTax')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -890,8 +1175,10 @@ const RentalIncomeCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={insurance.toLocaleString()}
-                onChange={(e) => setInsurance(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'insurance' ? insurance.toString() : insurance.toLocaleString()}
+                onChange={handleInsuranceInputChange}
+                onFocus={() => setFocusedInput('insurance')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -905,8 +1192,10 @@ const RentalIncomeCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={maintenance.toLocaleString()}
-                onChange={(e) => setMaintenance(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'maintenance' ? maintenance.toString() : maintenance.toLocaleString()}
+                onChange={handleMaintenanceInputChange}
+                onFocus={() => setFocusedInput('maintenance')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>
@@ -928,10 +1217,11 @@ const RentalIncomeCalculator = () => {
               </div>
               <div className="relative w-36">
                 <Input
-                  type="number"
-                  value={propertyManagement.toFixed(1)}
+                  type="text"
+                  value={focusedInput === 'propertyManagement' ? rawInputValues.propertyManagement : propertyManagement.toFixed(1)}
                   onChange={handlePropertyManagementInputChange}
-                  step="0.5"
+                  onFocus={() => setFocusedInput('propertyManagement')}
+                  onBlur={() => setFocusedInput(null)}
                   className="pr-7"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
@@ -947,8 +1237,10 @@ const RentalIncomeCalculator = () => {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
               <Input
                 type="text"
-                value={utilities.toLocaleString()}
-                onChange={(e) => setUtilities(Number(e.target.value.replace(/,/g, '')))}
+                value={focusedInput === 'utilities' ? utilities.toString() : utilities.toLocaleString()}
+                onChange={handleUtilitiesInputChange}
+                onFocus={() => setFocusedInput('utilities')}
+                onBlur={() => setFocusedInput(null)}
                 className="pl-7"
               />
             </div>

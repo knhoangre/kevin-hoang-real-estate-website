@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import ContactQRCode from "./ContactQRCode";
+import { useTranslation } from "react-i18next";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -29,6 +30,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const Contact = () => {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phoneDropdown, setPhoneDropdown] = useState(false);
   const { toast } = useToast();
@@ -112,7 +114,7 @@ const Contact = () => {
       <div className="container px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-[#1a1a1a] uppercase">Contact Information</h2>
+            <h2 className="text-4xl font-bold text-[#1a1a1a] uppercase">{t('contact.title')}</h2>
             <div className="space-y-6">
               <div className="flex items-center space-x-4 w-fit group relative"
                    ref={dropdownRef}
@@ -130,8 +132,8 @@ const Contact = () => {
                 {phoneDropdown && (
                   <div className="dropdown-content opacity-100 visible absolute left-1/2 top-full mt-3 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300">
                     <div className="flex flex-col items-center py-2">
-                      <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Call</a>
-                      <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">Text</a>
+                      <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
+                      <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
                     </div>
                   </div>
                 )}
@@ -177,7 +179,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="First Name" {...field} />
+                        <Input placeholder={t('contact.first_name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -190,7 +192,7 @@ const Contact = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="Last Name" {...field} />
+                        <Input placeholder={t('contact.last_name')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,7 +208,7 @@ const Contact = () => {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="Email"
+                        placeholder={t('contact.email')}
                         {...field}
                       />
                     </FormControl>
@@ -222,7 +224,7 @@ const Contact = () => {
                   <FormItem>
                     <FormControl>
                       <Input
-                        placeholder="Phone Number (XXX-XXX-XXXX)"
+                        placeholder={t('contact.phone')}
                         onChange={(e) => {
                           const formatted = formatPhoneNumber(e.target.value);
                           e.target.value = formatted;
@@ -243,7 +245,7 @@ const Contact = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Textarea placeholder="Message" className="h-32" {...field} />
+                      <Textarea placeholder={t('contact.message')} className="h-32" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -255,7 +257,7 @@ const Contact = () => {
                 disabled={isSubmitting}
                 type="submit"
               >
-                <span className="group-hover:-translate-x-2 transition-transform duration-300">SEND MESSAGE</span>
+                <span className="group-hover:-translate-x-2 transition-transform duration-300">{t('contact.send_message')}</span>
                 <ArrowRight className="ml-2 h-4 w-4 transform opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                 <span className="absolute bottom-0 left-0 w-0 h-1 bg-white group-hover:w-full transition-all duration-700"></span>
               </button>

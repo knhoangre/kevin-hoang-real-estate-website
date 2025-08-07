@@ -1,18 +1,22 @@
+import { useTranslation } from "react-i18next";
+
 const About = () => {
+  const { t } = useTranslation();
+
   return (
     <section id="about" className="py-24 bg-white">
       <div className="container px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-[#1a1a1a]">MEET KEVIN HOANG</h2>
+            <h2 className="text-4xl font-bold text-[#1a1a1a]">{t('about.title')}</h2>
             <p className="text-lg text-gray-600">
-              As a Boston-based real estate professional with a unique background in Mechanical Engineering and Software Engineering, Kevin Hoang brings an analytical and tech-savvy approach to real estate transactions. His engineering expertise enables him to provide detailed property assessments, understand complex market data, and leverage cutting-edge technology to optimize the buying and selling process.
+              {t('about.paragraph1')}
             </p>
             <p className="text-lg text-gray-600">
-              Specializing in the Greater Boston real estate market, Kevin combines his technical acumen with extensive market knowledge to deliver exceptional results for his clients. His engineering background proves invaluable in evaluating property conditions, understanding structural aspects, and identifying potential investment opportunities that others might miss.
+              {t('about.paragraph2')}
             </p>
             <p className="text-lg text-gray-600">
-              Whether you're a first-time homebuyer, seasoned investor, or looking to sell your property, Kevin's innovative approach and dedication to client success make him the ideal partner for your real estate journey in Massachusetts.
+              {t('about.paragraph3')}
             </p>
           </div>
 

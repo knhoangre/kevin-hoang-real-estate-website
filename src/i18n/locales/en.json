@@ -1,0 +1,139 @@
+{
+  "nav": {
+    "home": "Home",
+    "buyer": "Buyer",
+    "seller": "Seller",
+    "neighborhoods": "Neighborhoods",
+    "blog": "Blog",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "profile": "Profile",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "hero": {
+    "title": "YOUR TRUSTED REAL ESTATE PARTNER IN GREATER BOSTON",
+    "subtitle": "Expert guidance for buying and selling homes with personalized service and deep market knowledge.",
+    "cta": "Get Started Today"
+  },
+  "about": {
+    "title": "MEET KEVIN HOANG",
+    "subtitle": "Your Dedicated Real Estate Professional",
+    "description": "With years of experience in the Greater Boston real estate market, I'm committed to helping clients achieve their homeownership goals through personalized service and expert market knowledge.",
+    "paragraph1": "As a Boston-based real estate professional with a unique background in Mechanical Engineering and Software Engineering, Kevin Hoang brings an analytical and tech-savvy approach to real estate transactions. His technical expertise enables him to provide detailed property assessments, understand complex market data, and leverage cutting-edge technology to optimize the buying and selling process.",
+    "paragraph2": "Specializing in the Greater Boston real estate market, Kevin combines technical proficiency with deep market knowledge to deliver exceptional results for his clients. His engineering background proves invaluable when evaluating property conditions, understanding structural aspects, and identifying potential investment opportunities that others might overlook.",
+    "paragraph3": "Whether you're a first-time homebuyer, seasoned investor, or looking to sell your property, Kevin's innovative approach and dedication to client success make him the ideal partner for your real estate journey in Massachusetts."
+  },
+  "services": {
+    "buyer": {
+      "title": "Buyer Services",
+      "description": "Complete guidance through your home buying journey"
+    },
+    "seller": {
+      "title": "Seller Services",
+      "description": "Maximize your home's value with strategic marketing"
+    }
+  },
+  "stats": {
+    "title": "WHY WORK WITH ME",
+    "personalized_service": "PERSONALIZED SERVICE",
+    "avg_time_market": "AVERAGE TIME ON MARKET",
+    "client_satisfaction": "CLIENT SATISFACTION",
+    "market_experience": "MARKET EXPERIENCE",
+    "homes_sold": "Homes Sold",
+    "years_experience": "Years Experience",
+    "satisfied_clients": "Satisfied Clients",
+    "average_days": "Average Days on Market"
+  },
+  "contact": {
+    "title": "GET IN TOUCH",
+    "subtitle": "Ready to start your real estate journey? Let's connect.",
+    "phone": "Phone Number (XXX-XXX-XXXX)",
+    "email": "Email",
+    "address": "Address",
+    "send_message": "SEND MESSAGE",
+    "name": "Name",
+    "message": "Message",
+    "form_subtitle": "Send us a message and we'll get back to you as soon as possible.",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "call": "Call",
+    "text": "Text"
+  },
+  "footer": {
+    "quick_links": "QUICK LINKS",
+    "legal": "LEGAL",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "disclaimer": "Disclaimer",
+    "copyright": "All rights reserved.",
+    "created_by": "Created by",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "message": "Message",
+    "send_message": "SEND MESSAGE"
+  },
+  "faq": {
+    "title": "FREQUENTLY ASKED QUESTIONS",
+    "subtitle": "Find answers to common questions about buying and selling real estate in the Greater Boston area.",
+    "general": "General Questions",
+    "sellers": "Questions for Sellers",
+    "buyers": "Questions for Buyers"
+  },
+  "calculators": {
+    "title": "REAL ESTATE CALCULATORS",
+    "mortgage": "Mortgage Calculator",
+    "seller_proceeds": "Seller Proceeds",
+    "rental_income": "Rental Income",
+    "mortgage_inputs": "Mortgage Inputs",
+    "mortgage_inputs_desc": "Adjust the values to calculate your monthly mortgage payment",
+    "payment_breakdown": "Payment Breakdown",
+    "payment_breakdown_desc": "Your estimated monthly mortgage payment details",
+    "monthly_payment": "Monthly Payment",
+    "total_payment_desc": "Total payment each month",
+    "home_price": "Home Price",
+    "down_payment": "Down Payment",
+    "down_payment_percent": "Down Payment Percentage",
+    "loan_term": "Loan Term",
+    "interest_rate": "Interest Rate",
+    "property_tax_yearly": "Property Tax (yearly)",
+    "homeowners_insurance": "Homeowner's Insurance (yearly)",
+    "hoa_fees": "HOA Fees (monthly)",
+    "loan_term_years": "Loan Term: {years} years",
+    "years_button": "{years} Years",
+    "principal_interest": "Principal & Interest:",
+    "property_tax": "Property Tax:",
+    "insurance": "Insurance:",
+    "hoa_fees_short": "HOA Fees:",
+    "loan_amount": "Loan Amount:",
+    "down_payment_display": "Down Payment:",
+    "years": "Years"
+  },
+  "buyer_guide": {
+    "title": "BUYER",
+    "subtitle": "Your comprehensive resource for navigating the home buying process in Greater Boston, from pre-approval to closing.",
+    "roadmap_title": "YOUR BUYING ROADMAP",
+    "resources_title": "BUYER RESOURCES"
+  },
+  "seller_guide": {
+    "title": "SELLER",
+    "subtitle": "Everything you need to know about selling your home in Greater Boston, from preparation to maximizing your property's value.",
+    "roadmap_title": "YOUR SELLING ROADMAP",
+    "resources_title": "SELLER RESOURCES"
+  },
+  "reviews": {
+    "title": "CLIENT REVIEWS",
+    "subtitle": "Hear what my clients have to say about their real estate experience working with me.",
+    "view_all": "View All Reviews"
+  },
+  "common": {
+    "learn_more": "Learn More",
+    "get_started": "Get Started",
+    "contact_us": "Contact Us",
+    "back_to_top": "Back to Top",
+    "loading": "Loading...",
+    "error": "An error occurred"
+  }
+}

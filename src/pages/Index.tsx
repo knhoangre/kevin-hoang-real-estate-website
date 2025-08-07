@@ -4,6 +4,7 @@ import About from "@/components/About";
 import Stats from "@/components/Stats";
 import Contact from "@/components/Contact";
 import RealEstateCalculators from "@/components/RealEstateCalculators";
+import Reviews from "@/components/Reviews";
 import { Element } from "react-scroll";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -44,6 +45,14 @@ const Index = () => {
         viewport={{ once: true, margin: "-100px" }}
       >
         <RealEstateCalculators />
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <Reviews />
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 30 }}

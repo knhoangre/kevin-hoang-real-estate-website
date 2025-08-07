@@ -3,8 +3,11 @@ import Navbar from "@/components/Navbar";
 import BuyerRoadmap from "@/components/BuyerRoadmap";
 import BuyerResources from "@/components/BuyerResources";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const Buyer = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -21,7 +24,7 @@ const Buyer = () => {
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
               className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
             >
-              BUYER'S GUIDE
+{t('buyer_guide.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: -30 }}
@@ -29,12 +32,25 @@ const Buyer = () => {
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
               className="text-xl text-gray-600 mb-12 max-w-3xl"
             >
-              Your comprehensive resource for navigating the home buying process in Greater Boston, from pre-approval to closing.
+{t('buyer_guide.subtitle')}
             </motion.p>
           </motion.div>
           <Element name="roadmap">
             <BuyerRoadmap />
           </Element>
+
+          <div className="py-8">
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                <strong>Important Notice:</strong> Every home buying situation is unique, and this roadmap serves as a general guideline only.
+                Your specific circumstances may require additional steps, different timing, or alternative approaches not covered here.
+                This information is provided for educational purposes and should not be considered as legal, financial, or professional advice.
+                We strongly recommend consulting with qualified professionals including real estate agents, lenders, attorneys, and other specialists
+                who can provide guidance tailored to your specific situation and local market conditions.
+              </p>
+            </div>
+          </div>
+
           <Element name="resources">
             <BuyerResources />
           </Element>

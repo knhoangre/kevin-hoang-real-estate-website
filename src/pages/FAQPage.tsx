@@ -172,6 +172,19 @@ const FAQPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const getSliderTransform = () => {
+    switch (activeSection) {
+      case "general":
+        return "translateX(0%)";
+      case "seller":
+        return "translateX(100%)";
+      case "buyer":
+        return "translateX(200%)";
+      default:
+        return "translateX(0%)";
+    }
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -237,39 +250,46 @@ const FAQPage = () => {
               </motion.p>
             </motion.div>
 
-            {/* Sticky Navigation */}
+            {/* Animated Navigation */}
             <div className="sticky top-20 bg-white shadow-md rounded-lg mb-8 z-10">
-              <div className="flex justify-center space-x-8 p-4">
+              <div className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-lg relative border border-gray-200">
                 <button
                   onClick={() => handleSectionChange("general")}
-                  className={`px-4 py-2 rounded-md transition-colors ${
+                  className={`relative z-30 px-4 py-3 text-center font-medium transition-all duration-300 ease-in-out ${
                     activeSection === "general"
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "text-white"
+                      : "text-gray-700"
                   }`}
                 >
                   General Questions
                 </button>
                 <button
                   onClick={() => handleSectionChange("seller")}
-                  className={`px-4 py-2 rounded-md transition-colors ${
+                  className={`relative z-30 px-4 py-3 text-center font-medium transition-all duration-300 ease-in-out ${
                     activeSection === "seller"
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "text-white"
+                      : "text-gray-700"
                   }`}
                 >
                   Questions for Sellers
                 </button>
                 <button
                   onClick={() => handleSectionChange("buyer")}
-                  className={`px-4 py-2 rounded-md transition-colors ${
+                  className={`relative z-30 px-4 py-3 text-center font-medium transition-all duration-300 ease-in-out ${
                     activeSection === "buyer"
-                      ? "bg-gray-900 text-white"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "text-white"
+                      : "text-gray-700"
                   }`}
                 >
                   Questions for Buyers
                 </button>
+                <div
+                  className="absolute inset-1 bg-gray-800 rounded-md transition-transform duration-300 ease-in-out"
+                  style={{
+                    transform: getSliderTransform(),
+                    width: 'calc(33.333% - 0.125rem)',
+                  }}
+                />
               </div>
             </div>
 

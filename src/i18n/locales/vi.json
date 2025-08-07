@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "home": "Trang Chủ",
+    "buyer": "Người Mua",
+    "seller": "Người Bán",
+    "neighborhoods": "Khu Vực",
+    "blog": "Blog",
+    "contact": "Liên Hệ",
+    "faq": "Câu Hỏi Thường Gặp",
+    "profile": "Hồ Sơ",
+    "login": "Đăng Nhập",
+    "logout": "Đăng Xuất"
+  },
+  "hero": {
+    "title": "NÂNG CAO TRẢI NGHIỆM BẤT ĐỘNG SẢN BOSTON",
+    "subtitle": "ĐỐI TÁC BẤT ĐỘNG SẢN CỦA BẠN CHO VIỆC MUA, BÁN VÀ ĐẦU TƯ VÀO CÁC BẤT ĐỘNG SẢN HẤP DẪN NHẤT BOSTON THÔNG QUA CHUYÊN MÔN THỊ TRƯỜNG VÀ CHIẾN LƯỢC ĐỔI MỚI.",
+    "cta": "ĐẶT LỊCH TƯ VẤN MIỄN PHÍ"
+  },
+  "about": {
+    "title": "GẶP GỠ KEVIN HOANG",
+    "subtitle": "Chuyên Gia Bất Động Sản Tận Tâm Của Bạn",
+    "description": "Với nhiều năm kinh nghiệm trong thị trường bất động sản Greater Boston, tôi cam kết giúp khách hàng đạt được mục tiêu sở hữu nhà thông qua dịch vụ cá nhân hóa và kiến thức thị trường chuyên môn.",
+    "paragraph1": "Là một chuyên gia bất động sản có trụ sở tại Boston với nền tảng độc đáo trong Kỹ thuật Cơ khí và Kỹ thuật Phần mềm, Kevin Hoang mang đến một cách tiếp cận phân tích và am hiểu công nghệ cho các giao dịch bất động sản. Chuyên môn kỹ thuật của anh cho phép cung cấp đánh giá tài sản chi tiết, hiểu dữ liệu thị trường phức tạp, và tận dụng công nghệ tiên tiến để tối ưu hóa quá trình mua và bán.",
+    "paragraph2": "Chuyên về thị trường bất động sản Greater Boston, Kevin kết hợp sự thông thạo kỹ thuật với kiến thức thị trường sâu rộng để mang lại kết quả xuất sắc cho khách hàng. Nền tảng kỹ thuật của anh tỏ ra vô giá trong việc đánh giá tình trạng bất động sản, hiểu các khía cạnh kết cấu, và xác định các cơ hội đầu tư tiềm năng mà người khác có thể bỏ lỡ.",
+    "paragraph3": "Dù bạn là người mua nhà lần đầu, nhà đầu tư dày dạn kinh nghiệm, hay đang muốn bán bất động sản của mình, phương pháp tiếp cận sáng tạo và sự tận tâm với thành công của khách hàng khiến Kevin trở thành đối tác lý tưởng cho hành trình bất động sản của bạn tại Massachusetts."
+  },
+  "services": {
+    "buyer": {
+      "title": "Dịch Vụ Người Mua",
+      "description": "Hướng dẫn toàn diện trong hành trình mua nhà của bạn"
+    },
+    "seller": {
+      "title": "Dịch Vụ Người Bán",
+      "description": "Tối đa hóa giá trị ngôi nhà của bạn với marketing chiến lược"
+    }
+  },
+  "stats": {
+    "title": "TẠI SAO NÊN LÀM VIỆC VỚI TÔI",
+    "personalized_service": "DỊCH VỤ CÁ NHÂN HÓA",
+    "avg_time_market": "THỜI GIAN TRUNG BÌNH TRÊN THỊ TRƯỜNG",
+    "client_satisfaction": "SỰ HÀI LÒNG KHÁCH HÀNG",
+    "market_experience": "KINH NGHIỆM THỊ TRƯỜNG",
+    "homes_sold": "Ngôi Nhà Đã Bán",
+    "years_experience": "Năm Kinh Nghiệm",
+    "satisfied_clients": "Khách Hàng Hài Lòng",
+    "average_days": "Số Ngày Trung Bình Trên Thị Trường"
+  },
+  "contact": {
+    "title": "THÔNG TIN LIÊN HỆ",
+    "subtitle": "Sẵn sàng bắt đầu hành trình bất động sản của bạn? Hãy kết nối với chúng tôi.",
+    "phone": "Số Điện Thoại (XXX-XXX-XXXX)",
+    "email": "Email",
+    "address": "Địa Chỉ",
+    "send_message": "GỬI TIN NHẮN",
+    "name": "Tên",
+    "message": "Tin Nhắn",
+    "form_subtitle": "Gửi cho chúng tôi một tin nhắn và chúng tôi sẽ phản hồi bạn sớm nhất có thể.",
+    "first_name": "Tên",
+    "last_name": "Họ",
+    "call": "Gọi điện",
+    "text": "Nhắn tin"
+  },
+  "footer": {
+    "quick_links": "LIÊN KẾT NHANH",
+    "legal": "PHÁP LÝ",
+    "privacy_policy": "Chính Sách Bảo Mật",
+    "terms_of_service": "Điều Khoản Dịch Vụ",
+    "disclaimer": "Tuyên Bố Từ Chối",
+    "copyright": "Mọi quyền được bảo lưu.",
+    "created_by": "Được tạo bởi",
+    "first_name": "Tên",
+    "last_name": "Họ",
+    "email": "Email",
+    "phone": "Số Điện Thoại",
+    "message": "Tin Nhắn",
+    "send_message": "GỬI TIN NHẮN"
+  },
+  "faq": {
+    "title": "CÂU HỎI THƯỜNG GẶP",
+    "subtitle": "Tìm câu trả lời cho các câu hỏi thường gặp về mua và bán bất động sản tại khu vực Greater Boston.",
+    "general": "Câu Hỏi Chung",
+    "sellers": "Câu Hỏi Cho Người Bán",
+    "buyers": "Câu Hỏi Cho Người Mua"
+  },
+  "calculators": {
+    "title": "MÁY TÍNH BẤT ĐỘNG SẢN",
+    "mortgage": "Máy Tính Vay Mua Nhà",
+    "seller_proceeds": "Thu Nhập Người Bán",
+    "rental_income": "Thu Nhập Cho Thuê",
+    "mortgage_inputs": "Thông Tin Vay Mua Nhà",
+    "mortgage_inputs_desc": "Điều chỉnh các giá trị để tính toán khoản thanh toán hàng tháng cho khoản vay mua nhà của bạn",
+    "payment_breakdown": "Chi Tiết Thanh Toán",
+    "payment_breakdown_desc": "Chi tiết thanh toán hàng tháng ước tính cho khoản vay mua nhà của bạn",
+    "monthly_payment": "Thanh Toán Hàng Tháng",
+    "total_payment_desc": "Tổng thanh toán mỗi tháng",
+    "home_price": "Giá Nhà",
+    "down_payment": "Tiền Trả Trước",
+    "loan_term": "Thời Hạn Vay",
+    "years": "Năm",
+    "property_tax": "Thuế Tài Sản",
+    "homeowners_insurance": "Bảo Hiểm Chủ Nhà",
+    "hoa_fees": "Phí HOA",
+    "principal_interest": "Gốc & Lãi",
+    "down_payment_percent": "Phần Trăm Tiền Trả Trước",
+    "interest_rate": "Lãi Suất",
+    "property_tax_yearly": "Thuế Tài Sản (hàng năm)",
+    "homeowners_insurance": "Bảo Hiểm Chủ Nhà (hàng năm)",
+    "hoa_fees": "Phí HOA (hàng tháng)",
+    "loan_term_years": "Thời Hạn Vay: {years} năm",
+    "years_button": "{years} Năm",
+    "principal_interest": "Gốc & Lãi:",
+    "property_tax": "Thuế Tài Sản:",
+    "insurance": "Bảo Hiểm:",
+    "hoa_fees_short": "Phí HOA:",
+    "loan_amount": "Số Tiền Vay:",
+    "down_payment_display": "Tiền Trả Trước:"
+  },
+  "buyer_guide": {
+    "title": "NGƯỜI MUA",
+    "subtitle": "Tài nguyên toàn diện của bạn để điều hướng quá trình mua nhà tại Greater Boston, từ phê duyệt trước đến đóng cửa.",
+    "roadmap_title": "LỘ TRÌNH MUA NHÀ CỦA BẠN",
+    "resources_title": "TÀI NGUYÊN CHO NGƯỜI MUA"
+  },
+  "seller_guide": {
+    "title": "NGƯỜI BÁN",
+    "subtitle": "Mọi thứ bạn cần biết về việc bán nhà tại Greater Boston, từ chuẩn bị đến tối đa hóa giá trị tài sản của bạn.",
+    "roadmap_title": "LỘ TRÌNH BÁN NHÀ CỦA BẠN",
+    "resources_title": "TÀI NGUYÊN CHO NGƯỜI BÁN"
+  },
+  "reviews": {
+    "title": "ĐÁNH GIÁ KHÁCH HÀNG",
+    "subtitle": "Nghe khách hàng chia sẻ về trải nghiệm bất động sản khi làm việc với tôi.",
+    "view_all": "Xem Tất Cả Đánh Giá"
+  },
+  "common": {
+    "learn_more": "Tìm Hiểu Thêm",
+    "get_started": "Bắt Đầu",
+    "contact_us": "Liên Hệ Chúng Tôi",
+    "back_to_top": "Về Đầu Trang",
+    "loading": "Đang tải...",
+    "error": "Đã xảy ra lỗi"
+  }
+}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 interface LogoProps {
   className?: string;
@@ -7,7 +6,7 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = ({ className }) => {
   return (
-    <Link to="/" className="flex items-center">
+    <div className="flex items-center">
       <img
         src="/icon.png"
         alt="Kevin Hoang Real Estate"
@@ -16,7 +15,7 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
         className={`flex-shrink-0 ${className || ''}`}
       />
       {/* <span className="ml-2 text-2xl font-bold text-[#1a1a1a] hidden sm:inline-block">Kevin Hoang</span> */}
-    </Link>
+    </div>
   );
 };
 
