@@ -346,7 +346,7 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Loan Term: {loanTerm} years
+              {t('calculators.loan_term_years')} {loanTerm} {t('calculators.years_button')}
             </label>
             <div className="flex gap-2">
               {[15, 20, 30].map(term => (
@@ -357,7 +357,7 @@ const MortgageCalculator = () => {
                   className="flex-1"
                   onClick={() => setLoanTerm(term)}
                 >
-                  {term} Years
+                  {term} {t('calculators.years_button')}
                 </Button>
               ))}
             </div>
@@ -393,7 +393,7 @@ const MortgageCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Property Tax (yearly)
+              {t('calculators.property_tax_yearly')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -458,26 +458,26 @@ const MortgageCalculator = () => {
               <p className="text-gray-500">{t('calculators.total_payment_desc')}</p>
             </div>
             <div className="text-3xl font-bold text-[#1a1a1a]">
-              ${isNaN(payment.total) ? "0.00" : payment.total.toFixed(2)}
+              ${isNaN(payment.total) ? "0.00" : payment.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">{t('calculators.principal_interest')}</span>
-              <span>${isNaN(payment.principalAndInterest) ? "0.00" : payment.principalAndInterest.toFixed(2)}</span>
+              <span>${isNaN(payment.principalAndInterest) ? "0.00" : payment.principalAndInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">{t('calculators.property_tax')}</span>
-              <span>${payment.propertyTax.toFixed(2)}</span>
+              <span>${payment.propertyTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">{t('calculators.insurance')}</span>
-              <span>${payment.insurance.toFixed(2)}</span>
+              <span>${payment.insurance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
               <span className="font-medium">{t('calculators.hoa_fees_short')}</span>
-              <span>${payment.hoa.toFixed(2)}</span>
+              <span>${payment.hoa.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
 
@@ -733,9 +733,9 @@ const SellerProceedsCalculator = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Seller Proceeds</CardTitle>
+          <CardTitle>{t('calculators.seller_proceeds')}</CardTitle>
           <CardDescription>
-            Your estimated proceeds from home sale
+            {t('calculators.estimated_proceeds')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -751,35 +751,34 @@ const SellerProceedsCalculator = () => {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Sale Price:</span>
+              <span className="font-medium">{t('calculators.sale_price_label')}</span>
               <span>${salePrice.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Mortgage Balance:</span>
+              <span className="font-medium">{t('calculators.mortgage_balance')}</span>
               <span>- ${mortgageBalance.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Agent Commission ({agentCommission}%):</span>
+              <span className="font-medium">{t('calculators.agent_commission_label')} ({agentCommission}%)</span>
               <span>- ${proceeds.commissionAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Closing Costs:</span>
+              <span className="font-medium">{t('calculators.closing_costs_label')}</span>
               <span>- ${closingCosts.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Repairs:</span>
+              <span className="font-medium">{t('calculators.repairs_label')}</span>
               <span>- ${repairs.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Other Fees:</span>
+              <span className="font-medium">{t('calculators.other_fees_label')}</span>
               <span>- ${otherFees.toLocaleString()}</span>
             </div>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
-              <strong>Note:</strong> This calculation is an estimate only. Actual fees and proceeds may vary.
-              Consult with your real estate agent for a more accurate assessment of your specific situation.
+              <strong>{t('calculators.note_label')}:</strong> {t('calculators.note_estimate')}
             </p>
           </div>
         </CardContent>
@@ -1088,7 +1087,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Loan Term: {loanTerm} years
+              {t('calculators.loan_term_years')} {loanTerm} {t('calculators.years_button')}
             </label>
             <div className="flex gap-2">
               {[15, 20, 30].map(term => (
@@ -1099,7 +1098,7 @@ const RentalIncomeCalculator = () => {
                   className="flex-1"
                   onClick={() => setLoanTerm(term)}
                 >
-                  {term} Years
+                  {term} {t('calculators.years_button')}
                 </Button>
               ))}
             </div>
@@ -1152,7 +1151,7 @@ const RentalIncomeCalculator = () => {
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              Property Tax (yearly)
+              {t('calculators.property_tax_yearly')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -1262,65 +1261,65 @@ const RentalIncomeCalculator = () => {
               <p className="text-gray-500">{t('calculators.income_after_expenses')}</p>
             </div>
             <div className={`text-3xl font-bold ${rentalCalc.monthlyCashFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${rentalCalc.monthlyCashFlow.toFixed(2)}
+              ${rentalCalc.monthlyCashFlow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Monthly Rent:</span>
+              <span className="font-medium">{t('calculators.monthly_rent_label')}</span>
               <span>${monthlyRent.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Vacancy Loss ({vacancyRate}%):</span>
-              <span>- ${(monthlyRent * vacancyRate / 100).toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.vacancy_loss')} ({vacancyRate}%)</span>
+              <span>- ${(monthlyRent * vacancyRate / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Effective Rent:</span>
-              <span>${rentalCalc.effectiveRent.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.effective_rent_label')}</span>
+              <span>${rentalCalc.effectiveRent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-bold text-lg">Monthly Expenses</h3>
+            <h3 className="font-bold text-lg">{t('calculators.monthly_expenses_title')}</h3>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Mortgage Payment:</span>
-              <span>${rentalCalc.monthlyPrincipalAndInterest.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.mortgage_payment_label')}</span>
+              <span>${rentalCalc.monthlyPrincipalAndInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Property Tax:</span>
-              <span>${rentalCalc.monthlyPropertyTax.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.property_tax_label')}</span>
+              <span>${rentalCalc.monthlyPropertyTax.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Insurance:</span>
-              <span>${rentalCalc.monthlyInsurance.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.insurance_label')}</span>
+              <span>${rentalCalc.monthlyInsurance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Maintenance:</span>
-              <span>${rentalCalc.monthlyMaintenance.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.maintenance_label')}</span>
+              <span>${rentalCalc.monthlyMaintenance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Property Management ({propertyManagement}%):</span>
-              <span>${rentalCalc.monthlyPropertyManagementFee.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.property_management_label')} ({propertyManagement}%)</span>
+              <span>${rentalCalc.monthlyPropertyManagementFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Utilities:</span>
-              <span>${utilities.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.utilities_label')}</span>
+              <span>${utilities.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2 font-bold">
-              <span>Total Monthly Expenses:</span>
-              <span>${rentalCalc.totalMonthlyExpenses.toFixed(2)}</span>
+              <span>{t('calculators.total_monthly_expenses')}</span>
+              <span>${rentalCalc.totalMonthlyExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-bold text-lg">Investment Returns</h3>
+            <h3 className="font-bold text-lg">{t('calculators.investment_returns_title')}</h3>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Annual Cash Flow:</span>
-              <span>${rentalCalc.annualCashFlow.toFixed(2)}</span>
+              <span className="font-medium">{t('calculators.annual_cashflow_label')}</span>
+              <span>${rentalCalc.annualCashFlow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between items-center border-b pb-2">
-              <span className="font-medium">Cash-on-Cash Return:</span>
+              <span className="font-medium">{t('calculators.cash_on_cash_label')}</span>
               <span className={rentalCalc.cashOnCash >= 0 ? 'text-green-600' : 'text-red-600'}>
                 {rentalCalc.cashOnCash.toFixed(2)}%
               </span>
