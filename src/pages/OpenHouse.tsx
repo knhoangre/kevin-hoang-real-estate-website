@@ -320,7 +320,7 @@ const OpenHouse = () => {
               name="phone"
               render={({ field: { onChange, ...rest } }) => (
                 <FormItem>
-                  <Label htmlFor="phone">Phone Number (Optional)</Label>
+                    <Label htmlFor="phone">Phone Number</Label>
                   <FormControl>
                     <Input
                       id="phone"
