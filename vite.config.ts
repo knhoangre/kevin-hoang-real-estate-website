@@ -29,10 +29,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 8080,
     },
-    define: {
-      // Only expose VITE_ prefixed variables to the client
-      'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
-      'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY),
-    },
+    // Vite automatically exposes VITE_ prefixed variables from .env to import.meta.env
+    // The loadEnv above ensures they're loaded, and Vite handles the rest
   };
 });

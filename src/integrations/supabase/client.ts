@@ -8,8 +8,22 @@ if (typeof window === 'undefined') {
 }
 
 // Use Vite's import.meta.env for environment variables
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Also check process.env as fallback (for some build configurations)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL);
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY);
+
+// Debug logging (only in development)
+if (import.meta.env.DEV) {
+  console.log('🔍 Supabase config check:', {
+    'import.meta.env.VITE_SUPABASE_URL': import.meta.env.VITE_SUPABASE_URL ? `${import.meta.env.VITE_SUPABASE_URL.substring(0, 30)}...` : 'undefined',
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': import.meta.env.VITE_SUPABASE_ANON_KEY ? `${import.meta.env.VITE_SUPABASE_ANON_KEY.substring(0, 20)}...` : 'undefined',
+    'Final SUPABASE_URL': SUPABASE_URL ? `${SUPABASE_URL.substring(0, 30)}...` : 'undefined',
+    'Final SUPABASE_ANON_KEY': SUPABASE_ANON_KEY ? `${SUPABASE_ANON_KEY.substring(0, 20)}...` : 'undefined',
+    hasUrl: !!SUPABASE_URL,
+    hasKey: !!SUPABASE_ANON_KEY,
+    'All import.meta.env keys': Object.keys(import.meta.env).filter(k => k.includes('SUPABASE')),
+  });
+}
 
 // Check if we have valid Supabase credentials
 const hasValidSupabaseConfig = SUPABASE_URL && 
@@ -35,6 +49,18 @@ const createMockClient = () => {
       update: () => ({ data: null, error: { message: 'Supabase not configured' } }),
       delete: () => ({ data: null, error: { message: 'Supabase not configured' } }),
     }),
+    functions: {
+      invoke: async (functionName: string, options?: { body?: any }) => {
+        console.error(`Supabase functions not available. Attempted to invoke: ${functionName}`);
+        return {
+          data: null,
+          error: {
+            message: 'Supabase not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.',
+            details: 'The Supabase client is using a mock client because environment variables are not set.'
+          }
+        };
+      },
+    },
   } as any;
 };
 

@@ -16,10 +16,10 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
-      - SUPABASE_URL=
-      - SUPABASE_SERVICE_KEY=
-      - VITE_SUPABASE_URL=
-      - VITE_SUPABASE_ANON_KEY=
+      # Supabase variables - these will be loaded from .env file via env_file or passed from host
+      # Remove these empty lines to allow .env file to be used
+    env_file:
+      - .env
     stdin_open: true
     tty: true
     restart: unless-stopped
