@@ -330,51 +330,49 @@ serve(async (req) => {
                     <div class="value">${address}</div>
                   </div>
                   <div class="field">
-                    <span class="label">Name</span>
-                    <div class="value">${firstName} ${lastName}</div>
+                    <span class="label">First Name</span>
+                    <div class="value">${firstName}</div>
+                  </div>
+                  <div class="field">
+                    <span class="label">Last Name</span>
+                    <div class="value">${lastName}</div>
                   </div>
                   <div class="field">
                     <span class="label">Email</span>
                     <div class="value">${email}</div>
                   </div>
-                  ${formattedPhone ? `
                   <div class="field">
-                    <span class="label">Phone</span>
+                    <span class="label">Phone Number</span>
                     <div class="value">
-                      <div style="display: flex; gap: 12px;">
-                        <a href="tel:+1${formattedPhone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center;">
-                          <span style="display: block; margin-bottom: 4px;">📞</span>
-                          Call
-                        </a>
-                        <a href="sms:+1${formattedPhone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center; background-color: #4CAF50;">
-                          <span style="display: block; margin-bottom: 4px;">💬</span>
-                          Text
-                        </a>
-                      </div>
-                      <div style="margin-top: 8px; text-align: center; color: #666; font-size: 14px;">
-                        ${formattedPhone}
-                      </div>
+                      ${formattedPhone ? `
+                        <div style="display: flex; gap: 12px;">
+                          <a href="tel:+1${formattedPhone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center;">
+                            <span style="display: block; margin-bottom: 4px;">📞</span>
+                            Call
+                          </a>
+                          <a href="sms:+1${formattedPhone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center; background-color: #4CAF50;">
+                            <span style="display: block; margin-bottom: 4px;">💬</span>
+                            Text
+                          </a>
+                        </div>
+                        <div style="margin-top: 8px; text-align: center; color: #666; font-size: 14px;">
+                          ${formattedPhone}
+                        </div>
+                      ` : 'Not provided'}
                     </div>
                   </div>
-                  ` : ''}
                   <div class="field">
-                    <span class="label">Contact Source</span>
-                    <div class="value">Open House Sign-In</div>
-                  </div>
-                  <div class="field">
-                    <span class="label">Works with Realtor</span>
+                    <span class="label">Has Agent</span>
                     <div class="value">${worksWithRealtor ? 'Yes' : 'No'}</div>
                   </div>
-                  ${worksWithRealtor && realtorName ? `
+                  ${worksWithRealtor ? `
                   <div class="field">
-                    <span class="label">Realtor Name</span>
-                    <div class="value">${realtorName}</div>
+                    <span class="label">Agent Name</span>
+                    <div class="value">${realtorName || 'Not provided'}</div>
                   </div>
-                  ` : ''}
-                  ${worksWithRealtor && realtorCompany ? `
                   <div class="field">
-                    <span class="label">Realtor Company</span>
-                    <div class="value">${realtorCompany}</div>
+                    <span class="label">Agent Company</span>
+                    <div class="value">${realtorCompany || 'Not provided'}</div>
                   </div>
                   ` : ''}
                 </div>
