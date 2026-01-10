@@ -33,3 +33,5 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 **Note:** The `.env` file is already in `.gitignore`, so it won't be committed to version control.
 
+
+

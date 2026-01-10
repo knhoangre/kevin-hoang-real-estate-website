@@ -7,14 +7,20 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, MessageSquare } from "lucide-react";
 
 export default function ProfileDropdown() {
-  const { user, signOut, avatarUrl, avatarInitials } = useAuth();
+  const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Debug logging
+  if (user && typeof window !== 'undefined') {
+    console.log('👤 ProfileDropdown - User:', user.email, 'isAdmin:', isAdmin);
+  }
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -30,6 +36,10 @@ export default function ProfileDropdown() {
 
   const handleProfileClick = () => {
     navigate("/profile");
+  };
+
+  const handleFollowUpClick = () => {
+    navigate("/follow-up");
   };
 
   if (!user) return null;
@@ -51,6 +61,16 @@ export default function ProfileDropdown() {
           <User className="mr-2 h-4 w-4" />
           <span>PROFILE</span>
         </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleFollowUpClick}>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span>FOLLOW UP</span>
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} disabled={isLoading}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>{isLoading ? "SIGNING OUT..." : "SIGN OUT"}</span>

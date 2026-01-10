@@ -1,0 +1,95 @@
+import { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import OpenHousesList from '@/components/OpenHousesList';
+import MessagesList from '@/components/MessagesList';
+
+const FollowUp = () => {
+  const { isAdmin, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine tab from URL
+  const getTabFromPath = (path: string) => {
+    if (path === '/follow-up/messages') return 'messages';
+    if (path === '/follow-up/open-house') return 'open-houses';
+    return 'open-houses'; // default
+  };
+
+  const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
+
+  // Handle admin check and initial redirect
+  useEffect(() => {
+    if (loading) return;
+    
+    if (!isAdmin) {
+      navigate('/');
+      return;
+    }
+
+    // Redirect /follow-up to /follow-up/open-house
+    if (location.pathname === '/follow-up') {
+      navigate('/follow-up/open-house', { replace: true });
+    }
+  }, [isAdmin, loading, navigate, location.pathname]);
+
+  // Sync tab state with URL changes (e.g., back button)
+  useEffect(() => {
+    const tabFromPath = getTabFromPath(location.pathname);
+    if (tabFromPath !== activeTab) {
+      setActiveTab(tabFromPath);
+    }
+  }, [location.pathname]);
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === 'messages') {
+      navigate('/follow-up/messages');
+    } else {
+      navigate('/follow-up/open-house');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null; // Will redirect
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 pt-24 pb-8">
+        <h1 className="text-3xl font-bold mb-6">Follow Up</h1>
+        
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="open-houses">Open Houses</TabsTrigger>
+            <TabsTrigger value="messages">Messages</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="open-houses" className="mt-6">
+            <OpenHousesList />
+          </TabsContent>
+          
+          <TabsContent value="messages" className="mt-6">
+            <MessagesList />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default FollowUp;
+

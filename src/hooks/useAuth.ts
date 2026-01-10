@@ -43,10 +43,16 @@ export const useAuth = () => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      // Store the current full URL (origin + path) before redirecting
+      const currentPath = window.location.pathname + window.location.search;
+      const currentOrigin = window.location.origin;
+      sessionStorage.setItem('oauth_return_path', currentPath);
+      sessionStorage.setItem('oauth_return_origin', currentOrigin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${currentOrigin}/auth/callback`,
         },
       });
       if (error) throw error;

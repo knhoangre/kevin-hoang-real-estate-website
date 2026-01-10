@@ -43,15 +43,6 @@ const Auth = () => {
     setHasSpecialChar(/[!@#$%^&*(),.?":{}|<>]/.test(password));
   }, [password]);
 
-  const checkUserProfile = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", userId)
-      .single();
-    return profile;
-  };
-
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -60,12 +51,8 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
-        const profile = await checkUserProfile(data.user.id);
-        if (!profile) {
-          navigate("/complete-profile");
-        } else {
-          navigate("/");
-        }
+        // Navigate to home after successful sign in
+        navigate("/");
       }
 
       toast({
@@ -150,13 +137,7 @@ const Auth = () => {
     try {
       const { data, error } = await signInWithGoogle();
       if (error) throw error;
-
-      if (data.user) {
-        const profile = await checkUserProfile(data.user.id);
-        if (!profile) {
-          navigate("/complete-profile");
-        }
-      }
+      // OAuth redirect will handle navigation
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Please try again.";
       toast({

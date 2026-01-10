@@ -8,8 +8,23 @@ import Reviews from "@/components/Reviews";
 import { Element } from "react-scroll";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle OAuth callback if code is in URL (catches redirects to root)
+  // Note: The return path is already stored in sessionStorage before OAuth
+  useEffect(() => {
+    const code = searchParams.get('code');
+    if (code) {
+      // Redirect to auth callback handler (it will read return path from sessionStorage)
+      navigate(`/auth/callback?code=${code}`, { replace: true });
+    }
+  }, [searchParams, navigate]);
+
   // Reset scroll position when navigating to home page
   useEffect(() => {
     window.scrollTo(0, 0);

@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { X } from "lucide-react";
 import Logo from "./Logo";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -97,7 +98,7 @@ const Navbar = () => {
           </RouterLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden min-[1011px]:flex items-center space-x-8">
             <button
               onClick={() => handleNavigation('/buyer')}
               className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
@@ -122,6 +123,20 @@ const Navbar = () => {
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
                   location.pathname === '/seller' ? 'w-full' : ''
+                }`}
+              />
+            </button>
+
+            <button
+              onClick={() => handleNavigation('/relocation')}
+              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
+                location.pathname === '/relocation' ? 'font-bold' : ''
+              }`}
+            >
+              {t('nav.relocation')}
+              <span
+                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                  location.pathname === '/relocation' ? 'w-full' : ''
                 }`}
               />
             </button>
@@ -199,7 +214,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="md:hidden">
+          <div className="max-[1010px]:block min-[1011px]:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="relative z-10 p-2"
@@ -237,17 +252,26 @@ const Navbar = () => {
             exit="exit"
             variants={mobileMenuVariants}
           >
-            <div className="container mx-auto px-4 pt-24 pb-8">
-              <motion.div className="flex flex-col space-y-6" variants={itemVariants}>
+            {/* Close X Button */}
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 text-black hover:text-gray-600 transition-colors"
+              aria-label="Close menu"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            
+            <div className="container mx-auto px-4 pt-24 pb-8 h-full flex flex-col">
+              <motion.div className="flex flex-col space-y-6 flex-grow items-center" variants={itemVariants}>
                 <button
                   onClick={() => handleNavigation('/buyer')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/buyer' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.buyer')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/buyer' ? 'w-full' : ''
                     }`}
                   />
@@ -255,27 +279,41 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/seller')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/seller' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.seller')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/seller' ? 'w-full' : ''
                     }`}
                   />
                 </button>
 
                 <button
+                  onClick={() => handleNavigation('/relocation')}
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
+                    location.pathname === '/relocation' ? 'font-bold' : ''
+                  }`}
+                >
+                  {t('nav.relocation')}
+                  <span
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
+                      location.pathname === '/relocation' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
+
+                <button
                   onClick={() => handleNavigation('/neighborhoods')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/neighborhoods' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.neighborhoods')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/neighborhoods' ? 'w-full' : ''
                     }`}
                   />
@@ -283,13 +321,13 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/blog')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/blog' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.blog')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/blog' ? 'w-full' : ''
                     }`}
                   />
@@ -297,13 +335,13 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/faq')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/faq' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.faq')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/faq' ? 'w-full' : ''
                     }`}
                   />
@@ -311,29 +349,43 @@ const Navbar = () => {
 
                 <button
                   onClick={() => handleNavigation('/contact')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group ${
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/contact' ? 'font-bold' : ''
                   }`}
                 >
                   {t('nav.contact')}
                   <span
-                    className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/contact' ? 'w-full' : ''
                     }`}
                   />
                 </button>
 
                 {user ? (
-                  <ProfileDropdown />
+                  <div className="flex justify-center">
+                    <ProfileDropdown />
+                  </div>
                 ) : (
                   <RouterLink
                     to="/auth"
-                    className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group"
+                    className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {t('nav.login')}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300" />
                   </RouterLink>
                 )}
+              </motion.div>
+              
+              {/* Exit Menu Button */}
+              <motion.div variants={itemVariants} className="mt-auto pb-8 flex justify-center">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center py-4 border-t border-gray-200"
+                >
+                  EXIT MENU
+                  <span className="absolute bottom-2 left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300" />
+                </button>
               </motion.div>
             </div>
           </motion.div>

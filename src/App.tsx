@@ -15,6 +15,7 @@ import BlogPost from "./pages/BlogPost";
 import Neighborhoods from "./pages/Neighborhoods";
 import Buyer from "./pages/Buyer";
 import Seller from "./pages/Seller";
+import Relocation from "./pages/Relocation";
 import FAQPage from "./pages/FAQPage";
 import Auth from "./pages/Auth";
 import Contact from "./pages/Contact";
@@ -24,6 +25,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Disclaimer from "./pages/Disclaimer";
 import OpenHouse from "./pages/OpenHouse";
+import AuthCallback from "./pages/AuthCallback";
+import ProfileCompletion from "./components/ProfileCompletion";
+import FollowUp from "./pages/FollowUp";
 
 const queryClient = new QueryClient();
 
@@ -45,11 +49,17 @@ const App = () => (
                 <Route path="/neighborhoods" element={<Neighborhoods />} />
                 <Route path="/buyer" element={<Buyer />} />
                 <Route path="/seller" element={<Seller />} />
+                <Route path="/relocation" element={<Relocation />} />
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/first-time-buyers" element={<FirstTimeBuyers />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/complete-profile" element={<ProfileCompletion />} />
+                <Route path="/follow-up" element={<FollowUp />} />
+                <Route path="/follow-up/open-house" element={<FollowUp />} />
+                <Route path="/follow-up/messages" element={<FollowUp />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/disclaimer" element={<Disclaimer />} />

@@ -7,6 +7,7 @@ type AuthContextType = {
   session: Session | null;
   avatarUrl: string | null;
   avatarInitials: string | null;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<any>;
   signInWithGoogle: () => Promise<any>;
   signUp: (email: string, password: string) => Promise<any>;
@@ -23,7 +24,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarInitials, setAvatarInitials] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+
+  // Function to check if user is admin from app_metadata
+  const checkAdminStatus = (user: User | null) => {
+    if (!user) {
+      setIsAdmin(false);
+      return false;
+    }
+    
+    // Check admin status from app_metadata (set in Supabase Auth)
+    const adminStatus = user.app_metadata?.is_admin === true;
+    console.log('🔍 Admin check:', {
+      email: user.email,
+      app_metadata: user.app_metadata,
+      is_admin: user.app_metadata?.is_admin,
+      adminStatus
+    });
+    setIsAdmin(adminStatus);
+    return adminStatus;
+  };
 
   // Function to refresh user data
   const refreshUser = async () => {
@@ -32,9 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.session?.user) {
         setUser(data.session.user);
         updateUserAvatar(data.session.user);
+        // Check admin status from user object
+        checkAdminStatus(data.session.user);
+      } else {
+        setIsAdmin(false);
       }
     } catch (error) {
       console.error("Error refreshing user:", error);
+      setIsAdmin(false);
     }
   };
 
@@ -74,10 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Use timeout to prevent potential deadlocks
           setTimeout(() => {
             updateUserAvatar(session.user);
+            checkAdminStatus(session.user);
           }, 0);
         } else {
           setAvatarUrl(null);
           setAvatarInitials(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -91,6 +119,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (data.session?.user) {
           updateUserAvatar(data.session.user);
+          checkAdminStatus(data.session.user);
+        } else {
+          setIsAdmin(false);
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
@@ -144,10 +175,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    // Store the current full URL (origin + path) before redirecting
+    const currentPath = window.location.pathname + window.location.search;
+    const currentOrigin = window.location.origin;
+    sessionStorage.setItem('oauth_return_path', currentPath);
+    sessionStorage.setItem('oauth_return_origin', currentOrigin);
+    
     return supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${currentOrigin}/auth/callback`,
       },
     });
   };
@@ -171,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     avatarUrl,
     avatarInitials,
+    isAdmin,
     signIn,
     signInWithGoogle,
     signUp,
