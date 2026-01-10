@@ -204,7 +204,7 @@ serve(async (req) => {
     try {
       console.log('Attempting to send email...');
       const data = await resend.emails.send({
-        from: "Kevin Hoang <contact@kevinhoang.dev>",
+        from: "Kevin Hoang <contact@kevinhoang.co>",
         to: ["knhoangre@gmail.com"],
         subject: "New Contact Form Submission",
         html: `
