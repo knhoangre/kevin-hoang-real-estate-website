@@ -226,31 +226,36 @@ const FAQPage = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <section className="py-24 bg-gray-50">
-          <div className="container px-4">
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
+        {/* White section for heading - matches blog spacing */}
+        <div className="bg-white container px-4 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="mb-16"
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="mb-16"
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
             >
-              <motion.h1
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-              >
-                {t('faq.title')}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                className="text-xl text-gray-600 mb-12 max-w-3xl"
-              >
-                {t('faq.subtitle')}
-              </motion.p>
-            </motion.div>
+              {t('faq.title')}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-xl text-gray-600 mb-12 max-w-3xl"
+            >
+              {t('faq.subtitle')}
+            </motion.p>
+          </motion.div>
+        </div>
+        
+        {/* Gray background section starts here - no overlap, clean transition */}
+        <section className="bg-gray-50 pt-0 pb-24">
+          <div className="container px-4">
 
             {/* Animated Navigation */}
             <div className="sticky top-20 bg-white shadow-md rounded-lg mb-8 z-10">

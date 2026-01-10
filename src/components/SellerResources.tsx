@@ -15,21 +15,21 @@ const SellerResources = () => {
       title: t('seller_guide.resources.home_preparation.title'),
       description: t('seller_guide.resources.home_preparation.description'),
       color: "bg-blue-500",
-      link: "/blog?category=home-preparation",
+      link: "/blog/home-preparation-guide",
     },
     {
       icon: TrendingUp,
       title: t('seller_guide.resources.pricing_strategy.title'),
       description: t('seller_guide.resources.pricing_strategy.description'),
       color: "bg-green-500",
-      link: "/blog?category=pricing-strategy",
+      link: "/blog/pricing-strategy-guide",
     },
     {
       icon: FileCheck,
       title: t('seller_guide.resources.seller_documentation.title'),
       description: t('seller_guide.resources.seller_documentation.description'),
       color: "bg-purple-500",
-      link: "/blog?category=seller-documentation",
+      link: "/blog/seller-documentation-guide",
     },
   ];
   return (

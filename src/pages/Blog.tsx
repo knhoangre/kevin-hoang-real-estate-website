@@ -71,7 +71,7 @@ const Blog = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       <div className="pt-16">
-        <div className="px-8 py-24">
+        <div className="container px-4 py-24">
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}

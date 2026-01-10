@@ -73,6 +73,68 @@ const BlogPost = () => {
     return currentLanguage === 'vi' && post.contentVi ? post.contentVi : post.content;
   };
 
+  // Function to parse markdown and convert to JSX
+  const parseMarkdown = (text: string) => {
+    // Split by double newlines to get paragraphs
+    const paragraphs = text.split('\n\n');
+    
+    return paragraphs.map((paragraph, pIndex) => {
+      // Check if it's a heading (starts with ** and ends with ** on same line)
+      const headingMatch = paragraph.match(/^\*\*(.+?)\*\*$/);
+      if (headingMatch) {
+        return (
+          <h2
+            key={pIndex}
+            className="text-2xl font-bold text-[#1a1a1a] mt-8 mb-4"
+          >
+            {headingMatch[1]}
+          </h2>
+        );
+      }
+      
+      // Process bold text and regular text
+      const parts: (string | JSX.Element)[] = [];
+      const boldRegex = /\*\*(.+?)\*\*/g;
+      let match;
+      let lastIndex = 0;
+      let hasBold = false;
+      
+      while ((match = boldRegex.exec(paragraph)) !== null) {
+        hasBold = true;
+        // Add text before the bold
+        if (match.index > lastIndex) {
+          parts.push(paragraph.substring(lastIndex, match.index));
+        }
+        // Add the bold text
+        parts.push(
+          <strong key={`bold-${match.index}`} className="font-semibold text-[#1a1a1a]">
+            {match[1]}
+          </strong>
+        );
+        lastIndex = match.index + match[0].length;
+      }
+      
+      // Add remaining text
+      if (lastIndex < paragraph.length) {
+        parts.push(paragraph.substring(lastIndex));
+      }
+      
+      // If no bold text was found, just return the paragraph as is
+      if (!hasBold) {
+        parts.push(paragraph);
+      }
+      
+      return (
+        <p
+          key={pIndex}
+          className="text-gray-700 leading-relaxed mb-6 text-lg"
+        >
+          {parts}
+        </p>
+      );
+    });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
@@ -109,14 +171,7 @@ const BlogPost = () => {
             </header>
 
             <div className="prose prose-lg max-w-none">
-              {getTranslatedContent(post).split('\n\n').map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="text-gray-700 leading-relaxed mb-6 text-lg"
-                >
-                  {paragraph}
-                </p>
-              ))}
+              {parseMarkdown(getTranslatedContent(post))}
             </div>
 
             <div className="mt-16 pt-8 border-t border-gray-200">
