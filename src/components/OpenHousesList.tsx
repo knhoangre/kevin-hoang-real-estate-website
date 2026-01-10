@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronRight, MapPin, Users, Calendar } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Users, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface OpenHouseSignIn {
@@ -47,6 +47,7 @@ const OpenHousesList = () => {
       const { data: testData, error: testError } = await supabase
         .from('open_house_sign_ins')
         .select('id, address, created_at')
+        .eq('is_active', true)
         .limit(5);
       
       console.log('🧪 Test query result:', { 
@@ -62,10 +63,11 @@ const OpenHousesList = () => {
         return;
       }
       
-      // Fetch open house sign-ins with all columns
+      // Fetch open house sign-ins with all columns (only active ones)
       const { data: signInsData, error: signInsError } = await supabase
         .from('open_house_sign_ins')
         .select('id, address, first_name_id, last_name_id, email_id, phone_id, works_with_realtor, realtor_name, realtor_company, is_read, created_at')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
 
       if (signInsError) {
@@ -261,6 +263,44 @@ const OpenHousesList = () => {
     }
   };
 
+  const deleteSignIn = async (signInId: number) => {
+    if (!confirm('Are you sure you want to delete this open house sign-in? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      // Soft delete by setting is_active to false
+      const { error } = await supabase
+        .from('open_house_sign_ins')
+        .update({ is_active: false })
+        .eq('id', signInId);
+
+      if (error) throw error;
+
+      // Update local state - remove the sign-in from the appropriate group
+      setGroupedOpenHouses(prev => {
+        return prev
+          .map(group => {
+            const updatedSignIns = group.signIns.filter(signIn => signIn.id !== signInId);
+            if (updatedSignIns.length === 0) {
+              // Return null to filter out empty groups
+              return null;
+            }
+            return {
+              ...group,
+              signIns: updatedSignIns,
+              count: updatedSignIns.length,
+              unreadCount: updatedSignIns.filter(s => !s.is_read).length
+            };
+          })
+          .filter((group): group is GroupedOpenHouse => group !== null);
+      });
+    } catch (err: any) {
+      console.error('Error deleting sign-in:', err);
+      alert('Failed to delete sign-in. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -434,7 +474,7 @@ const OpenHousesList = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="ml-4">
+                        <div className="ml-4 flex items-center gap-2">
                           <Button
                             size="sm"
                             variant="outline"
@@ -444,6 +484,18 @@ const OpenHousesList = () => {
                             }}
                           >
                             {signIn.is_read ? 'Mark as Unread' : 'Mark as Read'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteSignIn(signIn.id);
+                            }}
+                            className="flex items-center gap-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
                           </Button>
                         </div>
                       </div>

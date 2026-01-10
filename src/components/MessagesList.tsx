@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Mail, Phone, Calendar, User } from 'lucide-react';
+import { MessageSquare, Mail, Phone, Calendar, User, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ContactMessage {
@@ -57,6 +57,7 @@ const MessagesList = () => {
             contact_phones:phone_id (phone),
             contact_sources:source_id (source)
           `)
+          .eq('is_active', true)
           .order('created_at', { ascending: false });
         
         data = tableResult.data;
@@ -153,6 +154,28 @@ const MessagesList = () => {
       );
     } catch (err: any) {
       console.error('Error updating read status:', err);
+    }
+  };
+
+  const deleteMessage = async (messageId: number) => {
+    if (!confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      // Soft delete by setting is_active to false
+      const { error } = await supabase
+        .from('contact_messages')
+        .update({ is_active: false })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    } catch (err: any) {
+      console.error('Error deleting message:', err);
+      alert('Failed to delete message. Please try again.');
     }
   };
 
@@ -274,13 +297,24 @@ const MessagesList = () => {
                   )}
                 </CardDescription>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => markAsRead(message.id, !message.is_read)}
-              >
-                {message.is_read ? 'Mark as Unread' : 'Mark as Read'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => markAsRead(message.id, !message.is_read)}
+                >
+                  {message.is_read ? 'Mark as Unread' : 'Mark as Read'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => deleteMessage(message.id)}
+                  className="flex items-center gap-1"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
