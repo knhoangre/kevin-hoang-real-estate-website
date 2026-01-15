@@ -67,8 +67,20 @@ const Properties = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isCsvDialogOpen, setIsCsvDialogOpen] = useState(false);
+  const [isBulkEditDialogOpen, setIsBulkEditDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<number>>(new Set());
+  const [bulkEditData, setBulkEditData] = useState({
+    property_type: '',
+    town: '',
+    zip_code: '',
+    sale_price: '',
+    bedrooms: '',
+    full_baths: '',
+    half_baths: '',
+    living_area: '',
+    photo_count: '',
+  });
   const [csvData, setCsvData] = useState<string[][]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [headerMapping, setHeaderMapping] = useState<Record<string, string>>({});
@@ -274,6 +286,52 @@ const Properties = () => {
       toast({
         title: 'Error',
         description: error.message || 'Failed to delete properties',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleBulkEdit = async () => {
+    if (selectedPropertyIds.size === 0) return;
+
+    try {
+      const updateData: any = {
+        updated_at: new Date().toISOString(),
+      };
+
+      // Only include fields that have values
+      if (bulkEditData.property_type) updateData.property_type = bulkEditData.property_type;
+      if (bulkEditData.town) updateData.town = bulkEditData.town;
+      if (bulkEditData.zip_code) updateData.zip_code = bulkEditData.zip_code;
+      if (bulkEditData.sale_price) updateData.sale_price = parseFloat(bulkEditData.sale_price);
+      if (bulkEditData.bedrooms) updateData.bedrooms = parseInt(bulkEditData.bedrooms);
+      if (bulkEditData.full_baths) updateData.full_baths = parseInt(bulkEditData.full_baths);
+      if (bulkEditData.half_baths) updateData.half_baths = parseInt(bulkEditData.half_baths);
+      if (bulkEditData.living_area) updateData.living_area = parseInt(bulkEditData.living_area);
+      if (bulkEditData.photo_count) updateData.photo_count = parseInt(bulkEditData.photo_count);
+
+      const idsToUpdate = Array.from(selectedPropertyIds);
+
+      const { error } = await supabase
+        .from('properties')
+        .update(updateData)
+        .in('id', idsToUpdate);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: `Successfully updated ${idsToUpdate.length} propert${idsToUpdate.length === 1 ? 'y' : 'ies'}`,
+      });
+
+      setIsBulkEditDialogOpen(false);
+      setSelectedPropertyIds(new Set());
+      fetchProperties();
+    } catch (error: any) {
+      console.error('Error bulk editing properties:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update properties',
         variant: 'destructive',
       });
     }
@@ -563,13 +621,35 @@ const Properties = () => {
           <h1 className="text-3xl font-bold">Properties</h1>
           <div className="flex gap-2">
             {selectedPropertyIds.size > 0 && (
-              <Button
-                variant="destructive"
-                onClick={() => setIsDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Selected ({selectedPropertyIds.size})
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setBulkEditData({
+                      property_type: '',
+                      town: '',
+                      zip_code: '',
+                      sale_price: '',
+                      bedrooms: '',
+                      full_baths: '',
+                      half_baths: '',
+                      living_area: '',
+                      photo_count: '',
+                    });
+                    setIsBulkEditDialogOpen(true);
+                  }}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Selected ({selectedPropertyIds.size})
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Selected ({selectedPropertyIds.size})
+                </Button>
+              </>
             )}
             <Button variant="outline" onClick={() => setIsCsvDialogOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
@@ -775,6 +855,106 @@ const Properties = () => {
               </Button>
               <Button onClick={handleSave}>
                 {selectedProperty ? 'Update' : 'Add'} Property
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bulk Edit Dialog */}
+        <Dialog open={isBulkEditDialogOpen} onOpenChange={setIsBulkEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Bulk Edit Properties ({selectedPropertyIds.size})</DialogTitle>
+              <DialogDescription>
+                Update the fields below to apply changes to all selected properties. Leave fields empty to keep existing values.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Property Type</label>
+                <Input
+                  value={bulkEditData.property_type}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, property_type: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Town</label>
+                <Input
+                  value={bulkEditData.town}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, town: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Zip Code</label>
+                <Input
+                  value={bulkEditData.zip_code}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, zip_code: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Sale Price</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.sale_price}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, sale_price: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Bedrooms</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.bedrooms}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, bedrooms: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Full Baths</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.full_baths}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, full_baths: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Half Baths</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.half_baths}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, half_baths: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Living Area (sq ft)</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.living_area}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, living_area: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Photo Count</label>
+                <Input
+                  type="number"
+                  value={bulkEditData.photo_count}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, photo_count: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsBulkEditDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleBulkEdit}>
+                Update {selectedPropertyIds.size} Propert{selectedPropertyIds.size === 1 ? 'y' : 'ies'}
               </Button>
             </DialogFooter>
           </DialogContent>
