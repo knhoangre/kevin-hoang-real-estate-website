@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, ArrowRight } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowRight, Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -139,7 +139,7 @@ const Contact = () => {
                 )}
               </div>
 
-              <div className="flex items-center space-x-4 w-fit group">
+              <div className="flex items-center space-x-4 w-fit">
                 <Mail className="h-5 w-5 text-[#1a1a1a]" />
                 <a href="mailto:KNHOANGRE@GMAIL.COM" className="relative group">
                   <span className="text-[#1a1a1a] uppercase relative">
@@ -149,7 +149,7 @@ const Contact = () => {
                 </a>
               </div>
 
-              <div className="flex items-center space-x-4 w-fit group">
+              <div className="flex items-center space-x-4 w-fit">
                 <MapPin className="h-5 w-5 text-[#1a1a1a]" />
                 <a
                   href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494"
@@ -159,6 +159,21 @@ const Contact = () => {
                 >
                   <span className="text-[#1a1a1a] uppercase relative">
                     150 WEST ST, NEEDHAM, MA 02494
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                  </span>
+                </a>
+              </div>
+
+              <div className="flex items-center space-x-4 w-fit">
+                <Calendar className="h-5 w-5 text-[#1a1a1a]" />
+                <a
+                  href="https://calendar.app.google/P297MnAu7ei6turA6"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative group"
+                >
+                  <span className="text-[#1a1a1a] uppercase relative">
+                    SET AN APPOINTMENT WITH ME
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useScrollToTop from "@/hooks/useScrollToTop";
 import ContactQRCode from "./ContactQRCode";
@@ -34,7 +34,7 @@ const Footer = () => {
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 mb-2">
               <MapPin className="h-4 w-4" />
               <a
                 href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494"
@@ -46,43 +46,43 @@ const Footer = () => {
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
+            <div className="flex items-center space-x-4">
+              <Calendar className="h-4 w-4" />
+              <a
+                href="https://calendar.app.google/P297MnAu7ei6turA6"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative text-gray-300 hover:text-white transition-colors uppercase"
+              >
+                SET AN APPOINTMENT WITH ME
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+              </a>
+            </div>
           </div>
 
           <div>
             <h3 className="text-xl font-bold mb-4">{t('footer.quick_links')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-{t('nav.home')}
+                <Link to="/" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
+                  {t('nav.home')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/about" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/about" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('footer.about')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/buyer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-{t('nav.buyer')}
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </Link>
-              </li>
-              <li>
-                <Link to="/seller" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
-{t('nav.seller')}
-                  <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/blog" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('nav.blog')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/contact" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/contact" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('footer.contact')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
@@ -94,19 +94,19 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy-policy" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/privacy-policy" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('footer.privacy_policy')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/terms-of-service" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/terms-of-service" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('footer.terms_of_service')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>
               </li>
               <li>
-                <Link to="/disclaimer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block">
+                <Link to="/disclaimer" onClick={handleLinkClick} className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase">
                   {t('footer.disclaimer')}
                   <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                 </Link>

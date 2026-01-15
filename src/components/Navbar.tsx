@@ -3,10 +3,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
+import { X, Menu } from "lucide-react";
 import Logo from "./Logo";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const location = useLocation();
@@ -100,71 +107,15 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden min-[1011px]:flex items-center space-x-8">
             <button
-              onClick={() => handleNavigation('/buyer')}
+              onClick={() => handleNavigation('/properties')}
               className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/buyer' ? 'font-bold' : ''
+                location.pathname === '/properties' ? 'font-bold' : ''
               }`}
             >
-              {t('nav.buyer')}
+              PROPERTIES
               <span
                 className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/buyer' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            <button
-              onClick={() => handleNavigation('/seller')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/seller' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.seller')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/seller' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            <button
-              onClick={() => handleNavigation('/relocation')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/relocation' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.relocation')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/relocation' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            <button
-              onClick={() => handleNavigation('/neighborhoods')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/neighborhoods' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.neighborhoods')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/neighborhoods' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            <button
-              onClick={() => handleNavigation('/blog')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/blog' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.blog')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/blog' ? 'w-full' : ''
+                  location.pathname === '/properties' ? 'w-full' : ''
                 }`}
               />
             </button>
@@ -198,10 +149,111 @@ const Navbar = () => {
             </button>
 
             {/* Language Switcher */}
-            <LanguageSwitcher />
+            <div className="flex items-center space-x-4">
+              <LanguageSwitcher />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-[0.9375rem] ${getTextColorClass()} ${getHoverColorClass()} hover:bg-transparent p-0 h-auto font-normal relative group`}
+                    aria-label="Phone number"
+                  >
+                    860-682-2251
+                    <span className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2`} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuItem
+                    asChild
+                    className="cursor-pointer"
+                  >
+                    <a
+                      href="tel:8606822251"
+                      className="w-full"
+                    >
+                      CALL
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    asChild
+                    className="cursor-pointer"
+                  >
+                    <a
+                      href="sms:8606822251"
+                      className="w-full"
+                    >
+                      TEXT
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Menu Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={`p-1 ${getTextColorClass()} ${getHoverColorClass()} hover:bg-transparent`}
+                  aria-label="Menu"
+                >
+                  <Menu className="h-8 w-8" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/buyer')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/buyer' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.buyer')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/seller')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/seller' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.seller')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/relocation')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/relocation' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.relocation')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/neighborhoods')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/neighborhoods' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.neighborhoods')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/blog')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/blog' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.blog')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleNavigation('/calculator')}
+                  className={`cursor-pointer uppercase ${
+                    location.pathname === '/calculator' ? 'font-bold bg-accent' : ''
+                  }`}
+                >
+                  {t('nav.calculator')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {user ? (
-              <ProfileDropdown />
+              <ProfileDropdown onItemClick={() => {}} />
             ) : (
               <RouterLink
                 to="/auth"
@@ -334,6 +386,20 @@ const Navbar = () => {
                 </button>
 
                 <button
+                  onClick={() => handleNavigation('/properties')}
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
+                    location.pathname === '/properties' ? 'font-bold' : ''
+                  }`}
+                >
+                  PROPERTIES
+                  <span
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
+                      location.pathname === '/properties' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
+
+                <button
                   onClick={() => handleNavigation('/faq')}
                   className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/faq' ? 'font-bold' : ''
@@ -363,7 +429,7 @@ const Navbar = () => {
 
                 {user ? (
                   <div className="flex justify-center">
-                    <ProfileDropdown />
+                    <ProfileDropdown onItemClick={() => setMobileMenuOpen(false)} />
                   </div>
                 ) : (
                   <RouterLink

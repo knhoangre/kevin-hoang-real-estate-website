@@ -25,10 +25,15 @@ const Hero = () => {
         <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto">
           {t('hero.subtitle')}
         </p>
-        <Link to="/contact" className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300">
+        <a 
+          href="https://calendar.app.google/P297MnAu7ei6turA6" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300"
+        >
           <span className="uppercase">{t('hero.cta')}</span>
           <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </Link>
+        </a>
       </div>
     </section>
   );

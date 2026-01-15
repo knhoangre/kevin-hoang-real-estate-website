@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock, Send, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, ArrowRight, Calendar } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -168,7 +168,7 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start group">
+                  <div className="flex items-center">
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
                       <Mail className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
@@ -189,7 +189,7 @@ const Contact = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start group">
+                  <div className="flex items-center">
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
                       <MapPin className="w-5 h-5 text-[#1a1a1a]" />
                     </div>
@@ -206,6 +206,28 @@ const Contact = () => {
                             <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
+                      <Calendar className="w-5 h-5 text-[#1a1a1a]" />
+                    </div>
+                    <div>
+                      <div className="relative">
+                        <a
+                          href="https://calendar.app.google/P297MnAu7ei6turA6"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
+                        >
+                          <span className="relative select-all uppercase">
+                            SET AN APPOINTMENT WITH ME
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                          </span>
+                        </a>
                       </div>
                     </div>
                   </div>

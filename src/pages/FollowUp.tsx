@@ -12,8 +12,8 @@ const FollowUp = () => {
 
   // Determine tab from URL
   const getTabFromPath = (path: string) => {
-    if (path === '/follow-up/messages') return 'messages';
-    if (path === '/follow-up/open-house') return 'open-houses';
+    if (path === '/admin/follow-up/messages') return 'messages';
+    if (path === '/admin/follow-up/open-house') return 'open-houses';
     return 'open-houses'; // default
   };
 
@@ -28,9 +28,9 @@ const FollowUp = () => {
       return;
     }
 
-    // Redirect /follow-up to /follow-up/open-house
-    if (location.pathname === '/follow-up') {
-      navigate('/follow-up/open-house', { replace: true });
+    // Redirect /admin/follow-up to /admin/follow-up/open-house
+    if (location.pathname === '/admin/follow-up') {
+      navigate('/admin/follow-up/open-house', { replace: true });
     }
   }, [isAdmin, loading, navigate, location.pathname]);
 
@@ -46,9 +46,9 @@ const FollowUp = () => {
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     if (value === 'messages') {
-      navigate('/follow-up/messages');
+      navigate('/admin/follow-up/messages');
     } else {
-      navigate('/follow-up/open-house');
+      navigate('/admin/follow-up/open-house');
     }
   };
 

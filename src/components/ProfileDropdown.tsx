@@ -10,9 +10,13 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, MessageSquare } from "lucide-react";
+import { LogOut, User, MessageSquare, Home } from "lucide-react";
 
-export default function ProfileDropdown() {
+interface ProfileDropdownProps {
+  onItemClick?: () => void;
+}
+
+export default function ProfileDropdown({ onItemClick }: ProfileDropdownProps) {
   const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +29,7 @@ export default function ProfileDropdown() {
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
+      onItemClick?.();
       await signOut();
       navigate("/auth");
     } catch (error) {
@@ -36,10 +41,21 @@ export default function ProfileDropdown() {
 
   const handleProfileClick = () => {
     navigate("/profile");
+    onItemClick?.();
   };
 
   const handleFollowUpClick = () => {
-    navigate("/follow-up");
+    navigate("/admin/follow-up");
+    onItemClick?.();
+  };
+
+  const handlePropertiesClick = () => {
+    navigate("/admin/properties");
+    onItemClick?.();
+  };
+
+  const handleSignOutClick = () => {
+    onItemClick?.();
   };
 
   if (!user) return null;
@@ -67,6 +83,11 @@ export default function ProfileDropdown() {
             <DropdownMenuItem onClick={handleFollowUpClick}>
               <MessageSquare className="mr-2 h-4 w-4" />
               <span>FOLLOW UP</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handlePropertiesClick}>
+              <Home className="mr-2 h-4 w-4" />
+              <span>MANAGE PROPERTIES</span>
             </DropdownMenuItem>
           </>
         )}

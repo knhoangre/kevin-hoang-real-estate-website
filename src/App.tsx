@@ -28,6 +28,9 @@ import OpenHouse from "./pages/OpenHouse";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileCompletion from "./components/ProfileCompletion";
 import FollowUp from "./pages/FollowUp";
+import Calculator from "./pages/Calculator";
+import PropertiesAdmin from "./pages/Properties";
+import Properties from "./pages/PropertiesList";
 
 const queryClient = new QueryClient();
 
@@ -54,12 +57,15 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/calculator" element={<Calculator />} />
                 <Route path="/first-time-buyers" element={<FirstTimeBuyers />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/complete-profile" element={<ProfileCompletion />} />
-                <Route path="/follow-up" element={<FollowUp />} />
-                <Route path="/follow-up/open-house" element={<FollowUp />} />
-                <Route path="/follow-up/messages" element={<FollowUp />} />
+                <Route path="/admin/follow-up" element={<FollowUp />} />
+                <Route path="/admin/follow-up/open-house" element={<FollowUp />} />
+                <Route path="/admin/follow-up/messages" element={<FollowUp />} />
+                <Route path="/admin/properties" element={<PropertiesAdmin />} />
+                <Route path="/properties" element={<Properties />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/disclaimer" element={<Disclaimer />} />
