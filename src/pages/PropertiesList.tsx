@@ -148,11 +148,6 @@ const PropertiesList = () => {
                                   className="absolute inset-0 w-full h-full object-cover"
                                   style={{
                                     objectPosition: 'center center',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    minWidth: '100%',
-                                    minHeight: '100%',
                                   }}
                                   onError={(e) => {
                                     // If image fails to load, hide it
