@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
@@ -209,6 +210,7 @@ const Navbar = () => {
                 >
                   {t('nav.buyer')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/seller')}
                   className={`cursor-pointer uppercase ${
@@ -217,6 +219,7 @@ const Navbar = () => {
                 >
                   {t('nav.seller')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/relocation')}
                   className={`cursor-pointer uppercase ${
@@ -225,6 +228,7 @@ const Navbar = () => {
                 >
                   {t('nav.relocation')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/neighborhoods')}
                   className={`cursor-pointer uppercase ${
@@ -233,6 +237,7 @@ const Navbar = () => {
                 >
                   {t('nav.neighborhoods')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/blog')}
                   className={`cursor-pointer uppercase ${
@@ -241,6 +246,7 @@ const Navbar = () => {
                 >
                   {t('nav.blog')}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => handleNavigation('/calculator')}
                   className={`cursor-pointer uppercase ${
@@ -315,7 +321,7 @@ const Navbar = () => {
             </button>
             
             <div className="container mx-auto px-4 pt-24 pb-8 h-full flex flex-col">
-              <motion.div className="flex flex-col space-y-6 flex-grow items-center" variants={itemVariants}>
+              <motion.div className="flex flex-col space-y-3 flex-grow items-center w-full max-w-xs mx-auto px-4" variants={itemVariants}>
                 <button
                   onClick={() => handleNavigation('/buyer')}
                   className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
@@ -329,6 +335,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/seller')}
@@ -343,6 +350,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/relocation')}
@@ -357,6 +365,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/neighborhoods')}
@@ -371,6 +380,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/blog')}
@@ -385,6 +395,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/calculator')}
@@ -399,6 +410,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/properties')}
@@ -413,6 +425,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/faq')}
@@ -427,6 +440,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 <button
                   onClick={() => handleNavigation('/contact')}
@@ -441,6 +455,7 @@ const Navbar = () => {
                     }`}
                   />
                 </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
 
                 {user ? (
                   <div className="flex justify-center">

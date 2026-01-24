@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, MessageSquare, Home } from "lucide-react";
+import { LogOut, User, MessageSquare, Home, ClipboardList } from "lucide-react";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
@@ -21,11 +21,6 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
   const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-
-  // Debug logging
-  if (user && typeof window !== 'undefined') {
-    console.log('👤 ProfileDropdown - User:', user.email, 'isAdmin:', isAdmin);
-  }
 
   const handleSignOut = async () => {
     setIsLoading(true);
@@ -42,6 +37,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
 
   const handleProfileClick = () => {
     navigate("/profile");
+    onItemClick?.();
+  };
+
+  const handleOpenHouseClick = () => {
+    navigate("/open-house");
     onItemClick?.();
   };
 
@@ -77,6 +77,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
         <DropdownMenuItem onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>PROFILE</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleOpenHouseClick}>
+          <ClipboardList className="mr-2 h-4 w-4" />
+          <span>OPEN HOUSE SIGN IN</span>
         </DropdownMenuItem>
         {isAdmin && (
           <>
