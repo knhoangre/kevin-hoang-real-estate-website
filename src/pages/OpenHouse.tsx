@@ -224,13 +224,10 @@ const OpenHouse = () => {
   const handleReset = () => {
     setSuccess(false);
     setError(null);
-    setShowForm(false); // Go back to address selection
-    setAddress('');
-    // Set mode based on whether we have previous addresses
-    setAddressInputMode(previousAddresses.length > 0 ? 'select' : 'manual');
-    addressForm.reset({
-      address: '',
-    });
+    // Keep the form showing with the same address
+    setShowForm(true);
+    // Don't clear the address - keep it so the form shows the same address
+    // setAddress(''); // Keep the current address
     signInForm.reset({
       firstName: '',
       lastName: '',
