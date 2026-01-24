@@ -22,13 +22,12 @@ interface Property {
   full_baths: number | null;
   half_baths: number | null;
   living_area: number | null;
-  photo_count: number;
+  image_urls: string[];
 }
 
 const PropertiesList = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadedImages, setLoadedImages] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchProperties();
@@ -55,36 +54,38 @@ const PropertiesList = () => {
       
       setProperties(sortedData);
       
-      // Generate image URLs for each property based on photo_count
-      if (sortedData) {
-        sortedData.forEach((property) => {
-          loadPropertyImages(property.mlsnum, property.photo_count);
+      // Debug: Log first property to check image_urls
+      if (sortedData && sortedData.length > 0) {
+        console.log('First property sample:', {
+          mlsnum: sortedData[0].mlsnum,
+          image_urls: sortedData[0].image_urls,
+          image_urls_type: typeof sortedData[0].image_urls,
+          image_urls_is_array: Array.isArray(sortedData[0].image_urls),
+          image_urls_length: Array.isArray(sortedData[0].image_urls) ? sortedData[0].image_urls.length : 'N/A',
         });
+        
+        // Test if first image URL is accessible
+        if (Array.isArray(sortedData[0].image_urls) && sortedData[0].image_urls.length > 0) {
+          const testUrl = sortedData[0].image_urls[0];
+          console.log('Testing first image URL:', testUrl);
+          fetch(testUrl, { method: 'HEAD' })
+            .then(response => {
+              console.log('Image URL accessibility test:', {
+                url: testUrl,
+                status: response.status,
+                accessible: response.ok,
+              });
+            })
+            .catch(error => {
+              console.error('Image URL accessibility test failed:', error);
+            });
+        }
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const getMLSPhotoUrl = (mlsnum: string, photoIndex: number): string => {
-    return `https://media.mlspin.com/photo.aspx?nopadding=1&h=768&w=1024&mls=${mlsnum}&o=&n=${photoIndex}`;
-  };
-
-  const loadPropertyImages = (mlsnum: string, photoCount: number) => {
-    const images: string[] = [];
-    
-    // Use photo_count from database - load photos from 0 to photo_count - 1
-    for (let i = 0; i < photoCount; i++) {
-      const url = getMLSPhotoUrl(mlsnum, i);
-      images.push(url);
-    }
-    
-    setLoadedImages((prev) => ({
-      ...prev,
-      [mlsnum]: images,
-    }));
   };
 
   const formatCurrency = (value: number | null) => {
@@ -129,29 +130,49 @@ const PropertiesList = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
-              const images = loadedImages[property.mlsnum] || [];
+              // Handle null, undefined, or empty array cases
+              const images = Array.isArray(property.image_urls) && property.image_urls.length > 0 
+                ? property.image_urls 
+                : [];
               const hasImages = images.length > 0;
+              
+              // Debug logging for this property
+              if (property.mlsnum) {
+                console.log(`Property ${property.mlsnum}:`, {
+                  hasImages,
+                  imageCount: images.length,
+                  imageUrls: images,
+                });
+              }
               
               return (
                 <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Photo Carousel */}
                   <div className="relative aspect-[16/9] bg-gray-200 overflow-hidden">
                     {hasImages ? (
-                      <Carousel className="w-full h-full" opts={{ loop: true, dragFree: true }}>
-                        <CarouselContent className="h-full -ml-0">
+                      <Carousel 
+                        className="w-full h-full" 
+                        opts={{ loop: true, dragFree: true }}
+                        style={{ height: '100%' }}
+                      >
+                        <CarouselContent className="-ml-0 h-full">
                           {images.map((imageUrl, index) => (
-                            <CarouselItem key={index} className="h-full pl-0 basis-full">
-                              <div className="w-full h-full overflow-hidden relative">
+                            <CarouselItem key={index} className="pl-0 basis-full h-full">
+                              <div className="relative w-full h-full">
                                 <img
                                   src={imageUrl}
                                   alt={`${property.address} - Photo ${index + 1}`}
-                                  className="absolute inset-0 w-full h-full object-cover"
+                                  className="w-full h-full object-cover"
                                   style={{
                                     objectPosition: 'center center',
                                   }}
                                   onError={(e) => {
+                                    console.error(`Failed to load image ${index + 1} for property ${property.mlsnum}:`, imageUrl);
                                     // If image fails to load, hide it
                                     (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                  onLoad={() => {
+                                    console.log(`Successfully loaded image ${index + 1} for property ${property.mlsnum}`);
                                   }}
                                 />
                               </div>
@@ -170,6 +191,11 @@ const PropertiesList = () => {
                         <div className="text-center">
                           <Square className="h-16 w-16 mx-auto mb-2" />
                           <p className="text-sm">No photos available</p>
+                          {property.mlsnum && (
+                            <p className="text-xs mt-1 text-gray-300">
+                              MLS: {property.mlsnum}
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}

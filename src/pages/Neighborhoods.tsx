@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { neighborhoods } from "../data/neighborhoodData";
@@ -6,10 +7,17 @@ import { useTranslation } from "react-i18next";
 
 const Neighborhoods = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleNeighborhoodClick = (neighborhood: any) => {
+    if (neighborhood.slug) {
+      navigate(`/neighborhoods/${neighborhood.slug}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -43,6 +51,7 @@ const Neighborhoods = () => {
             {neighborhoods.map((neighborhood) => (
               <div
                 key={neighborhood.name}
+                onClick={() => handleNeighborhoodClick(neighborhood)}
                 className="overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer group"
               >
                 <div className="relative h-48 overflow-hidden">

@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Neighborhoods from "./pages/Neighborhoods";
+import NeighborhoodDetail from "./pages/NeighborhoodDetail";
 import Buyer from "./pages/Buyer";
 import Seller from "./pages/Seller";
 import Relocation from "./pages/Relocation";
@@ -50,6 +51,7 @@ const App = () => (
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/neighborhoods" element={<Neighborhoods />} />
+                <Route path="/neighborhoods/:slug" element={<NeighborhoodDetail />} />
                 <Route path="/buyer" element={<Buyer />} />
                 <Route path="/seller" element={<Seller />} />
                 <Route path="/relocation" element={<Relocation />} />

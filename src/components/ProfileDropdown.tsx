@@ -14,9 +14,10 @@ import { LogOut, User, MessageSquare, Home } from "lucide-react";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
+  align?: "start" | "center" | "end";
 }
 
-export default function ProfileDropdown({ onItemClick }: ProfileDropdownProps) {
+export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileDropdownProps) {
   const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +73,7 @@ export default function ProfileDropdown({ onItemClick }: ProfileDropdownProps) {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56" align={align} forceMount>
         <DropdownMenuItem onClick={handleProfileClick}>
           <User className="mr-2 h-4 w-4" />
           <span>PROFILE</span>

@@ -266,7 +266,8 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="max-[1010px]:block min-[1011px]:hidden">
+          <div className="max-[1010px]:flex min-[1011px]:hidden items-center gap-4">
+            <LanguageSwitcher />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="relative z-10 p-2"
@@ -386,6 +387,20 @@ const Navbar = () => {
                 </button>
 
                 <button
+                  onClick={() => handleNavigation('/calculator')}
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
+                    location.pathname === '/calculator' ? 'font-bold' : ''
+                  }`}
+                >
+                  {t('nav.calculator')}
+                  <span
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
+                      location.pathname === '/calculator' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
+
+                <button
                   onClick={() => handleNavigation('/properties')}
                   className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
                     location.pathname === '/properties' ? 'font-bold' : ''
@@ -429,7 +444,7 @@ const Navbar = () => {
 
                 {user ? (
                   <div className="flex justify-center">
-                    <ProfileDropdown onItemClick={() => setMobileMenuOpen(false)} />
+                    <ProfileDropdown onItemClick={() => setMobileMenuOpen(false)} align="center" />
                   </div>
                 ) : (
                   <RouterLink

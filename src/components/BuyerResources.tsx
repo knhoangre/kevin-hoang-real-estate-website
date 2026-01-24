@@ -21,7 +21,7 @@ const BuyerResources = () => {
       title: t('buyer_guide.resources.mortgage_calculator.title'),
       description: t('buyer_guide.resources.mortgage_calculator.description'),
       color: "bg-green-500",
-      link: "/#real-estate-calculators"
+      link: "/calculator"
     },
     {
       icon: FileText,
@@ -76,7 +76,13 @@ const BuyerResources = () => {
                 <div className={`w-12 h-12 ${resource.color} text-white rounded-lg flex items-center justify-center mb-4`}>
                   <resource.icon size={24} />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-[#1a1a1a]">{resource.title}</h3>
+                {resource.link === "/calculator" ? (
+                  <Link to={resource.link}>
+                    <h3 className="text-xl font-semibold mb-2 text-[#1a1a1a] hover:text-gray-600 transition-colors cursor-pointer">{resource.title}</h3>
+                  </Link>
+                ) : (
+                  <h3 className="text-xl font-semibold mb-2 text-[#1a1a1a]">{resource.title}</h3>
+                )}
                 <p className="text-gray-600 mb-4">{resource.description}</p>
                 <Link 
                   to={resource.link} 

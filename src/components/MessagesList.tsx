@@ -243,7 +243,7 @@ const MessagesList = () => {
           className={!message.is_read ? 'border-blue-300 bg-blue-50' : ''}
         >
           <CardHeader>
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <User className="h-5 w-5" />
@@ -297,7 +297,7 @@ const MessagesList = () => {
                   )}
                 </CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:ml-4">
                 <Button
                   size="sm"
                   variant="outline"

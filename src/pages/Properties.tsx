@@ -53,7 +53,7 @@ interface Property {
   full_baths: number | null;
   half_baths: number | null;
   living_area: number | null;
-  photo_count: number;
+  image_urls: string[];
   created_at: string;
   updated_at: string;
 }
@@ -79,13 +79,14 @@ const Properties = () => {
     full_baths: '',
     half_baths: '',
     living_area: '',
-    photo_count: '',
   });
   const [csvData, setCsvData] = useState<string[][]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [headerMapping, setHeaderMapping] = useState<Record<string, string>>({});
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     mlsnum: '',
     property_type: '',
@@ -97,7 +98,7 @@ const Properties = () => {
     full_baths: '',
     half_baths: '',
     living_area: '',
-    photo_count: '0',
+    image_urls: [] as string[],
   });
 
   // Handle admin check
@@ -139,8 +140,93 @@ const Properties = () => {
     }
   }, [isAdmin]);
 
+  const uploadPropertyImages = async (files: File[], mlsnum: string) => {
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${mlsnum}/${Date.now()}-${i}.${fileExt}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from('property-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data } = supabase.storage
+          .from('property-images')
+          .getPublicUrl(fileName);
+
+        uploadedUrls.push(data.publicUrl);
+      }
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload images',
+        variant: 'destructive',
+      });
+      return [];
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const mlsnum = formData.mlsnum || `temp-${Date.now()}`;
+    console.log('Uploading images for MLS:', mlsnum, 'Files:', files.length);
+    
+    const uploadedUrls = await uploadPropertyImages(Array.from(files), mlsnum);
+    
+    console.log('Uploaded URLs:', uploadedUrls);
+    
+    const newImages = [...propertyImages, ...uploadedUrls];
+    setPropertyImages(newImages);
+    setFormData({ ...formData, image_urls: newImages });
+    
+    console.log('Updated formData.image_urls:', newImages);
+    
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    const imageUrl = propertyImages[index];
+    
+    // Try to delete from storage if it's a Supabase URL
+    try {
+      // Extract file path from URL
+      // Supabase URLs look like: https://[project].supabase.co/storage/v1/object/public/property-images/[path]
+      const urlParts = imageUrl.split('/property-images/');
+      if (urlParts.length > 1) {
+        const filePath = urlParts[1];
+        await supabase.storage
+          .from('property-images')
+          .remove([filePath]);
+      }
+    } catch (error) {
+      console.error('Error deleting image from storage:', error);
+      // Continue anyway - remove from UI even if storage delete fails
+    }
+    
+    const newImages = propertyImages.filter((_, i) => i !== index);
+    setPropertyImages(newImages);
+    setFormData({ ...formData, image_urls: newImages });
+  };
+
   const handleAdd = () => {
     setSelectedProperty(null);
+    setPropertyImages([]);
     setFormData({
       mlsnum: '',
       property_type: '',
@@ -152,13 +238,15 @@ const Properties = () => {
       full_baths: '',
       half_baths: '',
       living_area: '',
-      photo_count: '0',
+      image_urls: [],
     });
     setIsDialogOpen(true);
   };
 
   const handleEdit = (property: Property) => {
     setSelectedProperty(property);
+    const imageUrls = property.image_urls || [];
+    setPropertyImages(imageUrls);
     setFormData({
       mlsnum: property.mlsnum,
       property_type: property.property_type,
@@ -170,7 +258,7 @@ const Properties = () => {
       full_baths: property.full_baths?.toString() || '',
       half_baths: property.half_baths?.toString() || '',
       living_area: property.living_area?.toString() || '',
-      photo_count: property.photo_count.toString(),
+      image_urls: imageUrls,
     });
     setIsDialogOpen(true);
   };
@@ -193,9 +281,16 @@ const Properties = () => {
         full_baths: formData.full_baths ? parseInt(formData.full_baths) : null,
         half_baths: formData.half_baths ? parseInt(formData.half_baths) : null,
         living_area: formData.living_area ? parseInt(formData.living_area) : null,
-        photo_count: parseInt(formData.photo_count) || 0,
+        image_urls: propertyImages,
         updated_at: new Date().toISOString(),
       };
+
+      // Debug: Log what we're saving
+      console.log('Saving property with image_urls:', {
+        mlsnum: dataToSave.mlsnum,
+        image_urls_count: dataToSave.image_urls.length,
+        image_urls: dataToSave.image_urls,
+      });
 
       if (selectedProperty) {
         // Update
@@ -308,7 +403,6 @@ const Properties = () => {
       if (bulkEditData.full_baths) updateData.full_baths = parseInt(bulkEditData.full_baths);
       if (bulkEditData.half_baths) updateData.half_baths = parseInt(bulkEditData.half_baths);
       if (bulkEditData.living_area) updateData.living_area = parseInt(bulkEditData.living_area);
-      if (bulkEditData.photo_count) updateData.photo_count = parseInt(bulkEditData.photo_count);
 
       const idsToUpdate = Array.from(selectedPropertyIds);
 
@@ -360,7 +454,6 @@ const Properties = () => {
     { value: 'full_baths', label: 'Full Baths' },
     { value: 'half_baths', label: 'Half Baths' },
     { value: 'living_area', label: 'Living Area' },
-    { value: 'photo_count', label: 'Photo Count' },
   ];
 
   const parseCSV = (text: string): string[][] => {
@@ -496,7 +589,7 @@ const Properties = () => {
           // Convert to appropriate type
           if (dbColumn === 'sale_price' || dbColumn === 'bedrooms' || 
               dbColumn === 'full_baths' || dbColumn === 'half_baths' || 
-              dbColumn === 'living_area' || dbColumn === 'photo_count') {
+              dbColumn === 'living_area') {
             const num = parseFloat(value.replace(/[^0-9.-]/g, ''));
             mapped[dbColumn] = isNaN(num) ? null : num;
           } else {
@@ -542,7 +635,7 @@ const Properties = () => {
             
             if (dbColumn === 'sale_price' || dbColumn === 'bedrooms' || 
                 dbColumn === 'full_baths' || dbColumn === 'half_baths' || 
-                dbColumn === 'living_area' || dbColumn === 'photo_count') {
+                dbColumn === 'living_area') {
               const num = parseFloat(value.replace(/[^0-9.-]/g, ''));
               property[dbColumn] = isNaN(num) ? null : num;
             } else {
@@ -552,7 +645,6 @@ const Properties = () => {
         });
         
         // Set defaults
-        property.photo_count = property.photo_count || 0;
         property.is_active = true;
         
         return property;
@@ -634,7 +726,6 @@ const Properties = () => {
                       full_baths: '',
                       half_baths: '',
                       living_area: '',
-                      photo_count: '',
                     });
                     setIsBulkEditDialogOpen(true);
                   }}
@@ -682,14 +773,13 @@ const Properties = () => {
                 <TableHead>Full Baths</TableHead>
                 <TableHead>Half Baths</TableHead>
                 <TableHead>Living Area</TableHead>
-                <TableHead>Photos</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={13} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                     No properties found. Click "Add Property" to get started.
                   </TableCell>
                 </TableRow>
@@ -714,7 +804,6 @@ const Properties = () => {
                     <TableCell>
                       {property.living_area ? `${property.living_area.toLocaleString()} sq ft` : '-'}
                     </TableCell>
-                    <TableCell>{property.photo_count}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -839,14 +928,41 @@ const Properties = () => {
                   placeholder="2000"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Photo Count</label>
+              <div className="space-y-2 col-span-2">
+                <label className="text-sm font-medium">Property Images</label>
                 <Input
-                  type="number"
-                  value={formData.photo_count}
-                  onChange={(e) => setFormData({ ...formData, photo_count: e.target.value })}
-                  placeholder="0"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  disabled={uploadingImages || !formData.mlsnum}
                 />
+                {!formData.mlsnum && (
+                  <p className="text-xs text-gray-500">Please enter MLS number first</p>
+                )}
+                {uploadingImages && <p className="text-sm text-gray-500">Uploading...</p>}
+                
+                {/* Display uploaded images */}
+                {propertyImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {propertyImages.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Property ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>
@@ -936,15 +1052,6 @@ const Properties = () => {
                   type="number"
                   value={bulkEditData.living_area}
                   onChange={(e) => setBulkEditData({ ...bulkEditData, living_area: e.target.value })}
-                  placeholder="Leave empty to keep existing"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Photo Count</label>
-                <Input
-                  type="number"
-                  value={bulkEditData.photo_count}
-                  onChange={(e) => setBulkEditData({ ...bulkEditData, photo_count: e.target.value })}
                   placeholder="Leave empty to keep existing"
                 />
               </div>

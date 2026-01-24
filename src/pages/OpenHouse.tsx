@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Form,
@@ -15,7 +16,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
 
 const addressSchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -46,11 +54,15 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 
 const OpenHouse = () => {
   const { toast } = useToast();
+  const { isAdmin, loading: authLoading } = useAuth();
   const [address, setAddress] = useState<string>('');
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [previousAddresses, setPreviousAddresses] = useState<string[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true); // Start as true to prevent flash
+  const [addressInputMode, setAddressInputMode] = useState<'select' | 'manual'>('manual');
 
   const addressForm = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
@@ -74,6 +86,13 @@ const OpenHouse = () => {
 
   const worksWithRealtor = signInForm.watch('worksWithRealtor');
 
+  // Fetch previous addresses on component mount (only if admin)
+  useEffect(() => {
+    if (isAdmin && !authLoading) {
+      fetchPreviousAddresses();
+    }
+  }, [isAdmin, authLoading]);
+
   // Auto-redirect after 5 seconds on success
   useEffect(() => {
     if (success) {
@@ -84,9 +103,59 @@ const OpenHouse = () => {
     }
   }, [success]);
 
+  const fetchPreviousAddresses = async () => {
+    try {
+      setLoadingAddresses(true);
+      const { data, error: fetchError } = await supabase
+        .from('open_house_sign_ins')
+        .select('address')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        console.error('Error fetching previous addresses:', fetchError);
+        // Don't show error to user, just continue without previous addresses
+        return;
+      }
+
+      if (data) {
+        // Get unique addresses, normalized (trimmed and sorted)
+        const uniqueAddresses = Array.from(
+          new Set(data.map(item => item.address?.trim()).filter(Boolean))
+        ).sort() as string[];
+        setPreviousAddresses(uniqueAddresses);
+        // Switch to select mode if we have addresses, otherwise stay in manual mode
+        if (uniqueAddresses.length > 0) {
+          setAddressInputMode('select');
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching previous addresses:', err);
+      // Don't show error to user, just continue without previous addresses
+    } finally {
+      setLoadingAddresses(false);
+    }
+  };
+
   const handleAddressSubmit = (data: AddressFormValues) => {
-    setAddress(data.address);
+    // Normalize address (trim whitespace)
+    const normalizedAddress = data.address.trim();
+    if (!normalizedAddress) {
+      return;
+    }
+    setAddress(normalizedAddress);
     setShowForm(true);
+  };
+
+  const handleAddressSelect = (selectedAddress: string) => {
+    if (selectedAddress === '__new__') {
+      setAddressInputMode('manual');
+      addressForm.setValue('address', '');
+      addressForm.setFocus('address');
+    } else {
+      addressForm.setValue('address', selectedAddress);
+      setAddressInputMode('select');
+    }
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -155,7 +224,13 @@ const OpenHouse = () => {
   const handleReset = () => {
     setSuccess(false);
     setError(null);
-    setShowForm(true); // Keep showing the form, just reset the fields
+    setShowForm(false); // Go back to address selection
+    setAddress('');
+    // Set mode based on whether we have previous addresses
+    setAddressInputMode(previousAddresses.length > 0 ? 'select' : 'manual');
+    addressForm.reset({
+      address: '',
+    });
     signInForm.reset({
       firstName: '',
       lastName: '',
@@ -165,7 +240,41 @@ const OpenHouse = () => {
       realtorName: '',
       realtorCompany: '',
     });
+    // Refresh previous addresses in case a new one was added
+    fetchPreviousAddresses();
   };
+
+  // Loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Admin check - show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+            Access Restricted
+          </h2>
+          <p className="text-lg text-gray-600 mb-6">
+            This page is only accessible to administrators.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please contact an administrator if you need access to this feature.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Success screen
   if (success) {
@@ -209,15 +318,85 @@ const OpenHouse = () => {
                 render={({ field }) => (
                   <FormItem>
                     <Label htmlFor="address">Property Address</Label>
-                    <FormControl>
-                      <Input
-                        id="address"
-                        placeholder="Enter property address"
-                        style={{ textTransform: 'none' }}
-                        autoCapitalize="off"
-                        {...field}
-                      />
-                    </FormControl>
+                    {loadingAddresses ? (
+                      <FormControl>
+                        <Input
+                          id="address"
+                          placeholder="Loading previous addresses..."
+                          style={{ textTransform: 'none' }}
+                          autoCapitalize="off"
+                          disabled
+                          {...field}
+                        />
+                      </FormControl>
+                    ) : addressInputMode === 'select' && previousAddresses.length > 0 ? (
+                      <FormControl>
+                        <Select
+                          value={field.value || ''}
+                          onValueChange={(value) => {
+                            handleAddressSelect(value);
+                            if (value !== '__new__') {
+                              field.onChange(value);
+                            }
+                          }}
+                        >
+                          <SelectTrigger id="address">
+                            <SelectValue placeholder="Select a previous address or add new" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {previousAddresses.map((addr) => (
+                              <SelectItem key={addr} value={addr}>
+                                {addr}
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="__new__">
+                              <span className="text-gray-500 italic">+ Add new address</span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                    ) : (
+                      <FormControl>
+                        <Input
+                          id="address"
+                          placeholder="Enter property address"
+                          style={{ textTransform: 'none' }}
+                          autoCapitalize="off"
+                          {...field}
+                        />
+                      </FormControl>
+                    )}
+                    {!loadingAddresses && addressInputMode === 'select' && previousAddresses.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Or{' '}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddressInputMode('manual');
+                            addressForm.setValue('address', '');
+                            addressForm.setFocus('address');
+                          }}
+                          className="text-blue-600 hover:underline"
+                        >
+                          type a new address
+                        </button>
+                      </p>
+                    )}
+                    {!loadingAddresses && addressInputMode === 'manual' && previousAddresses.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Or{' '}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddressInputMode('select');
+                            addressForm.setValue('address', '');
+                          }}
+                          className="text-blue-600 hover:underline"
+                        >
+                          select from previous addresses
+                        </button>
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -225,9 +404,10 @@ const OpenHouse = () => {
               <Button
                 type="submit"
                 className="w-full bg-[#1a1a1a] text-white hover:bg-black/80 uppercase"
+                disabled={loadingAddresses}
               >
-                Continue
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {loadingAddresses ? 'Loading...' : 'Continue'}
+                {!loadingAddresses && <ArrowRight className="ml-2 h-4 w-4" />}
               </Button>
             </form>
           </Form>

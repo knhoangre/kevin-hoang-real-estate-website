@@ -418,7 +418,7 @@ const OpenHousesList = () => {
                         !signIn.is_read ? 'border-blue-400 bg-blue-50' : 'border-gray-200'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <div className="flex-1">
                           <div className="font-semibold flex items-center gap-2">
                             {signIn.first_name} {signIn.last_name}
@@ -474,7 +474,7 @@ const OpenHousesList = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="ml-4 flex items-center gap-2">
+                        <div className="flex items-center gap-2 md:ml-4">
                           <Button
                             size="sm"
                             variant="outline"

@@ -143,3 +143,8 @@
 .dropdown-content a:hover {
   background-color: #f1f1f1;
 }
+
+/* Fix for carousel viewport height in property images */
+[data-embla-viewport] {
+  height: 100% !important;
+}
