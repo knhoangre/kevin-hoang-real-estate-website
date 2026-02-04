@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import Navbar from '@/components/Navbar';
 import {
   Carousel,
   CarouselContent,
@@ -26,6 +29,7 @@ interface Property {
 }
 
 const PropertiesList = () => {
+  const { t } = useTranslation();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -119,16 +123,40 @@ const PropertiesList = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <h1 className="text-4xl font-bold text-[#1a1a1a] mb-8">Properties</h1>
-        
-        {properties.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-500 text-lg">No properties available at this time.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <>
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="pt-16">
+        <div className="container mx-auto px-4 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <motion.h1
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
+            >
+              {t('properties.title')}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: -30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              className="text-xl text-gray-600 mb-12 max-w-2xl"
+            >
+              {t('properties.subtitle')}
+            </motion.p>
+          </motion.div>
+
+          {properties.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-gray-500 text-lg">No properties available at this time.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
               // Handle null, undefined, or empty array cases
               const images = Array.isArray(property.image_urls) && property.image_urls.length > 0 
@@ -259,8 +287,10 @@ const PropertiesList = () => {
             </Card>
           </div>
         )}
+        </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

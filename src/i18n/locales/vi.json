@@ -73,6 +73,10 @@
       "message_sent_description": "Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi sẽ phản hồi sớm."
     }
   },
+  "properties": {
+    "title": "BẤT ĐỘNG SẢN",
+    "subtitle": "Khám phá các bất động sản đang rao bán tại khu vực Greater Boston. Tìm ngôi nhà tiếp theo hoặc cơ hội đầu tư với danh sách chi tiết và hướng dẫn chuyên nghiệp."
+  },
   "footer": {
     "quick_links": "LIÊN KẾT NHANH",
     "legal": "PHÁP LÝ",

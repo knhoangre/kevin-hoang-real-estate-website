@@ -73,6 +73,10 @@
       "message_sent_description": "Thank you for contacting us. We'll respond shortly."
     }
   },
+  "properties": {
+    "title": "PROPERTIES",
+    "subtitle": "Explore current listings in the Greater Boston area. Find your next home or investment property with detailed listings and professional guidance."
+  },
   "footer": {
     "quick_links": "QUICK LINKS",
     "legal": "LEGAL",
