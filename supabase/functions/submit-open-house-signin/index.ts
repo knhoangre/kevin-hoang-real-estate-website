@@ -46,6 +46,8 @@ serve(async (req) => {
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase environment variables');
+      console.error('SUPABASE_URL exists:', !!supabaseUrl);
+      console.error('SUPABASE_SERVICE_ROLE_KEY exists:', !!supabaseServiceKey);
       return new Response(
         JSON.stringify({
           error: 'Server configuration error',
@@ -58,8 +60,20 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    console.log('Initialized Supabase client');
+    // Create Supabase client with service role key (bypasses RLS)
+    // The service role key should bypass all RLS policies automatically
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      db: {
+        schema: 'public'
+      }
+    });
+    console.log('Initialized Supabase client with service role key');
+    console.log('Service role key length:', supabaseServiceKey.length);
+    console.log('Supabase URL:', supabaseUrl);
 
     // Format phone number if provided
     let formattedPhone = phone;
@@ -166,7 +180,8 @@ serve(async (req) => {
     }
 
     // Check if source exists (use "open_house" as the source)
-    const contactSource = "open_house";
+    // Create source with address: "Open House & [Address]"
+    const contactSource = `Open House & ${address.trim()}`;
     let { data: sourceData, error: sourceError } = await supabase
       .from('contact_sources')
       .select('id')
@@ -206,6 +221,141 @@ serve(async (req) => {
     if (insertError) {
       console.error('Error inserting open house sign-in:', insertError);
       throw insertError;
+    }
+
+    // Also create/update contact in contacts table
+    // Check if contact already exists (handle NULL phone_id properly)
+    console.log('Checking for existing contact with email_id:', emailData.id, 'phone_id:', phoneData?.id || null);
+    
+    // Track contact creation status
+    let contactCreated = false;
+    let contactErrorDetails: any = null;
+    let newContact: any = null;
+    
+    // First, try to find by email_id and phone_id (if phone exists)
+    let existingContact = null;
+    let checkError = null;
+    
+    if (phoneData?.id) {
+      // Check with both email and phone
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('email_id', emailData.id)
+        .eq('phone_id', phoneData.id)
+        .maybeSingle();
+      existingContact = data;
+      checkError = error;
+      
+      // If not found, also check by email only (in case phone was added later)
+      if (!existingContact && !checkError) {
+        const { data: emailOnlyData, error: emailOnlyError } = await supabase
+          .from('contacts')
+          .select('id')
+          .eq('email_id', emailData.id)
+          .is('phone_id', null)
+          .maybeSingle();
+        if (emailOnlyData) {
+          existingContact = emailOnlyData;
+        }
+        if (emailOnlyError && !checkError) {
+          checkError = emailOnlyError;
+        }
+      }
+    } else {
+      // Check by email only (phone is NULL)
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('email_id', emailData.id)
+        .is('phone_id', null)
+        .maybeSingle();
+      existingContact = data;
+      checkError = error;
+    }
+    
+    if (checkError) {
+      console.error('Error checking for existing contact:', checkError);
+    }
+
+    if (existingContact) {
+      console.log('Found existing contact with id:', existingContact.id);
+      // Update existing contact's source if needed (keep most recent)
+      const { error: updateError } = await supabase
+        .from('contacts')
+        .update({ 
+          source_id: sourceData.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingContact.id);
+      
+      if (updateError) {
+        console.error('Error updating existing contact:', updateError);
+        contactErrorDetails = updateError;
+      } else {
+        console.log('Successfully updated existing contact');
+        contactCreated = true;
+      }
+    } else {
+      console.log('No existing contact found, creating new contact');
+      // Create new contact
+      const contactData = {
+        first_name_id: firstNameData.id,
+        last_name_id: lastNameData.id,
+        email_id: emailData.id,
+        phone_id: phoneData?.id || null,
+        source_id: sourceData.id,
+        is_active: true,
+      };
+      console.log('Inserting contact with data:', contactData);
+      
+      // Try to insert the contact - use service role to bypass RLS
+      console.log('Attempting to insert contact with service role...');
+      const { data: newContact, error: contactError } = await supabase
+        .from('contacts')
+        .insert(contactData)
+        .select('id')
+        .single();
+
+      if (contactError) {
+        console.error('❌ ERROR inserting contact:', contactError);
+        console.error('Contact insert details:', contactData);
+        console.error('Full error object:', JSON.stringify(contactError, null, 2));
+        console.error('Error code:', contactError.code);
+        console.error('Error message:', contactError.message);
+        console.error('Error details:', contactError.details);
+        console.error('Error hint:', contactError.hint);
+        contactErrorDetails = contactError;
+        
+        // Try alternative approach - check if it's an RLS issue
+        console.log('Attempting to verify service role key is being used...');
+        const { data: testQuery, error: testError } = await supabase
+          .from('contacts')
+          .select('id')
+          .limit(1);
+        if (testError) {
+          console.error('❌ Cannot query contacts table - RLS or permission issue:', testError);
+        } else {
+          console.log('✅ Can query contacts table, service role is working');
+        }
+        
+        // Don't return - continue with email sending even if contact creation failed
+        // The open house sign-in was successful, so we should still send the email
+      } else {
+        console.log('✅ Successfully created new contact with id:', newContact?.id);
+        contactCreated = true;
+        // Verify the contact was actually created
+        const { data: verifyContact, error: verifyError } = await supabase
+          .from('contacts')
+          .select('id, is_active, email_id, phone_id')
+          .eq('id', newContact.id)
+          .single();
+        if (verifyError) {
+          console.error('❌ Error verifying contact creation:', verifyError);
+        } else {
+          console.log('✅ Verified contact exists in database:', verifyContact);
+        }
+      }
     }
 
     console.log('Database updated successfully');
@@ -384,7 +534,17 @@ serve(async (req) => {
       console.log('Email sent successfully:', data);
 
       return new Response(
-        JSON.stringify({ success: true, data }),
+        JSON.stringify({ 
+          success: true, 
+          data,
+          contactCreated,
+          contactError: contactErrorDetails ? {
+            code: contactErrorDetails.code,
+            message: contactErrorDetails.message,
+            details: contactErrorDetails.details,
+            hint: contactErrorDetails.hint
+          } : null
+        }),
         {
           headers: corsHeaders,
           status: 200

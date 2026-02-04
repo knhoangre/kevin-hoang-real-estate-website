@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ interface ContactMessage {
 }
 
 const MessagesList = () => {
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,6 +154,9 @@ const MessagesList = () => {
           msg.id === messageId ? { ...msg, is_read: isRead } : msg
         )
       );
+
+      // Invalidate unread counts query to update badges
+      queryClient.invalidateQueries({ queryKey: ['unread-counts'] });
     } catch (err: any) {
       console.error('Error updating read status:', err);
     }

@@ -140,9 +140,138 @@ export type Database = {
         }
         Relationships: []
       }
+      deals: {
+        Row: {
+          id: number
+          user_id: string
+          contact_id: string | null
+          title: string
+          value: number | null
+          house_price: number | null
+          commission: number | null
+          stage: 'lead' | 'qualification' | 'proposal' | 'closed-won' | 'closed-lost'
+          probability: number
+          expected_close_date: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          contact_id?: string | null
+          title: string
+          value?: number | null
+          house_price?: number | null
+          commission?: number | null
+          stage?: 'lead' | 'qualification' | 'proposal' | 'closed-won' | 'closed-lost'
+          probability?: number
+          expected_close_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          contact_id?: string | null
+          title?: string
+          value?: number | null
+          house_price?: number | null
+          commission?: number | null
+          stage?: 'lead' | 'qualification' | 'proposal' | 'closed-won' | 'closed-lost'
+          probability?: number
+          expected_close_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      activities: {
+        Row: {
+          id: number
+          user_id: string
+          contact_id: string | null
+          deal_id: number | null
+          type: 'note' | 'email' | 'call' | 'meeting' | 'task'
+          title: string
+          description: string | null
+          due_date: string | null
+          completed_at: string | null
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          user_id: string
+          contact_id?: string | null
+          deal_id?: number | null
+          type: 'note' | 'email' | 'call' | 'meeting' | 'task'
+          title: string
+          description?: string | null
+          due_date?: string | null
+          completed_at?: string | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          contact_id?: string | null
+          deal_id?: number | null
+          type?: 'note' | 'email' | 'call' | 'meeting' | 'task'
+          title?: string
+          description?: string | null
+          due_date?: string | null
+          completed_at?: string | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      unified_contacts: {
+        Row: {
+          contact_id: string
+          first_name: string | null
+          last_name: string | null
+          email: string | null
+          phone: string | null
+          last_contact_at: string | null
+          sources: string | null
+          message_count: number
+          open_house_count: number
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never

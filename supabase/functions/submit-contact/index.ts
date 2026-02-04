@@ -54,8 +54,14 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    console.log('Initialized Supabase client');
+    // Create Supabase client with service role key (bypasses RLS)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+    console.log('Initialized Supabase client with service role key');
 
     // Format phone number if provided
     let formattedPhone = phone;
@@ -161,6 +167,28 @@ serve(async (req) => {
       }
     }
 
+    // Get or create "Website" source
+    const contactSource = "Website";
+    let { data: sourceData, error: sourceError } = await supabase
+      .from('contact_sources')
+      .select('id')
+      .eq('source', contactSource)
+      .single();
+
+    if (!sourceData) {
+      const { data: newSourceData, error: newSourceError } = await supabase
+        .from('contact_sources')
+        .insert({ source: contactSource })
+        .select()
+        .single();
+
+      if (newSourceError) {
+        console.error('Error inserting source:', newSourceError);
+        throw newSourceError;
+      }
+      sourceData = newSourceData;
+    }
+
     // Insert the message with the IDs
     const { error: messageError } = await supabase
       .from('contact_messages')
@@ -169,12 +197,119 @@ serve(async (req) => {
         last_name_id: lastNameData.id,
         email_id: emailData.id,
         phone_id: phoneData?.id || null,
-        message: message
+        message: message,
+        source_id: sourceData.id
       });
 
     if (messageError) {
       console.error('Error inserting message:', messageError);
       throw messageError;
+    }
+
+    // Also create/update contact in contacts table
+    // Check if contact already exists (handle NULL phone_id properly)
+    console.log('Checking for existing contact with email_id:', emailData.id, 'phone_id:', phoneData?.id || null);
+    
+    // First, try to find by email_id and phone_id (if phone exists)
+    let existingContact = null;
+    let checkError = null;
+    
+    if (phoneData?.id) {
+      // Check with both email and phone
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('email_id', emailData.id)
+        .eq('phone_id', phoneData.id)
+        .maybeSingle();
+      existingContact = data;
+      checkError = error;
+      
+      // If not found, also check by email only (in case phone was added later)
+      if (!existingContact && !checkError) {
+        const { data: emailOnlyData, error: emailOnlyError } = await supabase
+          .from('contacts')
+          .select('id')
+          .eq('email_id', emailData.id)
+          .is('phone_id', null)
+          .maybeSingle();
+        if (emailOnlyData) {
+          existingContact = emailOnlyData;
+        }
+        if (emailOnlyError && !checkError) {
+          checkError = emailOnlyError;
+        }
+      }
+    } else {
+      // Check by email only (phone is NULL)
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('email_id', emailData.id)
+        .is('phone_id', null)
+        .maybeSingle();
+      existingContact = data;
+      checkError = error;
+    }
+    
+    if (checkError) {
+      console.error('Error checking for existing contact:', checkError);
+    }
+
+    if (existingContact) {
+      console.log('Found existing contact with id:', existingContact.id);
+      // Update existing contact's source if needed
+      const { error: updateError } = await supabase
+        .from('contacts')
+        .update({ 
+          source_id: sourceData.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingContact.id);
+      
+      if (updateError) {
+        console.error('Error updating existing contact:', updateError);
+      } else {
+        console.log('Successfully updated existing contact');
+      }
+    } else {
+      console.log('No existing contact found, creating new contact');
+      // Create new contact
+      const contactData = {
+        first_name_id: firstNameData.id,
+        last_name_id: lastNameData.id,
+        email_id: emailData.id,
+        phone_id: phoneData?.id || null,
+        source_id: sourceData.id,
+        is_active: true,
+      };
+      console.log('Inserting contact with data:', contactData);
+      
+      const { data: newContact, error: contactError } = await supabase
+        .from('contacts')
+        .insert(contactData)
+        .select('id')
+        .single();
+
+      if (contactError) {
+        console.error('Error inserting contact:', contactError);
+        console.error('Contact insert details:', contactData);
+        console.error('Full error object:', JSON.stringify(contactError, null, 2));
+        // Don't throw - message was inserted successfully, but log the error
+      } else {
+        console.log('Successfully created new contact with id:', newContact?.id);
+        // Verify the contact was actually created
+        const { data: verifyContact, error: verifyError } = await supabase
+          .from('contacts')
+          .select('id, is_active')
+          .eq('id', newContact.id)
+          .single();
+        if (verifyError) {
+          console.error('Error verifying contact creation:', verifyError);
+        } else {
+          console.log('Verified contact exists:', verifyContact);
+        }
+      }
     }
 
     console.log('Database updated successfully');

@@ -32,6 +32,9 @@ import FollowUp from "./pages/FollowUp";
 import Calculator from "./pages/Calculator";
 import PropertiesAdmin from "./pages/Properties";
 import Properties from "./pages/PropertiesList";
+import CRMDashboard from "./pages/CRMDashboard";
+import CRMContacts from "./pages/CRMContacts";
+import CRMDeals from "./pages/CRMDeals";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +71,9 @@ const App = () => (
                 <Route path="/admin/follow-up/messages" element={<FollowUp />} />
                 <Route path="/admin/properties" element={<PropertiesAdmin />} />
                 <Route path="/properties" element={<Properties />} />
+                <Route path="/crm" element={<CRMDashboard />} />
+                <Route path="/crm/contacts" element={<CRMContacts />} />
+                <Route path="/crm/deals" element={<CRMDeals />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/disclaimer" element={<Disclaimer />} />

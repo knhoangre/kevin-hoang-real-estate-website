@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import OpenHousesList from '@/components/OpenHousesList';
 import MessagesList from '@/components/MessagesList';
 
 const FollowUp = () => {
   const { isAdmin, loading } = useAuth();
+  const { unreadCounts } = useUnreadCounts();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,8 +77,22 @@ const FollowUp = () => {
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="open-houses">Open Houses</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="open-houses" className="flex items-center gap-2">
+              <span>Open Houses</span>
+              {unreadCounts.openHouses > 0 && (
+                <Badge variant="destructive">
+                  {unreadCounts.openHouses}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="flex items-center gap-2">
+              <span>Messages</span>
+              {unreadCounts.messages > 0 && (
+                <Badge variant="destructive">
+                  {unreadCounts.messages}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="open-houses" className="mt-6">

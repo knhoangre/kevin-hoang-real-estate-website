@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ interface GroupedOpenHouse {
 }
 
 const OpenHousesList = () => {
+  const queryClient = useQueryClient();
   const [groupedOpenHouses, setGroupedOpenHouses] = useState<GroupedOpenHouse[]>([]);
   const [expandedAddresses, setExpandedAddresses] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -258,6 +260,9 @@ const OpenHousesList = () => {
           };
         })
       );
+
+      // Invalidate unread counts query to update badges
+      queryClient.invalidateQueries({ queryKey: ['unread-counts'] });
     } catch (err: any) {
       console.error('Error updating read status:', err);
     }

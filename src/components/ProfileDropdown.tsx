@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -10,7 +11,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, MessageSquare, Home, ClipboardList } from "lucide-react";
+import { LogOut, User, MessageSquare, Home, ClipboardList, Briefcase } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
@@ -19,6 +21,7 @@ interface ProfileDropdownProps {
 
 export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileDropdownProps) {
   const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
+  const { unreadCounts } = useUnreadCounts();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,6 +58,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
     onItemClick?.();
   };
 
+  const handleCRMClick = () => {
+    navigate("/crm");
+    onItemClick?.();
+  };
+
   const handleSignOutClick = () => {
     onItemClick?.();
   };
@@ -86,9 +94,21 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
         {isAdmin && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleFollowUpClick}>
-              <MessageSquare className="mr-2 h-4 w-4" />
-              <span>FOLLOW UP</span>
+            <DropdownMenuItem onClick={handleCRMClick}>
+              <Briefcase className="mr-2 h-4 w-4" />
+              <span>CRM</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleFollowUpClick} className="flex items-center justify-between">
+              <div className="flex items-center">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>FOLLOW UP</span>
+              </div>
+              {unreadCounts.total > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {unreadCounts.total}
+                </Badge>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handlePropertiesClick}>
