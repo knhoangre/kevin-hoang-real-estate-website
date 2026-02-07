@@ -432,6 +432,16 @@ export default function CRMDeals() {
     return acc;
   }, {} as Record<string, Deal[]>);
 
+  // Commission summary: earned (closed) and potential (other stages with commission)
+  const commissionEarned = (deals?.filter((d) => d.stage === 'closed' && d.commission != null) || []).reduce(
+    (sum, d) => sum + (d.commission ?? 0),
+    0
+  );
+  const commissionPotential = (deals?.filter((d) => d.stage !== 'closed' && d.stage !== 'lost' && d.commission != null && d.commission > 0) || []).reduce(
+    (sum, d) => sum + (d.commission ?? 0),
+    0
+  );
+
   if (loading) {
     return (
       <CRMLayout>
@@ -452,15 +462,33 @@ export default function CRMDeals() {
   return (
     <CRMLayout>
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Deal Pipeline
-            </h1>
-            <p className="text-gray-600">
-              Drag and drop deals to move them between stages
-            </p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Deal Pipeline
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Drag and drop deals to move them between stages
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Card className="flex-1 min-w-[200px] border-[#9b87f5]/30 bg-[#9b87f5]/5">
+              <CardContent className="pt-4 pb-4">
+                <p className="text-sm font-medium text-gray-600 mb-1">Commission earned (closed)</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${commissionEarned.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="flex-1 min-w-[200px] border-[#9b87f5]/30 bg-[#9b87f5]/5">
+              <CardContent className="pt-4 pb-4">
+                <p className="text-sm font-medium text-gray-600 mb-1">Commission potential (pipeline)</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  ${commissionPotential.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+              </CardContent>
+            </Card>
           </div>
+        </div>
+        <div className="mb-8 flex justify-end">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#9b87f5] hover:bg-[#8b7ae5]">

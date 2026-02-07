@@ -899,7 +899,10 @@ export default function CRMContacts() {
         addresses: addresses,
         tags: tags,
       });
-      setIsEditing(false);
+      // Only switch to view mode for existing contacts; keep form visible for new contact (contact_id === 0)
+      if (selectedContact.contact_id !== 0) {
+        setIsEditing(false);
+      }
     }
   }, [selectedContact]);
 
@@ -959,24 +962,26 @@ export default function CRMContacts() {
         lastNameId = newLastName.id;
       }
 
-      // Get or create email
-      let emailId;
-      const { data: existingEmail } = await supabase
-        .from('contact_emails')
-        .select('id')
-        .eq('email', editFormData.email)
-        .single();
-      
-      if (existingEmail) {
-        emailId = existingEmail.id;
-      } else {
-        const { data: newEmail, error: eError } = await supabase
+      // Get or create email (optional)
+      let emailId = null;
+      if (editFormData.email?.trim()) {
+        const { data: existingEmail } = await supabase
           .from('contact_emails')
-          .insert({ email: editFormData.email })
           .select('id')
+          .eq('email', editFormData.email.trim())
           .single();
-        if (eError) throw eError;
-        emailId = newEmail.id;
+        
+        if (existingEmail) {
+          emailId = existingEmail.id;
+        } else {
+          const { data: newEmail, error: eError } = await supabase
+            .from('contact_emails')
+            .insert({ email: editFormData.email.trim() })
+            .select('id')
+            .single();
+          if (eError) throw eError;
+          emailId = newEmail.id;
+        }
       }
 
       // Get or create phone
@@ -1590,7 +1595,7 @@ export default function CRMContacts() {
                     <div className="space-y-2">
                       <Label className="text-sm font-medium flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Email *
+                        Email
                       </Label>
                       <Input
                         type="email"
@@ -1853,7 +1858,7 @@ export default function CRMContacts() {
                       <Button
                         onClick={handleUpdateContact}
                         className="flex-1"
-                        disabled={!editFormData.first_name || !editFormData.last_name || !editFormData.email}
+                        disabled={!editFormData.first_name?.trim() || !editFormData.last_name?.trim()}
                       >
                         <Save className="h-4 w-4 mr-2" />
                         Save Changes
