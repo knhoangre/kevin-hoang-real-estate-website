@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, DollarSign, Calendar, FileText, User, Check, ChevronsUpDown, Phone, Mail, MessageSquare } from "lucide-react";
+import { Plus, DollarSign, Calendar, FileText, User, Check, ChevronsUpDown, Phone, Mail, MessageSquare, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Deal = {
   id: number;
@@ -75,6 +85,41 @@ const STAGES = [
   { id: 'lost', label: 'Lost', color: 'bg-red-500' },
 ];
 
+/** Pre-populated in new deal notes so you can fill in answers during initial consultation. */
+const INITIAL_CONSULTATION_TEMPLATE = `--- INITIAL CONSULTATION ---
+
+[INTRO — please revise to make it sound natural for you]
+
+Hi, I'm Kevin with Keller Williams. I've been in real estate for over five years, and I bring a practical edge to the process—I'm also knowledgeable about home inspections, so I can help you spot what to look for when we walk through properties. My partner is on the line as well—she's a real estate agent with even more experience than me—so between the two of us, we have a lot of knowledge and value we can offer. We focus on Newton and the surrounding areas. I'd love to hear a bit about you and what's brought you to look for a place right now.
+
+---
+
+• What's bringing you to look now? (job change, family, space, schools, etc.)
+
+• Where are you hoping to land? Any areas or neighborhoods you're drawn to—or trying to avoid?
+
+• What type of property are you looking for? (single family, condo, multi-family, etc.) Any must-have features? (garage, basement, yard, etc.)
+
+• When do you ideally want to be in a new place?
+
+• Must-haves? (beds, baths, yard, school district, commute.) Anything that's a deal-breaker?
+
+• Are you a first-time buyer, or have you bought or sold before?
+
+• How are you thinking about financing? Do you have a pre-approval or are you buying with cash? If pre-approval, with which lender and for how much?
+
+• Do you have a lender you're already working with, or would you like a referral? What's your comfortable price range or max budget?
+
+• Are you renting right now or do you own? (If you own—would you need to sell first?)
+
+• Is anyone else involved in the decision? (spouse, family, etc.)
+
+• How did you find me? What's the best way and time to reach you going forward?
+
+• Any concerns or questions about the process that I can address now?
+
+(Add your notes below as you go.)`;
+
 export default function CRMDeals() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -95,7 +140,7 @@ export default function CRMDeals() {
     stage: 'lead' as Deal['stage'],
     probability: 0,
     expected_close_date: '',
-    notes: '',
+    notes: INITIAL_CONSULTATION_TEMPLATE,
   });
   const [editDeal, setEditDeal] = useState({
     title: '',
@@ -107,12 +152,20 @@ export default function CRMDeals() {
     expected_close_date: '',
     notes: '',
   });
+  const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  // Pre-populate notes with consultation template whenever Create dialog opens
+  useEffect(() => {
+    if (isCreateDialogOpen) {
+      setNewDeal((prev) => ({ ...prev, notes: INITIAL_CONSULTATION_TEMPLATE }));
+    }
+  }, [isCreateDialogOpen]);
 
   // Fetch deals
   const { data: deals, isLoading } = useQuery({
@@ -294,6 +347,29 @@ export default function CRMDeals() {
     },
   });
 
+  // Delete deal mutation
+  const deleteDeal = useMutation({
+    mutationFn: async (dealId: number) => {
+      const { error } = await supabase
+        .from('deals')
+        .delete()
+        .eq('id', dealId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['crm-deals'] });
+      queryClient.invalidateQueries({ queryKey: ['crm-deals', user?.id] });
+      toast.success('Deal deleted');
+      setDealToDelete(null);
+      setIsEditDialogOpen(false);
+      setEditingDeal(null);
+    },
+    onError: (error) => {
+      toast.error('Failed to delete deal');
+      console.error(error);
+    },
+  });
+
   // Create deal mutation
   const createDeal = useMutation({
     mutationFn: async (deal: typeof newDeal) => {
@@ -347,7 +423,7 @@ export default function CRMDeals() {
         stage: 'lead',
         probability: 0,
         expected_close_date: '',
-        notes: '',
+        notes: INITIAL_CONSULTATION_TEMPLATE,
       });
       setContactSearchQuery('');
       setContactSearchOpen(false);
@@ -496,7 +572,7 @@ export default function CRMDeals() {
                 New Deal
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Deal</DialogTitle>
                 <DialogDescription>
@@ -665,11 +741,12 @@ export default function CRMDeals() {
                   />
                 </div>
                 <div>
-                  <Label>Notes</Label>
+                  <Label>Notes — Initial consultation (edit as you go)</Label>
                   <Textarea
                     value={newDeal.notes}
                     onChange={(e) => setNewDeal({ ...newDeal, notes: e.target.value })}
-                    rows={3}
+                    rows={14}
+                    className="font-mono text-sm"
                   />
                 </div>
                 <Button
@@ -1026,28 +1103,59 @@ export default function CRMDeals() {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSaveEditDeal}
+                    className="flex-1 bg-[#9b87f5] hover:bg-[#8b7ae5]"
+                    disabled={updateDeal.isPending}
+                  >
+                    {updateDeal.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditDialogOpen(false);
+                      setEditingDeal(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                </div>
                 <Button
-                  onClick={handleSaveEditDeal}
-                  className="flex-1 bg-[#9b87f5] hover:bg-[#8b7ae5]"
-                  disabled={updateDeal.isPending}
+                  variant="destructive"
+                  onClick={() => editingDeal && setDealToDelete(editingDeal)}
+                  disabled={updateDeal.isPending || deleteDeal.isPending}
+                  className="w-full"
                 >
-                  {updateDeal.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditDialogOpen(false);
-                    setEditingDeal(null);
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete deal
                 </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!dealToDelete} onOpenChange={(open) => !open && setDealToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this deal?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the deal "{dealToDelete?.title}". This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => dealToDelete && deleteDeal.mutate(dealToDelete.id)}
+              >
+                {deleteDeal.isPending ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </CRMLayout>
   );
