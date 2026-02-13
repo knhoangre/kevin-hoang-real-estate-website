@@ -73,6 +73,7 @@ type Contact = {
   source: string; // Changed from sources to source (singular)
   message_count: number;
   open_house_count: number;
+  event_count?: number;
   birthday?: string;
   home_anniversary?: string;
   addresses?: Address[] | string; // Can be JSON string or array
@@ -1232,6 +1233,7 @@ export default function CRMContacts() {
                 source: '',
                 message_count: 0,
                 open_house_count: 0,
+                event_count: 0,
               });
               setIsEditing(true);
             }}>
@@ -2032,6 +2034,12 @@ export default function CRMContacts() {
                         <p className="text-sm font-medium mb-1">Open Houses</p>
                         <p className="text-gray-600">
                           {selectedContact.open_house_count || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1">Events</p>
+                        <p className="text-gray-600">
+                          {selectedContact.event_count || 0}
                         </p>
                       </div>
                     </div>

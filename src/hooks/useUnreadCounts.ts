@@ -9,7 +9,7 @@ export function useUnreadCounts() {
     queryKey: ['unread-counts'],
     queryFn: async () => {
       if (!isAdmin) {
-        return { messages: 0, openHouses: 0 };
+        return { messages: 0, openHouses: 0, events: 0 };
       }
 
       // Get unread messages count
@@ -34,10 +34,26 @@ export function useUnreadCounts() {
         console.error('Error fetching unread open houses count:', openHousesError);
       }
 
+      // Get unread events count
+      const { count: eventsCount, error: eventsError } = await supabase
+        .from('event_sign_ins')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+        .eq('is_read', false);
+
+      if (eventsError) {
+        console.error('Error fetching unread events count:', eventsError);
+      }
+
+      const messages = messagesCount || 0;
+      const openHouses = openHousesCount || 0;
+      const events = eventsCount || 0;
+
       return {
-        messages: messagesCount || 0,
-        openHouses: openHousesCount || 0,
-        total: (messagesCount || 0) + (openHousesCount || 0),
+        messages,
+        openHouses,
+        events,
+        total: messages + openHouses + events,
       };
     },
     enabled: !!isAdmin,
@@ -45,7 +61,7 @@ export function useUnreadCounts() {
   });
 
   return {
-    unreadCounts: unreadCounts || { messages: 0, openHouses: 0, total: 0 },
+    unreadCounts: unreadCounts || { messages: 0, openHouses: 0, events: 0, total: 0 },
     isLoading,
   };
 }

@@ -26,6 +26,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Disclaimer from "./pages/Disclaimer";
 import OpenHouse from "./pages/OpenHouse";
+import Events from "./pages/Events";
 import AuthCallback from "./pages/AuthCallback";
 import ProfileCompletion from "./components/ProfileCompletion";
 import FollowUp from "./pages/FollowUp";
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="/complete-profile" element={<ProfileCompletion />} />
                 <Route path="/admin/follow-up" element={<FollowUp />} />
                 <Route path="/admin/follow-up/open-house" element={<FollowUp />} />
+                <Route path="/admin/follow-up/events" element={<FollowUp />} />
                 <Route path="/admin/follow-up/messages" element={<FollowUp />} />
                 <Route path="/admin/properties" element={<PropertiesAdmin />} />
                 <Route path="/properties" element={<Properties />} />
@@ -78,6 +80,7 @@ const App = () => (
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/disclaimer" element={<Disclaimer />} />
                 <Route path="/open-house" element={<OpenHouse />} />
+                <Route path="/events" element={<Events />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

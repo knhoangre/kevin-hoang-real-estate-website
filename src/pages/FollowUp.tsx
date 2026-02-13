@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import OpenHousesList from '@/components/OpenHousesList';
 import MessagesList from '@/components/MessagesList';
+import EventsList from '@/components/EventsList';
 
 const FollowUp = () => {
   const { isAdmin, loading } = useAuth();
@@ -17,6 +18,7 @@ const FollowUp = () => {
   const getTabFromPath = (path: string) => {
     if (path === '/admin/follow-up/messages') return 'messages';
     if (path === '/admin/follow-up/open-house') return 'open-houses';
+    if (path === '/admin/follow-up/events') return 'events';
     return 'open-houses'; // default
   };
 
@@ -50,6 +52,8 @@ const FollowUp = () => {
     setActiveTab(value);
     if (value === 'messages') {
       navigate('/admin/follow-up/messages');
+    } else if (value === 'events') {
+      navigate('/admin/follow-up/events');
     } else {
       navigate('/admin/follow-up/open-house');
     }
@@ -76,12 +80,20 @@ const FollowUp = () => {
         <h1 className="text-3xl font-bold mb-6">Follow Up</h1>
         
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3">
             <TabsTrigger value="open-houses" className="flex items-center gap-2">
               <span>Open Houses</span>
               {unreadCounts.openHouses > 0 && (
                 <Badge variant="destructive">
                   {unreadCounts.openHouses}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <span>Events</span>
+              {unreadCounts.events > 0 && (
+                <Badge variant="destructive">
+                  {unreadCounts.events}
                 </Badge>
               )}
             </TabsTrigger>
@@ -97,6 +109,10 @@ const FollowUp = () => {
           
           <TabsContent value="open-houses" className="mt-6">
             <OpenHousesList />
+          </TabsContent>
+          
+          <TabsContent value="events" className="mt-6">
+            <EventsList />
           </TabsContent>
           
           <TabsContent value="messages" className="mt-6">

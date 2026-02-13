@@ -18,16 +18,20 @@ serve(async (req) => {
 
   try {
     console.log('Received request:', req.method);
-    const { address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany } = await req.json();
-    console.log('Parsed request data:', { address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany });
+    const body = await req.json();
+    const { type, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany } = body;
+    // Event: explicit type or eventName present without address
+    const isEvent = Boolean((type === 'event' && eventName) || (eventName && !address));
+    const locationLabel = isEvent ? (eventName || '').trim() : (address || '').trim();
+    console.log('Parsed request data:', { type, isEvent, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany });
 
-    if (!address || !firstName || !lastName || !email) {
-      console.log('Missing required fields:', { address, firstName, lastName, email });
+    if (!locationLabel || !firstName || !lastName || !email) {
+      console.log('Missing required fields:', { locationLabel, firstName, lastName, email });
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
           details: {
-            address: !address ? 'Missing address' : null,
+            [isEvent ? 'eventName' : 'address']: !locationLabel ? (isEvent ? 'Missing event name' : 'Missing address') : null,
             firstName: !firstName ? 'Missing first name' : null,
             lastName: !lastName ? 'Missing last name' : null,
             email: !email ? 'Missing email' : null
@@ -179,9 +183,8 @@ serve(async (req) => {
       }
     }
 
-    // Check if source exists (use "open_house" as the source)
-    // Create source with address: "Open House & [Address]"
-    const contactSource = `Open House & ${address.trim()}`;
+    // Check if source exists: "Event & [Name]" or "Open House & [Address]"
+    const contactSource = isEvent ? `Event & ${eventName.trim()}` : `Open House & ${address.trim()}`;
     let { data: sourceData, error: sourceError } = await supabase
       .from('contact_sources')
       .select('id')
@@ -203,24 +206,40 @@ serve(async (req) => {
       sourceData = newSourceData;
     }
 
-    // Insert the open house sign-in with the IDs
-    const { error: insertError } = await supabase
-      .from('open_house_sign_ins')
-      .insert({
-        address: address.trim(),
-        first_name_id: firstNameData.id,
-        last_name_id: lastNameData.id,
-        email_id: emailData.id,
-        phone_id: phoneData?.id || null,
-        source_id: sourceData.id,
-        works_with_realtor: worksWithRealtor || false,
-        realtor_name: worksWithRealtor && realtorName ? realtorName.trim() : null,
-        realtor_company: worksWithRealtor && realtorCompany ? realtorCompany.trim() : null,
-      });
-
-    if (insertError) {
-      console.error('Error inserting open house sign-in:', insertError);
-      throw insertError;
+    // Insert sign-in: event_sign_ins for events, open_house_sign_ins for open house
+    if (isEvent) {
+      const { error: insertError } = await supabase
+        .from('event_sign_ins')
+        .insert({
+          event_name: eventName.trim(),
+          first_name_id: firstNameData.id,
+          last_name_id: lastNameData.id,
+          email_id: emailData.id,
+          phone_id: phoneData?.id || null,
+          source_id: sourceData.id,
+        });
+      if (insertError) {
+        console.error('Error inserting event sign-in:', insertError);
+        throw insertError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('open_house_sign_ins')
+        .insert({
+          address: address.trim(),
+          first_name_id: firstNameData.id,
+          last_name_id: lastNameData.id,
+          email_id: emailData.id,
+          phone_id: phoneData?.id || null,
+          source_id: sourceData.id,
+          works_with_realtor: worksWithRealtor || false,
+          realtor_name: worksWithRealtor && realtorName ? realtorName.trim() : null,
+          realtor_company: worksWithRealtor && realtorCompany ? realtorCompany.trim() : null,
+        });
+      if (insertError) {
+        console.error('Error inserting open house sign-in:', insertError);
+        throw insertError;
+      }
     }
 
     // Also create/update contact in contacts table
@@ -384,10 +403,31 @@ serve(async (req) => {
 
     try {
       console.log('Attempting to send email...');
+      const subject = isEvent ? `Event Sign-In - ${eventName}` : `Open House Sign-In - ${address}`;
+      const headerTitle = isEvent ? 'Event Sign-In' : 'Open House Sign-In';
+      const locationLabelField = isEvent
+        ? `<div class="field"><span class="label">Event</span><div class="value">${eventName}</div></div>`
+        : `<div class="field"><span class="label">Property Address</span><div class="value">${address}</div></div>`;
+      const realtorSection = isEvent ? '' : `
+                  <div class="field">
+                    <span class="label">Has Agent</span>
+                    <div class="value">${worksWithRealtor ? 'Yes' : 'No'}</div>
+                  </div>
+                  ${worksWithRealtor ? `
+                  <div class="field">
+                    <span class="label">Agent Name</span>
+                    <div class="value">${realtorName || 'Not provided'}</div>
+                  </div>
+                  <div class="field">
+                    <span class="label">Agent Company</span>
+                    <div class="value">${realtorCompany || 'Not provided'}</div>
+                  </div>
+                  ` : ''}
+                  `;
       const data = await resend.emails.send({
         from: "Kevin Hoang <contact@kevinhoang.co>",
         to: ["knhoangre@gmail.com"],
-        subject: `Open House Sign-In - ${address}`,
+        subject,
         html: `
           <!DOCTYPE html>
           <html>
@@ -472,13 +512,10 @@ serve(async (req) => {
             <body>
               <div class="container">
                 <div class="header">
-                  <h2>Open House Sign-In</h2>
+                  <h2>${headerTitle}</h2>
                 </div>
                 <div class="content">
-                  <div class="field">
-                    <span class="label">Property Address</span>
-                    <div class="value">${address}</div>
-                  </div>
+                  ${locationLabelField}
                   <div class="field">
                     <span class="label">First Name</span>
                     <div class="value">${firstName}</div>
@@ -511,20 +548,7 @@ serve(async (req) => {
                       ` : 'Not provided'}
                     </div>
                   </div>
-                  <div class="field">
-                    <span class="label">Has Agent</span>
-                    <div class="value">${worksWithRealtor ? 'Yes' : 'No'}</div>
-                  </div>
-                  ${worksWithRealtor ? `
-                  <div class="field">
-                    <span class="label">Agent Name</span>
-                    <div class="value">${realtorName || 'Not provided'}</div>
-                  </div>
-                  <div class="field">
-                    <span class="label">Agent Company</span>
-                    <div class="value">${realtorCompany || 'Not provided'}</div>
-                  </div>
-                  ` : ''}
+                  ${realtorSection}
                 </div>
               </div>
             </body>
