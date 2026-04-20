@@ -17,11 +17,37 @@ function capitalizeFirstName(name: string): string {
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-const DEFAULT_SIGNIN_IMAGE_URL =
-  "https://kevinhoang.co/images/kevin_hoang_phone_icon.png";
+/**
+ * Apex `kevinhoang.co` 307-redirects to `www`. Many email clients do not follow
+ * redirects for `<img src>`, so remote headshots break unless we use `www` directly.
+ */
+function canonicalWwwKevinhoangUrl(url: string): string {
+  const t = url.trim();
+  if (!t) return t;
+  try {
+    const u = new URL(t);
+    if (u.hostname === "kevinhoang.co") {
+      u.hostname = "www.kevinhoang.co";
+      return u.href;
+    }
+  } catch {
+    return t;
+  }
+  return t;
+}
 
-/** Site origin for signature icon PNGs — same folder as the working headshot (`/images/kevin_hoang_phone_icon.png`). */
-const DEFAULT_SITE_ORIGIN = "https://kevinhoang.co";
+const DEFAULT_SIGNIN_IMAGE_URL =
+  "https://www.kevinhoang.co/images/kevin_hoang_phone_icon.png";
+
+/** Signature row icons — same host and `/images/` path as `DEFAULT_SIGNIN_IMAGE_URL`. */
+const DEFAULT_SIGNIN_ICON_PHONE_URL =
+  "https://www.kevinhoang.co/images/phone.png";
+const DEFAULT_SIGNIN_ICON_MAIL_URL =
+  "https://www.kevinhoang.co/images/mail.png";
+const DEFAULT_SIGNIN_ICON_MAP_PIN_URL =
+  "https://www.kevinhoang.co/images/map-pin.png";
+const DEFAULT_SIGNIN_ICON_CALENDAR_URL =
+  "https://www.kevinhoang.co/images/calendar.png";
 
 /** Default Google Calendar appointment scheduling (overridable via SIGNIN_GOOGLE_CALENDAR_URL). */
 const DEFAULT_GOOGLE_CALENDAR_BOOKING_URL =
@@ -33,11 +59,6 @@ function contactIconBadgePng(imageUrl: string, alt: string): string {
   const safeAlt = escapeHtml(alt);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" valign="middle" style="width:44px;height:44px;background-color:#f3f4f6;border-radius:22px;line-height:0;mso-line-height-rule:exactly;"><img src="${safeUrl}" width="20" height="20" alt="${safeAlt}" style="display:block;width:20px;height:20px;margin:0 auto;" /></td></tr></table>`;
 }
-
-const PHONE_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABZ0lEQVR4AbTUC1LDMAwE0MDFgJMBJwNOBn4ZLyNcUuzSdroj67crxWnvtxt/qsBj03pr+CzgvzT/4m8EkCAjUsn4zy3ANrP+jcBDb31t9q6A39yNCLuMCGRCm1SS+MnX3NQ5Au+9+mKi3n9iInCSuFYgAh+dcNxg9HvZvIlAHlEuOwzeLOdctvMSIpCmOnEuGHnOqZu2EbABaIxI/HErNdOIgAaTsnnnCQDBf2+AGBkgBLEqmpj4NOoGmvI2uVyEBCMitrzJKIAghHlUY4xvGHAmfPgHOQqkyeQ2QJBYFUYKhlCnJuB/x38TUFjJqshTS0YcUXM3scM/yCMBJFXEtMjEEcqBs5hckIH2AY4EFCsMgWLPWSw555Fc7gfOCShEQMS0fM+2ComdxV8CaTZtRMSqkJwNQY7PGm6bFdCg0WUSAjFC4I7Adny5/Te1IqAJCEEVMy3Isx6rmqUNNI9AAgiBKEtkr/0CAAD//0s8Y9YAAAAGSURBVAMAIbpVMfA3cdgAAAAASUVORK5CYII=";
-const MAP_PIN_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAB00lEQVR4AbTUPXIUMRQEYEEC96GIgRy4AyGnAE5ByB2A3Hbs8n3sxHZ/Kj3X7KxmdgN7Sj1q9fvpp6nafd1e+DnH4GNm+BlcBA8DOA0iba9TBhpo9iMtGGXrC6eBnC7OXlsGGlRjdZd5fQpeDeC/wi0mbqbG+QBbBporqMYa4lWMm5zh0qjiT/vMQKEEhevG9DXkMzQQfhBfG0hwZUm4Hd7l9Te4H8BpOfZlGEQtI7xjbdDFvKogtGl0HfIl8EkAp4lFbm4ALc+uwYckWJWMm0rTPzm8HcBpYpH6qqGqRxfXNyj3pcHnntna9+x3A3hoqxheNdWD1tYGXXzO19pgNsX/Yfg7+5sBPLRVDK/Jqwft6AZXXW1t/W39kL4ldjuA0+q7R25lUD2a55wb3CTxffAv0BRwmljkvpZDdcFrZlBXXP4ONPqaAvmA0yL1VbluVLwHJHeyeElyNFFd23kPcqfxmYEbgILNQsEB/1uowQ6mJ84M6PUf5AZHRRIGxOQ44vYDbBlIMpHdLWbFNDE5BrIfYc/AZ9oyWTaXI/eoOWHPQFwjDXDTOgNOE3PGpzhloEgDjXCNAaeJ4Zs4x0CxRhr6FOCb08R2ca6BJhpqDExoJ/EIAAD///AW0ZwAAAAGSURBVAMAgRlhMd1IeBMAAAAASUVORK5CYII=";
-const MAIL_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABPElEQVR4AdzVW1ICMRCF4ajL8FnXoetwLZZaLkzX4VpU6C+kh2Go4RZ4gcrJpZP+TxJCcVsu/Lkug/e4rb/QolO/kY8VTSl5RQJvEclxdE8ud5GJhTkYvEZQeYzqplMYgSiVmTvO9sVMp+5bfmXWqgU0w9EMTpBr+RrnTQ3MMfFFW2x8iJ5ikRy50V2XqcFzTH2EFIv3mQDbMcn5jgojmlWZGlgAOjaxM7FVxroWA2YiKgccw7hqalCDUUn2miTFsORpwAhYzBwgsBzjDc0Z5CJJYxNgYmINMDEx3tI+AwlMxqcBYyqmb82sDjHI5DSyY/2M72yPMdgJmpu8HoP/dsSH1vY0yajMvKLPRvyJ1g+rRxiBKZWZBl6Fp1ddzXYIAwtz+D/AE/Bn4X33CAMLc8OgBs5d5RWdmzvwlgAAAP//5FxmQQAAAAZJREFUAwDOiFAxJLPlDQAAAABJRU5ErkJggg==";
-const CALENDAR_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABBUlEQVR4AeyV6w3CMAyEC8wCsyGYB8RsMAuP+0JcxcFQNQWJH6188eNiX1RV6bL78TMkcJY+kAsNDoQkxSGBtTYBudDgQEhSrAUOKl6Fe4ZcMstrn0gtVqeXGSo9rRSA2Klc1pSOMnqZwazUSCEFWrYCttGyyJBLZnntE6nF6vQq7WxWVwpYfGFHBjHI6YuDA0ZYbLOcgG0qPScCZa2M4UBZc3Gv5KpfTCIB+yJavTteJOA2TE0iAfsiWr07UyTgNkxNZoHBNzi/ov96Rbd8nI9/qLznnbNem+Vu01Pu4h/beg/Ryxib5QT2Yo5Cr654rNHLDGal3vozhViJab2H6GWGRjztAQAA//+3l9d3AAAABklEQVQDAB+uQjH+b3FwAAAAAElFTkSuQmCC";
 
 function buildSignInConfirmationEmailHtml(opts: {
   firstNameDisplay: string;
@@ -82,10 +103,10 @@ function buildSignInConfirmationEmailHtml(opts: {
   const safeCtaUrl = escapeHtml(ctaUrl);
   const websiteUpper = escapeHtml(websiteLabel.trim().toUpperCase());
   const emailUpper = escapeHtml(emailAddress.trim().toUpperCase());
-  const badgePhone = contactIconBadgePng(PHONE_ICON_DATA_URI, "Phone");
-  const badgeMapPin = contactIconBadgePng(MAP_PIN_ICON_DATA_URI, "Website");
-  const badgeMail = contactIconBadgePng(MAIL_ICON_DATA_URI, "Email");
-  const badgeCalendar = contactIconBadgePng(CALENDAR_ICON_DATA_URI, "Calendar");
+  const badgePhone = contactIconBadgePng(DEFAULT_SIGNIN_ICON_PHONE_URL, "Phone");
+  const badgeMapPin = contactIconBadgePng(DEFAULT_SIGNIN_ICON_MAP_PIN_URL, "Website");
+  const badgeMail = contactIconBadgePng(DEFAULT_SIGNIN_ICON_MAIL_URL, "Email");
+  const badgeCalendar = contactIconBadgePng(DEFAULT_SIGNIN_ICON_CALENDAR_URL, "Calendar");
   const blogUrl = escapeHtml(
     `${websiteUrl.replace(/\/$/, "").trim()}/blog`,
   );
@@ -247,7 +268,7 @@ function buildSignInConfirmationEmailHtml(opts: {
                 </tr>
                 <tr>
                   <td class="email-pocket" style="padding:16px 20px;margin:0;border-left:3px solid #c9a962;background-color:#fafafa;font-family:Inter,Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#444444;font-style:italic;">
-                    Looking for something more specific? Ask me about our private 'Pocket List'—luxury residences available exclusively through our network.
+                    Looking for something more specific? Ask me about our private luxury residences available exclusively through our network.
                   </td>
                 </tr>
                 <tr>
@@ -936,8 +957,10 @@ serve(async (req) => {
           : welcomeTrimmed || (address || "").trim() || locationLabel;
         const townPhrase = townTrimmed || "this community";
 
-        const imageUrl = (Deno.env.get("SIGNIN_EMAIL_IMAGE_URL") || "").trim() ||
-          DEFAULT_SIGNIN_IMAGE_URL;
+        const imageUrl = canonicalWwwKevinhoangUrl(
+          (Deno.env.get("SIGNIN_EMAIL_IMAGE_URL") || "").trim() ||
+            DEFAULT_SIGNIN_IMAGE_URL,
+        );
         const phoneDisplay = (Deno.env.get("SIGNIN_CONTACT_PHONE") || "").trim() ||
           "860-682-2251";
         const phoneDigits = phoneDisplay.replace(/\D/g, "");
@@ -946,8 +969,10 @@ serve(async (req) => {
           : phoneDigits
           ? `+${phoneDigits}`
           : "+18606822251";
-        const websiteUrl = (Deno.env.get("SIGNIN_CONTACT_WEBSITE") || "").trim() ||
-          "https://kevinhoang.co";
+        const websiteUrl = canonicalWwwKevinhoangUrl(
+          (Deno.env.get("SIGNIN_CONTACT_WEBSITE") || "").trim() ||
+            "https://www.kevinhoang.co",
+        );
         const websiteLabel = (Deno.env.get("SIGNIN_CONTACT_WEBSITE_LABEL") || "").trim() ||
           "kevinhoang.co";
         const contactEmail = (Deno.env.get("SIGNIN_CONTACT_EMAIL") || "").trim() ||
@@ -1030,18 +1055,19 @@ serve(async (req) => {
           status: 200
         }
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Resend API error:', error);
+      const err = error instanceof Error ? error : new Error(String(error));
       console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        name: err.name,
+        message: err.message,
+        stack: err.stack,
       });
       return new Response(
         JSON.stringify({
           error: 'Failed to send email',
-          details: error instanceof Error ? error.message : 'Unknown error',
-          resendError: error
+          details: err.message,
+          resendError: String(error),
         }),
         {
           headers: corsHeaders,
@@ -1049,17 +1075,18 @@ serve(async (req) => {
         }
       );
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('General error:', error);
+    const err = error instanceof Error ? error : new Error(String(error));
     console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
     });
     return new Response(
       JSON.stringify({
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: err.message,
       }),
       {
         headers: corsHeaders,
