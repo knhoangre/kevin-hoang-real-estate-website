@@ -2,6 +2,360 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@3.1.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
+function escapeHtml(text: string): string {
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Uppercase first letter only; rest unchanged from sign-in. */
+function capitalizeFirstName(name: string): string {
+  const t = name.trim();
+  if (!t) return "";
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+const DEFAULT_SIGNIN_IMAGE_URL =
+  "https://kevinhoang.co/images/kevin_hoang_phone_icon.png";
+
+/** Site origin for signature icon PNGs — same folder as the working headshot (`/images/kevin_hoang_phone_icon.png`). */
+const DEFAULT_SITE_ORIGIN = "https://kevinhoang.co";
+
+/** Default Google Calendar appointment scheduling (overridable via SIGNIN_GOOGLE_CALENDAR_URL). */
+const DEFAULT_GOOGLE_CALENDAR_BOOKING_URL =
+  "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0jsQsyVOflGXlyOcXCCpg-Fmn3By1TnSMXS0hj7rNlJtGrQqRSgc8OqUdCiKY9GmEADZzHr6nZ";
+
+/** Gray circular badge + hosted PNG (email-client friendly vs inline SVG). */
+function contactIconBadgePng(imageUrl: string, alt: string): string {
+  const safeUrl = escapeHtml(imageUrl);
+  const safeAlt = escapeHtml(alt);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" valign="middle" style="width:44px;height:44px;background-color:#f3f4f6;border-radius:22px;line-height:0;mso-line-height-rule:exactly;"><img src="${safeUrl}" width="20" height="20" alt="${safeAlt}" style="display:block;width:20px;height:20px;margin:0 auto;" /></td></tr></table>`;
+}
+
+const PHONE_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABZ0lEQVR4AbTUC1LDMAwE0MDFgJMBJwNOBn4ZLyNcUuzSdroj67crxWnvtxt/qsBj03pr+CzgvzT/4m8EkCAjUsn4zy3ANrP+jcBDb31t9q6A39yNCLuMCGRCm1SS+MnX3NQ5Au+9+mKi3n9iInCSuFYgAh+dcNxg9HvZvIlAHlEuOwzeLOdctvMSIpCmOnEuGHnOqZu2EbABaIxI/HErNdOIgAaTsnnnCQDBf2+AGBkgBLEqmpj4NOoGmvI2uVyEBCMitrzJKIAghHlUY4xvGHAmfPgHOQqkyeQ2QJBYFUYKhlCnJuB/x38TUFjJqshTS0YcUXM3scM/yCMBJFXEtMjEEcqBs5hckIH2AY4EFCsMgWLPWSw555Fc7gfOCShEQMS0fM+2ComdxV8CaTZtRMSqkJwNQY7PGm6bFdCg0WUSAjFC4I7Adny5/Te1IqAJCEEVMy3Isx6rmqUNNI9AAgiBKEtkr/0CAAD//0s8Y9YAAAAGSURBVAMAIbpVMfA3cdgAAAAASUVORK5CYII=";
+const MAP_PIN_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAB00lEQVR4AbTUPXIUMRQEYEEC96GIgRy4AyGnAE5ByB2A3Hbs8n3sxHZ/Kj3X7KxmdgN7Sj1q9fvpp6nafd1e+DnH4GNm+BlcBA8DOA0iba9TBhpo9iMtGGXrC6eBnC7OXlsGGlRjdZd5fQpeDeC/wi0mbqbG+QBbBporqMYa4lWMm5zh0qjiT/vMQKEEhevG9DXkMzQQfhBfG0hwZUm4Hd7l9Te4H8BpOfZlGEQtI7xjbdDFvKogtGl0HfIl8EkAp4lFbm4ALc+uwYckWJWMm0rTPzm8HcBpYpH6qqGqRxfXNyj3pcHnntna9+x3A3hoqxheNdWD1tYGXXzO19pgNsX/Yfg7+5sBPLRVDK/Jqwft6AZXXW1t/W39kL4ldjuA0+q7R25lUD2a55wb3CTxffAv0BRwmljkvpZDdcFrZlBXXP4ONPqaAvmA0yL1VbluVLwHJHeyeElyNFFd23kPcqfxmYEbgILNQsEB/1uowQ6mJ84M6PUf5AZHRRIGxOQ44vYDbBlIMpHdLWbFNDE5BrIfYc/AZ9oyWTaXI/eoOWHPQFwjDXDTOgNOE3PGpzhloEgDjXCNAaeJ4Zs4x0CxRhr6FOCb08R2ca6BJhpqDExoJ/EIAAD///AW0ZwAAAAGSURBVAMAgRlhMd1IeBMAAAAASUVORK5CYII=";
+const MAIL_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABPElEQVR4AdzVW1ICMRCF4ajL8FnXoetwLZZaLkzX4VpU6C+kh2Go4RZ4gcrJpZP+TxJCcVsu/Lkug/e4rb/QolO/kY8VTSl5RQJvEclxdE8ud5GJhTkYvEZQeYzqplMYgSiVmTvO9sVMp+5bfmXWqgU0w9EMTpBr+RrnTQ3MMfFFW2x8iJ5ikRy50V2XqcFzTH2EFIv3mQDbMcn5jgojmlWZGlgAOjaxM7FVxroWA2YiKgccw7hqalCDUUn2miTFsORpwAhYzBwgsBzjDc0Z5CJJYxNgYmINMDEx3tI+AwlMxqcBYyqmb82sDjHI5DSyY/2M72yPMdgJmpu8HoP/dsSH1vY0yajMvKLPRvyJ1g+rRxiBKZWZBl6Fp1ddzXYIAwtz+D/AE/Bn4X33CAMLc8OgBs5d5RWdmzvwlgAAAP//5FxmQQAAAAZJREFUAwDOiFAxJLPlDQAAAABJRU5ErkJggg==";
+const CALENDAR_ICON_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABBUlEQVR4AeyV6w3CMAyEC8wCsyGYB8RsMAuP+0JcxcFQNQWJH6188eNiX1RV6bL78TMkcJY+kAsNDoQkxSGBtTYBudDgQEhSrAUOKl6Fe4ZcMstrn0gtVqeXGSo9rRSA2Klc1pSOMnqZwazUSCEFWrYCttGyyJBLZnntE6nF6vQq7WxWVwpYfGFHBjHI6YuDA0ZYbLOcgG0qPScCZa2M4UBZc3Gv5KpfTCIB+yJavTteJOA2TE0iAfsiWr07UyTgNkxNZoHBNzi/ov96Rbd8nI9/qLznnbNem+Vu01Pu4h/beg/Ryxib5QT2Yo5Cr654rNHLDGal3vozhViJab2H6GWGRjztAQAA//+3l9d3AAAABklEQVQDAB+uQjH+b3FwAAAAAElFTkSuQmCC";
+
+function buildSignInConfirmationEmailHtml(opts: {
+  firstNameDisplay: string;
+  townPhrase: string;
+  welcomeTitle: string;
+  imageUrl: string;
+  phoneDisplay: string;
+  phoneTel: string;
+  websiteUrl: string;
+  websiteLabel: string;
+  emailAddress: string;
+  agentName: string;
+  advisorTitle: string;
+  ctaUrl: string;
+}): string {
+  const {
+    firstNameDisplay,
+    townPhrase,
+    welcomeTitle,
+    imageUrl,
+    phoneDisplay,
+    phoneTel,
+    websiteUrl,
+    websiteLabel,
+    emailAddress,
+    agentName,
+    advisorTitle,
+    ctaUrl,
+  } = opts;
+
+  const safeWelcome = escapeHtml(welcomeTitle);
+  const safeFirst = escapeHtml(firstNameDisplay);
+  const safeTownPhrase = escapeHtml(townPhrase);
+
+  const safeImageUrl = escapeHtml(imageUrl);
+  const safePhoneDisplay = escapeHtml(phoneDisplay);
+  const safePhoneTel = escapeHtml(phoneTel);
+  const safeWebsiteUrl = escapeHtml(websiteUrl);
+  const safeEmail = escapeHtml(emailAddress);
+  const nameUpper = escapeHtml(agentName.trim().toUpperCase());
+  const safeAdvisorTitle = escapeHtml(advisorTitle.trim().toUpperCase());
+  const safeCtaUrl = escapeHtml(ctaUrl);
+  const websiteUpper = escapeHtml(websiteLabel.trim().toUpperCase());
+  const emailUpper = escapeHtml(emailAddress.trim().toUpperCase());
+  const badgePhone = contactIconBadgePng(PHONE_ICON_DATA_URI, "Phone");
+  const badgeMapPin = contactIconBadgePng(MAP_PIN_ICON_DATA_URI, "Website");
+  const badgeMail = contactIconBadgePng(MAIL_ICON_DATA_URI, "Email");
+  const badgeCalendar = contactIconBadgePng(CALENDAR_ICON_DATA_URI, "Calendar");
+  const blogUrl = escapeHtml(
+    `${websiteUrl.replace(/\/$/, "").trim()}/blog`,
+  );
+
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Sign-in confirmation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet" />
+  <style type="text/css">
+    .email-sig-fade.email-sig-fade-on {
+      opacity: 1;
+    }
+    @keyframes emailSigFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes goldLineReveal {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    @media only screen {
+      .email-sig-fade.email-sig-fade-on {
+        opacity: 0;
+        animation: emailSigFadeIn 1.5s ease forwards;
+      }
+      .gold-line-reveal {
+        display: block;
+        width: 100%;
+        max-width: 380px;
+        height: 1px;
+        background-color: #C5A059;
+        transform: scaleX(0);
+        transform-origin: center center;
+        -webkit-transform-origin: center center;
+        animation: goldLineReveal 1s ease 0.35s forwards;
+      }
+      .sig-link {
+        color: #222222 !important;
+        text-decoration: none !important;
+        border-bottom: 1px solid transparent;
+        transition: color 0.2s ease, transform 0.2s ease;
+        display: inline-block;
+      }
+      .sig-link:hover {
+        color: #C5A059 !important;
+        transform: translateY(-2px);
+      }
+      .sig-cta {
+        color: #222222 !important;
+        text-decoration: none !important;
+        border-bottom: none !important;
+        transition: color 0.2s ease, transform 0.2s ease;
+        display: inline-block;
+      }
+      .sig-cta:hover {
+        color: #C5A059 !important;
+        transform: translateY(-2px);
+      }
+    }
+    /* Larger type on small screens — easier to read on phone than desktop defaults */
+    @media only screen and (max-width: 480px) {
+      .email-welcome {
+        font-size: 26px !important;
+        line-height: 1.3 !important;
+      }
+      .email-paragraph {
+        font-size: 17px !important;
+        line-height: 1.65 !important;
+      }
+      .email-pocket {
+        font-size: 16px !important;
+        line-height: 1.65 !important;
+      }
+      .email-more-site {
+        font-size: 16px !important;
+        line-height: 1.65 !important;
+      }
+      .email-sig-photo {
+        width: 160px !important;
+        height: 160px !important;
+        max-width: 78vw !important;
+      }
+      .email-sig-name {
+        font-size: 19px !important;
+        letter-spacing: 0.12em !important;
+      }
+      .email-sig-title {
+        font-size: 13px !important;
+      }
+      .email-sig-contact {
+        font-size: 15px !important;
+      }
+    }
+    /* Footer: photo left + text right on wider screens; stack on phone */
+    @media only screen and (max-width: 480px) {
+      .sig-col-photo {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-right: 0 !important;
+        padding-bottom: 22px !important;
+        text-align: center !important;
+      }
+      .sig-col-text {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+      }
+      .sig-inner-left {
+        text-align: center !important;
+      }
+      .sig-inner-left table {
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+    }
+  </style>
+  <!--[if mso]><style type="text/css">table {border-collapse:collapse;border-spacing:0;}</style><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;font-family:Inter,Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border:1px solid #2d2d2d;background-color:#ffffff;">
+          <tr>
+            <td style="padding:40px;font-family:Inter,Arial,Helvetica,sans-serif;color:#1a1a1a;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="email-welcome" style="padding:0 0 28px 0;font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:28px;line-height:1.25;color:#1a1a1a;text-align:center;font-weight:500;">
+                    Welcome to ${safeWelcome}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-paragraph" style="padding:0 0 20px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    Hi ${safeFirst},<br /><br />
+                    Thank you for joining us today.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-paragraph" style="padding:0 0 24px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    <strong style="font-weight:600;">Navigating the Market:</strong> Finding the right home in ${safeTownPhrase} is often about understanding the subtle differences between streets and recent comparable sales that don't always tell the whole story.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-paragraph" style="padding:0 0 24px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    I can put together a Neighborhood Analysis that highlights local trends and upcoming community developments. If this home isn't the perfect fit, I can create a custom search for you that filters out the noise and focuses only on high-yield opportunities.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-paragraph" style="padding:0 0 28px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    Enjoy your tour. I'll be nearby if you have any questions.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-pocket" style="padding:16px 20px;margin:0;border-left:3px solid #c9a962;background-color:#fafafa;font-family:Inter,Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#444444;font-style:italic;">
+                    Looking for something more specific? Ask me about our private 'Pocket List'—luxury residences available exclusively through our network.
+                  </td>
+                </tr>
+                <tr>
+                  <td class="email-more-site" style="padding:24px 0 0 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    You can find more about the real estate process, market updates, and stories from the field on my <a href="${safeWebsiteUrl}" style="color:#1a1a1a;text-decoration:underline;">website</a>, including articles on the <a href="${blogUrl}" style="color:#1a1a1a;text-decoration:underline;">blog</a>.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:32px 0 0 0;">
+                    <table role="presentation" class="email-sig-fade email-sig-fade-on" width="100%" cellpadding="0" cellspacing="0" border="0" style="opacity:1;border-top:1px solid #eeeeee;padding-top:24px;">
+                      <tr>
+                        <td style="padding:0;">
+                          <table role="presentation" class="sig-footer-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                              <td class="sig-col-photo" valign="middle" width="200" style="width:200px;max-width:200px;padding:0 24px 0 0;vertical-align:middle;text-align:center;">
+                                <img class="email-sig-photo" src="${safeImageUrl}" width="176" height="176" alt="" style="display:block;width:176px;height:176px;max-width:100%;border-radius:50%;object-fit:cover;border:1px solid #C5A059;margin:0 auto;" />
+                              </td>
+                              <td class="sig-col-text sig-inner-left" valign="middle" style="vertical-align:middle;padding:0;text-align:left;">
+                                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="left">
+                                  <tr>
+                                    <td class="email-sig-name" style="padding:0 0 10px 0;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:22px;line-height:1.25;color:#222222;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;text-align:left;text-shadow:0.2px 0 #222222, -0.2px 0 #222222;">
+                                      ${nameUpper}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td align="left" style="padding:0 0 12px 0;">
+                                      <table width="380" cellpadding="0" cellspacing="0" border="0" align="left" style="max-width:380px;width:100%;">
+                                        <tr>
+                                          <td bgcolor="#C5A059" height="1" style="font-size:1px;line-height:1px;mso-line-height-rule:exactly;">
+                                            <div class="gold-line-reveal" style="height:1px;line-height:1px;background-color:#C5A059;font-size:1px;"></div>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="email-sig-title" style="padding:0 0 16px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.85;color:#222222;font-weight:400;letter-spacing:0.12em;text-transform:uppercase;text-align:left;">
+                                      ${safeAdvisorTitle}
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="email-sig-contact" style="padding:0 0 10px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.85;color:#222222;">
+                                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+                                        <tr>
+                                          <td valign="middle" style="padding:0 16px 0 0;vertical-align:middle;line-height:0;">${badgePhone}</td>
+                                          <td valign="middle" style="vertical-align:middle;">
+                                            <a href="tel:${safePhoneTel}" class="sig-link" style="color:#222222;text-decoration:none;border-bottom:1px solid transparent;letter-spacing:0.12em;">${safePhoneDisplay}</a>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="email-sig-contact" style="padding:0 0 10px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.85;color:#222222;">
+                                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+                                        <tr>
+                                          <td valign="middle" style="padding:0 16px 0 0;vertical-align:middle;line-height:0;">${badgeMapPin}</td>
+                                          <td valign="middle" style="vertical-align:middle;">
+                                            <a href="${safeWebsiteUrl}" class="sig-link" style="color:#222222;text-decoration:none;border-bottom:1px solid transparent;letter-spacing:0.12em;">${websiteUpper}</a>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="email-sig-contact" style="padding:0 0 14px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.85;color:#222222;">
+                                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+                                        <tr>
+                                          <td valign="middle" style="padding:0 16px 0 0;vertical-align:middle;line-height:0;">${badgeMail}</td>
+                                          <td valign="middle" style="vertical-align:middle;">
+                                            <a href="mailto:${safeEmail}" class="sig-link" style="color:#222222;text-decoration:none;border-bottom:1px solid transparent;letter-spacing:0.12em;">${emailUpper}</a>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td class="email-sig-contact" style="padding:0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:13px;line-height:1.85;color:#222222;">
+                                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left">
+                                        <tr>
+                                          <td valign="middle" style="padding:0 16px 0 0;vertical-align:middle;line-height:0;">${badgeCalendar}</td>
+                                          <td valign="middle" style="vertical-align:middle;">
+                                            <a href="${safeCtaUrl}" class="sig-cta" style="color:#222222;text-decoration:none;border-bottom:none;letter-spacing:0.12em;">SET AN APPOINTMENT</a>
+                                          </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -19,7 +373,20 @@ serve(async (req) => {
   try {
     console.log('Received request:', req.method);
     const body = await req.json();
-    const { type, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany } = body;
+    const {
+      type,
+      eventName,
+      address,
+      firstName,
+      lastName,
+      email,
+      phone,
+      worksWithRealtor,
+      realtorName,
+      realtorCompany,
+      town: townRaw,
+      welcomeAddress: welcomeAddressRaw,
+    } = body;
     // Event: explicit type or eventName present without address
     const isEvent = Boolean((type === 'event' && eventName) || (eventName && !address));
     const locationLabel = isEvent ? (eventName || '').trim() : (address || '').trim();
@@ -426,7 +793,7 @@ serve(async (req) => {
                   `;
       const data = await resend.emails.send({
         from: "Kevin Hoang <contact@kevinhoang.co>",
-        to: ["knhoangre@gmail.com"],
+        to: [Deno.env.get("SIGNIN_NOTIFICATION_EMAIL") ?? "knhoangre@gmail.com"],
         subject,
         html: `
           <!DOCTYPE html>
@@ -557,10 +924,99 @@ serve(async (req) => {
       });
       console.log('Email sent successfully:', data);
 
+      let confirmationSent = false;
+      let confirmationError: string | null = null;
+      try {
+        const townTrimmed = typeof townRaw === "string" ? townRaw.trim() : "";
+        const welcomeTrimmed = typeof welcomeAddressRaw === "string"
+          ? welcomeAddressRaw.trim()
+          : "";
+        const welcomeTitle = isEvent
+          ? (eventName || "").trim() || locationLabel
+          : welcomeTrimmed || (address || "").trim() || locationLabel;
+        const townPhrase = townTrimmed || "this community";
+
+        const imageUrl = (Deno.env.get("SIGNIN_EMAIL_IMAGE_URL") || "").trim() ||
+          DEFAULT_SIGNIN_IMAGE_URL;
+        const phoneDisplay = (Deno.env.get("SIGNIN_CONTACT_PHONE") || "").trim() ||
+          "860-682-2251";
+        const phoneDigits = phoneDisplay.replace(/\D/g, "");
+        const phoneTel = phoneDigits.length === 10
+          ? `+1${phoneDigits}`
+          : phoneDigits
+          ? `+${phoneDigits}`
+          : "+18606822251";
+        const websiteUrl = (Deno.env.get("SIGNIN_CONTACT_WEBSITE") || "").trim() ||
+          "https://kevinhoang.co";
+        const websiteLabel = (Deno.env.get("SIGNIN_CONTACT_WEBSITE_LABEL") || "").trim() ||
+          "kevinhoang.co";
+        const contactEmail = (Deno.env.get("SIGNIN_CONTACT_EMAIL") || "").trim() ||
+          "knhoangre@gmail.com";
+        const agentName = (Deno.env.get("SIGNIN_AGENT_NAME") || "").trim() ||
+          "Kevin Hoang";
+        const advisorTitle = (Deno.env.get("SIGNIN_ADVISOR_TITLE") || "").trim() ||
+          "LUXURY REALTOR";
+        const ctaUrl =
+          (Deno.env.get("SIGNIN_GOOGLE_CALENDAR_URL") || "").trim() ||
+          (Deno.env.get("SIGNIN_CTA_URL") || "").trim() ||
+          DEFAULT_GOOGLE_CALENDAR_BOOKING_URL;
+
+        const confirmationHtml = buildSignInConfirmationEmailHtml({
+          firstNameDisplay: capitalizeFirstName(String(firstName || "")),
+          townPhrase,
+          welcomeTitle,
+          imageUrl,
+          phoneDisplay,
+          phoneTel,
+          websiteUrl,
+          websiteLabel,
+          emailAddress: contactEmail,
+          agentName,
+          advisorTitle,
+          ctaUrl,
+        });
+
+        const confirmSubject = `Your sign-in — Welcome${welcomeTitle ? ` to ${welcomeTitle}` : ""}`;
+        const guestEmail = String(email).trim().toLowerCase();
+        const ccEmail = (Deno.env.get("SIGNIN_AGENT_EMAIL") ??
+          Deno.env.get("SIGNIN_NOTIFICATION_EMAIL") ?? "knhoangre@gmail.com")
+          .trim()
+          .toLowerCase();
+
+        const confirmationPayload: {
+          from: string;
+          to: string[];
+          cc?: string[];
+          subject: string;
+          html: string;
+        } = {
+          from: "Kevin Hoang <contact@kevinhoang.co>",
+          to: [guestEmail],
+          subject: confirmSubject,
+          html: confirmationHtml,
+        };
+        if (ccEmail && ccEmail !== guestEmail) {
+          confirmationPayload.cc = [ccEmail];
+        }
+
+        await resend.emails.send(confirmationPayload);
+        confirmationSent = true;
+        console.log(
+          "Sign-in confirmation email sent (TO guest, CC agent when different)",
+        );
+      } catch (confirmErr) {
+        console.error("Confirmation email error:", confirmErr);
+        confirmationError = confirmErr instanceof Error
+          ? confirmErr.message
+          : String(confirmErr);
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true, 
           data,
+          confirmationSent,
+          confirmationError,
           contactCreated,
           contactError: contactErrorDetails ? {
             code: contactErrorDetails.code,

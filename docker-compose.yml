@@ -1,5 +1,5 @@
-version: '3.8'
-
+# Port 5173 is only published with `docker compose up` or
+# `docker compose run --service-ports` (plain `run` omits port mapping).
 services:
   app:
     build: 

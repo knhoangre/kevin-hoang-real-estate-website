@@ -27,6 +27,8 @@ import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
 
 const addressSchema = z.object({
   address: z.string().min(1, 'Address is required'),
+  unitNumber: z.string().optional(),
+  cityTown: z.string().optional(),
 });
 
 const signInSchema = z.object({
@@ -68,6 +70,8 @@ const OpenHouse = () => {
     resolver: zodResolver(addressSchema),
     defaultValues: {
       address: '',
+      unitNumber: '',
+      cityTown: '',
     },
   });
 
@@ -138,11 +142,36 @@ const OpenHouse = () => {
   };
 
   const handleAddressSubmit = (data: AddressFormValues) => {
-    // Normalize address (trim whitespace)
+    // Normalize shared field
     const normalizedAddress = data.address.trim();
+
+    if (addressInputMode === 'manual') {
+      const normalizedUnitNumber = data.unitNumber?.trim() || '';
+      const normalizedCityTown = data.cityTown?.trim() || '';
+
+      if (!normalizedAddress) {
+        addressForm.setError('address', { message: 'Property address is required' });
+        return;
+      }
+
+      if (!normalizedCityTown) {
+        addressForm.setError('cityTown', { message: 'City/Town is required' });
+        return;
+      }
+
+      const formattedAddress = normalizedUnitNumber
+        ? `${normalizedAddress} Unit ${normalizedUnitNumber} - ${normalizedCityTown}`
+        : `${normalizedAddress} - ${normalizedCityTown}`;
+
+      setAddress(formattedAddress);
+      setShowForm(true);
+      return;
+    }
+
     if (!normalizedAddress) {
       return;
     }
+
     setAddress(normalizedAddress);
     setShowForm(true);
   };
@@ -151,9 +180,13 @@ const OpenHouse = () => {
     if (selectedAddress === '__new__') {
       setAddressInputMode('manual');
       addressForm.setValue('address', '');
+      addressForm.setValue('unitNumber', '');
+      addressForm.setValue('cityTown', '');
       addressForm.setFocus('address');
     } else {
       addressForm.setValue('address', selectedAddress);
+      addressForm.setValue('unitNumber', '');
+      addressForm.setValue('cityTown', '');
       setAddressInputMode('select');
     }
   };
@@ -165,14 +198,38 @@ const OpenHouse = () => {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
+  const getSignInLocationPayload = () => {
+    const addr = address.trim();
+    const vals = addressForm.getValues();
+    if (addressInputMode === 'manual') {
+      const street = (vals.address || '').trim();
+      const unit = (vals.unitNumber || '').trim();
+      const city = (vals.cityTown || '').trim();
+      if (city && street) {
+        const welcomeAddress = unit ? `${street} Unit ${unit}` : street;
+        return { town: city, welcomeAddress };
+      }
+    }
+    const parts = addr.split(' - ').map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const town = parts[parts.length - 1];
+      const welcomeAddress = parts.slice(0, -1).join(' - ');
+      return { town, welcomeAddress };
+    }
+    return { town: '', welcomeAddress: addr };
+  };
+
   const handleSignInSubmit = async (data: SignInFormValues) => {
     setIsSubmitting(true);
     setError(null);
 
     try {
+      const { town, welcomeAddress } = getSignInLocationPayload();
       const { error: submitError } = await supabase.functions.invoke('submit-open-house-signin', {
         body: {
           address: address.trim(),
+          town,
+          welcomeAddress,
           firstName: data.firstName.trim(),
           lastName: data.lastName.trim(),
           email: data.email.trim().toLowerCase(),
@@ -353,15 +410,53 @@ const OpenHouse = () => {
                         </Select>
                       </FormControl>
                     ) : (
-                      <FormControl>
-                        <Input
-                          id="address"
-                          placeholder="Enter property address"
-                          style={{ textTransform: 'none' }}
-                          autoCapitalize="off"
-                          {...field}
+                      <div className="space-y-4">
+                        <FormControl>
+                          <Input
+                            id="address"
+                            placeholder="Enter property address"
+                            style={{ textTransform: 'none' }}
+                            autoCapitalize="off"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormField
+                          control={addressForm.control}
+                          name="unitNumber"
+                          render={({ field: unitField }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  id="unitNumber"
+                                  placeholder="Enter unit number (optional)"
+                                  style={{ textTransform: 'none' }}
+                                  autoCapitalize="off"
+                                  {...unitField}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
+                        <FormField
+                          control={addressForm.control}
+                          name="cityTown"
+                          render={({ field: cityField }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  id="cityTown"
+                                  placeholder="Enter city/town"
+                                  style={{ textTransform: 'none' }}
+                                  autoCapitalize="off"
+                                  {...cityField}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     )}
                     {!loadingAddresses && addressInputMode === 'select' && previousAddresses.length > 0 && (
                       <p className="text-xs text-gray-500 mt-1">
@@ -371,6 +466,8 @@ const OpenHouse = () => {
                           onClick={() => {
                             setAddressInputMode('manual');
                             addressForm.setValue('address', '');
+                            addressForm.setValue('unitNumber', '');
+                            addressForm.setValue('cityTown', '');
                             addressForm.setFocus('address');
                           }}
                           className="text-blue-600 hover:underline"
@@ -387,6 +484,8 @@ const OpenHouse = () => {
                           onClick={() => {
                             setAddressInputMode('select');
                             addressForm.setValue('address', '');
+                            addressForm.setValue('unitNumber', '');
+                            addressForm.setValue('cityTown', '');
                           }}
                           className="text-blue-600 hover:underline"
                         >

@@ -17,6 +17,7 @@ interface Property {
   id: number;
   mlsnum: string;
   property_type: string;
+  status?: string | null;
   address: string;
   town: string;
   zip_code: string;
@@ -111,6 +112,12 @@ const PropertiesList = () => {
     return fullBaths.toString();
   };
 
+  const formatBadgeText = (value: string | null | undefined, fallback: string) => {
+    const normalized = value?.trim();
+    if (!normalized) return fallback;
+    return normalized.toUpperCase();
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -177,6 +184,16 @@ const PropertiesList = () => {
                 <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Photo Carousel */}
                   <div className="relative aspect-[16/9] bg-gray-200 overflow-hidden">
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="inline-flex items-center rounded-full bg-black/75 px-3 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
+                        {formatBadgeText(property.status, 'ACTIVE')}
+                      </span>
+                    </div>
+                    <div className="absolute top-3 right-3 z-10">
+                      <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-[#1a1a1a] backdrop-blur-sm">
+                        {formatBadgeText(property.property_type, 'PROPERTY')}
+                      </span>
+                    </div>
                     {hasImages ? (
                       <Carousel 
                         className="w-full h-full" 

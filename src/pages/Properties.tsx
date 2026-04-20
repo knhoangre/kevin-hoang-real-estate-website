@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -44,6 +44,7 @@ import {
 interface Property {
   id: number;
   mlsnum: string;
+  status: string | null;
   property_type: string;
   address: string;
   town: string;
@@ -71,6 +72,7 @@ const Properties = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<Set<number>>(new Set());
   const [bulkEditData, setBulkEditData] = useState({
+    status: '',
     property_type: '',
     town: '',
     zip_code: '',
@@ -89,6 +91,7 @@ const Properties = () => {
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     mlsnum: '',
+    status: '',
     property_type: '',
     address: '',
     town: '',
@@ -224,11 +227,24 @@ const Properties = () => {
     setFormData({ ...formData, image_urls: newImages });
   };
 
+  const handleMoveImage = (index: number, direction: 'left' | 'right') => {
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= propertyImages.length) return;
+
+    const reorderedImages = [...propertyImages];
+    const [movedImage] = reorderedImages.splice(index, 1);
+    reorderedImages.splice(targetIndex, 0, movedImage);
+
+    setPropertyImages(reorderedImages);
+    setFormData({ ...formData, image_urls: reorderedImages });
+  };
+
   const handleAdd = () => {
     setSelectedProperty(null);
     setPropertyImages([]);
     setFormData({
       mlsnum: '',
+      status: '',
       property_type: '',
       address: '',
       town: '',
@@ -249,6 +265,7 @@ const Properties = () => {
     setPropertyImages(imageUrls);
     setFormData({
       mlsnum: property.mlsnum,
+      status: property.status || '',
       property_type: property.property_type,
       address: property.address,
       town: property.town,
@@ -272,6 +289,7 @@ const Properties = () => {
     try {
       const dataToSave = {
         mlsnum: formData.mlsnum,
+        status: formData.status.trim() || null,
         property_type: formData.property_type,
         address: formData.address,
         town: formData.town,
@@ -395,6 +413,7 @@ const Properties = () => {
       };
 
       // Only include fields that have values
+      if (bulkEditData.status) updateData.status = bulkEditData.status;
       if (bulkEditData.property_type) updateData.property_type = bulkEditData.property_type;
       if (bulkEditData.town) updateData.town = bulkEditData.town;
       if (bulkEditData.zip_code) updateData.zip_code = bulkEditData.zip_code;
@@ -445,6 +464,7 @@ const Properties = () => {
   const dbColumns = [
     { value: 'skip', label: '-- Skip --' },
     { value: 'mlsnum', label: 'MLS Number' },
+    { value: 'status', label: 'Status' },
     { value: 'property_type', label: 'Property Type' },
     { value: 'address', label: 'Address' },
     { value: 'town', label: 'Town' },
@@ -718,6 +738,7 @@ const Properties = () => {
                   variant="outline"
                   onClick={() => {
                     setBulkEditData({
+                      status: '',
                       property_type: '',
                       town: '',
                       zip_code: '',
@@ -764,6 +785,7 @@ const Properties = () => {
                   />
                 </TableHead>
                 <TableHead>MLS #</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Address</TableHead>
                 <TableHead>Town</TableHead>
@@ -779,7 +801,7 @@ const Properties = () => {
             <TableBody>
               {properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                     No properties found. Click "Add Property" to get started.
                   </TableCell>
                 </TableRow>
@@ -793,6 +815,7 @@ const Properties = () => {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{property.mlsnum}</TableCell>
+                    <TableCell>{property.status || '-'}</TableCell>
                     <TableCell>{property.property_type}</TableCell>
                     <TableCell>{property.address}</TableCell>
                     <TableCell>{property.town}</TableCell>
@@ -849,6 +872,14 @@ const Properties = () => {
                   value={formData.mlsnum}
                   onChange={(e) => setFormData({ ...formData, mlsnum: e.target.value })}
                   placeholder="MLS-123456"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Input
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  placeholder="SOLD, UNDER AGREEMENT, ACTIVE"
                 />
               </div>
               <div className="space-y-2">
@@ -952,6 +983,26 @@ const Properties = () => {
                           alt={`Property ${index + 1}`} 
                           className="w-full h-24 object-cover rounded border"
                         />
+                        <div className="absolute top-1 left-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveImage(index, 'left')}
+                            disabled={index === 0}
+                            className="bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Move image left"
+                          >
+                            <ArrowLeft className="h-3 w-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveImage(index, 'right')}
+                            disabled={index === propertyImages.length - 1}
+                            className="bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="Move image right"
+                          >
+                            <ArrowRight className="h-3 w-3" />
+                          </button>
+                        </div>
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(index)}
@@ -986,6 +1037,14 @@ const Properties = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Status</label>
+                <Input
+                  value={bulkEditData.status}
+                  onChange={(e) => setBulkEditData({ ...bulkEditData, status: e.target.value })}
+                  placeholder="Leave empty to keep existing"
+                />
+              </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Property Type</label>
                 <Input
