@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Star, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Star, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const reviews = [
@@ -82,18 +83,16 @@ const Reviews = () => {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center"
         >
-          <a
-            href="https://www.google.com/search?sca_esv=38b8b35f2fe0540c&sxsrf=AE3TifMdGaSGdNT4cYb8wIKMXCeCAzLJzg:1754452164042&si=AMgyJEtREmoPL4P1I5IDCfuA8gybfVI2d5Uj7QMwYCZHKDZ-E5esONIlJexYJUuHXXQxvkJVKpeTO32wHdQ9uDsCSlZ98kuM-BKrh6bOUdgAzyrzB44Dt4QYWoDjLgpXSfec7-04F2soy25qPvMiYYPkbqY5CfBgtL7pFsysKuCujaTbC5dDAB8%3D&q=Kevin+Hoang+%7C+Greater+Boston+Realtor+Reviews&sa=X&ved=2ahUKEwiHm43Qo_WOAxV-FlkFHYA6Mh0Q0bkNegQIMhAE&biw=1440&bih=779&dpr=2"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/testimonials"
             className="inline-flex items-center text-[#1a1a1a] font-semibold hover:text-gray-600 transition-colors group"
           >
             <span className="relative">
               {t('reviews.view_all')}
               <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300" />
             </span>
-            <ExternalLink className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-          </a>
+            <ChevronRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden />
+          </Link>
         </motion.div>
       </div>
     </div>

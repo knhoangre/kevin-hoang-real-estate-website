@@ -11,7 +11,14 @@
     "faq": "Câu Hỏi Thường Gặp",
     "profile": "Hồ Sơ",
     "login": "Đăng Nhập",
-    "logout": "Đăng Xuất"
+    "logout": "Đăng Xuất",
+    "testimonials": "Đánh Giá Khách Hàng"
+  },
+  "testimonials": {
+    "title": "Đánh giá từ khách hàng",
+    "subtitle": "Trải nghiệm năm sao từ người mua, người bán và người thuê khắp Greater Boston.",
+    "load_more": "Xem thêm đánh giá",
+    "meta_description": "Đọc đánh giá khách hàng về Kevin Hoang, môi giới Greater Boston—mua, bán, chuyển nhà, căn hộ, nhà đơn và tư vấn bất động sản Massachusetts."
   },
   "hero": {
     "title": "NÂNG CAO TRẢI NGHIỆM BẤT ĐỘNG SẢN BOSTON",

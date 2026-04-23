@@ -1,3 +1,5 @@
+import { buildDailyMetroBostonPosts2026 } from "./blogDailySeries2026";
+
 export interface BlogPost {
   id: number;
   title: string;
@@ -12,7 +14,7 @@ export interface BlogPost {
   author: string;
 }
 
-export const blogPosts: BlogPost[] = [
+const baseBlogPosts: BlogPost[] = [
   {
     id: 71,
     title: "Home Preparation Guide",
@@ -878,4 +880,10 @@ export const blogPosts: BlogPost[] = [
     date: "March 12, 2025",
     author: "Kevin Hoang"
   }
+];
+
+/** Daily series Jan 11–Apr 20, 2026 first so the listing shows newest posts at the top. */
+export const blogPosts: BlogPost[] = [
+  ...buildDailyMetroBostonPosts2026(),
+  ...baseBlogPosts,
 ];

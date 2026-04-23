@@ -31,6 +31,7 @@ import AuthCallback from "./pages/AuthCallback";
 import ProfileCompletion from "./components/ProfileCompletion";
 import FollowUp from "./pages/FollowUp";
 import Calculator from "./pages/Calculator";
+import Testimonials from "./pages/Testimonials";
 import PropertiesAdmin from "./pages/Properties";
 import Properties from "./pages/PropertiesList";
 import CRMDashboard from "./pages/CRMDashboard";
@@ -64,6 +65,7 @@ const App = () => (
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/calculator" element={<Calculator />} />
+                <Route path="/testimonials" element={<Testimonials />} />
                 <Route path="/first-time-buyers" element={<FirstTimeBuyers />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/complete-profile" element={<ProfileCompletion />} />

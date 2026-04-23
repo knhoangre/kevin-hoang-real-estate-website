@@ -11,7 +11,14 @@
     "faq": "FAQ",
     "profile": "Profile",
     "login": "Login",
-    "logout": "Logout"
+    "logout": "Logout",
+    "testimonials": "Testimonials"
+  },
+  "testimonials": {
+    "title": "CLIENT TESTIMONIALS",
+    "subtitle": "Five-star experiences from buyers, sellers, and renters across Greater Boston.",
+    "load_more": "Load more reviews",
+    "meta_description": "Read client reviews for Kevin Hoang, Greater Boston Realtor®—buying, selling, relocation, condos, single-family homes, and Massachusetts real estate guidance."
   },
   "hero": {
     "title": "YOUR TRUSTED REAL ESTATE PARTNER IN GREATER BOSTON",

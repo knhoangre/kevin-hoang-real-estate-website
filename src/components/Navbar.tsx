@@ -3,11 +3,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { X, Menu } from "lucide-react";
+import { X } from "lucide-react";
 import Logo from "./Logo";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const location = useLocation();
@@ -35,6 +36,8 @@ const Navbar = () => {
   const HOVER_CLOSE_DELAY_MS = 0;
   const OPEN_GRACE_PERIOD_MS = 0;
   const isHomePage = location.pathname === '/';
+  const menuBarColor =
+    isHomePage && !isScrolled ? "bg-white" : "bg-black";
 
   const isOverPhoneArea = (el: Element | null) =>
     el &&
@@ -262,14 +265,16 @@ const Navbar = () => {
         isScrolled ? "bg-white shadow-md" : "bg-transparent"
       }`}
     >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          <RouterLink to="/" className="relative z-10">
+      <div className="container mx-auto flex h-20 items-center justify-between px-4">
+          <RouterLink
+            to="/"
+            className="relative z-10 flex shrink-0 items-center"
+          >
             <Logo className="h-20 w-auto" />
           </RouterLink>
 
           {/* Desktop Navigation */}
-          <div className="hidden min-[1011px]:flex items-center space-x-8">
+          <div className="hidden min-h-0 min-[1011px]:flex h-full items-center gap-8">
             <button
               onClick={() => handleNavigation('/properties')}
               className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
@@ -338,20 +343,22 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 min-w-[8rem] rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                    className="absolute right-0 top-full z-50 min-w-[8rem] pt-2"
                   >
+                    <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
                     <a
                       href="tel:8606822251"
-                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent"
+                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
                     >
                       CALL
                     </a>
                     <a
                       href="sms:8606822251"
-                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent"
+                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
                     >
                       TEXT
                     </a>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -364,13 +371,45 @@ const Navbar = () => {
               onMouseEnter={menuOpenByHover}
               onMouseLeave={handleMenuTriggerLeave}
             >
-              <Button
-                variant="ghost"
-                className={`p-1 ${getTextColorClass()} ${getHoverColorClass()} hover:bg-transparent`}
+              <button
+                type="button"
+                className={cn(
+                  "inline-flex h-auto min-h-0 shrink-0 items-center justify-center rounded-md p-1",
+                  "bg-transparent hover:bg-transparent text-transparent",
+                  "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.97]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                )}
                 aria-label="Menu"
+                aria-expanded={menuDropdownOpen}
               >
-                <Menu className="h-8 w-8" />
-              </Button>
+                <span className="relative block h-4 w-5 shrink-0">
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
+                      menuBarColor,
+                      menuDropdownOpen
+                        ? "top-1/2 -translate-y-1/2 rotate-45"
+                        : "top-0 translate-y-0 rotate-0",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute left-0 top-1/2 h-0.5 w-5 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
+                      menuBarColor,
+                      menuDropdownOpen ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
+                      menuBarColor,
+                      menuDropdownOpen
+                        ? "top-1/2 bottom-auto -translate-y-1/2 -rotate-45"
+                        : "bottom-0 top-auto translate-y-0 rotate-0",
+                    )}
+                  />
+                </span>
+              </button>
               <AnimatePresence>
                 {menuDropdownOpen && (
                   <motion.div
@@ -380,13 +419,14 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 w-48 min-w-[8rem] rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                    className="absolute right-0 top-full z-50 w-48 min-w-[8rem] pt-2"
                   >
+                    <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
                     <button
                       type="button"
                       onClick={() => handleNavigation('/buyer')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/buyer' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/buyer' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.buyer')}
@@ -395,8 +435,8 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => handleNavigation('/seller')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/seller' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/seller' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.seller')}
@@ -405,8 +445,8 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => handleNavigation('/relocation')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/relocation' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/relocation' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.relocation')}
@@ -414,9 +454,19 @@ const Navbar = () => {
                     <div className="-mx-1 my-1 h-px bg-muted" />
                     <button
                       type="button"
+                      onClick={() => handleNavigation('/testimonials')}
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/testimonials' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
+                      }`}
+                    >
+                      {t('nav.testimonials')}
+                    </button>
+                    <div className="-mx-1 my-1 h-px bg-muted" />
+                    <button
+                      type="button"
                       onClick={() => handleNavigation('/neighborhoods')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/neighborhoods' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/neighborhoods' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.neighborhoods')}
@@ -425,8 +475,8 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => handleNavigation('/blog')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/blog' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/blog' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.blog')}
@@ -435,12 +485,13 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => handleNavigation('/calculator')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent uppercase ${
-                        location.pathname === '/calculator' ? 'font-bold bg-accent' : ''
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/calculator' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
                       }`}
                     >
                       {t('nav.calculator')}
                     </button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -460,33 +511,49 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="max-[1010px]:flex min-[1011px]:hidden items-center gap-4">
+          <div className="flex h-full min-h-0 items-center gap-4 min-[1011px]:hidden">
             <LanguageSwitcher />
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="relative z-10 p-2"
+              className={cn(
+                "relative z-10 inline-flex rounded-md p-1.5",
+                "bg-transparent hover:bg-transparent",
+                "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.94]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              )}
               aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
             >
-              <div className="w-6 h-5 relative">
+              <span className="relative block h-3 w-4 shrink-0">
                 <span
-                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} transform transition-all duration-300 ${
-                    mobileMenuOpen ? "rotate-45 top-2" : "rotate-0 top-0"
-                  }`}
+                  className={cn(
+                    "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
+                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
+                    mobileMenuOpen
+                      ? "top-1/2 -translate-y-1/2 rotate-45"
+                      : "top-0 translate-y-0 rotate-0",
+                  )}
                 />
                 <span
-                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} top-2 transition-all duration-300 ${
-                    mobileMenuOpen ? "opacity-0" : "opacity-100"
-                  }`}
+                  className={cn(
+                    "pointer-events-none absolute left-0 top-1/2 h-0.5 w-4 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
+                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
+                    mobileMenuOpen ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
+                  )}
                 />
                 <span
-                  className={`absolute h-0.5 w-6 ${isHomePage && !isScrolled ? 'bg-white' : 'bg-black'} transform transition-all duration-300 ${
-                    mobileMenuOpen ? "-rotate-45 top-2" : "rotate-0 top-4"
-                  }`}
+                  className={cn(
+                    "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
+                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
+                    mobileMenuOpen
+                      ? "top-1/2 bottom-auto -translate-y-1/2 -rotate-45"
+                      : "bottom-0 top-auto translate-y-0 rotate-0",
+                  )}
                 />
-              </div>
+              </span>
             </button>
           </div>
-        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -550,6 +617,21 @@ const Navbar = () => {
                   <span
                     className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/relocation' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
+
+                <button
+                  onClick={() => handleNavigation('/testimonials')}
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
+                    location.pathname === '/testimonials' ? 'font-bold' : ''
+                  }`}
+                >
+                  {t('nav.testimonials')}
+                  <span
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
+                      location.pathname === '/testimonials' ? 'w-full' : ''
                     }`}
                   />
                 </button>
