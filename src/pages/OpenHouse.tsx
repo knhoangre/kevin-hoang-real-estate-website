@@ -34,13 +34,20 @@ const addressSchema = z.object({
 const signInSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email format'),
+  email: z.union([z.literal(''), z.string().email('Invalid email format')]),
   phone: z.string().optional(),
   worksWithRealtor: z.enum(['yes', 'no'], {
     required_error: 'Please select an option',
   }),
   realtorName: z.string().optional(),
   realtorCompany: z.string().optional(),
+}).refine((data) => {
+  const hasEmail = data.email.trim().length > 0;
+  const hasPhone = (data.phone ?? '').trim().length > 0;
+  return hasEmail || hasPhone;
+}, {
+  message: 'Please provide either an email address or a phone number',
+  path: ['email'],
 }).refine((data) => {
   if (data.worksWithRealtor === 'yes') {
     return data.realtorName && data.realtorName.trim().length > 0;
@@ -232,7 +239,7 @@ const OpenHouse = () => {
           welcomeAddress,
           firstName: data.firstName.trim(),
           lastName: data.lastName.trim(),
-          email: data.email.trim().toLowerCase(),
+          email: data.email.trim() ? data.email.trim().toLowerCase() : null,
           phone: data.phone ? data.phone.trim() : null,
           worksWithRealtor: data.worksWithRealtor === 'yes',
           realtorName: data.worksWithRealtor === 'yes' && data.realtorName ? data.realtorName.trim() : null,

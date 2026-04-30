@@ -413,8 +413,10 @@ serve(async (req) => {
     const locationLabel = isEvent ? (eventName || '').trim() : (address || '').trim();
     console.log('Parsed request data:', { type, isEvent, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany });
 
-    if (!locationLabel || !firstName || !lastName || !email) {
-      console.log('Missing required fields:', { locationLabel, firstName, lastName, email });
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
+    if (!locationLabel || !firstName || !lastName || (!normalizedEmail && !normalizedPhone)) {
+      console.log('Missing required fields:', { locationLabel, firstName, lastName, email: normalizedEmail, phone: normalizedPhone });
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
@@ -422,7 +424,7 @@ serve(async (req) => {
             [isEvent ? 'eventName' : 'address']: !locationLabel ? (isEvent ? 'Missing event name' : 'Missing address') : null,
             firstName: !firstName ? 'Missing first name' : null,
             lastName: !lastName ? 'Missing last name' : null,
-            email: !email ? 'Missing email' : null
+            contact: (!normalizedEmail && !normalizedPhone) ? 'Missing email or phone' : null
           }
         }),
         {
@@ -468,7 +470,7 @@ serve(async (req) => {
     console.log('Supabase URL:', supabaseUrl);
 
     // Format phone number if provided
-    let formattedPhone = phone;
+    let formattedPhone = normalizedPhone;
     if (formattedPhone) {
       // Remove any non-digit characters
       const numbers = formattedPhone.replace(/\D/g, "");
@@ -522,26 +524,31 @@ serve(async (req) => {
       lastNameData = newLastNameData;
     }
 
-    // Check if email exists
-    let { data: emailData, error: emailError } = await supabase
-      .from('contact_emails')
-      .select('id')
-      .eq('email', email.trim().toLowerCase())
-      .single();
-
-    // If email doesn't exist, insert it
-    if (!emailData) {
-      const { data: newEmailData, error: newEmailError } = await supabase
+    // Check if email exists (if provided)
+    let emailData = null;
+    if (normalizedEmail) {
+      const { data: existingEmailData, error: emailError } = await supabase
         .from('contact_emails')
-        .insert({ email: email.trim().toLowerCase() })
-        .select()
+        .select('id')
+        .eq('email', normalizedEmail)
         .single();
 
-      if (newEmailError) {
-        console.error('Error inserting email:', newEmailError);
-        throw newEmailError;
+      // If email doesn't exist, insert it
+      if (!existingEmailData) {
+        const { data: newEmailData, error: newEmailError } = await supabase
+          .from('contact_emails')
+          .insert({ email: normalizedEmail })
+          .select()
+          .single();
+
+        if (newEmailError) {
+          console.error('Error inserting email:', newEmailError);
+          throw newEmailError;
+        }
+        emailData = newEmailData;
+      } else {
+        emailData = existingEmailData;
       }
-      emailData = newEmailData;
     }
 
     // Check if phone exists (if provided)
@@ -602,7 +609,7 @@ serve(async (req) => {
           event_name: eventName.trim(),
           first_name_id: firstNameData.id,
           last_name_id: lastNameData.id,
-          email_id: emailData.id,
+          email_id: emailData?.id || null,
           phone_id: phoneData?.id || null,
           source_id: sourceData.id,
         });
@@ -617,7 +624,7 @@ serve(async (req) => {
           address: address.trim(),
           first_name_id: firstNameData.id,
           last_name_id: lastNameData.id,
-          email_id: emailData.id,
+          email_id: emailData?.id || null,
           phone_id: phoneData?.id || null,
           source_id: sourceData.id,
           works_with_realtor: worksWithRealtor || false,
@@ -632,7 +639,7 @@ serve(async (req) => {
 
     // Also create/update contact in contacts table
     // Check if contact already exists (handle NULL phone_id properly)
-    console.log('Checking for existing contact with email_id:', emailData.id, 'phone_id:', phoneData?.id || null);
+    console.log('Checking for existing contact with email_id:', emailData?.id || null, 'phone_id:', phoneData?.id || null);
     
     // Track contact creation status
     let contactCreated = false;
@@ -643,7 +650,7 @@ serve(async (req) => {
     let existingContact = null;
     let checkError = null;
     
-    if (phoneData?.id) {
+    if (emailData?.id && phoneData?.id) {
       // Check with both email and phone
       const { data, error } = await supabase
         .from('contacts')
@@ -653,8 +660,8 @@ serve(async (req) => {
         .maybeSingle();
       existingContact = data;
       checkError = error;
-      
-      // If not found, also check by email only (in case phone was added later)
+
+      // If not found, check email-only and phone-only contact variants
       if (!existingContact && !checkError) {
         const { data: emailOnlyData, error: emailOnlyError } = await supabase
           .from('contacts')
@@ -669,13 +676,35 @@ serve(async (req) => {
           checkError = emailOnlyError;
         }
       }
-    } else {
-      // Check by email only (phone is NULL)
+      if (!existingContact && !checkError) {
+        const { data: phoneOnlyData, error: phoneOnlyError } = await supabase
+          .from('contacts')
+          .select('id')
+          .is('email_id', null)
+          .eq('phone_id', phoneData.id)
+          .maybeSingle();
+        if (phoneOnlyData) {
+          existingContact = phoneOnlyData;
+        }
+        if (phoneOnlyError && !checkError) {
+          checkError = phoneOnlyError;
+        }
+      }
+    } else if (emailData?.id) {
+      // Check by email only
       const { data, error } = await supabase
         .from('contacts')
         .select('id')
         .eq('email_id', emailData.id)
-        .is('phone_id', null)
+        .maybeSingle();
+      existingContact = data;
+      checkError = error;
+    } else if (phoneData?.id) {
+      // Check by phone only
+      const { data, error } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('phone_id', phoneData.id)
         .maybeSingle();
       existingContact = data;
       checkError = error;
@@ -709,7 +738,7 @@ serve(async (req) => {
       const contactData = {
         first_name_id: firstNameData.id,
         last_name_id: lastNameData.id,
-        email_id: emailData.id,
+        email_id: emailData?.id || null,
         phone_id: phoneData?.id || null,
         source_id: sourceData.id,
         is_active: true,
@@ -914,7 +943,7 @@ serve(async (req) => {
                   </div>
                   <div class="field">
                     <span class="label">Email</span>
-                    <div class="value">${email}</div>
+                    <div class="value">${normalizedEmail || 'Not provided'}</div>
                   </div>
                   <div class="field">
                     <span class="label">Phone Number</span>
@@ -1002,33 +1031,37 @@ serve(async (req) => {
         });
 
         const confirmSubject = `Your sign-in — Welcome${welcomeTitle ? ` to ${welcomeTitle}` : ""}`;
-        const guestEmail = String(email).trim().toLowerCase();
+        const guestEmail = normalizedEmail;
         const ccEmail = (Deno.env.get("SIGNIN_AGENT_EMAIL") ??
           Deno.env.get("SIGNIN_NOTIFICATION_EMAIL") ?? "knhoangre@gmail.com")
           .trim()
           .toLowerCase();
 
-        const confirmationPayload: {
-          from: string;
-          to: string[];
-          cc?: string[];
-          subject: string;
-          html: string;
-        } = {
-          from: "Kevin Hoang <contact@kevinhoang.co>",
-          to: [guestEmail],
-          subject: confirmSubject,
-          html: confirmationHtml,
-        };
-        if (ccEmail && ccEmail !== guestEmail) {
-          confirmationPayload.cc = [ccEmail];
-        }
+        if (guestEmail) {
+          const confirmationPayload: {
+            from: string;
+            to: string[];
+            cc?: string[];
+            subject: string;
+            html: string;
+          } = {
+            from: "Kevin Hoang <contact@kevinhoang.co>",
+            to: [guestEmail],
+            subject: confirmSubject,
+            html: confirmationHtml,
+          };
+          if (ccEmail && ccEmail !== guestEmail) {
+            confirmationPayload.cc = [ccEmail];
+          }
 
-        await resend.emails.send(confirmationPayload);
-        confirmationSent = true;
-        console.log(
-          "Sign-in confirmation email sent (TO guest, CC agent when different)",
-        );
+          await resend.emails.send(confirmationPayload);
+          confirmationSent = true;
+          console.log(
+            "Sign-in confirmation email sent (TO guest, CC agent when different)",
+          );
+        } else {
+          console.log("No guest email provided; skipping confirmation email send.");
+        }
       } catch (confirmErr) {
         console.error("Confirmation email error:", confirmErr);
         confirmationError = confirmErr instanceof Error

@@ -31,8 +31,15 @@ const eventSchema = z.object({
 const signInSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email format'),
+  email: z.union([z.literal(''), z.string().email('Invalid email format')]),
   phone: z.string().optional(),
+}).refine((data) => {
+  const hasEmail = data.email.trim().length > 0;
+  const hasPhone = (data.phone ?? '').trim().length > 0;
+  return hasEmail || hasPhone;
+}, {
+  message: 'Please provide either an email address or a phone number',
+  path: ['email'],
 });
 
 type EventFormValues = z.infer<typeof eventSchema>;
@@ -145,7 +152,7 @@ const Events = () => {
           eventName: eventName.trim(),
           firstName: data.firstName.trim(),
           lastName: data.lastName.trim(),
-          email: data.email.trim().toLowerCase(),
+          email: data.email.trim() ? data.email.trim().toLowerCase() : null,
           phone: data.phone ? data.phone.trim() : null,
         },
       });
@@ -413,7 +420,7 @@ const Events = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="email">Email Address</Label>
                   <FormControl>
                     <Input
                       id="email"
@@ -434,7 +441,7 @@ const Events = () => {
               name="phone"
               render={({ field: { onChange, ...rest } }) => (
                 <FormItem>
-                  <Label htmlFor="phone">Phone Number <span className="text-gray-400">(optional)</span></Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <FormControl>
                     <Input
                       id="phone"
