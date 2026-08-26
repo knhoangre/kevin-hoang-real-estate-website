@@ -61,12 +61,19 @@ export const SITE = {
   appointmentUrl: 'https://calendar.app.google/P297MnAu7ei6turA6',
 
   /**
-   * Latitude/longitude for the office. Left null until real coordinates are
-   * confirmed — the schema builder omits `geo` entirely while this is null,
-   * which is correct. Coordinates that point at the wrong place are worse
-   * than no coordinates.
+   * Latitude/longitude for the Keller Williams office at 150 West St.
+   *
+   * Geocoded from the postal address via OpenStreetMap/Nominatim 2026-08-26 and
+   * sanity-checked to fall in Needham Heights, between the town centre
+   * (~42.279, -71.233) and the northern town line — consistent with West St.
+   *
+   * If this is ever wrong, set it back to null rather than guessing: the schema
+   * builder omits `geo` entirely when it is null, and an absent coordinate is
+   * correct while one pointing at the wrong town is actively harmful.
    */
-  geo: null as { latitude: number; longitude: number } | null,
+  geo: { latitude: 42.2929724, longitude: -71.2366817 } as
+    | { latitude: number; longitude: number }
+    | null,
 
   /**
    * Profile URLs for schema.org `sameAs`, which ties this site to the same
