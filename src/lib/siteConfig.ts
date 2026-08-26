@@ -150,6 +150,9 @@ export const SITE = {
     { name: 'Malden', slug: 'malden-ma' },
     { name: 'Quincy', slug: 'quincy-ma' },
     { name: 'Braintree', slug: 'braintree-ma' },
+    { name: 'Brookline', slug: 'brookline-ma' },
+    { name: 'Belmont', slug: 'belmont-ma' },
+    { name: 'Winchester', slug: 'winchester-ma' },
   ],
 } as const;
 

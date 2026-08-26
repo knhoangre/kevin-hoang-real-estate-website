@@ -7,6 +7,446 @@ import NearbyTowns from "@/components/NearbyTowns";
 import { breadcrumbs } from "@/lib/schema";
 
 const neighborhoodData: Record<string, any> = {
+  "brookline-ma": {
+    name: "Brookline, Massachusetts",
+    slug: "brookline-ma",
+    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1200&h=600",
+    title: "Living in Brookline, MA – Neighborhood Guide & Real Estate Insights",
+    subtitle: "Neighborhood Guide, Lifestyle, and Real Estate Insights",
+    content: [
+      {
+        type: "intro",
+        text: "Brookline is an independent town almost entirely surrounded by the City of Boston, which is the single fact that explains most of its real estate market. You get city access measured in minutes, a separate town government, and Brookline's own school district — a combination no Boston neighborhood can offer.",
+        highlight: "For buyers weighing a Boston condo against the suburbs, Brookline is usually the town that ends the argument: walkable, on the Green Line, and with its own schools."
+      },
+      {
+        type: "section",
+        title: "Why People Love Living in Brookline",
+        text: "Brookline appeals to buyers who want to stay close to the city without committing to city living."
+      },
+      {
+        type: "subsection",
+        title: "🚊 Unusually Deep Transit Access",
+        text: "Few communities in Massachusetts are this well served by rail.",
+        bullets: [
+          "Green Line C branch runs the length of Beacon Street",
+          "Green Line D branch serves Brookline Village, Brookline Hills, Beaconsfield, Reservoir and Chestnut Hill",
+          "The E branch and the Longwood Medical Area sit immediately over the town line",
+          "Multiple bus routes plus genuine walkability in the commercial squares"
+        ],
+        note: "Two separate Green Line branches inside one town is why so many Brookline households run without a second car — and why proximity to a stop shows up so clearly in what buyers will pay."
+      },
+      {
+        type: "subsection",
+        title: "🏥 The Longwood Effect",
+        text: "The Longwood Medical and Academic Area — hospitals, medical schools and research institutes — borders Brookline directly. That creates steady, renewing demand from physicians, residents, researchers and graduate students, much of it on predictable multi-year cycles. It is the most durable demand driver in the town's market."
+      },
+      {
+        type: "subsection",
+        title: "🌳 Squares, Parks and the Emerald Necklace",
+        text: "Brookline is organised around distinct commercial squares rather than one downtown, with substantial green space woven between them.",
+        bullets: [
+          "Coolidge Corner — the busiest, anchored by the Coolidge Corner Theatre",
+          "Brookline Village — older, quieter, close to Longwood",
+          "Washington Square — smaller and residential in feel",
+          "Larz Anderson Park and the Olmsted-designed Emerald Necklace parkland"
+        ]
+      },
+      {
+        type: "section",
+        title: "Brookline Neighborhoods at a Glance",
+        text: "Brookline changes character considerably from one part of town to another, which is why a town-wide generalisation is rarely useful.",
+        neighborhoods: [
+          {
+            name: "Coolidge Corner",
+            description: "Dense, walkable and transit-first. Predominantly condos and apartment buildings, many of them pre-war. Popular with professionals, medical staff and downsizers who want to walk to everything."
+          },
+          {
+            name: "Brookline Village",
+            description: "Older housing stock and the closest point to Longwood. A mix of condos, two-families and smaller single-families, with quick D branch access."
+          },
+          {
+            name: "Fisher Hill & Corey Hill",
+            description: "The town's larger single-family homes, on hillside lots with substantial architecture. Quieter, more residential, and a different buyer entirely from the squares."
+          },
+          {
+            name: "Chestnut Hill",
+            description: "Shared with Newton and Boston. Larger properties, more space, and easier driving access, at the cost of the walk-everywhere convenience."
+          },
+          {
+            name: "South Brookline",
+            description: "The most suburban part of town — bigger lots, more driving, and a feel closer to Newton than to Coolidge Corner."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Real Estate in Brookline, MA",
+        text: "Brookline has an unusually high share of condominiums for a Massachusetts town, and a large portion of them are conversions of older buildings rather than purpose-built developments.",
+        highlight: "What that means in practice:",
+        bullets: [
+          "Condominium documents matter more here than almost anywhere else",
+          "Small associations in converted buildings can carry thin reserves",
+          "Parking is a real asset and is often deeded separately",
+          "Single-family inventory is limited and concentrated on the hills",
+          "Two- and three-family buildings are common and often owner-occupied"
+        ],
+        note: "Reviewing the association's budget, reserves, and any special assessment history is not optional in this market — it is the main diligence task."
+      },
+      {
+        type: "section",
+        title: "Why Brookline Is a Smart Place to Buy",
+        reasons: [
+          {
+            icon: "🚊",
+            title: "Transit That Holds Value",
+            text: "Two Green Line branches and bus coverage keep Brookline attractive to buyers and renters regardless of what the car market does."
+          },
+          {
+            icon: "🏥",
+            title: "Institutional Demand",
+            text: "Longwood's hospitals and schools renew their population every year, which underpins both resale and rental demand."
+          },
+          {
+            icon: "🎓",
+            title: "Its Own School District",
+            text: "Brookline runs its own schools rather than sharing Boston's, which is decisive for many families comparing the two."
+          },
+          {
+            icon: "🚶",
+            title: "Genuine Walkability",
+            text: "Groceries, restaurants, cinema, pharmacy and transit within walking distance is rare this close to Boston."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Who Brookline Is Perfect For",
+        bullets: [
+          "Medical and academic professionals working in Longwood or downtown",
+          "Buyers who want city access without giving up a town school district",
+          "Downsizers trading a suburban house for a walkable condo",
+          "Investors looking at owner-occupied two- and three-family buildings"
+        ]
+      },
+      {
+        type: "section",
+        title: "Buying a Home in Brookline",
+        text: "The competitive pressure in Brookline concentrates on well-located condos near the Green Line, where a strong offer often needs more than price.",
+        highlight: "Buyers do better when they:",
+        bullets: [
+          "Read the condo documents before making an offer, not after",
+          "Understand what the association's fee actually covers",
+          "Check the parking situation in writing",
+          "Know which side of a square they are buying on — it changes the daily experience",
+          "Are pre-approved and ready to move quickly on the right unit"
+        ],
+        note: "In a town this dense, two units a block apart can be very different purchases."
+      },
+      {
+        type: "cta",
+        title: "Thinking About Buying in Brookline?",
+        text: "Brookline rewards local knowledge more than most towns — the difference between two similar-looking condos is usually in the documents and the location relative to transit.",
+        highlight: "I work with buyers across Brookline's squares and hillside neighborhoods, and with sellers deciding how to position a unit against the rest of the building.",
+        closing: "If you are comparing Brookline to Newton, Cambridge or a Boston neighborhood, I am happy to talk it through."
+      }
+    ]
+  },
+  "belmont-ma": {
+    name: "Belmont, Massachusetts",
+    slug: "belmont-ma",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&h=600",
+    title: "Living in Belmont, MA – Neighborhood Guide & Real Estate Insights",
+    subtitle: "Neighborhood Guide, Lifestyle, and Real Estate Insights",
+    content: [
+      {
+        type: "intro",
+        text: "Belmont is a residential town of about four square miles wedged between Cambridge, Arlington, Watertown, Waltham and Lexington. Its long-standing nickname, the Town of Homes, is an accurate description of what it is: almost entirely housing, with small commercial squares and very little industry.",
+        highlight: "Belmont is the town people move to when they want Cambridge access and a strong school district but not Cambridge density or Cambridge prices."
+      },
+      {
+        type: "section",
+        title: "Why People Love Living in Belmont",
+        text: "Belmont's appeal is unusually consistent: schools, proximity, and a quiet residential fabric."
+      },
+      {
+        type: "subsection",
+        title: "🎓 Schools as the Primary Draw",
+        text: "For most Belmont buyers the school district is the reason they are looking at all. The town has invested heavily in its facilities in recent years, including a major new middle and high school complex built to replace an ageing building. Whatever else moves in this market, school-driven demand is the constant."
+      },
+      {
+        type: "subsection",
+        title: "🚆 Commuting From Belmont",
+        text: "Belmont is close in without being urban, and has several ways out of town.",
+        bullets: [
+          "Commuter rail on the Fitchburg Line, with stops at Belmont Center and Waverley",
+          "Direct bus service toward Harvard Square",
+          "Route 2 for driving west, and Route 60 across town",
+          "Cambridge and Kendall Square reachable in well under half an hour outside peak"
+        ],
+        note: "Belmont has no subway station of its own, which is the main trade-off against neighbouring Arlington or Cambridge."
+      },
+      {
+        type: "subsection",
+        title: "🌲 Open Space and the Hill",
+        text: "Belmont Hill rises across the northern half of town and carries much of its larger housing stock. Rock Meadow Conservation Area, the Habitat Education Center and the Western Greenway give the town more protected land than its size suggests.",
+        bullets: [
+          "Belmont Hill — larger homes, bigger lots, quiet streets",
+          "Rock Meadow and the Western Greenway trail network",
+          "The former McLean Hospital land, part of which has been redeveloped as housing"
+        ]
+      },
+      {
+        type: "section",
+        title: "Belmont Squares at a Glance",
+        text: "Belmont is organised around three small squares rather than a single downtown, and which one you live near shapes daily life more than the town line does.",
+        neighborhoods: [
+          {
+            name: "Belmont Center",
+            description: "The main square, with the commuter rail station, the library and most of the town's shops and restaurants. Walkable, and the most convenient part of town for a car-light household."
+          },
+          {
+            name: "Cushing Square",
+            description: "Smaller and closer to the Watertown line, with newer mixed-use development alongside older housing. Popular with buyers who want walkable amenities at a slightly lower entry point than the Center."
+          },
+          {
+            name: "Waverley Square",
+            description: "The most modest of the three, with its own commuter rail stop and quick access into Waltham. Denser housing, including a good share of two-families."
+          },
+          {
+            name: "Belmont Hill",
+            description: "Large single-family homes on substantial lots, quiet and almost entirely residential. A car is assumed here."
+          },
+          {
+            name: "Winn Brook",
+            description: "A flatter, tightly-knit neighborhood near the Cambridge line, with a well-regarded elementary school and a mix of colonials and capes."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Real Estate in Belmont, MA",
+        text: "Belmont's housing stock is mostly early-to-mid twentieth century, and the town has an unusually high proportion of two-family homes for a suburb of its profile.",
+        highlight: "The market divides roughly into:",
+        bullets: [
+          "Colonials, capes and Victorians across the flatter neighborhoods",
+          "Larger single-family homes on Belmont Hill",
+          "Two-family houses, many owner-occupied with the second unit rented",
+          "Condominiums, frequently created by converting those two-families",
+          "A limited amount of newer construction, including the McLean redevelopment"
+        ],
+        note: "The two-family stock is worth understanding: it is how a lot of Belmont buyers make the numbers work, and it is also why so many Belmont condos are two-unit associations with all the governance quirks that implies."
+      },
+      {
+        type: "section",
+        title: "Why Belmont Is a Smart Place to Buy",
+        reasons: [
+          {
+            icon: "🎓",
+            title: "Durable School Demand",
+            text: "School-driven demand in Belmont is persistent and not especially sensitive to what the wider market is doing."
+          },
+          {
+            icon: "📍",
+            title: "Position",
+            text: "Bordering Cambridge, Arlington, Watertown, Waltham and Lexington gives Belmont access to several major employment areas at once."
+          },
+          {
+            icon: "🏘",
+            title: "Limited Supply",
+            text: "Four square miles, almost entirely built out, with little land for new development — supply changes very slowly here."
+          },
+          {
+            icon: "🏡",
+            title: "Two-Family Flexibility",
+            text: "Owner-occupied two-families let buyers offset carrying costs, and give sellers a wider pool of interested parties."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Who Belmont Is Perfect For",
+        bullets: [
+          "Families choosing a district first and a house second",
+          "Cambridge and Kendall Square professionals who want more space",
+          "Buyers considering an owner-occupied two-family",
+          "Long-term owners who value stability over rapid turnover"
+        ]
+      },
+      {
+        type: "section",
+        title: "Buying a Home in Belmont",
+        text: "Belmont moves quickly on well-presented houses in the flatter neighborhoods, and more slowly on the Hill where the buyer pool is smaller.",
+        highlight: "Things worth checking before you write:",
+        bullets: [
+          "Which elementary school district the address actually falls in",
+          "Walking distance to Belmont Center or Waverley if you plan to use the rail",
+          "For two-families: the condition of the second unit and any tenancy in place",
+          "For small condo associations: reserves, and who has been managing them",
+          "Age of the major systems, given the era of most of the housing stock"
+        ],
+        note: "In a town this small, a ten-minute difference in walk time to the commuter rail is a real and lasting distinction."
+      },
+      {
+        type: "cta",
+        title: "Thinking About Buying in Belmont?",
+        text: "Belmont is a small market where the differences between neighborhoods are subtle but consequential, and where two-family and small-association purchases need more diligence than they first appear to.",
+        highlight: "I work with buyers across Belmont's squares and the Hill, and with sellers deciding how to prepare and position an older home.",
+        closing: "If you are weighing Belmont against Arlington, Lexington or Newton, I am glad to walk through the differences."
+      }
+    ]
+  },
+  "winchester-ma": {
+    name: "Winchester, Massachusetts",
+    slug: "winchester-ma",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&h=600",
+    title: "Living in Winchester, MA – Neighborhood Guide & Real Estate Insights",
+    subtitle: "Neighborhood Guide, Lifestyle, and Real Estate Insights",
+    content: [
+      {
+        type: "intro",
+        text: "Winchester sits about eight miles north of Boston, bordered by Medford, Arlington, Woburn, Stoneham and Lexington. It combines a genuine walkable downtown, a commuter rail station in the middle of it, and direct access to one of the largest conservation areas in eastern Massachusetts.",
+        highlight: "Winchester is the north-of-Boston answer to the classic MetroWest question: a real town center, strong schools, and a train that reaches North Station in about twenty minutes."
+      },
+      {
+        type: "section",
+        title: "Why People Love Living in Winchester",
+        text: "Winchester's draw is the combination of downtown, water, and woods inside one small town."
+      },
+      {
+        type: "subsection",
+        title: "🚉 A Town Center You Can Actually Walk To",
+        text: "Winchester Center is a working downtown rather than a strip — shops, restaurants, the library and the common, with the commuter rail station sitting in the middle of it.",
+        bullets: [
+          "Lowell Line commuter rail from Winchester Center to North Station",
+          "A second stop at Wedgemere, a short distance south",
+          "I-93 and Route 128 both close for driving",
+          "Bus connections toward Medford and the Orange Line"
+        ],
+        note: "Homes within walking distance of the Center and the station trade differently from the rest of town, and consistently so."
+      },
+      {
+        type: "subsection",
+        title: "🌊 Lakes, Ponds and the Fells",
+        text: "Winchester has more water and protected land than most towns its size.",
+        bullets: [
+          "The Mystic Lakes along the southern edge",
+          "Wedge Pond and Winter Pond within the town",
+          "Middlesex Fells Reservation on the eastern side — thousands of acres of trails",
+          "The Aberjona River running through the center of town"
+        ]
+      },
+      {
+        type: "subsection",
+        title: "🎓 Schools and Community",
+        text: "Winchester runs its own school district and it is one of the main reasons families move here. The town also supports an unusually active civic and cultural life for its size, including the Griffin Museum of Photography and a long-running town day tradition."
+      },
+      {
+        type: "section",
+        title: "Winchester Neighborhoods at a Glance",
+        text: "Winchester's neighborhoods are shaped by topography — the town rises away from the center in several directions.",
+        neighborhoods: [
+          {
+            name: "Winchester Center",
+            description: "The walkable core, around the common and the station. A mix of older homes, some condos, and the shortest commute of anywhere in town."
+          },
+          {
+            name: "The West Side",
+            description: "Rising toward Lexington and Arlington, with larger homes on bigger lots and a quieter, more secluded feel. Driving is assumed."
+          },
+          {
+            name: "Wedgemere",
+            description: "Around the second commuter rail stop, south of the Center. Convenient, slightly less busy, and popular with commuters who want the train without the downtown foot traffic."
+          },
+          {
+            name: "Symmes Corner & the North",
+            description: "Toward Woburn and Stoneham, with a mix of mid-century and newer housing and quicker highway access."
+          },
+          {
+            name: "Mystic Lakes area",
+            description: "The southern edge along the water, bordering Medford and Arlington. Scenic, with some of the town's most distinctive properties."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Real Estate in Winchester, MA",
+        text: "Winchester's housing stock leans older and larger than many of its neighbours, with substantial Victorians and colonials alongside mid-century construction and a modest amount of newer building.",
+        highlight: "What you will find:",
+        bullets: [
+          "Large Victorians and shingle-style homes, particularly near the Center",
+          "Classic colonials across the West Side",
+          "Mid-century homes toward the northern edges",
+          "A limited condo market, much of it near the Center and station",
+          "Renovated older homes, and teardown-rebuild activity on desirable lots"
+        ],
+        note: "Older housing rewards a careful inspection: systems, insulation and past renovation quality vary widely across otherwise similar-looking houses."
+      },
+      {
+        type: "subsection",
+        title: "💧 One Local Diligence Item Worth Knowing",
+        text: "The Aberjona River and the town's low-lying areas have a documented history of flooding, and parts of Winchester fall within mapped flood zones. This is not a reason to avoid the town — it is a reason to check the flood map for a specific address early, because it affects insurance cost and, in some cases, financing.",
+        note: "Ask about flood zone designation on any property near the river or the ponds before you get far into a purchase."
+      },
+      {
+        type: "section",
+        title: "Why Winchester Is a Smart Place to Buy",
+        reasons: [
+          {
+            icon: "🚉",
+            title: "Rail Plus Downtown",
+            text: "A commuter rail station inside a walkable town center is a combination relatively few Boston-area suburbs actually have."
+          },
+          {
+            icon: "🌲",
+            title: "Access to the Fells",
+            text: "Direct access to thousands of acres of protected reservation is a lifestyle asset that cannot be built or competed away."
+          },
+          {
+            icon: "🎓",
+            title: "Its Own Schools",
+            text: "A self-contained, well-regarded district supports steady family demand year after year."
+          },
+          {
+            icon: "🛣",
+            title: "North-of-Boston Position",
+            text: "I-93 and Route 128 open up employment centers that are awkward to reach from the western suburbs."
+          }
+        ]
+      },
+      {
+        type: "section",
+        title: "Who Winchester Is Perfect For",
+        bullets: [
+          "Commuters who want to walk to a train rather than drive to one",
+          "Families prioritising schools and a real town center",
+          "Buyers drawn to older, architecturally distinctive homes",
+          "People who want trail and water access without leaving Greater Boston"
+        ]
+      },
+      {
+        type: "section",
+        title: "Buying a Home in Winchester",
+        text: "Proximity to the Center and the station is the strongest single variable in this market, and it shows up in competition as much as in price.",
+        highlight: "Before writing an offer:",
+        bullets: [
+          "Walk the route from the house to the station, at the time you would actually do it",
+          "Check the flood zone designation for the specific address",
+          "Budget an inspection appropriate to the age of the house",
+          "Look at how any past renovation was permitted and finished",
+          "Understand which parts of town carry longer drives to a highway"
+        ],
+        note: "Winchester's older homes vary enormously in condition behind similar façades — the inspection is where the real information is."
+      },
+      {
+        type: "cta",
+        title: "Thinking About Buying in Winchester?",
+        text: "Winchester rewards buyers who understand the town's geography — how far a house really is from the station, which side of the river it sits on, and what its age implies for the systems.",
+        highlight: "I work with buyers across Winchester and the surrounding north-of-Boston towns, and with sellers preparing older homes for market.",
+        closing: "If you are comparing Winchester to Medford, Arlington or Lexington, I am happy to talk through the differences."
+      }
+    ]
+  },
   "cambridge-ma": {
     name: "Cambridge, Massachusetts",
     slug: "cambridge-ma",
