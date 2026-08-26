@@ -52,7 +52,9 @@
     "rating_note": "Verified on Google",
     "credential_note": "Broker, not just an agent",
     "licensed_note": "Full-time in Greater Boston",
-    "towns_note": "With written area guides"
+    "towns_note": "With written area guides",
+    "clients": "CLIENTS SERVED",
+    "clients_note": "Sales & rentals since 2021"
   },
   "contact": {
     "title": "GET IN TOUCH",

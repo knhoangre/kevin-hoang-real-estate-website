@@ -4,7 +4,11 @@ import { ArrowLeft } from "lucide-react";
 import Seo from "@/components/Seo";
 import BreadcrumbBar from "@/components/BreadcrumbBar";
 import NearbyTowns from "@/components/NearbyTowns";
-import { breadcrumbs } from "@/lib/schema";
+import { breadcrumbs, faqPage } from "@/lib/schema";
+import TownFactsPanel from "@/components/TownFactsPanel";
+import FaqAccordion from "@/components/FaqAccordion";
+import { TOWN_FACTS } from "@/data/townFacts";
+import { townFaqs } from "@/lib/townFaqs";
 
 const neighborhoodData: Record<string, any> = {
   "brookline-ma": {
@@ -21,7 +25,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Brookline",
+        title: "Why do people move to Brookline?",
         text: "Brookline appeals to buyers who want to stay close to the city without committing to city living."
       },
       {
@@ -54,7 +58,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Brookline Neighborhoods at a Glance",
+        title: "What are Brookline’s neighborhoods like?",
         text: "Brookline changes character considerably from one part of town to another, which is why a town-wide generalisation is rarely useful.",
         neighborhoods: [
           {
@@ -81,7 +85,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Brookline, MA",
+        title: "What is the housing market like in Brookline?",
         text: "Brookline has an unusually high share of condominiums for a Massachusetts town, and a large portion of them are conversions of older buildings rather than purpose-built developments.",
         highlight: "What that means in practice:",
         bullets: [
@@ -95,7 +99,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Brookline Is a Smart Place to Buy",
+        title: "Is Brookline a good place to buy?",
         reasons: [
           {
             icon: "🚊",
@@ -121,7 +125,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Brookline Is Perfect For",
+        title: "Who is Brookline right for?",
         bullets: [
           "Medical and academic professionals working in Longwood or downtown",
           "Buyers who want city access without giving up a town school district",
@@ -131,7 +135,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Brookline",
+        title: "What should you know before buying in Brookline?",
         text: "The competitive pressure in Brookline concentrates on well-located condos near the Green Line, where a strong offer often needs more than price.",
         highlight: "Buyers do better when they:",
         bullets: [
@@ -166,7 +170,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Belmont",
+        title: "Why do people move to Belmont?",
         text: "Belmont's appeal is unusually consistent: schools, proximity, and a quiet residential fabric."
       },
       {
@@ -198,7 +202,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Belmont Squares at a Glance",
+        title: "What are Belmont’s squares like?",
         text: "Belmont is organised around three small squares rather than a single downtown, and which one you live near shapes daily life more than the town line does.",
         neighborhoods: [
           {
@@ -225,7 +229,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Belmont, MA",
+        title: "What is the housing market like in Belmont?",
         text: "Belmont's housing stock is mostly early-to-mid twentieth century, and the town has an unusually high proportion of two-family homes for a suburb of its profile.",
         highlight: "The market divides roughly into:",
         bullets: [
@@ -239,7 +243,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Belmont Is a Smart Place to Buy",
+        title: "Is Belmont a good place to buy?",
         reasons: [
           {
             icon: "🎓",
@@ -265,7 +269,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Belmont Is Perfect For",
+        title: "Who is Belmont right for?",
         bullets: [
           "Families choosing a district first and a house second",
           "Cambridge and Kendall Square professionals who want more space",
@@ -275,7 +279,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Belmont",
+        title: "What should you know before buying in Belmont?",
         text: "Belmont moves quickly on well-presented houses in the flatter neighborhoods, and more slowly on the Hill where the buyer pool is smaller.",
         highlight: "Things worth checking before you write:",
         bullets: [
@@ -310,7 +314,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Winchester",
+        title: "Why do people move to Winchester?",
         text: "Winchester's draw is the combination of downtown, water, and woods inside one small town."
       },
       {
@@ -343,7 +347,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Winchester Neighborhoods at a Glance",
+        title: "What are Winchester’s neighborhoods like?",
         text: "Winchester's neighborhoods are shaped by topography — the town rises away from the center in several directions.",
         neighborhoods: [
           {
@@ -370,7 +374,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Winchester, MA",
+        title: "What is the housing market like in Winchester?",
         text: "Winchester's housing stock leans older and larger than many of its neighbours, with substantial Victorians and colonials alongside mid-century construction and a modest amount of newer building.",
         highlight: "What you will find:",
         bullets: [
@@ -390,7 +394,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Winchester Is a Smart Place to Buy",
+        title: "Is Winchester a good place to buy?",
         reasons: [
           {
             icon: "🚉",
@@ -416,7 +420,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Winchester Is Perfect For",
+        title: "Who is Winchester right for?",
         bullets: [
           "Commuters who want to walk to a train rather than drive to one",
           "Families prioritising schools and a real town center",
@@ -426,7 +430,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Winchester",
+        title: "What should you know before buying in Winchester?",
         text: "Proximity to the Center and the station is the strongest single variable in this market, and it shows up in competition as much as in price.",
         highlight: "Before writing an offer:",
         bullets: [
@@ -461,7 +465,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Cambridge",
+        title: "Why do people move to Cambridge?",
         text: "Cambridge offers something very few cities can: a true mix of prestige, walkability, culture, green space, and economic strength."
       },
       {
@@ -487,7 +491,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Cambridge Neighborhoods at a Glance",
+        title: "What are Cambridge’s neighborhoods like?",
         text: "Each part of Cambridge offers a different feel, which is one reason the city appeals to such a wide range of buyers.",
         neighborhoods: [
           {
@@ -514,7 +518,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Cambridge, MA",
+        title: "What is the housing market like in Cambridge?",
         text: "Cambridge real estate is among the strongest and most competitive markets in Massachusetts.",
         highlight: "Homes here are in constant demand due to:",
         bullets: [
@@ -527,7 +531,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Cambridge Is a Smart Place to Buy",
+        title: "Is Cambridge a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -553,7 +557,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Cambridge Is Perfect For",
+        title: "Who is Cambridge right for?",
         bullets: [
           "First-time buyers who want long-term equity growth",
           "Professionals working in tech, biotech, healthcare, or education",
@@ -563,7 +567,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Cambridge",
+        title: "What should you know before buying in Cambridge?",
         text: "Because Cambridge is competitive, buyers need:",
         bullets: [
           "Strong market knowledge",
@@ -596,7 +600,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Somerville",
+        title: "Why do people move to Somerville?",
         text: "Somerville delivers something rare: urban energy with a neighborhood soul. It's creative, community-driven, and constantly evolving."
       },
       {
@@ -623,7 +627,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Somerville Neighborhoods at a Glance",
+        title: "What are Somerville’s neighborhoods like?",
         text: "Somerville is made up of unique squares, each with its own character and buyer appeal.",
         neighborhoods: [
           {
@@ -650,7 +654,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Somerville, MA",
+        title: "What is the housing market like in Somerville?",
         text: "Somerville's housing market is diverse and competitive.",
         highlight: "You'll find:",
         bullets: [
@@ -663,7 +667,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Somerville Is a Smart Place to Buy",
+        title: "Is Somerville a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -689,7 +693,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Somerville Is Perfect For",
+        title: "Who is Somerville right for?",
         bullets: [
           "First-time buyers priced out of Cambridge",
           "Professionals working in Boston or Cambridge",
@@ -699,7 +703,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Somerville",
+        title: "What should you know before buying in Somerville?",
         text: "Somerville is not a one-price-fits-all market. Each square behaves differently, and small location differences can dramatically affect value.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -733,7 +737,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Newton",
+        title: "Why do people move to Newton?",
         text: "Newton stands apart because it delivers space, stability, and sophistication without sacrificing convenience."
       },
       {
@@ -766,7 +770,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Newton Villages & Neighborhoods at a Glance",
+        title: "What are Newton’s villages like?",
         text: "Each Newton village offers a different lifestyle profile and price dynamic.",
         neighborhoods: [
           {
@@ -825,7 +829,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Newton, MA",
+        title: "What is the housing market like in Newton?",
         text: "Newton's real estate market is defined by strong demand, limited inventory, and consistent reinvestment.",
         highlight: "You'll find:",
         bullets: [
@@ -838,7 +842,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Newton Is a Smart Place to Buy",
+        title: "Is Newton a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -864,7 +868,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Newton Is Perfect For",
+        title: "Who is Newton right for?",
         bullets: [
           "Families prioritizing schools and neighborhood quality",
           "Buyers looking for luxury or new construction homes",
@@ -874,7 +878,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Newton",
+        title: "What should you know before buying in Newton?",
         text: "Newton is not a single market — it is 13 micro-markets.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -909,7 +913,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Lexington",
+        title: "Why do people move to Lexington?",
         text: "Lexington attracts buyers who are looking for space, stability, strong community values, and long-term investment quality."
       },
       {
@@ -943,7 +947,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Lexington Neighborhoods at a Glance",
+        title: "What are Lexington’s neighborhoods like?",
         text: "Lexington is made up of distinct residential areas rather than dense village centers, creating a quieter and more cohesive community environment.",
         neighborhoods: [
           {
@@ -970,7 +974,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Lexington, MA",
+        title: "What is the housing market like in Lexington?",
         text: "Lexington's housing market is defined by high demand, strong pricing, and continuous reinvestment.",
         highlight: "You'll find:",
         bullets: [
@@ -983,7 +987,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Lexington Is a Smart Place to Buy",
+        title: "Is Lexington a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1009,7 +1013,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Lexington Is Perfect For",
+        title: "Who is Lexington right for?",
         bullets: [
           "Families prioritizing elite public schools",
           "Buyers seeking luxury and long-term stability",
@@ -1019,7 +1023,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Lexington",
+        title: "What should you know before buying in Lexington?",
         text: "Lexington is highly competitive and detail-driven.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1054,7 +1058,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Weston",
+        title: "Why do people move to Weston?",
         text: "Weston attracts buyers seeking space, privacy, and long-term residential quality."
       },
       {
@@ -1088,7 +1092,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Weston Neighborhoods & Living Areas",
+        title: "What are Weston’s neighborhoods like?",
         text: "Weston is primarily residential, with neighborhoods defined by natural features and home styles rather than dense village centers.",
         highlight: "Areas are often described by:",
         bullets: [
@@ -1100,7 +1104,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Weston, MA",
+        title: "What is the housing market like in Weston?",
         text: "Weston's real estate market is defined by high property values, limited turnover, and long-term ownership.",
         highlight: "Homes in Weston are predominantly:",
         bullets: [
@@ -1112,7 +1116,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Weston Is a Smart Place to Buy",
+        title: "Is Weston a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1138,7 +1142,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Weston Is Perfect For",
+        title: "Who is Weston right for?",
         bullets: [
           "Buyers seeking luxury or estate properties",
           "Families prioritizing education and space",
@@ -1148,7 +1152,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Weston",
+        title: "What should you know before buying in Weston?",
         text: "Weston is a precision market where understanding land, zoning, and construction quality is essential.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1183,7 +1187,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Wellesley",
+        title: "Why do people move to Wellesley?",
         text: "Wellesley stands out for offering both community charm and executive-level residential quality."
       },
       {
@@ -1215,7 +1219,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Wellesley Neighborhoods at a Glance",
+        title: "What are Wellesley’s neighborhoods like?",
         text: "Wellesley is made up of distinct residential areas that blend luxury, charm, and accessibility.",
         neighborhoods: [
           {
@@ -1238,7 +1242,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Wellesley, MA",
+        title: "What is the housing market like in Wellesley?",
         text: "Wellesley's real estate market is defined by high demand, limited supply, and continuous reinvestment.",
         highlight: "You'll find:",
         bullets: [
@@ -1251,7 +1255,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Wellesley Is a Smart Place to Buy",
+        title: "Is Wellesley a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1277,7 +1281,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Wellesley Is Perfect For",
+        title: "Who is Wellesley right for?",
         bullets: [
           "Families prioritizing top-tier public schools",
           "Buyers seeking luxury homes and long-term value",
@@ -1287,7 +1291,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Wellesley",
+        title: "What should you know before buying in Wellesley?",
         text: "Wellesley is a highly strategic market where pricing, land value, and neighborhood nuance matter.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1322,7 +1326,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Dover",
+        title: "Why do people move to Dover?",
         text: "Dover attracts buyers who value privacy, land, and long-term stability."
       },
       {
@@ -1356,7 +1360,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Living Areas & Community Character",
+        title: "What is the town actually like to live in?",
         text: "Dover does not have a dense town center, which contributes to its unique identity. The town is characterized by:",
         bullets: [
           "Estate-style residential neighborhoods",
@@ -1368,7 +1372,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Dover, MA",
+        title: "What is the housing market like in Dover?",
         text: "Dover's real estate market is defined by low inventory, high-end properties, and long-term ownership.",
         highlight: "You'll find:",
         bullets: [
@@ -1381,7 +1385,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Dover Is a Smart Place to Buy",
+        title: "Is Dover a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1407,7 +1411,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Dover Is Perfect For",
+        title: "Who is Dover right for?",
         bullets: [
           "Buyers seeking estate-level properties and privacy",
           "Families prioritizing education and lifestyle quality",
@@ -1417,7 +1421,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Dover",
+        title: "What should you know before buying in Dover?",
         text: "Dover is a specialized market where land, zoning, and construction quality are often more important than square footage alone.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1452,7 +1456,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Medford",
+        title: "Why do people move to Medford?",
         text: "Medford appeals to buyers who want proximity without premium pricing."
       },
       {
@@ -1491,7 +1495,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Medford Neighborhoods at a Glance",
+        title: "What are Medford’s neighborhoods like?",
         text: "Medford is composed of distinct residential pockets, each offering different value and lifestyle profiles.",
         neighborhoods: [
           {
@@ -1518,7 +1522,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Medford, MA",
+        title: "What is the housing market like in Medford?",
         text: "Medford offers one of the most diverse housing markets in the inner Boston area.",
         highlight: "You'll find:",
         bullets: [
@@ -1531,7 +1535,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Medford Is a Smart Place to Buy",
+        title: "Is Medford a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1557,7 +1561,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Medford Is Perfect For",
+        title: "Who is Medford right for?",
         bullets: [
           "First-time buyers",
           "Cambridge and Somerville commuters",
@@ -1568,7 +1572,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Medford",
+        title: "What should you know before buying in Medford?",
         text: "Medford is a micro-market city where location within the city dramatically affects pricing and appreciation.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1603,7 +1607,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Braintree",
+        title: "Why do people move to Braintree?",
         text: "Braintree appeals to buyers who want location, convenience, and lifestyle balance."
       },
       {
@@ -1644,7 +1648,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Braintree Neighborhoods at a Glance",
+        title: "What are Braintree’s neighborhoods like?",
         text: "Braintree offers several distinct residential pockets, each appealing to different buyer profiles.",
         neighborhoods: [
           {
@@ -1667,7 +1671,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Braintree, MA",
+        title: "What is the housing market like in Braintree?",
         text: "Braintree's housing market offers a strong mix of property types.",
         highlight: "You'll find:",
         bullets: [
@@ -1680,7 +1684,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Braintree Is a Smart Place to Buy",
+        title: "Is Braintree a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1706,7 +1710,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Braintree Is Perfect For",
+        title: "Who is Braintree right for?",
         bullets: [
           "Boston and South Shore commuters",
           "First-time and move-up buyers",
@@ -1717,7 +1721,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Braintree",
+        title: "What should you know before buying in Braintree?",
         text: "Braintree is a location-driven market where proximity to transit, highways, and school zones strongly impacts value.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1751,7 +1755,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Quincy",
+        title: "Why do people move to Quincy?",
         text: "Quincy appeals to buyers who want flexibility, location, and lifestyle variety."
       },
       {
@@ -1792,7 +1796,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Quincy Neighborhoods at a Glance",
+        title: "What are Quincy’s neighborhoods like?",
         text: "Quincy is made up of several distinct areas, each with its own pricing and lifestyle profile.",
         neighborhoods: [
           {
@@ -1819,7 +1823,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Quincy, MA",
+        title: "What is the housing market like in Quincy?",
         text: "Quincy offers one of the most diverse housing markets in Greater Boston.",
         highlight: "You'll find:",
         bullets: [
@@ -1832,7 +1836,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Quincy Is a Smart Place to Buy",
+        title: "Is Quincy a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -1858,7 +1862,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Quincy Is Perfect For",
+        title: "Who is Quincy right for?",
         bullets: [
           "Boston and Cambridge commuters",
           "First-time and move-up buyers",
@@ -1869,7 +1873,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Quincy",
+        title: "What should you know before buying in Quincy?",
         text: "Quincy is a micro-market city where pricing varies significantly by neighborhood, proximity to transit, and waterfront access.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -1904,7 +1908,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Malden",
+        title: "Why do people move to Malden?",
         text: "Malden appeals to buyers who want location, transit, and relative value."
       },
       {
@@ -1944,7 +1948,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Malden Neighborhoods at a Glance",
+        title: "What are Malden’s neighborhoods like?",
         text: "Malden features several residential pockets with distinct characteristics.",
         neighborhoods: [
           {
@@ -1967,7 +1971,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Malden, MA",
+        title: "What is the housing market like in Malden?",
         text: "Malden offers one of the most diverse housing markets north of Boston.",
         highlight: "You'll find:",
         bullets: [
@@ -1980,7 +1984,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Malden Is a Smart Place to Buy",
+        title: "Is Malden a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -2006,7 +2010,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Malden Is Perfect For",
+        title: "Who is Malden right for?",
         bullets: [
           "First-time buyers",
           "Boston and Cambridge commuters",
@@ -2017,7 +2021,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Malden",
+        title: "What should you know before buying in Malden?",
         text: "Malden is a location-sensitive market where proximity to transit and downtown strongly affects pricing.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -2052,7 +2056,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Concord",
+        title: "Why do people move to Concord?",
         text: "Concord attracts buyers seeking space, culture, education, and long-term residential quality."
       },
       {
@@ -2085,7 +2089,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Concord Neighborhoods at a Glance",
+        title: "What are Concord’s neighborhoods like?",
         text: "Concord is made up of several distinct residential areas, each offering a unique lifestyle profile.",
         neighborhoods: [
           {
@@ -2108,7 +2112,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Concord, MA",
+        title: "What is the housing market like in Concord?",
         text: "Concord's real estate market is defined by prestige, preservation, and consistent demand.",
         highlight: "You'll find:",
         bullets: [
@@ -2121,7 +2125,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Concord Is a Smart Place to Buy",
+        title: "Is Concord a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -2147,7 +2151,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Concord Is Perfect For",
+        title: "Who is Concord right for?",
         bullets: [
           "Families prioritizing education and environment",
           "Buyers seeking historic or luxury homes",
@@ -2157,7 +2161,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Concord",
+        title: "What should you know before buying in Concord?",
         text: "Concord is a specialized market where historical context, land use, and micro-location significantly impact value.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -2191,7 +2195,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Needham",
+        title: "Why do people move to Needham?",
         text: "Needham stands out for delivering community, education, and convenience."
       },
       {
@@ -2224,7 +2228,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Needham Neighborhoods at a Glance",
+        title: "What are Needham’s neighborhoods like?",
         text: "Needham offers a range of residential pockets that appeal to different buyer profiles.",
         neighborhoods: [
           {
@@ -2247,7 +2251,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Needham, MA",
+        title: "What is the housing market like in Needham?",
         text: "Needham's real estate market is defined by high demand, limited inventory, and continuous reinvestment.",
         highlight: "You'll find:",
         bullets: [
@@ -2260,7 +2264,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Needham Is a Smart Place to Buy",
+        title: "Is Needham a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -2286,7 +2290,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Needham Is Perfect For",
+        title: "Who is Needham right for?",
         bullets: [
           "Families prioritizing strong public schools",
           "Buyers seeking suburban comfort with urban access",
@@ -2296,7 +2300,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Needham",
+        title: "What should you know before buying in Needham?",
         text: "Needham is a neighborhood-sensitive market where school proximity, commuter access, and redevelopment patterns influence value.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -2330,7 +2334,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why People Love Living in Waltham",
+        title: "Why do people move to Waltham?",
         text: "Waltham appeals to buyers who want access, lifestyle variety, and long-term upside."
       },
       {
@@ -2371,7 +2375,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Waltham Neighborhoods at a Glance",
+        title: "What are Waltham’s neighborhoods like?",
         text: "Waltham is made up of several distinct residential areas, each with different buyer appeal.",
         neighborhoods: [
           {
@@ -2398,7 +2402,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Real Estate in Waltham, MA",
+        title: "What is the housing market like in Waltham?",
         text: "Waltham offers one of the most diverse housing markets in the western suburbs.",
         highlight: "You'll find:",
         bullets: [
@@ -2411,7 +2415,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Why Waltham Is a Smart Place to Buy",
+        title: "Is Waltham a good place to buy?",
         reasons: [
           {
             icon: "📈",
@@ -2437,7 +2441,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Who Waltham Is Perfect For",
+        title: "Who is Waltham right for?",
         bullets: [
           "First-time and move-up buyers",
           "Cambridge, Boston, and Route 128 commuters",
@@ -2448,7 +2452,7 @@ const neighborhoodData: Record<string, any> = {
       },
       {
         type: "section",
-        title: "Buying a Home in Waltham",
+        title: "What should you know before buying in Waltham?",
         text: "Waltham is a micro-market city where neighborhood selection, commuter access, and property type significantly affect value.",
         highlight: "Successful buyers benefit from:",
         bullets: [
@@ -2491,6 +2495,12 @@ const NeighborhoodDetail = () => {
     { name: neighborhood.name, path: `/neighborhoods/${slug}` },
   ];
 
+  // Short form ("Newton") for headings and questions; neighborhood.name carries
+  // ", Massachusetts", which reads badly mid-sentence.
+  const shortName = String(neighborhood.name).split(",")[0];
+  const facts = TOWN_FACTS[slug || ""];
+  const faqs = townFaqs(shortName, slug || "");
+
   return (
     <div className="min-h-screen bg-white">
       {/*
@@ -2504,7 +2514,7 @@ const NeighborhoodDetail = () => {
         description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based agent covering Greater Boston.`}
         keywords={`${neighborhood.name} real estate, living in ${neighborhood.name}, ${neighborhood.name} neighborhood guide, homes for sale ${neighborhood.name}`}
         ogImage={neighborhood.image}
-        jsonLd={breadcrumbs(crumbs)}
+        jsonLd={faqs.length ? [breadcrumbs(crumbs), faqPage(faqs)] : breadcrumbs(crumbs)}
       />
       <div className="pt-16">
         <div className="container px-4 py-24">
@@ -2683,6 +2693,19 @@ const NeighborhoodDetail = () => {
                 return null;
               })}
             </div>
+
+            {facts && <TownFactsPanel town={shortName} facts={facts} />}
+
+            {faqs.length > 0 && (
+              <section className="my-12">
+                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 tracking-tight">
+                  Common questions about {shortName}
+                </h2>
+                {/* Answers stay in the DOM while collapsed — the FAQPage markup
+                    above requires the text to actually be on the page. */}
+                <FaqAccordion faqs={faqs} />
+              </section>
+            )}
 
             <NearbyTowns currentSlug={slug || ""} />
 

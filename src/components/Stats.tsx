@@ -1,4 +1,4 @@
-import { Star, BadgeCheck, CalendarDays, MapPin } from "lucide-react";
+import { Star, BadgeCheck, CalendarDays, Handshake, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SITE } from "@/lib/siteConfig";
@@ -34,6 +34,22 @@ const GOOGLE_REVIEW_COUNT = 22;
  */
 const LICENSED_SINCE = 2021;
 
+/**
+ * Total closed transactions since 2021 — sales AND rentals.
+ *
+ * Set this to the real count and the tile appears; leave it at 0 and the
+ * "licensed since" tile shows instead. Same discipline as SITE.geo: a figure
+ * ships only once it is real.
+ *
+ * The label says "clients served", not "homes sold" or "homes closed", and the
+ * sub-label names both transaction types. That wording is load-bearing: in
+ * this industry "sold" and "closed" mean sale transactions, so folding lease
+ * placements into either one is the kind of technically-arguable phrasing the
+ * FTC's endorsement guidance treats as deceptive. Counting them is fine.
+ * Mislabelling them is not.
+ */
+const CLIENTS_SERVED = 0;
+
 const Stats = () => {
   const { t } = useTranslation();
 
@@ -52,12 +68,19 @@ const Stats = () => {
       label: t("stats.credential"),
       note: t("stats.credential_note"),
     },
-    {
-      icon: CalendarDays,
-      value: String(LICENSED_SINCE),
-      label: t("stats.licensed_since"),
-      note: t("stats.licensed_note"),
-    },
+    CLIENTS_SERVED > 0
+      ? {
+          icon: Handshake,
+          value: `${CLIENTS_SERVED}`,
+          label: t("stats.clients"),
+          note: t("stats.clients_note"),
+        }
+      : {
+          icon: CalendarDays,
+          value: String(LICENSED_SINCE),
+          label: t("stats.licensed_since"),
+          note: t("stats.licensed_note"),
+        },
     {
       icon: MapPin,
       value: String(SITE.areaServed.length),
