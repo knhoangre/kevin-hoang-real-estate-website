@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
 import { BookOpen, Calculator, FileText, Home, BarChart3, Eye, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -64,14 +63,7 @@ const BuyerResources = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {resources.map((resource, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
-            >
+            <div key={index} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
               <div className="p-6">
                 <div className={`w-12 h-12 ${resource.color} text-white rounded-lg flex items-center justify-center mb-4`}>
                   <resource.icon size={24} />
@@ -95,7 +87,7 @@ const BuyerResources = () => {
                   <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

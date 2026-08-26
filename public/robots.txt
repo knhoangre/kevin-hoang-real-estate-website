@@ -1,14 +1,15 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+
+# Gated and utility routes. These also carry a noindex meta tag (see
+# src/components/PrivatePage.tsx), which is the safety net for any that get
+# linked from outside.
+Disallow: /auth
+Disallow: /profile
+Disallow: /complete-profile
+Disallow: /admin/
+Disallow: /crm
+Disallow: /open-house
+Disallow: /events
+
+Sitemap: https://kevinhoang.co/sitemap.xml

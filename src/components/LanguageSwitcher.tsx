@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { LANGUAGE_STORAGE_KEY } from '@/i18n';
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
@@ -22,6 +23,17 @@ const LanguageSwitcher = () => {
     // If we see "ENGLISH" (current language is 'vi'), switch to 'en'
     const newLanguage = i18n.language === 'vi' ? 'en' : 'vi';
     i18n.changeLanguage(newLanguage);
+    document.documentElement.lang = newLanguage;
+    // Persisting the choice used to be i18next-browser-languagedetector's job
+    // via `caches: ['localStorage']`. That detector was removed because it read
+    // storage during module init and broke hydration, so the write lives here
+    // now. <LanguagePreference/> reads this key back on the next page load.
+    try {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, newLanguage);
+    } catch {
+      // Private windows / blocked site data: the toggle still works for this
+      // session, it just will not be remembered.
+    }
   };
 
   // Always show Vietnamese first, then English

@@ -690,10 +690,12 @@ export default function Profile() {
                     alt="Crop me"
                     onLoad={onImageLoad}
                     style={{
-                      transform: `scale(${scale}) rotate(${rotate}deg)`,
-                      maxWidth: '100%',
-                      maxHeight: '400px',
+                    transform: `scale(${scale}) rotate(${rotate}deg)`,
+                    maxWidth: '100%',
+                    maxHeight: '400px',
                     }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </ReactCrop>
               </div>

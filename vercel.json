@@ -1,11 +1,526 @@
 {
-  "rewrites": [
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
     {
-      "source": "/((?!images/|assets/|favicon\\.ico|icon\\.png|robots\\.txt|placeholder\\.svg|kevin_hoang\\.jpg|phone\\.png|mail\\.png|map-pin\\.png|calendar\\.png).*)",
-      "destination": "/index.html"
+      "source": "/blog/metro-boston-real-estate-2026-01-11",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-12",
+      "destination": "/blog/pre-approval-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-13",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-14",
+      "destination": "/blog/massachusetts-mortgage-options-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-15",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-16",
+      "destination": "/blog/staging-strategies-mass-homes",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-17",
+      "destination": "/blog/pricing-strategy-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-18",
+      "destination": "/blog/massachusetts-home-maintenance-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-19",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-20",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-21",
+      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-22",
+      "destination": "/blog/real-estate-negotiation-strategies-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-23",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-24",
+      "destination": "/blog/school-districts-property-values",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-25",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-26",
+      "destination": "/blog/zoning-laws-building-permits-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-27",
+      "destination": "/blog/home-appraisal-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-28",
+      "destination": "/blog/first-time-buying-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-29",
+      "destination": "/blog/home-warranty-protection-plans-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-30",
+      "destination": "/blog/navigating-changing-interest-rates",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-01-31",
+      "destination": "/blog/transit-oriented-development-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-01",
+      "destination": "/blog/home-equity-refinancing-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-02",
+      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-03",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-04",
+      "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-05",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-06",
+      "destination": "/blog/pre-approval-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-07",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-08",
+      "destination": "/blog/massachusetts-mortgage-options-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-09",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-10",
+      "destination": "/blog/staging-strategies-mass-homes",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-11",
+      "destination": "/blog/pricing-strategy-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-12",
+      "destination": "/blog/massachusetts-home-maintenance-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-13",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-14",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-15",
+      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-16",
+      "destination": "/blog/real-estate-negotiation-strategies-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-17",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-18",
+      "destination": "/blog/school-districts-property-values",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-19",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-20",
+      "destination": "/blog/zoning-laws-building-permits-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-21",
+      "destination": "/blog/home-appraisal-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-22",
+      "destination": "/blog/first-time-buying-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-23",
+      "destination": "/blog/home-warranty-protection-plans-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-24",
+      "destination": "/blog/navigating-changing-interest-rates",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-25",
+      "destination": "/blog/transit-oriented-development-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-26",
+      "destination": "/blog/home-equity-refinancing-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-27",
+      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-02-28",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-01",
+      "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-02",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-03",
+      "destination": "/blog/pre-approval-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-04",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-05",
+      "destination": "/blog/massachusetts-mortgage-options-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-06",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-07",
+      "destination": "/blog/staging-strategies-mass-homes",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-08",
+      "destination": "/blog/pricing-strategy-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-09",
+      "destination": "/blog/massachusetts-home-maintenance-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-10",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-11",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-12",
+      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-13",
+      "destination": "/blog/real-estate-negotiation-strategies-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-14",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-15",
+      "destination": "/blog/school-districts-property-values",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-16",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-17",
+      "destination": "/blog/zoning-laws-building-permits-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-18",
+      "destination": "/blog/home-appraisal-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-19",
+      "destination": "/blog/first-time-buying-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-20",
+      "destination": "/blog/home-warranty-protection-plans-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-21",
+      "destination": "/blog/navigating-changing-interest-rates",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-22",
+      "destination": "/blog/transit-oriented-development-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-23",
+      "destination": "/blog/home-equity-refinancing-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-24",
+      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-25",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-26",
+      "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-27",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-28",
+      "destination": "/blog/pre-approval-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-29",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-30",
+      "destination": "/blog/massachusetts-mortgage-options-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-03-31",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-01",
+      "destination": "/blog/staging-strategies-mass-homes",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-02",
+      "destination": "/blog/pricing-strategy-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-03",
+      "destination": "/blog/massachusetts-home-maintenance-checklist",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-04",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-05",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-06",
+      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-07",
+      "destination": "/blog/real-estate-negotiation-strategies-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-08",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-09",
+      "destination": "/blog/school-districts-property-values",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-10",
+      "destination": "/blog/real-estate-closing-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-11",
+      "destination": "/blog/zoning-laws-building-permits-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-12",
+      "destination": "/blog/home-appraisal-process-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-13",
+      "destination": "/blog/first-time-buying-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-14",
+      "destination": "/blog/home-warranty-protection-plans-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-15",
+      "destination": "/blog/navigating-changing-interest-rates",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-16",
+      "destination": "/blog/transit-oriented-development-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-17",
+      "destination": "/blog/home-equity-refinancing-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-18",
+      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-19",
+      "destination": "/blog/home-inspection-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/metro-boston-real-estate-2026-04-20",
+      "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(sitemap.xml|llms.txt|robots.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }
-
-
-

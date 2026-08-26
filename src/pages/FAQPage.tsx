@@ -1,13 +1,8 @@
-import Navbar from "@/components/Navbar";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/Seo";
+import FaqAccordion from "@/components/FaqAccordion";
+import { faqPage } from "@/lib/schema";
 
 const FAQPage = () => {
   const { t } = useTranslation();
@@ -187,70 +182,53 @@ const FAQPage = () => {
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
-  const renderFaqSection = (title: string, items: Array<{ question: string; answer: string }>, sectionId: string) => (
-    <div className="mb-16">
+  /**
+   * All three sections are rendered into the DOM and the inactive ones are
+   * hidden with `hidden`, rather than `{activeSection === x && ...}`.
+   *
+   * Conditional rendering meant the prerendered HTML contained ONE of the three
+   * question sets and — because the Radix accordion unmounts collapsed content
+   * — none of the answers at all. That both hides the copy from every crawler
+   * that does not run JS and invalidates the FAQPage markup, which requires the
+   * answers to actually be on the page.
+   */
+  const renderFaqSection = (
+    title: string,
+    items: Array<{ question: string; answer: string }>,
+    sectionId: string
+  ) => (
+    <div key={sectionId} className="mb-16" hidden={activeSection !== sectionId}>
       <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">{title}</h2>
-      <Accordion type="multiple" className="w-full">
-        {items.map((item, index) => (
-          <motion.div key={index} variants={itemVariants}>
-            <AccordionItem value={`${sectionId}-${index}`} className="bg-white mb-4 rounded-lg border border-gray-200 overflow-hidden">
-              <AccordionTrigger className="text-xl font-semibold text-left px-6 py-4 hover:bg-gray-50">
-                {item.question}
-              </AccordionTrigger>
-              <AccordionContent className="text-gray-700 px-6 pb-6 pt-2">
-                {item.answer}
-              </AccordionContent>
-            </AccordionItem>
-          </motion.div>
-        ))}
-      </Accordion>
+      <div className="rounded-lg bg-white px-6">
+        <FaqAccordion faqs={items} />
+      </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      {/*
+        FAQPage markup is kept for AI-search comprehension, not for a SERP
+        feature — Google removed FAQ rich results in May 2026. Never build a
+        page *for* that rich result.
+      */}
+      <Seo
+        title="Frequently Asked Questions About Buying & Selling in Greater Boston"
+        description="Straight answers to the questions buyers and sellers ask most about Massachusetts real estate — offers, inspections, pricing, closing, and agent fees."
+        keywords="Massachusetts real estate FAQ, home buying questions MA, home selling questions Boston, real estate agent questions"
+        jsonLd={faqPage([...generalFaqItems, ...sellerFaqItems, ...buyerFaqItems])}
+      />
       <div className="pt-16">
         {/* White section for heading - matches blog spacing */}
         <div className="bg-white container px-4 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-16"
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-            >
+          <div className="mb-16 enter-down">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('faq.title')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-xl text-gray-600 mb-12 max-w-3xl"
-            >
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
               {t('faq.subtitle')}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         </div>
         
         {/* Gray background section starts here - no overlap, clean transition */}
@@ -300,16 +278,11 @@ const FAQPage = () => {
               </div>
             </div>
 
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-              className="w-full max-w-4xl mx-auto"
-            >
-              {activeSection === "general" && renderFaqSection(t('faq.general'), generalFaqItems, "general")}
-              {activeSection === "seller" && renderFaqSection(t('faq.sellers'), sellerFaqItems, "seller")}
-              {activeSection === "buyer" && renderFaqSection(t('faq.buyers'), buyerFaqItems, "buyer")}
-            </motion.div>
+            <div className="w-full max-w-4xl mx-auto">
+              {renderFaqSection(t('faq.general'), generalFaqItems, "general")}
+              {renderFaqSection(t('faq.sellers'), sellerFaqItems, "seller")}
+              {renderFaqSection(t('faq.buyers'), buyerFaqItems, "buyer")}
+            </div>
           </div>
         </section>
       </div>

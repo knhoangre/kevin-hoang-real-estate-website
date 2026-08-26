@@ -445,7 +445,7 @@ export default function CRMContacts() {
       contact.last_name || '',
       contact.email || '',
       contact.phone || '',
-      contact.sources || '',
+      contact.source || '',
       contact.birthday ? format(new Date(contact.birthday), 'MMM d, yyyy') : '',
       contact.home_anniversary ? format(new Date(contact.home_anniversary), 'MMM d, yyyy') : '',
       contact.last_contact_at ? format(new Date(contact.last_contact_at), 'yyyy-MM-dd') : '',

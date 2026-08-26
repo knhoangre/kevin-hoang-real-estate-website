@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import { ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import Seo from "@/components/Seo";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import NearbyTowns from "@/components/NearbyTowns";
+import { breadcrumbs } from "@/lib/schema";
 
 const neighborhoodData: Record<string, any> = {
   "cambridge-ma": {
@@ -2044,11 +2046,30 @@ const NeighborhoodDetail = () => {
 
   if (!neighborhood) return null;
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Neighborhoods", path: "/neighborhoods" },
+    { name: neighborhood.name, path: `/neighborhoods/${slug}` },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      {/*
+        These are the INFORMATIONAL pages ("what is this town like"). The
+        commercial "who do I hire" query is served by
+        /needham-real-estate-agent. Keep the two sets of headings disjoint —
+        if they converge they compete for the same query and neither ranks.
+      */}
+      <Seo
+        title={neighborhood.title}
+        description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based agent covering Greater Boston.`}
+        keywords={`${neighborhood.name} real estate, living in ${neighborhood.name}, ${neighborhood.name} neighborhood guide, homes for sale ${neighborhood.name}`}
+        ogImage={neighborhood.image}
+        jsonLd={breadcrumbs(crumbs)}
+      />
       <div className="pt-16">
         <div className="container px-4 py-24">
+          <BreadcrumbBar items={crumbs} />
           <Link
             to="/neighborhoods"
             className="inline-flex items-center text-[#1a1a1a] mb-8 group hover:text-[#1a1a1a]/80 transition-colors"
@@ -2058,12 +2079,7 @@ const NeighborhoodDetail = () => {
           </Link>
 
           <article className="max-w-4xl mx-auto">
-            <motion.header
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="mb-12"
-            >
+            <header className="mb-12 enter">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a1a1a] mb-4 leading-tight">
                 {neighborhood.title}
               </h1>
@@ -2076,22 +2092,18 @@ const NeighborhoodDetail = () => {
                   src={neighborhood.image}
                   alt={neighborhood.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
-            </motion.header>
+            </header>
 
             <div className="prose prose-lg max-w-none">
               {neighborhood.content.map((section: any, index: number) => {
                 if (section.type === "intro") {
                   return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="mb-8"
-                    >
+                    <div key={index} className="mb-8 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                       <p className="text-gray-700 leading-relaxed mb-6 text-lg">
                         {section.text}
                       </p>
@@ -2100,19 +2112,13 @@ const NeighborhoodDetail = () => {
                           {section.highlight}
                         </p>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 }
 
                 if (section.type === "section") {
                   return (
-                    <motion.section
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="mb-12"
-                    >
+                    <section key={index} className="mb-12 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                       <h2 className="text-3xl md:text-4xl font-bold text-[#1a1a1a] mt-12 mb-6">
                         {section.title}
                       </h2>
@@ -2174,19 +2180,13 @@ const NeighborhoodDetail = () => {
                           ))}
                         </div>
                       )}
-                    </motion.section>
+                    </section>
                   );
                 }
 
                 if (section.type === "subsection") {
                   return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="mb-8"
-                    >
+                    <div key={index} className="mb-8 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                       <h3 className="text-2xl font-semibold text-[#1a1a1a] mt-8 mb-4">
                         {section.title}
                       </h3>
@@ -2207,19 +2207,13 @@ const NeighborhoodDetail = () => {
                           {section.note}
                         </p>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 }
 
                 if (section.type === "cta") {
                   return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: index * 0.1 }}
-                      className="mt-16 pt-8 border-t border-gray-200"
-                    >
+                    <div key={index} className="mt-16 pt-8 border-t border-gray-200 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                       <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">
                         {section.title}
                       </h2>
@@ -2238,13 +2232,37 @@ const NeighborhoodDetail = () => {
                           {section.closing}
                         </p>
                       )}
-                    </motion.div>
+                    </div>
                   );
                 }
 
                 return null;
               })}
             </div>
+
+            <NearbyTowns currentSlug={slug || ""} />
+
+            <aside className="mt-12 rounded-xl bg-gray-50 p-8">
+              <h2 className="text-2xl font-bold text-[#1a1a1a] mb-3">
+                Thinking about buying or selling here?
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                This guide is the background. For what it would actually take in your
+                situation, start with a{" "}
+                <Link to="/home-valuation" className="underline">
+                  free written home valuation
+                </Link>{" "}
+                if you are selling, or the{" "}
+                <Link to="/first-time-buyers" className="underline">
+                  buyer&rsquo;s guide
+                </Link>{" "}
+                if you are buying. Kevin Hoang is a{" "}
+                <Link to="/needham-real-estate-agent" className="underline">
+                  Needham-based agent
+                </Link>{" "}
+                covering this town and the rest of Greater Boston.
+              </p>
+            </aside>
           </article>
         </div>
       </div>

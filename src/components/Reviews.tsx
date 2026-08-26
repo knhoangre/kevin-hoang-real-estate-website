@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Star, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -27,29 +26,16 @@ const Reviews = () => {
   return (
     <div className="bg-white py-16">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
+        <div className="text-center mb-12 enter">
           <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">{t('reviews.title')}</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             {t('reviews.subtitle')}
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {reviews.map((review, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-gray-50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
-            >
+            <div key={index} className="bg-gray-50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-full enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
               {/* Star Rating */}
               <div className="flex items-center mb-4">
                 {[...Array(review.rating)].map((_, starIndex) => (
@@ -71,18 +57,12 @@ const Reviews = () => {
                   — {review.name}
                 </cite>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* View All Reviews Link */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center"
-        >
+        <div className="text-center enter" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
           <Link
             to="/testimonials"
             className="inline-flex items-center text-[#1a1a1a] font-semibold hover:text-gray-600 transition-colors group"
@@ -93,7 +73,7 @@ const Reviews = () => {
             </span>
             <ChevronRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden />
           </Link>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

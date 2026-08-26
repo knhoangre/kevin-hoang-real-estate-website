@@ -979,9 +979,11 @@ const Properties = () => {
                     {propertyImages.map((url, index) => (
                       <div key={index} className="relative group">
                         <img 
-                          src={url} 
-                          alt={`Property ${index + 1}`} 
+                          src={url}
+                          alt={`Property ${index + 1}`}
                           className="w-full h-24 object-cover rounded border"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div className="absolute top-1 left-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button

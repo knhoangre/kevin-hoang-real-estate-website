@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,87 +8,37 @@ import "./i18n";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Neighborhoods from "./pages/Neighborhoods";
-import NeighborhoodDetail from "./pages/NeighborhoodDetail";
-import Buyer from "./pages/Buyer";
-import Seller from "./pages/Seller";
-import Relocation from "./pages/Relocation";
-import FAQPage from "./pages/FAQPage";
-import Auth from "./pages/Auth";
-import Contact from "./pages/Contact";
-import FirstTimeBuyers from "./pages/FirstTimeBuyers";
-import Profile from "./pages/Profile";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import Disclaimer from "./pages/Disclaimer";
-import OpenHouse from "./pages/OpenHouse";
-import Events from "./pages/Events";
-import AuthCallback from "./pages/AuthCallback";
-import ProfileCompletion from "./components/ProfileCompletion";
-import FollowUp from "./pages/FollowUp";
-import Calculator from "./pages/Calculator";
-import Testimonials from "./pages/Testimonials";
-import PropertiesAdmin from "./pages/Properties";
-import Properties from "./pages/PropertiesList";
-import CRMDashboard from "./pages/CRMDashboard";
-import CRMContacts from "./pages/CRMContacts";
-import CRMDeals from "./pages/CRMDeals";
+import Analytics from "@/components/Analytics";
+import LanguagePreference from "@/components/LanguagePreference";
 
 const queryClient = new QueryClient();
 
+/**
+ * Root layout route. The route table itself lives in src/AppRoutes.tsx.
+ *
+ * This deliberately contains NO <BrowserRouter> and NO <HelmetProvider>:
+ * ViteReactSSG owns both, on the client and inside the static generator.
+ * Nesting either one here shadows the generator's own and head tags silently
+ * stop being collected at build time.
+ *
+ * Providers that must wrap every page belong here.
+ */
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
         <Toaster />
         <Sonner />
-        <Router>
-          <ScrollToTop />
-          <div className="flex flex-col min-h-screen">
-            <Navbar />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogPost />} />
-                <Route path="/neighborhoods" element={<Neighborhoods />} />
-                <Route path="/neighborhoods/:slug" element={<NeighborhoodDetail />} />
-                <Route path="/buyer" element={<Buyer />} />
-                <Route path="/seller" element={<Seller />} />
-                <Route path="/relocation" element={<Relocation />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/calculator" element={<Calculator />} />
-                <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/first-time-buyers" element={<FirstTimeBuyers />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/complete-profile" element={<ProfileCompletion />} />
-                <Route path="/admin/follow-up" element={<FollowUp />} />
-                <Route path="/admin/follow-up/open-house" element={<FollowUp />} />
-                <Route path="/admin/follow-up/events" element={<FollowUp />} />
-                <Route path="/admin/follow-up/messages" element={<FollowUp />} />
-                <Route path="/admin/properties" element={<PropertiesAdmin />} />
-                <Route path="/properties" element={<Properties />} />
-                <Route path="/crm" element={<CRMDashboard />} />
-                <Route path="/crm/contacts" element={<CRMContacts />} />
-                <Route path="/crm/deals" element={<CRMDeals />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms-of-service" element={<TermsOfService />} />
-                <Route path="/disclaimer" element={<Disclaimer />} />
-                <Route path="/open-house" element={<OpenHouse />} />
-                <Route path="/events" element={<Events />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
+        <ScrollToTop />
+        <LanguagePreference />
+        <Analytics />
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <main id="main-content" className="flex-grow">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

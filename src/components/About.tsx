@@ -22,11 +22,18 @@ const About = () => {
 
           <div className="relative">
             <div className="aspect-square bg-[#1a1a1a]/10 rounded-2xl overflow-hidden">
-              <img
-                src="/kevin_hoang.jpg"
-                alt="Kevin Hoang - Boston Real Estate Agent"
-                className="w-full h-full object-cover object-top scale-125"
-              />
+              {/* WebP first (15KB) with the original JPEG (231KB) as the
+                  fallback. Below the fold, so it loads lazily. */}
+              <picture>
+                <source srcSet="/kevin_hoang.webp" type="image/webp" />
+                <img
+                  src="/kevin_hoang.jpg"
+                  alt="Kevin Hoang, real estate agent, in a navy suit"
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover object-top scale-125"
+                />
+              </picture>
             </div>
           </div>
         </div>

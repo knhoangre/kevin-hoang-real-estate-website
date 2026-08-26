@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { motion } from "framer-motion";
 
 interface ProfileFormData {
   firstName: string;
@@ -205,11 +204,7 @@ const ProfileCompletion = () => {
 
   return (
     <div className="container max-w-md mx-auto px-4 py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="enter">
         <Card>
           <CardHeader>
             <CardTitle>Complete Your Profile</CardTitle>
@@ -338,7 +333,7 @@ const ProfileCompletion = () => {
             </Button>
           </CardFooter>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 };

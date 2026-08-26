@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, X } from "lucide-react";
@@ -164,13 +162,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <motion.div
-        className="container max-w-md mx-auto px-4 py-32"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div className="container max-w-md mx-auto px-4 py-32 enter">
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
           <h1 className="text-3xl font-bold text-center text-[#1a1a1a] mb-8">ACCOUNT ACCESS</h1>
 
@@ -322,7 +314,7 @@ const Auth = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

@@ -2,10 +2,17 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// This should only be used in client-side code
-if (typeof window === 'undefined') {
-  throw new Error('This module should only be used in client-side code');
-}
+/**
+ * This module is imported by AuthContext, which lives in the root layout — so
+ * it is in EVERY route's module graph, including during static generation.
+ *
+ * It therefore must import cleanly with no `window`. It previously threw here
+ * when `window` was undefined, which hard-crashed the prerender on the first
+ * page. The client-only behaviour is now scoped to the auth options below
+ * (session persistence and URL-hash detection both need browser storage), and
+ * nothing at module scope touches `window` directly.
+ */
+const IS_BROWSER = typeof window !== 'undefined';
 
 // Use Vite's import.meta.env for environment variables
 // Also check process.env as fallback (for some build configurations)
@@ -59,9 +66,12 @@ const createMockClient = () => {
 export const supabase = hasValidSupabaseConfig 
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
+        // All three need browser storage. During static generation there is no
+        // session to persist and no URL to inspect, so they are switched off
+        // rather than left to fail.
+        autoRefreshToken: IS_BROWSER,
+        persistSession: IS_BROWSER,
+        detectSessionInUrl: IS_BROWSER,
         flowType: 'pkce', // Use PKCE flow for better security
       },
       global: {
