@@ -25,11 +25,6 @@ const Index = () => {
     }
   }, [searchParams, navigate]);
 
-  // Reset scroll position when navigating to home page
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   return (
     <div className="min-h-screen bg-white">
       {/*

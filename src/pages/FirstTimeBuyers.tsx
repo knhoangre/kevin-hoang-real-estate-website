@@ -3,17 +3,28 @@ import React from 'react';
 import { ArrowRight, CheckCircle, Home, DollarSign, KeyRound, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Seo from "@/components/Seo";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import { breadcrumbs } from "@/lib/schema";
 
 const FirstTimeBuyers = () => {
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "First-Time Buyers", path: "/first-time-buyers" },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
     <Seo
       title="First-Time Home Buyer Guide for Massachusetts"
       description="Buying your first home in Massachusetts, start to finish: what you need saved, how pre-approval works, what the inspection is really for, and closing day."
       keywords="first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer"
-    />
+      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+/>
       
       <div className="pt-24 pb-16">
+          <div className="max-w-6xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 enter">
             <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">FIRST-TIME HOME BUYER GUIDE</h1>

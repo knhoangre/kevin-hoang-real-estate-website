@@ -1,17 +1,28 @@
 import Seo from "@/components/Seo";
 import { SITE, formattedAddress } from "@/lib/siteConfig";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import { breadcrumbs } from "@/lib/schema";
 
 
 const PrivacyPolicy = () => {
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Privacy Policy", path: "/privacy-policy" },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
     <Seo
       title="Privacy Policy"
       description="How Kevin Hoang Real Estate collects, uses, and protects the information you share through this website."
-    />
+      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+/>
       <div className="pt-16">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
+              <div className="max-w-4xl mx-auto">
+                <BreadcrumbBar items={crumbs} />
+              </div>
             <div className="mb-16 enter-down">
               <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 PRIVACY POLICY

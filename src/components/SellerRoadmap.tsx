@@ -1,6 +1,11 @@
-import { CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Roadmap from "@/components/Roadmap";
 
+/**
+ * Data only. The timeline itself lives in Roadmap.tsx, which this and
+ * BuyerRoadmap both render — the two used to carry identical
+ * copy-pasted markup, so every visual change had to be made twice.
+ */
 const SellerRoadmap = () => {
   const { t } = useTranslation();
 
@@ -84,42 +89,15 @@ const SellerRoadmap = () => {
       ]
     }
   ];
+
   return (
-    <div className="py-12">
-      <h2 className="text-3xl font-bold text-[#1a1a1a] mb-12">{t('seller_guide.roadmap_title')}</h2>
-
-      <div className="relative">
-        {/* Vertical Timeline Line */}
-        <div className="absolute left-6 top-3 bottom-0 w-0.5 bg-green-500 hidden md:block"></div>
-
-        <div className="space-y-16">
-          {steps.map((step, index) => (
-            <div key={index} className="flex flex-col md:flex-row gap-6 items-center enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
-              <div className="flex-shrink-0 relative z-10">
-                <div className="bg-white p-2 rounded-full">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="absolute w-0.5 bg-green-500 left-1/2 transform -translate-x-1/2 top-12 h-16 md:hidden"></div>
-                )}
-              </div>
-
-              <div className="bg-white p-6 rounded-xl shadow-lg flex-1 z-10 border border-gray-100 hover:shadow-xl transition-shadow">
-                <h3 className="text-xl font-semibold mb-3 text-[#1a1a1a]">{step.title}</h3>
-                <p className="text-gray-700 mb-4 font-medium">{step.description}</p>
-                <ul className="space-y-2">
-                  {step.details.map((detail, detailIndex) => (
-                    <li key={detailIndex} className="text-gray-600 text-sm leading-relaxed">
-                      {detail}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <Roadmap
+      title={t('seller_guide.roadmap_title')}
+      steps={steps}
+      accent="emerald"
+      stepLabel={t('roadmap.step')}
+      ofLabel={t('roadmap.of')}
+    />
   );
 };
 

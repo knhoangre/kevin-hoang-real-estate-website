@@ -255,8 +255,10 @@ const Navbar = () => {
   };
 
   const handleNavigation = (path: string) => {
+    // No scrollTo here: <ScrollToTop/> in the layout already handles PUSH
+    // navigations, and doing it again with `smooth` animated the page the user
+    // was leaving rather than the one they were going to.
     navigate(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setMobileMenuOpen(false);
   };
 

@@ -53,7 +53,7 @@ export const person = () =>
     name: SITE.agentName,
     url: SITE.origin,
     image: absoluteUrl('/kevin_hoang.jpg'),
-    jobTitle: 'Real Estate Agent',
+    jobTitle: 'Real Estate Broker',
     worksFor: SITE.brokerage
       ? { '@type': 'Organization', name: SITE.brokerage }
       : undefined,

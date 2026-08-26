@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Seo from "@/components/Seo";
 import { SITE } from "@/lib/siteConfig";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import { breadcrumbs } from "@/lib/schema";
 
 const BATCH = 24;
 
@@ -18,16 +20,25 @@ const Testimonials = () => {
     [visible],
   );
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Reviews", path: "/testimonials" },
+  ];
+
   return (
     <>
       <Seo
         title="Client Reviews & Testimonials"
         description="Read client reviews for Kevin Hoang — buying, selling, relocation, condos, and single-family homes across Needham, MetroWest, and Greater Boston."
         keywords="Kevin Hoang reviews, real estate agent reviews Needham MA, Greater Boston realtor testimonials"
-      />
+        jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+/>
       <div className="min-h-screen bg-white">
         <div className="pt-16">
           <div className="container mx-auto px-4 py-24">
+              <div className="max-w-6xl mx-auto">
+                <BreadcrumbBar items={crumbs} />
+              </div>
             <div className="enter-down">
               <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 {t("testimonials.title")}

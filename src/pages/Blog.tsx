@@ -5,7 +5,8 @@ import { ArrowRight } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
-import { itemList } from "@/lib/schema";
+import { breadcrumbs, itemList } from "@/lib/schema";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
 
 
 const Blog = () => {
@@ -35,18 +36,26 @@ const Blog = () => {
     return currentLanguage === 'vi' && post.excerptVi ? post.excerptVi : post.excerpt;
   };
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Blog", path: "/blog" },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <Seo
         title="Greater Boston Real Estate Blog"
         description="Guides and market insight for buying and selling in Greater Boston — pricing, inspections, financing, taxes, and what actually moves a deal."
         keywords="Boston real estate blog, Massachusetts home buying tips, Greater Boston market insight, MA real estate advice"
-        jsonLd={itemList(
+        jsonLd={[breadcrumbs(crumbs), itemList(
         blogPosts.map((post) => ({ name: post.title, url: `/blog/${post.slug}` }))
-        )}
+        )]}
       />
       <div className="pt-16">
         <div className="container px-4 py-24">
+          <div className="max-w-6xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
           <div className="mb-16 enter-down">
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('blog.title')}

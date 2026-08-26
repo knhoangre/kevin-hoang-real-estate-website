@@ -26,7 +26,6 @@ const Relocation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
   }, []);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -143,8 +142,10 @@ const Relocation = () => {
           </div>
         </section>
 
-        <div className="pt-8">
-          <BreadcrumbBar items={crumbs} />
+        <div className="container px-4 mx-auto pt-8">
+          <div className="max-w-4xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
         </div>
 
         {/* Education Section */}
@@ -171,7 +172,8 @@ const Relocation = () => {
         {/* Transition Comparison Table */}
         <section className="py-24 bg-gray-50">
           <div className="container px-4 mx-auto">
-            <div className="enter">
+            {/* max-w-4xl matches every other section on this page; without it this block ran the full container width and broke the column. */}
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 CT vs. MA: The 2026 Comparison
               </h2>
@@ -240,7 +242,8 @@ const Relocation = () => {
         {/* Neighborhood Spotlight */}
         <section className="py-24 bg-white">
           <div className="container px-4 mx-auto">
-            <div className="enter">
+            {/* max-w-4xl matches every other section on this page; without it this block ran the full container width and broke the column. */}
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 Neighborhood Spotlight for Transplants
               </h2>
@@ -358,7 +361,8 @@ const Relocation = () => {
         {/* FAQ Section */}
         <section className="py-24 bg-white">
           <div className="container px-4 mx-auto">
-            <div className="enter">
+            {/* max-w-4xl matches every other section on this page; without it this block ran the full container width and broke the column. */}
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 Frequently Asked Questions
               </h2>
@@ -372,7 +376,8 @@ const Relocation = () => {
         {/* CTA Section */}
         <section className="py-24 bg-slate-800 text-white">
           <div className="container px-4 mx-auto text-center">
-            <div className="enter">
+            {/* max-w-4xl matches every other section on this page; without it this block ran the full container width and broke the column. */}
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 Ready to Make the Move?
               </h2>

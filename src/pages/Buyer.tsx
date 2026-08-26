@@ -3,10 +3,16 @@ import BuyerRoadmap from "@/components/BuyerRoadmap";
 import BuyerResources from "@/components/BuyerResources";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
-import { agentIdentity, service } from "@/lib/schema";
+import { agentIdentity, breadcrumbs, service } from "@/lib/schema";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
 
 const Buyer = () => {
   const { t } = useTranslation();
+
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Buyer's Guide", path: "/buyer" },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -15,6 +21,7 @@ const Buyer = () => {
       description="A step-by-step guide to buying a home in Greater Boston: getting pre-approved, searching, writing an offer, the inspection, and what happens at closing."
       keywords="home buyer guide Massachusetts, buying a house Greater Boston, home buying process MA, buyer representation Needham"
       jsonLd={[
+        breadcrumbs(crumbs),
         // service() names #agent as its provider, and an @id only resolves
         // against a node declared in the same document — so #agent is declared
         // here too.
@@ -29,6 +36,9 @@ const Buyer = () => {
     />
       <div className="pt-16">
         <div className="container px-4 py-24">
+          <div className="max-w-6xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
           <div className="enter-down">
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
 {t('buyer_guide.title')}

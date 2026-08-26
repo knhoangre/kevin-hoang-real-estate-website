@@ -30,7 +30,7 @@ export const SITE = {
   /** The individual agent, for Person/employee schema. */
   agentName: 'Kevin Hoang',
   description:
-    'Needham, MA real estate agent helping buyers and sellers across Needham, Newton, and Greater Boston — in English and Vietnamese.',
+    'Needham, MA licensed real estate broker helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
   locale: 'en_US',
 
   /** Current brokerage. Confirmed 2026-08-26. */

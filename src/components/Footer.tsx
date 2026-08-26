@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import useScrollToTop from "@/hooks/useScrollToTop";
 import ContactQRCode from "./ContactQRCode";
 import { SITE, telHref } from "@/lib/siteConfig";
 
@@ -9,19 +8,10 @@ import { SITE, telHref } from "@/lib/siteConfig";
  * One definition for the footer link treatment. Every link here used to repeat
  * the same underline <span> inline, which is how a set of links drifts apart.
  */
-const FooterLink = ({
-  to,
-  onClick,
-  children,
-}: {
-  to: string;
-  onClick: () => void;
-  children: React.ReactNode;
-}) => (
+const FooterLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
   <li>
     <Link
       to={to}
-      onClick={onClick}
       className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase"
     >
       {children}
@@ -32,13 +22,7 @@ const FooterLink = ({
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const scrollToTop = useScrollToTop();
   const { t } = useTranslation();
-
-  // Function to handle link clicks
-  const handleLinkClick = () => {
-    scrollToTop();
-  };
 
   return (
     <footer className="bg-[#1a1a1a] text-white py-12">
@@ -107,46 +91,46 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">{t('footer.quick_links')}</h3>
             <ul className="space-y-2">
-              <FooterLink to="/" onClick={handleLinkClick}>{t('nav.home')}</FooterLink>
+              <FooterLink to="/">{t('nav.home')}</FooterLink>
               {/* Was `/about`, which has no route and 404d from the footer of
                   every page on the site. */}
-              <FooterLink to="/needham-real-estate-agent" onClick={handleLinkClick}>
+              <FooterLink to="/needham-real-estate-agent">
                 {t('footer.about')}
               </FooterLink>
-              <FooterLink to="/neighborhoods" onClick={handleLinkClick}>Areas Served</FooterLink>
-              <FooterLink to="/properties" onClick={handleLinkClick}>Listings</FooterLink>
-              <FooterLink to="/blog" onClick={handleLinkClick}>{t('nav.blog')}</FooterLink>
-              <FooterLink to="/testimonials" onClick={handleLinkClick}>Reviews</FooterLink>
-              <FooterLink to="/contact" onClick={handleLinkClick}>{t('footer.contact')}</FooterLink>
+              <FooterLink to="/neighborhoods">Areas Served</FooterLink>
+              <FooterLink to="/properties">Listings</FooterLink>
+              <FooterLink to="/blog">{t('nav.blog')}</FooterLink>
+              <FooterLink to="/testimonials">Reviews</FooterLink>
+              <FooterLink to="/contact">{t('footer.contact')}</FooterLink>
             </ul>
           </div>
 
           <div>
             <h3 className="text-xl font-bold mb-4">Guides &amp; Services</h3>
             <ul className="space-y-2">
-              <FooterLink to="/home-valuation" onClick={handleLinkClick}>Free Home Valuation</FooterLink>
-              <FooterLink to="/buyer" onClick={handleLinkClick}>Buyer&rsquo;s Guide</FooterLink>
-              <FooterLink to="/seller" onClick={handleLinkClick}>Seller&rsquo;s Guide</FooterLink>
-              <FooterLink to="/first-time-buyers" onClick={handleLinkClick}>First-Time Buyers</FooterLink>
-              <FooterLink to="/relocation" onClick={handleLinkClick}>Relocating to MA</FooterLink>
-              <FooterLink to="/vietnamese-speaking-real-estate-agent" onClick={handleLinkClick}>
+              <FooterLink to="/home-valuation">Free Home Valuation</FooterLink>
+              <FooterLink to="/buyer">Buyer&rsquo;s Guide</FooterLink>
+              <FooterLink to="/seller">Seller&rsquo;s Guide</FooterLink>
+              <FooterLink to="/first-time-buyers">First-Time Buyers</FooterLink>
+              <FooterLink to="/relocation">Relocating to MA</FooterLink>
+              <FooterLink to="/vietnamese-speaking-real-estate-agent">
                 Tiếng Việt
               </FooterLink>
-              <FooterLink to="/calculator" onClick={handleLinkClick}>Calculators</FooterLink>
-              <FooterLink to="/faq" onClick={handleLinkClick}>FAQ</FooterLink>
+              <FooterLink to="/calculator">Calculators</FooterLink>
+              <FooterLink to="/faq">FAQ</FooterLink>
             </ul>
           </div>
 
           <div>
             <h3 className="text-xl font-bold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
-              <FooterLink to="/privacy-policy" onClick={handleLinkClick}>
+              <FooterLink to="/privacy-policy">
                 {t('footer.privacy_policy')}
               </FooterLink>
-              <FooterLink to="/terms-of-service" onClick={handleLinkClick}>
+              <FooterLink to="/terms-of-service">
                 {t('footer.terms_of_service')}
               </FooterLink>
-              <FooterLink to="/disclaimer" onClick={handleLinkClick}>
+              <FooterLink to="/disclaimer">
                 {t('footer.disclaimer')}
               </FooterLink>
             </ul>

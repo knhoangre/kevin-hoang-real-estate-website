@@ -52,7 +52,7 @@ const NeedhamAgent = () => (
     seo={{
       title: 'Needham MA Real Estate Agent | Kevin Hoang',
       description:
-        'Buying or selling in Needham, MA? Kevin Hoang is a Needham-based agent with Keller Williams Realty serving MetroWest and Greater Boston. Call (860) 682-2251.',
+        'Buying or selling in Needham, MA? Kevin Hoang is a Needham-based licensed broker with Keller Williams Realty serving MetroWest and Greater Boston. Call (860) 682-2251.',
       keywords:
         'Needham MA real estate agent, Needham realtor, sell my house Needham MA, Needham buyers agent, MetroWest real estate agent, Greater Boston realtor',
     }}
@@ -61,7 +61,7 @@ const NeedhamAgent = () => (
       serviceType: 'Real estate agency services',
     }}
     h1="Needham, MA Real Estate Agent"
-    lede="Kevin Hoang is a Needham-based real estate agent with Keller Williams Realty, working with buyers and sellers across Needham, MetroWest, and Greater Boston — in English and Vietnamese."
+    lede="Kevin Hoang is a Needham-based licensed real estate broker with Keller Williams Realty, working with buyers and sellers across Needham, MetroWest, and Greater Boston — in English and Vietnamese."
     faqHeading="Needham real estate questions"
     faqs={FAQS}
     cta={{

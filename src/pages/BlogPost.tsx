@@ -16,7 +16,6 @@ const BlogPost = () => {
   const post = blogPosts.find((post) => post.slug === slug);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
 
     // If post not found, redirect to blog listing
     if (!post) {
@@ -142,14 +141,11 @@ const BlogPost = () => {
       />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <BreadcrumbBar items={crumbs} />
-          <Link
-            to={`/blog#post-${post.id}`}
-            className="inline-flex items-center text-[#1a1a1a] mb-8 group hover:text-[#1a1a1a]/80 transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
-            <span>{t('blog.back_to_articles')}</span>
-          </Link>
+          {/* Aligned to the article column, and without the duplicate
+              back-link — see the note in NeighborhoodDetail.tsx. */}
+          <div className="max-w-4xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
 
           <article className="max-w-4xl mx-auto">
             <header className="mb-12">

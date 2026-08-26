@@ -27,9 +27,9 @@
   },
   "about": {
     "title": "GẶP GỠ KEVIN HOANG",
-    "subtitle": "Chuyên Gia Bất Động Sản Tận Tâm Của Bạn",
+    "subtitle": "Broker Bất Động Sản Có Giấy Phép Tại Massachusetts",
     "description": "Với nhiều năm kinh nghiệm trong thị trường bất động sản Greater Boston, tôi cam kết giúp khách hàng đạt được mục tiêu sở hữu nhà thông qua dịch vụ cá nhân hóa và kiến thức thị trường chuyên môn.",
-    "paragraph1": "Là một chuyên gia bất động sản có trụ sở tại Boston với nền tảng độc đáo trong Kỹ thuật Cơ khí và Kỹ thuật Phần mềm, Kevin Hoang mang đến một cách tiếp cận phân tích và am hiểu công nghệ cho các giao dịch bất động sản. Chuyên môn kỹ thuật của anh cho phép cung cấp đánh giá tài sản chi tiết, hiểu dữ liệu thị trường phức tạp, và tận dụng công nghệ tiên tiến để tối ưu hóa quá trình mua và bán.",
+    "paragraph1": "Kevin Hoang là broker bất động sản có giấy phép tại Massachusetts, có trụ sở tại Needham, phục vụ người mua và người bán khắp MetroWest và Greater Boston. Giấy phép broker đòi hỏi nhiều năm hành nghề cùng khóa học bổ sung và một kỳ thi riêng của tiểu bang — phần lớn agent đang hành nghề chỉ có giấy phép salesperson.",
     "paragraph2": "Chuyên về thị trường bất động sản Greater Boston, Kevin kết hợp sự thông thạo kỹ thuật với kiến thức thị trường sâu rộng để mang lại kết quả xuất sắc cho khách hàng. Nền tảng kỹ thuật của anh tỏ ra vô giá trong việc đánh giá tình trạng bất động sản, hiểu các khía cạnh kết cấu, và xác định các cơ hội đầu tư tiềm năng mà người khác có thể bỏ lỡ.",
     "paragraph3": "Dù bạn là người mua nhà lần đầu, nhà đầu tư dày dạn kinh nghiệm, hay đang muốn bán bất động sản của mình, phương pháp tiếp cận sáng tạo và sự tận tâm với thành công của khách hàng khiến Kevin trở thành đối tác lý tưởng cho hành trình bất động sản của bạn tại Massachusetts."
   },
@@ -612,5 +612,9 @@
     "title": "CÁC KHU VỰC PHỤC VỤ",
     "subtitle": "Khám phá các khu vực đa dạng và sôi động khắp Greater Boston nơi chúng tôi giúp khách hàng tìm ngôi nhà hoàn hảo. Nhấp vào bất kỳ khu vực nào bên dưới để truy cập các hướng dẫn toàn diện bao gồm thông tin bất động sản, thông tin lối sống và chuyên môn thị trường địa phương cho từng khu vực.",
     "and_many_more": "VÀ NHIỀU HƠN NỮA..."
+  },
+  "roadmap": {
+    "step": "Bước",
+    "of": "trong"
   }
 }

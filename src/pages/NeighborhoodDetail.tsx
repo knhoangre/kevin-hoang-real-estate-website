@@ -2477,7 +2477,6 @@ const NeighborhoodDetail = () => {
   const neighborhood = neighborhoodData[slug || ""];
 
   useEffect(() => {
-    window.scrollTo(0, 0);
 
     if (!neighborhood) {
       navigate("/neighborhoods");
@@ -2509,14 +2508,19 @@ const NeighborhoodDetail = () => {
       />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <BreadcrumbBar items={crumbs} />
-          <Link
-            to="/neighborhoods"
-            className="inline-flex items-center text-[#1a1a1a] mb-8 group hover:text-[#1a1a1a]/80 transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4 transform group-hover:-translate-x-1 transition-transform" />
-            <span>Back to Neighborhoods</span>
-          </Link>
+          {/*
+            The breadcrumb is the way back up, so the separate "Back to
+            Neighborhoods" link that used to sit here is gone: two affordances
+            doing the same job, at two different indents, is the drift you
+            notice before you can name it. Browser Back handles returning to
+            where you were, now that scroll restoration is correct.
+
+            Wrapped at max-w-4xl so the trail lines up with the <article>
+            below rather than sitting wider than the text.
+          */}
+          <div className="max-w-4xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
 
           <article className="max-w-4xl mx-auto">
             <header className="mb-12 enter">

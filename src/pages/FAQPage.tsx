@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
 import FaqAccordion from "@/components/FaqAccordion";
-import { faqPage } from "@/lib/schema";
+import { breadcrumbs, faqPage } from "@/lib/schema";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
 
 const FAQPage = () => {
   const { t } = useTranslation();
@@ -165,8 +166,10 @@ const FAQPage = () => {
   ];
 
   const handleSectionChange = (sectionId: string) => {
+    // Deliberately does not scroll. Switching tab is not navigation, the tab
+    // bar is sticky, and yanking the page to the top moves the reader away
+    // from the control they just pressed.
     setActiveSection(sectionId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getSliderTransform = () => {
@@ -205,6 +208,11 @@ const FAQPage = () => {
     </div>
   );
 
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "FAQ", path: "/faq" },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/*
@@ -216,11 +224,14 @@ const FAQPage = () => {
         title="Frequently Asked Questions About Buying & Selling in Greater Boston"
         description="Straight answers to the questions buyers and sellers ask most about Massachusetts real estate — offers, inspections, pricing, closing, and agent fees."
         keywords="Massachusetts real estate FAQ, home buying questions MA, home selling questions Boston, real estate agent questions"
-        jsonLd={faqPage([...generalFaqItems, ...sellerFaqItems, ...buyerFaqItems])}
+        jsonLd={[breadcrumbs(crumbs), faqPage([...generalFaqItems, ...sellerFaqItems, ...buyerFaqItems])]}
       />
       <div className="pt-16">
         {/* White section for heading - matches blog spacing */}
         <div className="bg-white container px-4 py-24">
+            <div className="max-w-6xl mx-auto">
+              <BreadcrumbBar items={crumbs} />
+            </div>
           <div className="mb-16 enter-down">
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('faq.title')}

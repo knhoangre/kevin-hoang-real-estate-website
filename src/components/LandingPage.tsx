@@ -71,7 +71,11 @@ const LandingPage = ({
       ]}
     />
 
-    <BreadcrumbBar items={crumbs} />
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <BreadcrumbBar items={crumbs} />
+      </div>
+    </div>
 
     <section className="px-4 sm:px-6 lg:px-8 pb-12">
       <div className="max-w-3xl mx-auto text-center">

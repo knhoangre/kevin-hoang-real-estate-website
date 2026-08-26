@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import { neighborhoods } from "../data/neighborhoodData";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
-import { itemList } from "@/lib/schema";
+import { breadcrumbs, itemList } from "@/lib/schema";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
 
 const Neighborhoods = () => {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Neighborhoods", path: "/neighborhoods" },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -18,15 +20,18 @@ const Neighborhoods = () => {
         title="Towns We Serve in MetroWest & Greater Boston"
         description="Area guides for the towns Kevin Hoang serves across MetroWest and Greater Boston — neighborhoods, schools, transit, and what each local housing market is like."
         keywords="Greater Boston neighborhoods, MetroWest towns, Needham Newton Wellesley real estate, best towns near Boston, Massachusetts town guides"
-        jsonLd={itemList(
+        jsonLd={[breadcrumbs(crumbs), itemList(
         neighborhoods.map((n) => ({
         name: `${n.name}, MA`,
         url: `/neighborhoods/${n.slug}`,
         }))
-        )}
+        )]}
       />
       <div className="pt-16">
         <div className="container px-4 py-24">
+          <div className="max-w-6xl mx-auto">
+            <BreadcrumbBar items={crumbs} />
+          </div>
           <div className="enter-down">
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('neighborhoods.title')}

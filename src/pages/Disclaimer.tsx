@@ -1,17 +1,28 @@
 import Seo from "@/components/Seo";
 import { SITE, formattedAddress } from "@/lib/siteConfig";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import { breadcrumbs } from "@/lib/schema";
 
 
 const Disclaimer = () => {
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Disclaimer", path: "/disclaimer" },
+  ];
+
   return (
     <div className="min-h-screen bg-white">
     <Seo
       title="Disclaimer"
       description="Important disclosures about the information published on the Kevin Hoang Real Estate website."
-    />
+      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+/>
       <div className="pt-16">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
+              <div className="max-w-4xl mx-auto">
+                <BreadcrumbBar items={crumbs} />
+              </div>
             <div className="mb-16 enter-down">
               <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 DISCLAIMER

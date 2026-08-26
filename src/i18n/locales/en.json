@@ -27,9 +27,9 @@
   },
   "about": {
     "title": "MEET KEVIN HOANG",
-    "subtitle": "Your Dedicated Real Estate Professional",
+    "subtitle": "Licensed Massachusetts Real Estate Broker",
     "description": "With years of experience in the Greater Boston real estate market, I'm committed to helping clients achieve their homeownership goals through personalized service and expert market knowledge.",
-    "paragraph1": "As a Boston-based real estate professional with a unique background in Mechanical Engineering and Software Engineering, Kevin Hoang brings an analytical and tech-savvy approach to real estate transactions. His technical expertise enables him to provide detailed property assessments, understand complex market data, and leverage cutting-edge technology to optimize the buying and selling process.",
+    "paragraph1": "Kevin Hoang is a licensed Massachusetts real estate broker based in Needham, serving buyers and sellers across MetroWest and Greater Boston. A broker licence requires years of practice as a salesperson plus additional coursework and a separate state exam — most working agents hold a salesperson licence, not a broker's.",
     "paragraph2": "Specializing in the Greater Boston real estate market, Kevin combines technical proficiency with deep market knowledge to deliver exceptional results for his clients. His engineering background proves invaluable when evaluating property conditions, understanding structural aspects, and identifying potential investment opportunities that others might overlook.",
     "paragraph3": "Whether you're a first-time homebuyer, seasoned investor, or looking to sell your property, Kevin's innovative approach and dedication to client success make him the ideal partner for your real estate journey in Massachusetts."
   },
@@ -614,5 +614,9 @@
     "title": "NEIGHBORHOODS SERVED",
     "subtitle": "Explore the diverse and vibrant neighborhoods across Greater Boston where we help clients find their perfect homes. Click on any neighborhood below to access comprehensive guides featuring real estate insights, lifestyle information, and local market expertise for each area.",
     "and_many_more": "AND MANY MORE..."
+  },
+  "roadmap": {
+    "step": "Step",
+    "of": "of"
   }
 }
