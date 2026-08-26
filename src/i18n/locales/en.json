@@ -45,14 +45,14 @@
   },
   "stats": {
     "title": "WHY WORK WITH ME",
-    "personalized_service": "PERSONALIZED SERVICE",
-    "avg_time_market": "AVERAGE TIME ON MARKET",
-    "client_satisfaction": "CLIENT SATISFACTION",
-    "market_experience": "MARKET EXPERIENCE",
-    "homes_sold": "Homes Sold",
-    "years_experience": "Years Experience",
-    "satisfied_clients": "Satisfied Clients",
-    "average_days": "Average Days on Market"
+    "rating": "GOOGLE REVIEWS",
+    "credential": "MASSACHUSETTS LICENSED",
+    "licensed_since": "LICENSED SINCE",
+    "towns": "TOWNS COVERED",
+    "rating_note": "Verified on Google",
+    "credential_note": "Broker, not just an agent",
+    "licensed_note": "Full-time in Greater Boston",
+    "towns_note": "With written area guides"
   },
   "contact": {
     "title": "GET IN TOUCH",

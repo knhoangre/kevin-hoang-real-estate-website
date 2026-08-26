@@ -1,73 +1,85 @@
-# Welcome to your Lovable project
+# Kevin Hoang Real Estate — kevinhoang.co
 
-## Project info
+Marketing site and lightweight CRM for a Needham, MA real estate agent.
+Vite + React 18 + TypeScript + Tailwind, Supabase for auth/data/storage,
+deployed to Vercel.
 
-**URL**: https://lovable.dev/projects/5801ecb3-85e1-40c1-a20a-cce211f403ab
+**The public site is statically generated, not a client-only SPA.** Every route
+is prerendered to HTML at build time by `vite-react-ssg` so that crawlers and AI
+search engines — which mostly do not execute JavaScript — see real content and
+real per-page meta tags.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/5801ecb3-85e1-40c1-a20a-cce211f403ab) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Getting started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run dev          # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Or without a local Node install:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+docker compose up app
+```
 
-**Use GitHub Codespaces**
+Copy `.env` from the team vault; the frontend needs `VITE_SUPABASE_URL` and
+`VITE_SUPABASE_ANON_KEY`.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Scripts
 
-## What technologies are used for this project?
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server on :8080 |
+| `npm run typecheck` | `tsc -b --noEmit` |
+| `npm run build` | typecheck → prerender all routes → write `sitemap.xml` and `llms.txt` |
+| `npm run build:spa` | plain `vite build`; **not** what ships — no prerendering |
+| `npm run preview` | serve the built bundle |
+| `npm run lint` | eslint |
+| `node scripts/generate-icons.mjs` | regenerate favicons and `og-image.jpg` |
+| `node scripts/generate-blog-redirects.mjs` | rewrite the retired-blog 301s in `vercel.json` |
 
-This project is built with:
+## Adding a route
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+A route needs to be registered in **three** places or something breaks quietly:
 
-## How can I deploy this project?
+1. [`src/AppRoutes.tsx`](src/AppRoutes.tsx) — the router and the prerender set.
+2. [`scripts/routes.mjs`](scripts/routes.mjs) — the sitemap registry.
+3. Confirm `dist/<route>/index.html` exists after `npm run build`.
 
-Simply open [Lovable](https://lovable.dev/projects/5801ecb3-85e1-40c1-a20a-cce211f403ab) and click on Share -> Publish.
+Vercel checks the filesystem before applying rewrites and there is no SPA
+fallback, so **a route that isn't prerendered returns a real 404 on hard
+refresh** even though in-app navigation to it works.
 
-## Can I connect a custom domain to my Lovable project?
+## Where things live
 
-Yes, you can!
+| Concern | File |
+| --- | --- |
+| Identity, NAP, GA4/GSC IDs, towns served | [`src/lib/siteConfig.ts`](src/lib/siteConfig.ts) |
+| All head tags (title, canonical, OG, JSON-LD) | [`src/components/Seo.tsx`](src/components/Seo.tsx) |
+| JSON-LD builders | [`src/lib/schema.ts`](src/lib/schema.ts) |
+| Route registry for the sitemap | [`scripts/routes.mjs`](scripts/routes.mjs) |
+| Blog corpus and related-post ranking | [`src/data/blogData.ts`](src/data/blogData.ts) |
+| Town guides | [`src/data/neighborhoodData.ts`](src/data/neighborhoodData.ts), [`src/pages/NeighborhoodDetail.tsx`](src/pages/NeighborhoodDetail.tsx) |
+| Routing, redirects, cache headers | [`vercel.json`](vercel.json) |
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Phone, email, and address come from `siteConfig.ts` everywhere — they must match
+the Google Business Profile character-for-character.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Before you change anything
+
+Read [CLAUDE.md](CLAUDE.md). It documents the static-generation invariants, the
+SEO conventions, and the content rules — each of which is written down because
+breaking it caused a real bug on this site.
+
+Other setup docs: [ADMIN_SETUP.md](ADMIN_SETUP.md), [ENV_SETUP.md](ENV_SETUP.md),
+[DOCKER_README.md](DOCKER_README.md), [CRM_README.md](CRM_README.md).
+
+## Deployment
+
+Pushes to `main` deploy through Vercel, which runs `npm run build`. The build
+fails on a type error by design.
+
+After a domain or content change, remember the off-site half: submit
+`https://kevinhoang.co/sitemap.xml` in Google Search Console, verify in Bing
+Webmaster Tools, and keep the Google Business Profile listing in sync with
+`siteConfig.ts`.

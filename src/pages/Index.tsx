@@ -5,10 +5,11 @@ import Stats from "@/components/Stats";
 import Contact from "@/components/Contact";
 import Reviews from "@/components/Reviews";
 import { Element } from "react-scroll";
-import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import Seo from "@/components/Seo";
+import { realEstateAgent, webSite, person } from "@/lib/schema";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -31,45 +32,38 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/*
+        The homepage is the only page that declares the business itself. Every
+        other page references those nodes by @id instead of restating them.
+        person() must be emitted HERE too: realEstateAgent().employee points at
+        the Person @id, and a reference only resolves if the entity it names
+        appears on the same page.
+      */}
+      <Seo
+        title="Needham & Greater Boston Real Estate Agent | Kevin Hoang"
+        description="Kevin Hoang is a Needham, MA real estate agent with Keller Williams Realty, helping buyers and sellers across MetroWest and Greater Boston in English and Vietnamese."
+        keywords="Needham MA real estate agent, Greater Boston realtor, MetroWest homes for sale, Kevin Hoang real estate, Vietnamese speaking realtor Boston"
+        jsonLd={[realEstateAgent(), webSite(), person()]}
+      />
       <Element name="home">
         <Hero />
       </Element>
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
+      <div className="enter-fade">
         <Element name="about">
           <About />
         </Element>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
+      </div>
+      <div className="enter">
         <Stats />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
+      </div>
+      <div className="enter">
         <Reviews />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true, margin: "-100px" }}
-      >
+      </div>
+      <div className="enter">
         <Element name="contact">
           <Contact />
         </Element>
-      </motion.div>
+      </div>
     </div>
   );
 };

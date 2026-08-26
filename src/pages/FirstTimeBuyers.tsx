@@ -1,36 +1,29 @@
 
 import React from 'react';
-import Navbar from '@/components/Navbar';
 import { ArrowRight, CheckCircle, Home, DollarSign, KeyRound, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import Seo from "@/components/Seo";
 
 const FirstTimeBuyers = () => {
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+    <Seo
+      title="First-Time Home Buyer Guide for Massachusetts"
+      description="Buying your first home in Massachusetts, start to finish: what you need saved, how pre-approval works, what the inspection is really for, and closing day."
+      keywords="first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer"
+    />
       
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12 enter">
             <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">FIRST-TIME HOME BUYER GUIDE</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Buying your first home is an exciting milestone. This comprehensive guide will walk you through every step of the process.
             </p>
-          </motion.div>
+          </div>
 
           {/* Hero Section */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative rounded-xl overflow-hidden mb-16"
-          >
+          <div className="relative rounded-xl overflow-hidden mb-16 enter-fade" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
             <div 
               className="h-[300px] md:h-[400px] w-full bg-cover bg-center"
               style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}
@@ -42,19 +35,13 @@ const FirstTimeBuyers = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Step by Step Guide */}
           <div className="mb-20">
-            <motion.h2 
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="text-3xl font-bold text-[#1a1a1a] text-center mb-12"
-            >
+            <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12 enter">
               YOUR STEP-BY-STEP GUIDE
-            </motion.h2>
+            </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
@@ -95,14 +82,7 @@ const FirstTimeBuyers = () => {
                   delay: 0.5
                 },
               ].map((step, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.5, delay: step.delay }}
-                  className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300"
-                >
+                <div key={index} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                   <div className="flex items-start">
                     <div className="bg-green-50 p-3 rounded-full mr-4">
                       <step.icon className="w-6 h-6 text-green-600" />
@@ -112,19 +92,13 @@ const FirstTimeBuyers = () => {
                       <p className="text-gray-600">{step.description}</p>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Common Mistakes Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-20"
-          >
+          <div className="mb-20 enter-fade">
             <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12">AVOID THESE COMMON MISTAKES</h2>
             
             <div className="bg-red-50 p-8 rounded-xl">
@@ -137,30 +111,17 @@ const FirstTimeBuyers = () => {
                   "Not researching the neighborhood",
                   "Going with the first mortgage lender you find"
                 ].map((mistake, index) => (
-                  <motion.div 
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-start"
-                  >
+                  <div key={index} className="flex items-start enter-left" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
                     <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
                     <p className="text-gray-800">{mistake}</p>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Financial Tips Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-20"
-          >
+          <div className="mb-20 enter-fade">
             <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12">FINANCIAL CONSIDERATIONS</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -184,29 +145,16 @@ const FirstTimeBuyers = () => {
                   textColor: "text-purple-800"
                 }
               ].map((item, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={`${item.color} p-6 rounded-xl shadow-sm`}
-                >
+                <div key={index} className={`${item.color} p-6 rounded-xl shadow-sm enter`}>
                   <h3 className={`text-xl font-semibold mb-3 ${item.textColor}`}>{item.title}</h3>
                   <p className="text-gray-700">{item.description}</p>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* CTA Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center"
-          >
+          <div className="text-center enter-fade">
             <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">READY TO START YOUR HOME BUYING JOURNEY?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto mb-8">
               I'm here to guide you through every step of the process and help you find your perfect first home.
@@ -218,7 +166,7 @@ const FirstTimeBuyers = () => {
               <span>SCHEDULE A CONSULTATION</span>
               <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

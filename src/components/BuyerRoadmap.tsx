@@ -1,5 +1,4 @@
 import { CheckCircle } from "lucide-react";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
 const BuyerRoadmap = () => {
@@ -88,43 +87,17 @@ const BuyerRoadmap = () => {
 
         <div className="space-y-16">
           {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              className="flex flex-col md:flex-row gap-6 items-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
+            <div key={index} className="flex flex-col md:flex-row gap-6 items-center enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
               <div className="flex-shrink-0 relative z-10">
-                <motion.div
-                  className="bg-white p-2 rounded-full"
-                  initial={{ scale: 0.8 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                    delay: index * 0.1 + 0.2
-                  }}
-                >
+                <div className="bg-white p-2 rounded-full">
                   <CheckCircle className="w-8 h-8 text-green-500" />
-                </motion.div>
+                </div>
                 {index < steps.length - 1 && (
-                  <motion.div
-                    className="absolute w-0.5 bg-green-500 left-1/2 transform -translate-x-1/2 top-12 h-16 md:hidden"
-                    initial={{ height: 0 }}
-                    whileInView={{ height: 50 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 + 0.3 }}
-                  ></motion.div>
+                  <div className="absolute w-0.5 bg-green-500 left-1/2 transform -translate-x-1/2 top-12 h-16 md:hidden"></div>
                 )}
               </div>
 
-              <motion.div
-                className="bg-white p-6 rounded-xl shadow-lg flex-1 z-10 border border-gray-100 hover:shadow-xl transition-shadow"
-                whileHover={{ y: -5 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
+              <div className="bg-white p-6 rounded-xl shadow-lg flex-1 z-10 border border-gray-100 hover:shadow-xl transition-shadow">
                 <h3 className="text-xl font-semibold mb-3 text-[#1a1a1a]">{step.title}</h3>
                 <p className="text-gray-700 mb-4 font-medium">{step.description}</p>
                 <ul className="space-y-2">
@@ -134,8 +107,8 @@ const BuyerRoadmap = () => {
                     </li>
                   ))}
                 </ul>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           ))}
         </div>
       </div>

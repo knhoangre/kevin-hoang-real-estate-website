@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
-import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Clock, Send, ArrowRight, Calendar } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ContactQRCode from '@/components/ContactQRCode';
 import { useTranslation } from 'react-i18next';
+import Seo from "@/components/Seo";
+import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -93,39 +93,25 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+    <Seo
+      title="Contact Kevin Hoang"
+      description="Get in touch about buying or selling in Needham, MetroWest, or Greater Boston. Call {SITE.phone}, send a message, or book a consultation directly."
+      keywords="contact Kevin Hoang, real estate agent Needham MA contact, Greater Boston realtor phone number"
+    />
 
       <div className="pt-16">
         <div className="container mx-auto px-4 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-            >
+          <div className="enter-down">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('contact.title')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-xl text-gray-600 mb-12 max-w-2xl"
-            >
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
               {t('contact.subtitle')}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
+            <div className="enter-left" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
                   <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
@@ -151,7 +137,7 @@ const Contact = () => {
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
-                            (860) 682-2251
+                            {SITE.phone}
                             <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
@@ -160,8 +146,8 @@ const Contact = () => {
                           className={`absolute left-1/2 top-8 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300 ${dropdownOpen ? '' : 'hidden'}`}
                         >
                           <div className="flex flex-col items-center py-2">
-                            <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
-                            <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
+                            <a href={telHref} className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
+                            <a href={smsHref} className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
                           </div>
                         </div>
                       </div>
@@ -176,12 +162,12 @@ const Contact = () => {
                       <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.email')}</h3>
                       <div className="relative">
                         <button
-                          onClick={() => window.location.href = "mailto:knhoangre@gmail.com"}
+                          onClick={() => window.location.href = `mailto:${SITE.email}`}
                           className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
-                            KNHOANGRE@GMAIL.COM
+                            {SITE.email.toUpperCase()}
                             <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
@@ -197,12 +183,12 @@ const Contact = () => {
                       <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.office')}</h3>
                       <div className="relative">
                         <button
-                          onClick={() => window.open("https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494", "_blank")}
+                          onClick={() => window.open(mapsHref, "_blank")}
                           className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
-                            150 WEST ST, NEEDHAM, MA 02494
+                            {formattedAddress.toUpperCase()}
                             <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
@@ -237,13 +223,9 @@ const Contact = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
+            <div className="enter-right" style={{ '--enter-delay': '0.3s' } as React.CSSProperties}>
               <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative border border-gray-100">
                 <div className="p-6 bg-gray-50/50">
                   <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">{t('contact.send_message')}</h2>
@@ -345,7 +327,7 @@ const Contact = () => {
                   </Form>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

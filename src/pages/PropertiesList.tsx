@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import Navbar from '@/components/Navbar';
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +10,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bed, Bath, Square } from 'lucide-react';
+import Seo from "@/components/Seo";
 
 interface Property {
   id: number;
@@ -118,47 +117,52 @@ const PropertiesList = () => {
     return normalized.toUpperCase();
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading properties...</p>
-        </div>
-      </div>
-    );
-  }
+  /*
+   * Hoisted above the isLoading early-return on purpose.
+   *
+   * Listings are fetched from Supabase in an effect, so at static-generation
+   * time this component renders the spinner branch and returns before it ever
+   * reaches the markup below — which meant this route prerendered with no
+   * title, description, or canonical at all. The head has to be emitted from
+   * both branches.
+   *
+   * No ItemList schema here for the same reason: there are no listings in the
+   * prerendered HTML to describe, and marking up an empty list would be a
+   * claim about content that is not on the page.
+   */
+  const seo = (
+    <Seo
+      title="Current Listings in Greater Boston"
+      description="Browse current and recent listings across Needham, MetroWest, and Greater Boston, with photos, details, and a direct line to ask about any of them."
+      keywords="homes for sale Needham MA, Greater Boston listings, MetroWest homes for sale, Massachusetts property listings"
+    />
+  );
 
   return (
     <>
+      {seo}
       <div className="min-h-screen bg-white">
-        <Navbar />
         <div className="pt-16">
         <div className="container mx-auto px-4 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-            >
+          {/* The heading renders unconditionally. It used to sit behind the
+              isLoading gate along with everything else, so the prerendered page
+              contained a spinner and no <h1> at all. Only the grid waits for
+              the Supabase response. */}
+          <div className="enter-down">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               {t('properties.title')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-xl text-gray-600 mb-12 max-w-2xl"
-            >
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
               {t('properties.subtitle')}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
 
-          {properties.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading properties...</p>
+            </div>
+          ) : properties.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-gray-500 text-lg">No properties available at this time.</p>
             </div>
@@ -209,15 +213,15 @@ const PropertiesList = () => {
                                   alt={`${property.address} - Photo ${index + 1}`}
                                   className="w-full h-full object-cover"
                                   style={{
-                                    objectPosition: 'center center',
+                                  objectPosition: 'center center',
                                   }}
                                   onError={(e) => {
-                                    console.error(`Failed to load image ${index + 1} for property ${property.mlsnum}:`, imageUrl);
-                                    // If image fails to load, hide it
-                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  console.error(`Failed to load image ${index + 1} for property ${property.mlsnum}:`, imageUrl);
+                                  // If image fails to load, hide it
+                                  (e.target as HTMLImageElement).style.display = 'none';
                                   }}
                                   onLoad={() => {
-                                    console.log(`Successfully loaded image ${index + 1} for property ${property.mlsnum}`);
+                                  console.log(`Successfully loaded image ${index + 1} for property ${property.mlsnum}`);
                                   }}
                                 />
                               </div>

@@ -1,4 +1,3 @@
-import { buildDailyMetroBostonPosts2026 } from "./blogDailySeries2026";
 
 export interface BlogPost {
   id: number;
@@ -882,8 +881,129 @@ const baseBlogPosts: BlogPost[] = [
   }
 ];
 
-/** Daily series Jan 11–Apr 20, 2026 first so the listing shows newest posts at the top. */
-export const blogPosts: BlogPost[] = [
-  ...buildDailyMetroBostonPosts2026(),
-  ...baseBlogPosts,
+
+/**
+ * Three posts that used to live as an inline `additionalPosts` array in BOTH
+ * Blog.tsx and BlogPost.tsx — two copies that could (and did) disagree, and
+ * that the route table never saw, so neither was prerendered and both 404d on
+ * hard refresh. They are part of the corpus now.
+ */
+const additionalPosts: BlogPost[] = [
+  {
+    id: 9991,
+    slug: "pre-approval-checklist",
+    title: "Pre-Approval Checklist for Boston Home Buyers",
+    titleVi: "Danh Sách Kiểm Tra Chấp Thuận Trước Cho Người Mua Nhà Boston",
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+    excerpt: "Essential documents and tips to ace your mortgage pre-approval process.",
+    excerptVi: "Tài liệu cần thiết và mẹo để hoàn thành quy trình chấp thuận thế chấp trước.",
+    date: "April 20, 2025",
+    author: "Kevin Hoang",
+    content: "Securing a mortgage pre-approval is a crucial first step in the home buying process. This guide will help you prepare the necessary documents and understand what lenders look for.\n\nEssential documents include recent pay stubs, W-2 forms, tax returns, bank statements, and proof of assets. Having these ready can speed up the pre-approval process significantly.\n\nYour credit score plays a vital role in determining your interest rate and loan terms. Before applying, review your credit report and address any issues that might affect your score.\n\nLenders will evaluate your debt-to-income ratio, which compares your monthly debt payments to your gross monthly income. Keeping this ratio low can improve your chances of approval.\n\nUnderstanding the different types of mortgage programs available in Massachusetts can help you choose the best option for your situation. From conventional loans to government-backed programs, each has its own requirements and benefits.",
+    contentVi: "Đảm bảo chấp thuận thế chấp trước là bước đầu tiên quan trọng trong quá trình mua nhà. Hướng dẫn này sẽ giúp bạn chuẩn bị các tài liệu cần thiết và hiểu những gì người cho vay tìm kiếm.\n\nCác tài liệu cần thiết bao gồm phiếu lương gần đây, biểu mẫu W-2, khai thuế, sao kê ngân hàng và bằng chứng tài sản. Có sẵn những thứ này có thể đẩy nhanh quy trình chấp thuận trước đáng kể.\n\nĐiểm tín dụng của bạn đóng vai trò quan trọng trong việc xác định lãi suất và điều khoản cho vay. Trước khi nộp đơn, hãy xem xét báo cáo tín dụng và giải quyết bất kỳ vấn đề nào có thể ảnh hưởng đến điểm số của bạn.\n\nNgười cho vay sẽ đánh giá tỷ lệ nợ trên thu nhập của bạn, so sánh khoản thanh toán nợ hàng tháng với tổng thu nhập hàng tháng. Giữ tỷ lệ này thấp có thể cải thiện cơ hội được chấp thuận.\n\nHiểu biết về các loại chương trình thế chấp khác nhau có sẵn tại Massachusetts có thể giúp bạn chọn tùy chọn tốt nhất cho tình huống của mình. Từ các khoản vay thông thường đến các chương trình được chính phủ hỗ trợ, mỗi loại có yêu cầu và lợi ích riêng."
+  },
+  {
+    id: 9992,
+    slug: "home-inspection-guide",
+    title: "Home Inspection Guide for First-Time Buyers",
+    titleVi: "Hướng Dẫn Kiểm Tra Nhà Cho Người Mua Lần Đầu",
+    image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80",
+    excerpt: "What to look for and ask during your home inspection.",
+    excerptVi: "Những gì cần tìm kiếm và hỏi trong quá trình kiểm tra nhà.",
+    date: "April 21, 2025",
+    author: "Kevin Hoang",
+    content: "A thorough home inspection is essential for making an informed purchase decision. This guide will help you understand what to expect and what to look for during the process.\n\nKey areas to focus on include the foundation, roof, electrical system, plumbing, and HVAC. Each of these systems can be costly to repair or replace if issues are discovered after purchase.\n\nYour inspector should check for signs of water damage, structural issues, and potential safety hazards. Don't hesitate to ask questions about any concerns that arise during the inspection.\n\nUnderstanding the difference between major and minor issues can help you negotiate repairs or price adjustments. Some issues may be deal-breakers, while others can be addressed after closing.\n\nAfter the inspection, review the report carefully with your real estate agent. They can help you determine the best course of action based on the findings.",
+    contentVi: "Kiểm tra nhà kỹ lưỡng là điều cần thiết để đưa ra quyết định mua sắm có thông tin. Hướng dẫn này sẽ giúp bạn hiểu những gì cần mong đợi và tìm kiếm trong quá trình.\n\nCác khu vực chính cần tập trung bao gồm nền móng, mái nhà, hệ thống điện, hệ thống ống nước và HVAC. Mỗi hệ thống này có thể tốn kém để sửa chữa hoặc thay thế nếu phát hiện vấn đề sau khi mua.\n\nNgười kiểm tra của bạn nên kiểm tra các dấu hiệu hư hỏng do nước, vấn đề cấu trúc và các mối nguy hiểm tiềm ẩn. Đừng ngần ngại đặt câu hỏi về bất kỳ mối quan ngại nào phát sinh trong quá trình kiểm tra.\n\nHiểu biết sự khác biệt giữa các vấn đề lớn và nhỏ có thể giúp bạn thương lượng sửa chữa hoặc điều chỉnh giá. Một số vấn đề có thể là deal-breakers, trong khi những vấn đề khác có thể được giải quyết sau khi đóng cửa.\n\nSau khi kiểm tra, hãy xem xét báo cáo cẩn thận với đại lý bất động sản của bạn. Họ có thể giúp bạn xác định hành động tốt nhất dựa trên kết quả."
+  },
+  {
+    id: 9993,
+    slug: "market-reports",
+    title: "Boston Real Estate Market Reports 2025",
+    titleVi: "Báo Cáo Thị Trường Bất Động Sản Boston 2025",
+    image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?auto=format&fit=crop&w=400&q=80",
+    excerpt: "Latest trends and stats every Boston buyer and seller must know.",
+    excerptVi: "Xu hướng và thống kê mới nhất mà mọi người mua và bán Boston phải biết.",
+    date: "April 22, 2025",
+    author: "Kevin Hoang",
+    content: "The Boston real estate market continues to show strong performance in 2025. This comprehensive report covers the latest trends and statistics that buyers and sellers need to know.\n\nMedian home prices have shown steady growth across most neighborhoods, with particularly strong performance in areas with new transit options and development projects.\n\nInventory levels remain tight, creating a competitive market for buyers. Properties in desirable locations often receive multiple offers and sell quickly.\n\nInterest rates have stabilized after recent fluctuations, providing more predictability for both buyers and sellers. This stability has helped maintain strong market activity.\n\nUnderstanding these market dynamics can help you make informed decisions about timing your purchase or sale. Working with a knowledgeable real estate agent is crucial for navigating this complex market.",
+    contentVi: "Thị trường bất động sản Boston tiếp tục thể hiện hiệu suất mạnh mẽ trong năm 2025. Báo cáo toàn diện này bao gồm các xu hướng và thống kê mới nhất mà người mua và bán cần biết.\n\nGiá nhà trung bình đã thể hiện tăng trưởng ổn định trên hầu hết các khu vực, với hiệu suất đặc biệt mạnh mẽ ở các khu vực có tùy chọn giao thông mới và dự án phát triển.\n\nMức tồn kho vẫn chặt chẽ, tạo ra thị trường cạnh tranh cho người mua. Các tài sản ở vị trí mong muốn thường nhận được nhiều đề nghị và bán nhanh chóng.\n\nLãi suất đã ổn định sau những biến động gần đây, cung cấp khả năng dự đoán nhiều hơn cho cả người mua và bán. Sự ổn định này đã giúp duy trì hoạt động thị trường mạnh mẽ.\n\nHiểu biết về động thái thị trường này có thể giúp bạn đưa ra quyết định có thông tin về thời gian mua hoặc bán. Làm việc với đại lý bất động sản có kiến thức là điều cần thiết để điều hướng thị trường phức tạp này."
+  }
 ];
+
+/**
+ * The published corpus.
+ *
+ * This used to be prefixed with 100 machine-generated "daily" posts (one per
+ * calendar day from Jan 11 to Apr 20 2026, built by rotating 25 topic templates
+ * and appending "· Note N" to the title). They were 58% of all blog URLs and
+ * each ran to five short templated paragraphs — the exact pattern Google's
+ * scaled-content-abuse policy targets, and enough to drag the whole domain's
+ * crawl reputation down with it.
+ *
+ * They were retired on 2026-08-26. Every retired slug has a 301 to its nearest
+ * surviving post; the map lives in scripts/retired-blog-slugs.json and is
+ * applied to vercel.json by scripts/generate-blog-redirects.mjs. Several posts
+ * below are redirect targets — deleting one strands the URLs pointing at it,
+ * so re-point them in that JSON first.
+ *
+ * Do not bulk-generate posts back into this file. A small corpus of substantial
+ * posts outranks hundreds of thin ones.
+ */
+export const blogPosts: BlogPost[] = [...baseBlogPosts, ...additionalPosts];
+
+/**
+ * Converts a display date ("January 10, 2026") to ISO "2026-01-10".
+ *
+ * The corpus stores dates for humans, but schema.org datePublished and the
+ * <meta property="article:published_time"> tag both require ISO 8601.
+ * Returns null rather than guessing if the string is not in that shape.
+ */
+export const toIsoDate = (display: string): string | null => {
+  const parsed = Date.parse(display);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString().slice(0, 10);
+};
+
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'you', 'your', 'with', 'what', 'when', 'how', 'why',
+  'are', 'from', 'that', 'this', 'guide', 'massachusetts', 'boston', 'real',
+  'estate', 'home', 'homes', 'house', 'property', 'mass', 'about', 'into',
+]);
+
+const distinctiveWords = (post: BlogPost): Set<string> =>
+  new Set(
+    `${post.title} ${post.excerpt}`
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter((w) => w.length > 3 && !STOP_WORDS.has(w))
+  );
+
+/**
+ * Related posts, ranked by how many distinctive words they share with `post`.
+ *
+ * Ties break on a hash of the slug rather than on recency. Recency is the
+ * tempting tiebreak and the wrong one: with a corpus this size most pairs share
+ * nothing, so a recency tiebreak sends every zero-overlap post to the same
+ * newest few — concentrating inbound links on a handful of posts and orphaning
+ * the rest. A slug hash spreads them evenly and is stable across builds.
+ */
+export const getRelatedPosts = (post: BlogPost, limit = 3): BlogPost[] => {
+  const mine = distinctiveWords(post);
+  const hash = (s: string) =>
+    [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100000, 7);
+
+  return blogPosts
+    .filter((p) => p.slug !== post.slug)
+    .map((p) => {
+      let overlap = 0;
+      for (const w of distinctiveWords(p)) if (mine.has(w)) overlap += 1;
+      return { post: p, overlap };
+    })
+    .sort(
+      (a, b) =>
+        b.overlap - a.overlap ||
+        ((hash(a.post.slug) + hash(post.slug)) % 1000) -
+          ((hash(b.post.slug) + hash(post.slug)) % 1000)
+    )
+    .slice(0, limit)
+    .map((r) => r.post);
+};

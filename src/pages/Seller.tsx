@@ -1,40 +1,42 @@
 import { Element } from "react-scroll";
-import Navbar from "@/components/Navbar";
 import SellerRoadmap from "@/components/SellerRoadmap";
 import SellerResources from "@/components/SellerResources";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import Seo from "@/components/Seo";
+import { agentIdentity, service } from "@/lib/schema";
 
 const Seller = () => {
   const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+    <Seo
+      title="Home Seller's Guide for Greater Boston"
+      description="How to sell a home in Greater Boston: preparing the property, setting a price the market supports, marketing, negotiating offers, and reaching a clean closing."
+      keywords="home seller guide Massachusetts, selling a house Greater Boston, listing agent Needham MA, how to sell my home MA"
+      jsonLd={[
+        // service() names #agent as its provider, and an @id only resolves
+        // against a node declared in the same document — so #agent is declared
+        // here too.
+        agentIdentity(),
+        service({
+          name: 'Seller representation',
+          serviceType: 'Real estate listing agency',
+          description: 'Representing home sellers across Needham, MetroWest, and Greater Boston.',
+          path: '/seller',
+        }),
+      ]}
+    />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-            >
+          <div className="enter-down">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
 {t('seller_guide.title')}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: -30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-              className="text-xl text-gray-600 mb-12 max-w-3xl"
-            >
+            </h1>
+            <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
 {t('seller_guide.subtitle')}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
           <Element name="roadmap">
             <SellerRoadmap />
           </Element>

@@ -1,17 +1,9 @@
 import { useEffect, useState } from "react";
-import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   Table,
   TableBody,
@@ -22,6 +14,10 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, CheckCircle2 } from "lucide-react";
+import Seo from "@/components/Seo";
+import BreadcrumbBar from "@/components/BreadcrumbBar";
+import FaqAccordion from "@/components/FaqAccordion";
+import { agentIdentity, breadcrumbs, faqPage, service, type QA } from "@/lib/schema";
 
 const Relocation = () => {
   const { t } = useTranslation();
@@ -67,77 +63,94 @@ const Relocation = () => {
     }
   };
 
-  // FAQ data for JSON-LD schema
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Is property tax lower in MA or CT?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Rates are generally lower in MA (average ~1.15%) compared to CT (average ~2.1%), though home values are typically higher in Massachusetts."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How do I transfer my license from CT to MA?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "To transfer your driver's license from Connecticut to Massachusetts, you'll need to visit a Massachusetts RMV office with your current CT license, proof of identity, proof of Massachusetts residency, and your Social Security card. You'll need to pass a vision test and may need to retake the written and road tests depending on your situation."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What are the best schools in Massachusetts for 2026?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Massachusetts is ranked #1 in the U.S. for public education. Top school districts include those in Metrowest Boston (Wellesley, Newton, Lexington), as well as districts in Worcester County and the Pioneer Valley. Specific rankings vary by grade level and criteria, but Massachusetts consistently leads the nation in educational outcomes."
-        }
-      }
-    ]
-  };
+  /**
+   * Single source for the visible accordion AND the FAQPage markup below. They
+   * used to be two hand-maintained copies of the same three answers, which is
+   * exactly how structured data drifts away from the page it describes.
+   *
+   * The property-tax answer previously asserted "~1.15% in MA vs ~2.1% in CT"
+   * with no source and no date. Effective rates move every year and vary by
+   * municipality, so the answer now points at the authorities that publish the
+   * real number instead of restating a figure nobody can check.
+   */
+  const FAQS: QA[] = [
+    {
+      question: "Is property tax lower in Massachusetts or Connecticut?",
+      answer:
+        "Effective property tax rates are generally lower in Massachusetts than in Connecticut, but Massachusetts home values are typically higher — so the annual bill on a comparable house is often closer than the rate difference suggests. Rates are set per municipality and change annually: the Massachusetts Department of Revenue publishes each town's current rate, and the Connecticut Office of Policy and Management publishes mill rates by town. Compare the two specific towns you are choosing between rather than the state averages.",
+    },
+    {
+      question: "How do I transfer my driver's license from Connecticut to Massachusetts?",
+      answer:
+        "You apply in person at a Massachusetts RMV service center with your current Connecticut license, proof of identity and lawful presence, proof of Massachusetts residency, and your Social Security number. Massachusetts generally exchanges an out-of-state licence without a road test if yours is current, but a vision screening is required. Requirements change, so confirm the current document list on the Massachusetts RMV website before you go, and book an appointment — walk-in waits are long.",
+    },
+    {
+      question: "How good are Massachusetts public schools?",
+      answer:
+        "Massachusetts consistently places at or near the top of national state-by-state education rankings, including U.S. News & World Report's, and MetroWest districts such as Wellesley, Newton, and Lexington are among the strongest in the state. Rankings differ by methodology and by grade level, though, and district quality varies within any town — so treat rankings as a starting point and look at the specific schools your children would attend.",
+    },
+    {
+      question: "How do I time selling in Connecticut against buying in Massachusetts?",
+      answer:
+        "The two markets do not move together, and trying to close on the same day rarely works cleanly. The realistic options are a sale contingency, a rent-back from your buyer so you have a few weeks of overlap, or bridge financing. Which one fits depends on how much equity you are carrying and how much risk you can absorb if one side slips — it is worth deciding before you list, not after you have an accepted offer.",
+    },
+  ];
+
+  const crumbs = [
+    { name: "Home", path: "/" },
+    { name: "Relocating to Massachusetts", path: "/relocation" },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+      {/* Head tags and JSON-LD go through <Seo>, not a raw <script> in the
+          body — that is what keeps the OG block from drifting away from the
+          title and guarantees a canonical. */}
+      <Seo
+        title="Moving to Massachusetts from Connecticut"
+        description="Relocating from Connecticut to Massachusetts: choosing a town, comparing property taxes and schools, transferring your licence, and timing a sale against a purchase."
+        keywords="moving from Connecticut to Massachusetts, CT to MA relocation, relocating to Boston, best Massachusetts towns for families, MA vs CT property tax"
+        jsonLd={[
+          breadcrumbs(crumbs),
+          faqPage(FAQS),
+          // service().provider references #agent, so #agent must be declared
+          // on this page for the reference to resolve.
+          agentIdentity(),
+          service({
+            name: "Relocation assistance",
+            serviceType: "Real estate relocation services",
+            description:
+              "Helping people relocating to Massachusetts choose a town and buy a home in Greater Boston.",
+            path: "/relocation",
+          }),
+        ]}
+      />
       <div>
-        {/* JSON-LD Schema for FAQ */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-
+        {/* Sits directly under the hero because the trail must be visible —
+            BreadcrumbList markup with no on-page counterpart is a structured
+            data policy violation. */}
         {/* Hero Section */}
         <section className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white pt-32 pb-24 mt-20">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="max-w-4xl mx-auto text-center"
-            >
+            <div className="max-w-4xl mx-auto text-center enter-down">
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
                 Leaving the Constitution State? Welcome to the Bay State.
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-gray-200">
-                I personally moved from CT to MA, and I know exactly how to handle the transition. Let's find your new home in the nation's #1 state for education and quality of life.
+                I made the move from Connecticut to Massachusetts myself, so I know where the friction actually is. Let&rsquo;s find the town that fits how you live &mdash; in a state that consistently ranks near the top nationally for public education.
               </p>
-            </motion.div>
+            </div>
           </div>
         </section>
+
+        <div className="pt-8">
+          <BreadcrumbBar items={crumbs} />
+        </div>
 
         {/* Education Section */}
         <section className="py-24 bg-white">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="max-w-4xl mx-auto"
-            >
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6 text-center">
                 Why Families are Choosing the Move
               </h2>
@@ -151,19 +164,14 @@ const Relocation = () => {
                   better tax structures, and enhanced quality of life opportunities that Massachusetts offers.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Transition Comparison Table */}
         <section className="py-24 bg-gray-50">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 CT vs. MA: The 2026 Comparison
               </h2>
@@ -225,19 +233,14 @@ const Relocation = () => {
                   </TableBody>
                 </Table>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Neighborhood Spotlight */}
         <section className="py-24 bg-white">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 Neighborhood Spotlight for Transplants
               </h2>
@@ -279,20 +282,14 @@ const Relocation = () => {
                   </CardContent>
                 </Card>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Personal Narrative */}
         <section className="py-24 bg-slate-50">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="max-w-4xl mx-auto"
-            >
+            <div className="max-w-4xl mx-auto enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-8 text-center">
                 I Made the Move So You Don't Have to Guess
               </h2>
@@ -313,20 +310,14 @@ const Relocation = () => {
                   complexities of the move, and ensure you're making the most informed decision for your family's future.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Lead Magnet Section */}
         <section className="py-24 bg-gradient-to-br from-slate-800 to-slate-900 text-white">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="max-w-2xl mx-auto text-center"
-            >
+            <div className="max-w-2xl mx-auto text-center enter">
               <div className="bg-white/10 backdrop-blur-sm rounded-lg p-8 border border-white/20">
                 <Download className="h-16 w-16 mx-auto mb-6 text-white" />
                 <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -360,73 +351,28 @@ const Relocation = () => {
                   <span>No spam. Unsubscribe anytime.</span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* FAQ Section */}
         <section className="py-24 bg-white">
           <div className="container px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="enter">
               <h2 className="text-4xl md:text-5xl font-bold text-slate-800 mb-12 text-center">
                 Frequently Asked Questions
               </h2>
               <div className="max-w-4xl mx-auto">
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="property-tax">
-                    <AccordionTrigger className="text-xl font-semibold text-left">
-                      Is property tax lower in MA or CT?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-700 text-lg">
-                      Rates are generally lower in MA (average ~1.15%) compared to CT (average ~2.1%), 
-                      though home values are typically higher in Massachusetts. The overall tax burden 
-                      depends on the specific property value and location within each state.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="license-transfer">
-                    <AccordionTrigger className="text-xl font-semibold text-left">
-                      How do I transfer my license from CT to MA?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-700 text-lg">
-                      To transfer your driver's license from Connecticut to Massachusetts, you'll need to 
-                      visit a Massachusetts RMV office with your current CT license, proof of identity, 
-                      proof of Massachusetts residency, and your Social Security card. You'll need to pass 
-                      a vision test and may need to retake the written and road tests depending on your situation. 
-                      The process typically takes about 2-3 hours at the RMV.
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="best-schools">
-                    <AccordionTrigger className="text-xl font-semibold text-left">
-                      What are the best schools in Massachusetts for 2026?
-                    </AccordionTrigger>
-                    <AccordionContent className="text-gray-700 text-lg">
-                      Massachusetts is ranked #1 in the U.S. for public education. Top school districts include 
-                      those in Metrowest Boston (Wellesley, Newton, Lexington), as well as districts in Worcester 
-                      County and the Pioneer Valley. Specific rankings vary by grade level and criteria, but 
-                      Massachusetts consistently leads the nation in educational outcomes, with strong performance 
-                      in STEM subjects, college readiness, and overall student achievement.
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                <FaqAccordion faqs={FAQS} />
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* CTA Section */}
         <section className="py-24 bg-slate-800 text-white">
           <div className="container px-4 mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
+            <div className="enter">
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 Ready to Make the Move?
               </h2>
@@ -440,7 +386,7 @@ const Relocation = () => {
               >
                 <a href="/contact">Get Started Today</a>
               </Button>
-            </motion.div>
+            </div>
           </div>
         </section>
       </div>

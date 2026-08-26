@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 import ContactQRCode from "./ContactQRCode";
 import { useTranslation } from "react-i18next";
+import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -124,7 +125,7 @@ const Contact = () => {
                   className="text-[#1a1a1a] uppercase relative cursor-pointer select-all"
                   onClick={() => setPhoneDropdown(!phoneDropdown)}
                 >
-                  (860) 682-2251
+                  {SITE.phone}
                   <span
                     className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2"
                   />
@@ -132,8 +133,8 @@ const Contact = () => {
                 {phoneDropdown && (
                   <div className="dropdown-content opacity-100 visible absolute left-1/2 top-full mt-3 z-20 w-28 -translate-x-1/2 bg-white shadow-lg rounded-md transition-all duration-300">
                     <div className="flex flex-col items-center py-2">
-                      <a href="tel:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
-                      <a href="sms:8606822251" className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
+                      <a href={telHref} className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.call')}</a>
+                      <a href={smsHref} className="block w-full text-center px-4 py-2 text-sm hover:bg-gray-100">{t('contact.text')}</a>
                     </div>
                   </div>
                 )}
@@ -141,9 +142,9 @@ const Contact = () => {
 
               <div className="flex items-center space-x-4 w-fit">
                 <Mail className="h-5 w-5 text-[#1a1a1a]" />
-                <a href="mailto:KNHOANGRE@GMAIL.COM" className="relative group">
+                <a href={`mailto:${SITE.email}`} className="relative group">
                   <span className="text-[#1a1a1a] uppercase relative">
-                    KNHOANGRE@GMAIL.COM
+                    {SITE.email.toUpperCase()}
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
@@ -152,13 +153,13 @@ const Contact = () => {
               <div className="flex items-center space-x-4 w-fit">
                 <MapPin className="h-5 w-5 text-[#1a1a1a]" />
                 <a
-                  href="https://maps.google.com/?q=150+WEST+ST,+NEEDHAM,+MA+02494"
+                  href={mapsHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative group"
                 >
                   <span className="text-[#1a1a1a] uppercase relative">
-                    150 WEST ST, NEEDHAM, MA 02494
+                    {formattedAddress.toUpperCase()}
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>

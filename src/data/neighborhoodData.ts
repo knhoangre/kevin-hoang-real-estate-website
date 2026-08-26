@@ -68,5 +68,20 @@ export const neighborhoods = [
     name: "Malden",
     slug: "malden-ma",
     image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=500&h=300"
-  }
+  },
+  {
+    name: "Brookline",
+    slug: "brookline-ma",
+    image: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=500&h=300"
+  },
+  {
+    name: "Belmont",
+    slug: "belmont-ma",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=500&h=300"
+  },
+  {
+    name: "Winchester",
+    slug: "winchester-ma",
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=500&h=300"
+  },
 ];

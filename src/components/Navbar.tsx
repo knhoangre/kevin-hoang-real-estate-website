@@ -9,6 +9,7 @@ import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SITE, smsHref, telHref } from "@/lib/siteConfig";
 
 const Navbar = () => {
   const location = useLocation();
@@ -332,7 +333,7 @@ const Navbar = () => {
                 className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} hover:bg-transparent p-0 h-auto font-normal`}
                 aria-label="Phone number"
               >
-                860-682-2251
+                {SITE.phone}
               </Button>
               <AnimatePresence>
                 {phoneDropdownOpen && (
@@ -347,13 +348,13 @@ const Navbar = () => {
                   >
                     <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
                     <a
-                      href="tel:8606822251"
+                      href={telHref}
                       className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
                     >
                       CALL
                     </a>
                     <a
-                      href="sms:8606822251"
+                      href={smsHref}
                       className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
                     >
                       TEXT

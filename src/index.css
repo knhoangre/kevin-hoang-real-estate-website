@@ -148,3 +148,72 @@
 [data-embla-viewport] {
   height: 100% !important;
 }
+
+/**
+ * CSS mount animations — deliberately NOT a JS animation library.
+ *
+ * framer-motion wrote `style="opacity:0"` into the PRERENDERED HTML and only
+ * animated it away after hydration, so real content shipped invisible to every
+ * crawler that does not run JavaScript, and stayed invisible if the bundle
+ * failed or was slow. A CSS keyframe with `animation-fill-mode: forwards` runs
+ * at first paint and completes whether or not React ever boots.
+ *
+ * Never gate the visibility of prerendered content on JS.
+ *
+ * Stagger with an inline `--enter-delay`, e.g.
+ *   style={{ '--enter-delay': '0.2s' } as React.CSSProperties}
+ */
+.enter,
+.enter-down,
+.enter-left,
+.enter-right,
+.enter-fade {
+  opacity: 0;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+  animation-delay: var(--enter-delay, 0s);
+}
+
+.enter { animation-name: enterUp; }
+.enter-down { animation-name: enterDown; }
+.enter-left { animation-name: enterLeft; }
+.enter-right { animation-name: enterRight; }
+.enter-fade { animation-name: enterFade; }
+
+@keyframes enterUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes enterDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes enterLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes enterRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes enterFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Never trap content at opacity 0 for people who opt out of motion. */
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .enter-down,
+  .enter-left,
+  .enter-right,
+  .enter-fade {
+    opacity: 1;
+    animation: none;
+  }
+}

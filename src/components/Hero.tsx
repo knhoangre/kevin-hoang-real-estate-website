@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { SITE } from "@/lib/siteConfig";
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -10,7 +11,13 @@ const Hero = () => {
       <div
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: "url('https://images.unsplash.com/photo-1487958449943-2429e8be8625')",
+          // Sized and compressed on Unsplash's side. A bare
+          // images.unsplash.com/photo-… URL serves the multi-megabyte
+          // original, and this is the homepage's LCP element — it was the
+          // single most expensive request on the site. The matching
+          // <link rel="preload" fetchpriority="high"> is in index.html.
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1920&q=70')",
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}
@@ -26,7 +33,7 @@ const Hero = () => {
           {t('hero.subtitle')}
         </p>
         <a 
-          href="https://calendar.app.google/P297MnAu7ei6turA6" 
+          href={SITE.appointmentUrl} 
           target="_blank" 
           rel="noopener noreferrer"
           className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300"

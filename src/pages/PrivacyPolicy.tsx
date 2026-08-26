@@ -1,43 +1,27 @@
-import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
+import Seo from "@/components/Seo";
+import { SITE, formattedAddress } from "@/lib/siteConfig";
+
 
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
+    <Seo
+      title="Privacy Policy"
+      description="How Kevin Hoang Real Estate collects, uses, and protects the information you share through this website."
+    />
       <div className="pt-16">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="mb-16"
-            >
-              <motion.h1
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4"
-              >
+            <div className="mb-16 enter-down">
+              <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 PRIVACY POLICY
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: -30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                className="text-xl text-gray-600 mb-12 max-w-3xl"
-              >
+              </h1>
+              <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
                 Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.
-              </motion.p>
-            </motion.div>
+              </p>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8"
-            >
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8 enter" style={{ '--enter-delay': '0.6s' } as React.CSSProperties}>
               <div className="prose prose-lg max-w-none">
                 <p className="text-sm text-gray-600 mb-8">
                   <strong>Last Updated:</strong> {new Date().toLocaleDateString()}
@@ -251,9 +235,9 @@ const PrivacyPolicy = () => {
                   </p>
                   <div className="bg-gray-50 p-6 rounded-lg">
                     <p className="text-gray-700 mb-2"><strong>Kevin Hoang</strong></p>
-                    <p className="text-gray-700 mb-2">Email: KNHOANGRE@GMAIL.COM</p>
-                    <p className="text-gray-700 mb-2">Phone: (860) 682-2251</p>
-                    <p className="text-gray-700">Address: 150 WEST ST, NEEDHAM, MA 02494</p>
+                    <p className="text-gray-700 mb-2">Email: {SITE.email.toUpperCase()}</p>
+                    <p className="text-gray-700 mb-2">Phone: {SITE.phone}</p>
+                    <p className="text-gray-700">Address: {formattedAddress.toUpperCase()}</p>
                   </div>
                 </section>
 
@@ -276,7 +260,7 @@ const PrivacyPolicy = () => {
                   </p>
                 </section>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
       </div>

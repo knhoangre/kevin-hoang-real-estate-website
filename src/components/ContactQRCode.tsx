@@ -12,6 +12,8 @@ const ContactQRCode = () => {
         width={200}
         height={200}
         className="bg-white p-4 rounded-lg shadow-lg"
+        loading="lazy"
+        decoding="async"
       />
       <p className="text-sm text-gray-600 text-center">
         {t('contact.scan_qr_code')}
