@@ -30,5 +30,6 @@ declare module "https://esm.sh/@supabase/supabase-js@2.38.4" {
     supabaseUrl: string,
     supabaseKey: string,
     options?: Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- see the note above
   ): any;
 }

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { blogPosts, getRelatedPosts, toIsoDate } from "@/data/blogData";
+import { blogPosts, getRelatedPosts, toIsoDate, type BlogPost as BlogPostType } from '@/data/blogData';
 import { ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
@@ -27,11 +27,11 @@ const BlogPost = () => {
 
   if (!post) return null;
 
-  const getTranslatedTitle = (post: any) => {
+  const getTranslatedTitle = (post: BlogPostType) => {
     return currentLanguage === 'vi' && post.titleVi ? post.titleVi : post.title;
   };
 
-  const getTranslatedContent = (post: any) => {
+  const getTranslatedContent = (post: BlogPostType) => {
     return currentLanguage === 'vi' && post.contentVi ? post.contentVi : post.content;
   };
 

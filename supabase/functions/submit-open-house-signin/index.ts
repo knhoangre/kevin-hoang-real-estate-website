@@ -643,8 +643,12 @@ serve(async (req) => {
     
     // Track contact creation status
     let contactCreated = false;
-    let contactErrorDetails: any = null;
-    let newContact: any = null;
+    // Shape of a PostgrestError, which is all this is ever assigned.
+    let contactErrorDetails:
+      | { code?: string; message?: string; details?: string; hint?: string }
+      | null = null;
+    // `const newContact = null` used to sit here, shadowed by the real
+    // destructured `newContact` below and never read. Removed.
     
     // First, try to find by email_id and phone_id (if phone exists)
     let existingContact = null;

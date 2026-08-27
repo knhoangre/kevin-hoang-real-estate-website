@@ -11,7 +11,36 @@ import FaqAccordion from "@/components/FaqAccordion";
 import { TOWN_FACTS } from "@/data/townFacts";
 import { townFaqs } from "@/lib/townFaqs";
 
-const neighborhoodData: Record<string, any> = {
+/**
+ * The shape of the town-guide corpus below.
+ *
+ * It was `Record<string, any>`, which meant nothing in the 2,500-line data
+ * literal was checked and neither was any of the rendering that walks it — a
+ * misspelled key or a section missing its `title` would have rendered blank
+ * rather than failing the build.
+ */
+interface TownSection {
+  type: 'intro' | 'section' | 'subsection' | 'cta';
+  title?: string;
+  text?: string;
+  highlight?: string;
+  note?: string;
+  closing?: string;
+  bullets?: string[];
+  neighborhoods?: { name: string; description: string }[];
+  reasons?: { icon: string; title: string; text: string }[];
+}
+
+interface TownGuide {
+  name: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  content: TownSection[];
+}
+
+const neighborhoodData: Record<string, TownGuide> = {
   "brookline-ma": {
     name: "Brookline, Massachusetts",
     slug: "brookline-ma",
@@ -2555,7 +2584,7 @@ const NeighborhoodDetail = () => {
             </header>
 
             <div className="prose prose-lg max-w-none">
-              {neighborhood.content.map((section: any, index: number) => {
+              {neighborhood.content.map((section, index) => {
                 if (section.type === "intro") {
                   return (
                     <div key={index} className="mb-8 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
@@ -2601,7 +2630,7 @@ const NeighborhoodDetail = () => {
                       )}
                       {section.neighborhoods && (
                         <div className="space-y-6 mt-6">
-                          {section.neighborhoods.map((n: any, i: number) => (
+                          {section.neighborhoods.map((n, i) => (
                             <div key={i} className="border-l-4 border-ink pl-6 py-2">
                               <h3 className="text-xl font-semibold text-ink mb-2">
                                 {n.name}
@@ -2615,7 +2644,7 @@ const NeighborhoodDetail = () => {
                       )}
                       {section.reasons && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                          {section.reasons.map((reason: any, i: number) => (
+                          {section.reasons.map((reason, i) => (
                             <div
                               key={i}
                               className="bg-gray-50 rounded-lg p-6 border border-gray-200"

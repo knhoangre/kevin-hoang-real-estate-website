@@ -5,6 +5,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Mail, Phone, Calendar, User, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { errorMessage } from '@/lib/utils';
+
+/**
+ * A row as it arrives from either source: the flattened `unified_contacts`
+ * view, or the base table with its related contact_* rows nested. Supabase
+ * returns the nested ones as an object or a single-element array depending on
+ * the relationship, which is why each shape is a union.
+ */
+
+/**
+ * Reads one field out of a Supabase relation that arrives either as an object
+ * or as a single-element array, depending on how the relationship resolves.
+ * Each call site used to spell this out as a three-branch `||` chain.
+ */
+const joined = (
+  v: Record<string, unknown> | Record<string, unknown>[] | null | undefined,
+  key: string,
+): string | null => {
+  const row = Array.isArray(v) ? v[0] : v;
+  const value = row?.[key];
+  return typeof value === 'string' ? value : null;
+};
+
+type JoinedContactRow = {
+  [key: string]: unknown;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  [relation: `contact_${string}`]:
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+    | null
+    | undefined;
+};
+
 
 interface ContactMessage {
   id: number;
@@ -84,28 +120,13 @@ const MessagesList = () => {
       }
 
       // Transform the data - handle both view format and direct table format
-      const transformedData: ContactMessage[] = (data || []).map((item: any) => {
+      const transformedData: ContactMessage[] = (data || []).map((item: JoinedContactRow) => {
         // Check if data is from view (flattened) or table (nested)
-        const firstName = item.first_name || 
-                         (item.contact_first_names?.first_name) ||
-                         (Array.isArray(item.contact_first_names) && item.contact_first_names[0]?.first_name) ||
-                         null;
-        const lastName = item.last_name || 
-                        (item.contact_last_names?.last_name) ||
-                        (Array.isArray(item.contact_last_names) && item.contact_last_names[0]?.last_name) ||
-                        null;
-        const email = item.email || 
-                     (item.contact_emails?.email) ||
-                     (Array.isArray(item.contact_emails) && item.contact_emails[0]?.email) ||
-                     null;
-        const phone = item.phone || 
-                     (item.contact_phones?.phone) ||
-                     (Array.isArray(item.contact_phones) && item.contact_phones[0]?.phone) ||
-                     null;
-        const source = item.source ||
-                      (item.contact_sources?.source) ||
-                      (Array.isArray(item.contact_sources) && item.contact_sources[0]?.source) ||
-                      null;
+        const firstName = item.first_name ?? joined(item.contact_first_names, 'first_name');
+        const lastName = item.last_name ?? joined(item.contact_last_names, 'last_name');
+        const email = item.email ?? joined(item.contact_emails, 'email');
+        const phone = item.phone ?? joined(item.contact_phones, 'phone');
+        const source = item.source ?? joined(item.contact_sources, 'source');
 
         return {
           id: item.id,
@@ -122,15 +143,9 @@ const MessagesList = () => {
 
       setMessages(transformedData);
       console.log('✅ Successfully loaded', transformedData.length, 'messages');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Error fetching messages:', err);
-      console.error('Error details:', {
-        message: err.message,
-        code: err.code,
-        details: err.details,
-        hint: err.hint
-      });
-      setError(err.message || 'Failed to load messages');
+      setError(errorMessage(err) || 'Failed to load messages');
     } finally {
       setLoading(false);
     }
@@ -157,7 +172,7 @@ const MessagesList = () => {
 
       // Invalidate unread counts query to update badges
       queryClient.invalidateQueries({ queryKey: ['unread-counts'] });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating read status:', err);
     }
   };
@@ -178,7 +193,7 @@ const MessagesList = () => {
 
       // Remove from local state
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting message:', err);
       alert('Failed to delete message. Please try again.');
     }

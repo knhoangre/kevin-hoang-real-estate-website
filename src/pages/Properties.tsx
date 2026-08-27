@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -33,6 +33,7 @@ import {
 import { Plus, Edit, Trash2, Upload, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { errorMessage } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -85,7 +86,7 @@ const Properties = () => {
   const [csvData, setCsvData] = useState<string[][]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [headerMapping, setHeaderMapping] = useState<Record<string, string>>({});
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [propertyImages, setPropertyImages] = useState<string[]>([]);
@@ -113,8 +114,10 @@ const Properties = () => {
     }
   }, [isAdmin, loading, navigate]);
 
-  // Fetch properties
-  const fetchProperties = async () => {
+  // Fetch properties. useCallback so the effect below can depend on it
+  // honestly rather than omitting it; it closes over nothing but stable
+  // setters, the module-level client and `toast`.
+  const fetchProperties = useCallback(async () => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -135,13 +138,13 @@ const Properties = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchProperties();
     }
-  }, [isAdmin]);
+  }, [isAdmin, fetchProperties]);
 
   const uploadPropertyImages = async (files: File[], mlsnum: string) => {
     setUploadingImages(true);
@@ -337,11 +340,11 @@ const Properties = () => {
 
       setIsDialogOpen(false);
       fetchProperties();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving property:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to save property',
+        description: errorMessage(error) || 'Failed to save property',
         variant: 'destructive',
       });
     }
@@ -394,11 +397,11 @@ const Properties = () => {
       setSelectedPropertyIds(new Set());
       setSelectedProperty(null);
       fetchProperties();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting properties:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to delete properties',
+        description: errorMessage(error) || 'Failed to delete properties',
         variant: 'destructive',
       });
     }
@@ -408,7 +411,7 @@ const Properties = () => {
     if (selectedPropertyIds.size === 0) return;
 
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
 
@@ -440,11 +443,11 @@ const Properties = () => {
       setIsBulkEditDialogOpen(false);
       setSelectedPropertyIds(new Set());
       fetchProperties();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error bulk editing properties:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update properties',
+        description: errorMessage(error) || 'Failed to update properties',
         variant: 'destructive',
       });
     }
@@ -600,7 +603,7 @@ const Properties = () => {
     if (csvData.length === 0) return;
 
     const preview = csvData.slice(0, 5).map((row) => {
-      const mapped: any = {};
+      const mapped: Record<string, unknown> = {};
       csvHeaders.forEach((header, index) => {
         const dbColumn = headerMapping[header];
         if (dbColumn && row[index]) {
@@ -627,7 +630,11 @@ const Properties = () => {
     if (Object.keys(headerMapping).length > 0 && csvData.length > 0) {
       generatePreview();
     }
-  }, [headerMapping]);
+    // generatePreview is re-created every render, so it stays out of the array;
+    // csvData.length is in it because new rows with an unchanged header mapping
+    // used to leave the preview showing the previous file.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [headerMapping, csvData.length]);
 
   const handleCsvImport = async () => {
     try {
@@ -647,7 +654,7 @@ const Properties = () => {
 
       // Process all rows
       const propertiesToInsert = csvData.map((row) => {
-        const property: any = {};
+        const property: Record<string, unknown> = {};
         csvHeaders.forEach((header, index) => {
           const dbColumn = headerMapping[header];
           if (dbColumn && row[index]) {
@@ -701,11 +708,11 @@ const Properties = () => {
       setHeaderMapping({});
       setPreviewData([]);
       fetchProperties();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error importing CSV:', error);
       toast({
         title: 'Error',
-        description: error.message || 'Failed to import properties',
+        description: errorMessage(error) || 'Failed to import properties',
         variant: 'destructive',
       });
     }
@@ -1237,7 +1244,7 @@ const Properties = () => {
                           <TableBody>
                             {previewData.map((row, idx) => (
                               <TableRow key={idx}>
-                                {Object.values(row).map((value: any, cellIdx) => (
+                                {Object.values(row).map((value, cellIdx) => (
                                   <TableCell key={cellIdx}>
                                     {value !== null && value !== undefined ? String(value) : '-'}
                                   </TableCell>

@@ -445,7 +445,7 @@ export default function CRMDeals() {
   // Update deal stage mutation
   const updateDealStage = useMutation({
     mutationFn: async ({ dealId, newStage }: { dealId: number; newStage: Deal['stage'] }) => {
-      const updateData: any = { stage: newStage };
+      const updateData: Record<string, unknown> = { stage: newStage };
       
       // If moving to closed, try to calculate commission if house_price exists but commission doesn't
       if (newStage === 'closed') {
@@ -488,7 +488,7 @@ export default function CRMDeals() {
 
       // `probability` is deliberately absent — the field is gone from the UI
       // and the column carries a default.
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         title: dealData.title,
         stage: dealData.stage,
         expected_close_date: dealData.expected_close_date || null,
@@ -560,7 +560,7 @@ export default function CRMDeals() {
       // Build insert object, only including fields that exist. `probability`
       // is deliberately absent — the column has a default, and the field is
       // gone from the UI.
-      const insertData: any = {
+      const insertData: Record<string, unknown> = {
         user_id: user.id,
         title: deal.title,
         stage: deal.stage,

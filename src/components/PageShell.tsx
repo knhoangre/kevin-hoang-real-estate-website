@@ -4,6 +4,9 @@ import BreadcrumbBar from '@/components/BreadcrumbBar';
 import CtaBand from '@/components/CtaBand';
 import { breadcrumbs, type Crumb } from '@/lib/schema';
 import { SITE, telHref, smsHref } from '@/lib/siteConfig';
+import { defaultStrip, type StripItem } from '@/lib/strip';
+
+export type { StripItem };
 import { alternatesFor } from '@/lib/viRoutes';
 
 /** `prose` is a reading column; `wide` holds card grids, tables and the roadmap. */
@@ -26,11 +29,6 @@ const HERO_SIZES: Record<HeroSize, string> = {
   standard: 'relative isolate flex min-h-[56vh] items-end overflow-hidden bg-ink-deep',
   compact: 'relative isolate overflow-hidden bg-ink-deep',
 };
-
-export interface StripItem {
-  term: string;
-  value: string;
-}
 
 export interface PageShellProps {
   /** Route path. Drives the canonical and the hreflang set. */
@@ -115,13 +113,6 @@ const HeroLayout = ({
   );
 };
 
-/** The four checkable facts, all sourced from siteConfig rather than typed in. */
-export const defaultStrip = (labels?: [string, string, string, string]): StripItem[] => [
-  { term: labels?.[0] ?? 'Brokerage', value: SITE.brokerage },
-  { term: labels?.[1] ?? 'Licensed', value: 'MA Broker' },
-  { term: labels?.[2] ?? 'Towns covered', value: String(SITE.areaServed.length) },
-  { term: labels?.[3] ?? 'Languages', value: 'English · Tiếng Việt' },
-];
 
 /**
  * The site's one page chrome: head tags, dark hero, breadcrumbs, eyebrow, h1,

@@ -85,6 +85,11 @@ const Events = () => {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    // handleReset is declared below this effect, so naming it here is a TDZ
+    // ReferenceError; and its identity changes every render, which would
+    // restart this timer continuously so the reset never fired. Firing on
+    // `success` alone is the intended behaviour.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [success]);
 
   const fetchPreviousEvents = async () => {

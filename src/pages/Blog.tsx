@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { blogPosts } from "@/data/blogData";
+import { blogPosts, type BlogPost as BlogPostType } from '@/data/blogData';
 import { ArrowRight } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -27,11 +27,11 @@ const Blog = () => {
     }
   }, [location]);
 
-  const getTranslatedTitle = (post: any) => {
+  const getTranslatedTitle = (post: BlogPostType) => {
     return currentLanguage === 'vi' && post.titleVi ? post.titleVi : post.title;
   };
 
-  const getTranslatedExcerpt = (post: any) => {
+  const getTranslatedExcerpt = (post: BlogPostType) => {
     return currentLanguage === 'vi' && post.excerptVi ? post.excerptVi : post.excerpt;
   };
 

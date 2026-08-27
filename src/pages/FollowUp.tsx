@@ -45,7 +45,7 @@ const FollowUp = () => {
     if (tabFromPath !== activeTab) {
       setActiveTab(tabFromPath);
     }
-  }, [location.pathname]);
+  }, [location.pathname, activeTab]);
 
   // Handle tab change
   const handleTabChange = (value: string) => {

@@ -5,6 +5,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, MapPin, Users, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { errorMessage } from '@/lib/utils';
+
+/**
+ * A row as it arrives from either source: the flattened `unified_contacts`
+ * view, or the base table with its related contact_* rows nested. Supabase
+ * returns the nested ones as an object or a single-element array depending on
+ * the relationship, which is why each shape is a union.
+ */
+
+/**
+ * Reads one field out of a Supabase relation that arrives either as an object
+ * or as a single-element array, depending on how the relationship resolves.
+ * Each call site used to spell this out as a three-branch `||` chain.
+ */
+const joined = (
+  v: Record<string, unknown> | Record<string, unknown>[] | null | undefined,
+  key: string,
+): string | null => {
+  const row = Array.isArray(v) ? v[0] : v;
+  const value = row?.[key];
+  return typeof value === 'string' ? value : null;
+};
+
+type JoinedContactRow = {
+  [key: string]: unknown;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  [relation: `contact_${string}`]:
+    | Record<string, unknown>
+    | Record<string, unknown>[]
+    | null
+    | undefined;
+};
+
 
 interface OpenHouseSignIn {
   id: number;
@@ -147,7 +183,7 @@ const OpenHousesList = () => {
       });
 
       // Transform the data
-      const transformedData: OpenHouseSignIn[] = signInsData.map((item: any) => {
+      const transformedData: OpenHouseSignIn[] = signInsData.map((item: JoinedContactRow) => {
         const firstName = item.first_name_id ? firstNameMap.get(item.first_name_id) : null;
         const lastName = item.last_name_id ? lastNameMap.get(item.last_name_id) : null;
         const email = item.email_id ? emailMap.get(item.email_id) : null;
@@ -211,15 +247,9 @@ const OpenHousesList = () => {
       console.log('📦 Grouped data:', grouped);
       
       setGroupedOpenHouses(grouped);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ Error fetching open houses:', err);
-      console.error('Error details:', {
-        message: err.message,
-        code: err.code,
-        details: err.details,
-        hint: err.hint
-      });
-      setError(err.message || 'Failed to load open house sign-ins');
+      setError(errorMessage(err) || 'Failed to load open house sign-ins');
     } finally {
       setLoading(false);
     }
@@ -263,7 +293,7 @@ const OpenHousesList = () => {
 
       // Invalidate unread counts query to update badges
       queryClient.invalidateQueries({ queryKey: ['unread-counts'] });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating read status:', err);
     }
   };
@@ -300,7 +330,7 @@ const OpenHousesList = () => {
           })
           .filter((group): group is GroupedOpenHouse => group !== null);
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting sign-in:', err);
       alert('Failed to delete sign-in. Please try again.');
     }

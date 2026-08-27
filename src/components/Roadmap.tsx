@@ -133,6 +133,7 @@ const Roadmap = ({
     // steps.length, not steps: the parents build the array inline from t(), so
     // it is a new reference every render — depending on it would rebuild the
     // observer on each setActive and thrash.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steps.length]);
 
   /* Measure the active index entry so the marker can slide onto it. Re-measured

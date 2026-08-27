@@ -1,5 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import type {
+  AuthResponse,
+  AuthTokenResponsePassword,
+  AuthError,
+  OAuthResponse,
+  Session,
+  User,
+} from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 type AuthContextType = {
@@ -8,10 +15,10 @@ type AuthContextType = {
   avatarUrl: string | null;
   avatarInitials: string | null;
   isAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<any>;
-  signInWithGoogle: () => Promise<any>;
-  signUp: (email: string, password: string) => Promise<any>;
-  signOut: () => Promise<any>;
+  signIn: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
+  signInWithGoogle: () => Promise<OAuthResponse>;
+  signUp: (email: string, password: string) => Promise<AuthResponse>;
+  signOut: () => Promise<{ error: AuthError | null }>;
   refreshUser: () => Promise<void>;
   updateAvatarUrl: (url: string) => Promise<void>;
   loading: boolean;

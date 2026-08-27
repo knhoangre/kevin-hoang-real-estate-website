@@ -45,6 +45,7 @@ import {
 import { Search, Mail, Phone, Calendar, MessageSquare, Upload, Download, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Trash2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { errorMessage } from '@/lib/utils';
 
 type Address = {
   id: number;
@@ -107,7 +108,7 @@ export default function CRMContacts() {
   const [csvData, setCsvData] = useState<string[][]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [headerMapping, setHeaderMapping] = useState<Record<string, string>>({});
-  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedContactIds, setSelectedContactIds] = useState<number[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -163,13 +164,13 @@ export default function CRMContacts() {
   const sortedContacts = [...filteredContacts].sort((a, b) => {
     if (!sortField) return 0;
     
-    let aValue: any = a[sortField];
-    let bValue: any = b[sortField];
+    let aValue: unknown = a[sortField];
+    let bValue: unknown = b[sortField];
     
     // Handle date fields
     if (sortField === 'last_contact_at' || sortField === 'birthday' || sortField === 'home_anniversary') {
-      aValue = aValue ? new Date(aValue).getTime() : 0;
-      bValue = bValue ? new Date(bValue).getTime() : 0;
+      aValue = aValue ? new Date(String(aValue)).getTime() : 0;
+      bValue = bValue ? new Date(String(bValue)).getTime() : 0;
     }
     
     // Handle string fields
@@ -245,9 +246,9 @@ export default function CRMContacts() {
       setSelectedContact(null);
       setDeleteDialogOpen(false);
       setDeleteTargetId(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting contact:', error);
-      toast.error(error.message || 'Failed to delete contact');
+      toast.error(errorMessage(error) || 'Failed to delete contact');
     }
   };
 
@@ -264,9 +265,9 @@ export default function CRMContacts() {
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
       setSelectedContactIds([]);
       setBulkDeleteDialogOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting contacts:', error);
-      toast.error(error.message || 'Failed to delete contacts');
+      toast.error(errorMessage(error) || 'Failed to delete contacts');
     }
   };
 
@@ -413,7 +414,7 @@ export default function CRMContacts() {
     if (csvData.length === 0) return;
 
     const preview = csvData.slice(0, 5).map((row) => {
-      const mapped: any = {};
+      const mapped: Record<string, unknown> = {};
       csvHeaders.forEach((header, index) => {
         const dbColumn = headerMapping[header];
         if (dbColumn && row[index]) {
@@ -430,7 +431,11 @@ export default function CRMContacts() {
     if (Object.keys(headerMapping).length > 0 && csvData.length > 0) {
       generatePreview();
     }
-  }, [headerMapping]);
+    // generatePreview is re-created every render, so it stays out of the array;
+    // csvData.length is in it because new rows with an unchanged header mapping
+    // used to leave the preview showing the previous file.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [headerMapping, csvData.length]);
 
   // Export contacts to CSV
   const handleExport = () => {
@@ -491,7 +496,7 @@ export default function CRMContacts() {
 
       // Process all rows and create contact entries
       const contactsToImport = csvData.map((row) => {
-        const contact: any = {};
+        const contact: Record<string, unknown> = {};
         csvHeaders.forEach((header, index) => {
           const dbColumn = headerMapping[header];
           if (dbColumn && row[index]) {
@@ -584,7 +589,7 @@ export default function CRMContacts() {
             let phoneId = null;
             if (contact.phone) {
               // Format phone number if provided
-              let formattedPhone = contact.phone;
+              let formattedPhone = String(contact.phone);
               const numbers = formattedPhone.replace(/\D/g, "");
               if (numbers.length === 10) {
                 formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
@@ -755,7 +760,7 @@ export default function CRMContacts() {
 
             // Add tags if provided (comma-separated)
             if (contact.tags) {
-              const tagNames = contact.tags.split(',').map(t => t.trim()).filter(t => t);
+              const tagNames = String(contact.tags).split(',').map((t) => t.trim()).filter(Boolean);
               for (const tagName of tagNames) {
                 // Get or create tag
                 let tagId;
@@ -791,9 +796,9 @@ export default function CRMContacts() {
             }
 
             importedCount++;
-          } catch (err: any) {
+          } catch (err: unknown) {
             errorCount++;
-            const errorMsg = `Failed to import ${contact.first_name} ${contact.last_name} (${contact.email}): ${err.message || err}`;
+            const errorMsg = `Failed to import ${contact.first_name} ${contact.last_name} (${contact.email}): ${errorMessage(err) || err}`;
             console.error('Error importing contact:', contact, err);
             errors.push(errorMsg);
             // Continue with next contact instead of stopping
@@ -832,9 +837,9 @@ export default function CRMContacts() {
         setPreviewData([]);
         queryClient.invalidateQueries({ queryKey: ['crm-contacts'] });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error importing CSV:', error);
-      toast.error(error.message || 'Failed to import contacts');
+      toast.error(errorMessage(error) || 'Failed to import contacts');
     }
   };
 
@@ -1159,9 +1164,9 @@ export default function CRMContacts() {
       setIsEditing(false);
       queryClient.invalidateQueries({ queryKey: ['crm-contacts'] });
       setSelectedContact(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating contact:', error);
-      toast.error(error.message || 'Failed to update contact');
+      toast.error(errorMessage(error) || 'Failed to update contact');
     }
   };
 
@@ -2154,7 +2159,7 @@ export default function CRMContacts() {
                           <TableBody>
                             {previewData.map((row, idx) => (
                               <TableRow key={idx}>
-                                {Object.values(row).map((value: any, cellIdx) => (
+                                {Object.values(row).map((value, cellIdx) => (
                                   <TableCell key={cellIdx}>
                                     {value !== null && value !== undefined ? String(value) : '-'}
                                   </TableCell>

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import PageShell, { ShellSection, defaultStrip } from '@/components/PageShell';
+import PageShell, { ShellSection } from '@/components/PageShell';
+import { defaultStrip } from '@/lib/strip';
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';

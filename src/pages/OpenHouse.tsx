@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
+import { errorMessage } from '@/lib/utils';
 
 const addressSchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -112,6 +113,11 @@ const OpenHouse = () => {
       }, 5000);
       return () => clearTimeout(timer);
     }
+    // handleReset is declared below this effect, so naming it here is a TDZ
+    // ReferenceError; and its identity changes every render, which would
+    // restart this timer continuously so the reset never fired. Firing on
+    // `success` alone is the intended behaviour.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [success]);
 
   const fetchPreviousAddresses = async () => {
@@ -257,13 +263,13 @@ const OpenHouse = () => {
         title: "Success!",
         description: "Your sign-in has been recorded successfully.",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error submitting sign-in:', err);
       
       // Check if it's a Supabase configuration error
-      const errorMessage = err?.message || err?.error?.message || 'Unknown error';
-      const isConfigError = errorMessage.includes('Supabase not configured') || 
-                           errorMessage.includes('environment variables');
+      const message = errorMessage(err, 'Unknown error');
+      const isConfigError = message.includes('Supabase not configured') ||
+                           message.includes('environment variables');
       
       if (isConfigError) {
         setError('Supabase is not configured. Please set up VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
