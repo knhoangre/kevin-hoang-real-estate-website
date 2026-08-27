@@ -17,7 +17,7 @@ const TermsOfService = () => {
       description="The terms that apply to your use of the Kevin Hoang Real Estate website."
       jsonLd={breadcrumbs(crumbs)}
 />
-      <div className="pt-16">
+      <div className="pt-20">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
               <div className="max-w-4xl mx-auto">
@@ -28,7 +28,7 @@ const TermsOfService = () => {
                 to run the full container width while everything else was
                 capped, which is what made the trail look over-indented. */}
             <div className="max-w-4xl mx-auto mb-16 enter-down">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
+              <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 TERMS OF SERVICE
               </h1>
               <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
@@ -43,7 +43,7 @@ const TermsOfService = () => {
                 </p>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">1. Acceptance of Terms</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">1. Acceptance of Terms</h2>
                   <p className="text-gray-700 mb-4">
                     By accessing or using our website, services, or any content provided by Kevin Hoang Real Estate ("we," "us," or "our"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access our services.
                   </p>
@@ -53,7 +53,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">2. Description of Services</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">2. Description of Services</h2>
                   <p className="text-gray-700 mb-4">
                     We provide real estate brokerage services, including but not limited to:
                   </p>
@@ -73,7 +73,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">3. User Accounts and Registration</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">3. User Accounts and Registration</h2>
                   <p className="text-gray-700 mb-4">
                     To access certain features of our services, you may be required to create an account. When creating an account, you agree to:
                   </p>
@@ -90,7 +90,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">4. Acceptable Use</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">4. Acceptable Use</h2>
                   <p className="text-gray-700 mb-4">
                     You agree to use our services only for lawful purposes. You may not:
                   </p>
@@ -112,8 +112,8 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">5. Real Estate Representation and Agency</h2>
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Agency Relationships</h3>
+                  <h2 className="text-2xl font-bold text-ink mb-4">5. Real Estate Representation and Agency</h2>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Agency Relationships</h3>
                   <p className="text-gray-700 mb-4">
                     Real estate agency relationships are governed by state law. We will disclose our agency status in all transactions as required by law. Types of representation include:
                   </p>
@@ -124,7 +124,7 @@ const TermsOfService = () => {
                     <li><strong>Transaction Broker:</strong> Facilitating transactions without advocacy</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Fiduciary Duties</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Fiduciary Duties</h3>
                   <p className="text-gray-700 mb-4">
                     When acting as your agent, we owe you fiduciary duties including:
                   </p>
@@ -139,7 +139,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">6. Fees and Commission</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">6. Fees and Commission</h2>
                   <p className="text-gray-700 mb-4">
                     Real estate commission and fees are negotiable and will be agreed upon in writing before services are provided. Standard practices include:
                   </p>
@@ -156,8 +156,8 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">7. Property Information and Disclaimers</h2>
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Information Accuracy</h3>
+                  <h2 className="text-2xl font-bold text-ink mb-4">7. Property Information and Disclaimers</h2>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Information Accuracy</h3>
                   <p className="text-gray-700 mb-4">
                     While we strive to provide accurate property information, we make no warranties or representations regarding:
                   </p>
@@ -169,7 +169,7 @@ const TermsOfService = () => {
                     <li>Suitability of properties for specific purposes</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Professional Inspections</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Professional Inspections</h3>
                   <p className="text-gray-700 mb-4">
                     We strongly recommend that all buyers:
                   </p>
@@ -183,7 +183,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">8. Intellectual Property Rights</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">8. Intellectual Property Rights</h2>
                   <p className="text-gray-700 mb-4">
                     Our website and services contain intellectual property owned by us or our licensors, including:
                   </p>
@@ -200,7 +200,7 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">9. Privacy and Data Protection</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">9. Privacy and Data Protection</h2>
                   <p className="text-gray-700 mb-4">
                     Your privacy is important to us. Our collection, use, and protection of your personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference.
                   </p>
@@ -210,8 +210,8 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">10. Disclaimers and Limitations of Liability</h2>
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Service Disclaimers</h3>
+                  <h2 className="text-2xl font-bold text-ink mb-4">10. Disclaimers and Limitations of Liability</h2>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Service Disclaimers</h3>
                   <p className="text-gray-700 mb-4">
                     Our services are provided "as is" and "as available" without warranties of any kind. We disclaim all warranties, including:
                   </p>
@@ -223,7 +223,7 @@ const TermsOfService = () => {
                     <li>Security of data transmission</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Limitation of Liability</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Limitation of Liability</h3>
                   <p className="text-gray-700 mb-4">
                     To the maximum extent permitted by law, we shall not be liable for:
                   </p>
@@ -240,14 +240,14 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">11. Indemnification</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">11. Indemnification</h2>
                   <p className="text-gray-700 mb-6">
                     You agree to indemnify, defend, and hold harmless Kevin Hoang Real Estate, its officers, employees, and agents from any claims, damages, losses, or expenses (including attorney's fees) arising from your use of our services, violation of these Terms, or infringement of any third-party rights.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">12. Fair Housing and Anti-Discrimination</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">12. Fair Housing and Anti-Discrimination</h2>
                   <p className="text-gray-700 mb-4">
                     We are committed to fair housing practices and comply with all applicable fair housing laws, including:
                   </p>
@@ -263,13 +263,13 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">13. Dispute Resolution</h2>
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Informal Resolution</h3>
+                  <h2 className="text-2xl font-bold text-ink mb-4">13. Dispute Resolution</h2>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Informal Resolution</h3>
                   <p className="text-gray-700 mb-4">
                     Before pursuing formal dispute resolution, we encourage you to contact us directly to resolve any issues informally.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Binding Arbitration</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Binding Arbitration</h3>
                   <p className="text-gray-700 mb-4">
                     Any disputes arising from these Terms or our services shall be resolved through binding arbitration rather than in court, except for:
                   </p>
@@ -282,21 +282,21 @@ const TermsOfService = () => {
                     Arbitration will be conducted by a neutral arbitrator in accordance with the rules of the American Arbitration Association. The arbitrator's decision will be final and binding.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Class Action Waiver</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Class Action Waiver</h3>
                   <p className="text-gray-700 mb-6">
                     You agree that any arbitration or legal proceeding will be conducted on an individual basis and not as part of a class, collective, or representative action.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">14. Governing Law and Jurisdiction</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">14. Governing Law and Jurisdiction</h2>
                   <p className="text-gray-700 mb-6">
                     These Terms are governed by the laws of the Commonwealth of Massachusetts, without regard to conflict of law principles. Any legal actions not subject to arbitration must be brought in the state or federal courts located in Massachusetts.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">15. Termination</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">15. Termination</h2>
                   <p className="text-gray-700 mb-4">
                     We may terminate or suspend your access to our services immediately, without prior notice, for:
                   </p>
@@ -313,28 +313,28 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">16. Changes to Terms</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">16. Changes to Terms</h2>
                   <p className="text-gray-700 mb-6">
                     We reserve the right to modify these Terms at any time. Changes will be effective immediately upon posting on our website. Your continued use of our services after changes are posted constitutes acceptance of the modified Terms. We encourage you to review these Terms periodically.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">17. Severability</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">17. Severability</h2>
                   <p className="text-gray-700 mb-6">
                     If any provision of these Terms is found to be invalid, illegal, or unenforceable, the remaining provisions will continue in full force and effect. The invalid provision will be replaced with a valid provision that most closely reflects the original intent.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">18. Entire Agreement</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">18. Entire Agreement</h2>
                   <p className="text-gray-700 mb-6">
                     These Terms, together with our Privacy Policy and any other legal notices published on our website, constitute the complete agreement between you and us regarding your use of our services. These Terms supersede all prior agreements, understandings, and communications.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">19. Contact Information</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">19. Contact Information</h2>
                   <p className="text-gray-700 mb-4">
                     If you have any questions about these Terms of Service, please contact us:
                   </p>
@@ -347,19 +347,19 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="mb-8 border-t pt-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">20. Additional Provisions</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">20. Additional Provisions</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Real Estate Licensing</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Real Estate Licensing</h3>
                   <p className="text-gray-700 mb-4">
                     Kevin Hoang is a licensed real estate professional. All real estate activities are conducted in accordance with state licensing requirements and professional standards.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Multiple Listing Service (MLS)</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Multiple Listing Service (MLS)</h3>
                   <p className="text-gray-700 mb-4">
                     Property information may be obtained from MLS databases and is subject to MLS rules and regulations. MLS information is deemed reliable but not guaranteed.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Professional Standards</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Professional Standards</h3>
                   <p className="text-gray-700 mb-6">
                     We adhere to the Code of Ethics of the National Association of Realtors® and all applicable professional standards and regulations governing real estate practice.
                   </p>

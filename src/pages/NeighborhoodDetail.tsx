@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Seo from "@/components/Seo";
 import BreadcrumbBar from "@/components/BreadcrumbBar";
 import NearbyTowns from "@/components/NearbyTowns";
+import AuthorCard from "@/components/AuthorCard";
 import { breadcrumbs, faqPage } from "@/lib/schema";
 import TownFactsPanel from "@/components/TownFactsPanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -2516,7 +2517,7 @@ const NeighborhoodDetail = () => {
         ogImage={neighborhood.image}
         jsonLd={faqs.length ? [breadcrumbs(crumbs), faqPage(faqs)] : breadcrumbs(crumbs)}
       />
-      <div className="pt-16">
+      <div className="pt-20">
         <div className="container px-4 py-24">
           {/*
             The breadcrumb is the way back up, so the separate "Back to
@@ -2534,7 +2535,7 @@ const NeighborhoodDetail = () => {
 
           <article className="max-w-4xl mx-auto">
             <header className="mb-12 enter">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a1a1a] mb-4 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-ink mb-4 leading-tight">
                 {neighborhood.title}
               </h1>
               <p className="text-xl text-gray-600 mb-8">
@@ -2562,7 +2563,7 @@ const NeighborhoodDetail = () => {
                         {section.text}
                       </p>
                       {section.highlight && (
-                        <p className="text-xl font-semibold text-[#1a1a1a] leading-relaxed">
+                        <p className="text-xl font-semibold text-ink leading-relaxed">
                           {section.highlight}
                         </p>
                       )}
@@ -2573,7 +2574,7 @@ const NeighborhoodDetail = () => {
                 if (section.type === "section") {
                   return (
                     <section key={index} className="mb-12 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
-                      <h2 className="text-3xl md:text-4xl font-bold text-[#1a1a1a] mt-12 mb-6">
+                      <h2 className="text-3xl md:text-4xl font-bold text-ink mt-12 mb-6">
                         {section.title}
                       </h2>
                       {section.text && (
@@ -2582,7 +2583,7 @@ const NeighborhoodDetail = () => {
                         </p>
                       )}
                       {section.highlight && (
-                        <p className="text-lg font-semibold text-[#1a1a1a] mb-4">
+                        <p className="text-lg font-semibold text-ink mb-4">
                           {section.highlight}
                         </p>
                       )}
@@ -2601,8 +2602,8 @@ const NeighborhoodDetail = () => {
                       {section.neighborhoods && (
                         <div className="space-y-6 mt-6">
                           {section.neighborhoods.map((n: any, i: number) => (
-                            <div key={i} className="border-l-4 border-[#1a1a1a] pl-6 py-2">
-                              <h3 className="text-xl font-semibold text-[#1a1a1a] mb-2">
+                            <div key={i} className="border-l-4 border-ink pl-6 py-2">
+                              <h3 className="text-xl font-semibold text-ink mb-2">
                                 {n.name}
                               </h3>
                               <p className="text-gray-700 leading-relaxed">
@@ -2622,7 +2623,7 @@ const NeighborhoodDetail = () => {
                               <div className="flex items-start">
                                 <span className="text-3xl mr-4">{reason.icon}</span>
                                 <div>
-                                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-2">
+                                  <h3 className="text-xl font-semibold text-ink mb-2">
                                     {reason.title}
                                   </h3>
                                   <p className="text-gray-700 leading-relaxed">
@@ -2641,7 +2642,7 @@ const NeighborhoodDetail = () => {
                 if (section.type === "subsection") {
                   return (
                     <div key={index} className="mb-8 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
-                      <h3 className="text-2xl font-semibold text-[#1a1a1a] mt-8 mb-4">
+                      <h3 className="text-2xl font-semibold text-ink mt-8 mb-4">
                         {section.title}
                       </h3>
                       {section.text && (
@@ -2668,7 +2669,7 @@ const NeighborhoodDetail = () => {
                 if (section.type === "cta") {
                   return (
                     <div key={index} className="mt-16 pt-8 border-t border-gray-200 enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
-                      <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">
+                      <h2 className="text-3xl font-bold text-ink mb-6">
                         {section.title}
                       </h2>
                       <p className="text-gray-700 leading-relaxed mb-6 text-lg">
@@ -2676,7 +2677,7 @@ const NeighborhoodDetail = () => {
                       </p>
                       {section.highlight && (
                         <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg mb-6">
-                          <p className="text-lg font-semibold text-[#1a1a1a] leading-relaxed">
+                          <p className="text-lg font-semibold text-ink leading-relaxed">
                             {section.highlight}
                           </p>
                         </div>
@@ -2698,7 +2699,7 @@ const NeighborhoodDetail = () => {
 
             {faqs.length > 0 && (
               <section className="my-12">
-                <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 tracking-tight">
+                <h2 className="text-2xl font-bold text-ink mb-6 tracking-tight">
                   Common questions about {shortName}
                 </h2>
                 {/* Answers stay in the DOM while collapsed — the FAQPage markup
@@ -2710,7 +2711,7 @@ const NeighborhoodDetail = () => {
             <NearbyTowns currentSlug={slug || ""} />
 
             <aside className="mt-12 rounded-xl bg-gray-50 p-8">
-              <h2 className="text-2xl font-bold text-[#1a1a1a] mb-3">
+              <h2 className="text-2xl font-bold text-ink mb-3">
                 Thinking about buying or selling here?
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -2730,6 +2731,8 @@ const NeighborhoodDetail = () => {
                 covering this town and the rest of Greater Boston.
               </p>
             </aside>
+
+            <AuthorCard className="mt-12" />
           </article>
         </div>
       </div>

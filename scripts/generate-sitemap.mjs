@@ -11,15 +11,23 @@ const esc = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
-// Build date for routes with no content-derived timestamp. Better than omitting
-// lastmod entirely — it tells crawlers when the page was last deployed.
-const BUILD_DATE = new Date().toISOString().slice(0, 10);
-
-const urlEntry = ({ path, priority, changefreq }) =>
+/**
+ * `lastmod` is emitted ONLY where a real content date exists — which today
+ * means the blog, where routes.mjs reads each post's `updated ?? date`.
+ *
+ * This used to stamp the build date on all 117 URLs. That is not a freshness
+ * signal, it is noise: every page claimed to change on every deploy, including
+ * the legal pages that had not been touched in a year. Google's guidance is
+ * that lastmod must reflect the last significant change, and it discounts the
+ * value for a whole sitemap once the dates stop being credible. An absent
+ * lastmod is simply not used — the same "absent beats wrong" discipline that
+ * governs SITE.geo and SITE.hours.
+ */
+const urlEntry = ({ path, priority, changefreq, lastmod }) =>
   [
     '  <url>',
     `    <loc>${esc(ORIGIN + path)}</loc>`,
-    `    <lastmod>${BUILD_DATE}</lastmod>`,
+    lastmod ? `    <lastmod>${esc(lastmod)}</lastmod>` : null,
     changefreq ? `    <changefreq>${changefreq}</changefreq>` : null,
     priority != null ? `    <priority>${priority.toFixed(1)}</priority>` : null,
     '  </url>',
@@ -52,7 +60,10 @@ writeFileSync(
   ].join('\n')
 );
 
+const dated = all.filter((r) => r.lastmod).length;
+
 console.log(
   `sitemap: wrote dist/sitemap.xml — ${all.length} URLs ` +
-  `(${all.length - BLOG_ROUTES.length} static, ${BLOG_ROUTES.length} blog)`
+  `(${all.length - BLOG_ROUTES.length} static, ${BLOG_ROUTES.length} blog), ` +
+  `${dated} with lastmod`
 );

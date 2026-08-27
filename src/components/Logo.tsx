@@ -22,7 +22,7 @@ const Logo: React.FC<LogoProps> = ({ className }) => {
         fetchPriority="high"
         decoding="async"
       />
-      {/* <span className="ml-2 text-2xl font-bold text-[#1a1a1a] hidden sm:inline-block">Kevin Hoang</span> */}
+      {/* <span className="ml-2 text-2xl font-bold text-ink hidden sm:inline-block">Kevin Hoang</span> */}
     </div>
   );
 };

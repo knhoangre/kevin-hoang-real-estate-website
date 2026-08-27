@@ -2,9 +2,7 @@
 import React from 'react';
 import { ArrowRight, CheckCircle, Home, DollarSign, KeyRound, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Seo from "@/components/Seo";
-import BreadcrumbBar from "@/components/BreadcrumbBar";
-import { breadcrumbs } from "@/lib/schema";
+import PageShell, { ShellSection } from "@/components/PageShell";
 
 const FirstTimeBuyers = () => {
   const crumbs = [
@@ -13,27 +11,28 @@ const FirstTimeBuyers = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-    <Seo
-      title="First-Time Home Buyer Guide for Massachusetts"
-      description="Buying your first home in Massachusetts, start to finish: what you need saved, how pre-approval works, what the inspection is really for, and closing day."
-      keywords="first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer"
-      jsonLd={breadcrumbs(crumbs)}
-/>
-      
-      <div className="pt-24 pb-16">
-        <div className="container mx-auto px-4">
-          {/* Inside the container, so the trail carries the same horizontal
-              padding and column as the content. It used to sit outside it
-              entirely and ran flush to the viewport edge on mobile. */}
-          <BreadcrumbBar items={crumbs} />
-          <div className="text-center mb-12 enter">
-            <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">FIRST-TIME HOME BUYER GUIDE</h1>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Buying your first home is an exciting milestone. This comprehensive guide will walk you through every step of the process.
-            </p>
-          </div>
-
+    <PageShell
+      path="/first-time-buyers"
+      crumbs={crumbs}
+      seo={{
+        title: 'First-Time Home Buyer Guide for Massachusetts',
+        description:
+          'Buying your first home in Massachusetts, start to finish: what you need saved, how pre-approval works, what the inspection is really for, and closing day.',
+        keywords:
+          'first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer',
+      }}
+      eyebrow="First-time buyers"
+      h1="First-Time Home Buyer Guide"
+      lede="Buying your first home is a milestone and a process. This walks through every step of it, in the order you will actually meet them."
+      heroSize="compact"
+      width="wide"
+      cta={{
+        heading: 'Buying your first home?',
+        body:
+          'The first conversation costs nothing and commits you to nothing. It is mostly Kevin answering questions and telling you what to do before you tour anything.',
+      }}
+    >
+      <ShellSection width="wide">
           {/* Hero Section */}
           <div className="relative rounded-xl overflow-hidden mb-16 enter-fade" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
             <div 
@@ -51,7 +50,7 @@ const FirstTimeBuyers = () => {
 
           {/* Step by Step Guide */}
           <div className="mb-20">
-            <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12 enter">
+            <h2 className="text-3xl font-bold text-ink text-center mb-12 enter">
               YOUR STEP-BY-STEP GUIDE
             </h2>
 
@@ -100,7 +99,7 @@ const FirstTimeBuyers = () => {
                       <step.icon className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold mb-2 text-[#1a1a1a]">{step.title}</h3>
+                      <h3 className="text-xl font-semibold mb-2 text-ink">{step.title}</h3>
                       <p className="text-gray-600">{step.description}</p>
                     </div>
                   </div>
@@ -111,7 +110,7 @@ const FirstTimeBuyers = () => {
 
           {/* Common Mistakes Section */}
           <div className="mb-20 enter-fade">
-            <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12">AVOID THESE COMMON MISTAKES</h2>
+            <h2 className="text-3xl font-bold text-ink text-center mb-12">AVOID THESE COMMON MISTAKES</h2>
             
             <div className="bg-red-50 p-8 rounded-xl">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -134,7 +133,7 @@ const FirstTimeBuyers = () => {
 
           {/* Financial Tips Section */}
           <div className="mb-20 enter-fade">
-            <h2 className="text-3xl font-bold text-[#1a1a1a] text-center mb-12">FINANCIAL CONSIDERATIONS</h2>
+            <h2 className="text-3xl font-bold text-ink text-center mb-12">FINANCIAL CONSIDERATIONS</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
@@ -167,21 +166,20 @@ const FirstTimeBuyers = () => {
 
           {/* CTA Section */}
           <div className="text-center enter-fade">
-            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">READY TO START YOUR HOME BUYING JOURNEY?</h2>
+            <h2 className="text-3xl font-bold text-ink mb-6">READY TO START YOUR HOME BUYING JOURNEY?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto mb-8">
               I'm here to guide you through every step of the process and help you find your perfect first home.
             </p>
             <Link 
               to="/contact" 
-              className="bg-[#1a1a1a] text-white px-8 py-3 rounded-md inline-flex items-center group hover:bg-black transition-colors"
+              className="bg-ink text-white px-8 py-3 rounded-md inline-flex items-center group hover:bg-black transition-colors"
             >
               <span>SCHEDULE A CONSULTATION</span>
               <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </div>
-      </div>
-    </div>
+      </ShellSection>
+    </PageShell>
   );
 };
 

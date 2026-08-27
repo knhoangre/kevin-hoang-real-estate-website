@@ -1,5 +1,6 @@
 {
   "nav": {
+    "about": "About",
     "home": "Home",
     "buyer": "Buyer",
     "seller": "Seller",
@@ -293,7 +294,15 @@
         "question": "What should first-time homebuyers know about the Boston market?",
         "answer": "First-time homebuyers in Boston should understand that the market moves quickly, competition can be intense, and being financially prepared is essential. We recommend getting pre-approved for financing, understanding your must-haves versus nice-to-haves, being prepared to act decisively, and having realistic expectations about what your budget can purchase in different neighborhoods."
       }
-    }
+    },
+    "browse": "Browse",
+    "answered": "questions answered",
+    "still_asking": "Still have a question?",
+    "still_asking_body": "If it is not answered here, ask it directly. There is no obligation, and the first conversation is always free.",
+    "text_kevin": "Send a text",
+    "cta_heading": "Have a question this page did not answer?",
+    "cta_body": "Every situation has a detail that a general answer cannot cover. Call, text, or send a message — in English or Vietnamese, whichever you prefer.",
+    "cta_button": "Ask Kevin"
   },
   "calculators": {
     "title": "REAL ESTATE CALCULATORS",
@@ -387,7 +396,7 @@
     "view_resource": "View Resource",
     "roadmap_steps": {
       "step1": {
-        "title": "1. Preparation & Financial Readiness",
+        "title": "Preparation & Financial Readiness",
         "description": "Check your credit score – Aim for 620+ for conventional loans (higher score = better terms).",
         "details": [
           "Set a budget – Use online calculators or speak with a lender to determine how much you can afford (including taxes, insurance, and HOA fees if applicable).",
@@ -397,7 +406,7 @@
         ]
       },
       "step2": {
-        "title": "2. Hiring Professionals",
+        "title": "Hiring Professionals",
         "description": "Choose a buyer's agent – They represent your interests, negotiate on your behalf, and guide you through the process (paid from seller's commission in most cases).",
         "details": [
           "Select a lender/mortgage broker – Compare rates, fees, and programs (FHA, VA, USDA, conventional).",
@@ -405,7 +414,7 @@
         ]
       },
       "step3": {
-        "title": "3. House Hunting",
+        "title": "House Hunting",
         "description": "Search online & tour properties – MLS, Zillow, Redfin, open houses.",
         "details": [
           "Narrow your search – Consider market trends, property taxes, neighborhood safety, and future resale value.",
@@ -413,7 +422,7 @@
         ]
       },
       "step4": {
-        "title": "4. Making an Offer",
+        "title": "Making an Offer",
         "description": "Review comparable sales – Helps determine a fair and competitive price.",
         "details": [
           "Set terms – Price, deposit amount (earnest money), contingencies (inspection, financing, appraisal), closing date.",
@@ -422,7 +431,7 @@
         ]
       },
       "step5": {
-        "title": "5. Under Contract",
+        "title": "Under Contract",
         "description": "Deposit earnest money – Usually 1–3% of purchase price; held in escrow.",
         "details": [
           "Schedule inspections – General home inspection, plus specialized ones (radon, mold, septic, pests) if needed.",
@@ -431,7 +440,7 @@
         ]
       },
       "step6": {
-        "title": "6. Financing & Due Diligence",
+        "title": "Financing & Due Diligence",
         "description": "Provide documents to lender – Pay stubs, tax returns, bank statements.",
         "details": [
           "Secure homeowner's insurance – Required by lenders before closing.",
@@ -440,7 +449,7 @@
         ]
       },
       "step7": {
-        "title": "7. Closing",
+        "title": "Closing",
         "description": "Do final walkthrough – Confirm repairs are complete and home is in agreed condition.",
         "details": [
           "Sign closing documents – Mortgage, deed, disclosures.",
@@ -449,7 +458,7 @@
         ]
       },
       "step8": {
-        "title": "8. Post-Closing",
+        "title": "Post-Closing",
         "description": "Change locks & update security – Safety first.",
         "details": [
           "Transfer utilities – Gas, electric, water, internet.",
@@ -476,8 +485,8 @@
         "description": "What to look for and questions to ask during your home inspection."
       },
       "market_reports": {
-        "title": "Market Reports",
-        "description": "Stay updated with the latest real estate market trends and statistics in Boston."
+        "title": "Winning a Bidding War",
+        "description": "How competitive offers are actually won in Greater Boston, and which terms are worth conceding."
       },
       "neighborhood_profiles": {
         "title": "Neighborhood Profiles",
@@ -496,7 +505,7 @@
     "view_resource": "View Resource",
     "roadmap_steps": {
       "step1": {
-        "title": "1. Preparation & Planning",
+        "title": "Preparation & Planning",
         "description": "Assess your motivation & timing – Are you aiming for the highest price, quickest sale, or both?",
         "details": [
           "Research the market – Review recent comparable sales (comps) to understand pricing trends.",
@@ -505,7 +514,7 @@
         ]
       },
       "step2": {
-        "title": "2. Hiring Professionals",
+        "title": "Hiring Professionals",
         "description": "Choose a listing agent – They'll market, negotiate, and guide you through the sale (standard fee 5–6% split between listing and buyer agents).",
         "details": [
           "Optional specialists – Real estate attorney (common in states like MA), home stager, photographer.",
@@ -513,7 +522,7 @@
         ]
       },
       "step3": {
-        "title": "3. Preparing the Property",
+        "title": "Preparing the Property",
         "description": "Declutter & deep clean – Make rooms look larger and more inviting.",
         "details": [
           "Complete repairs & touch-ups – Fix obvious defects that could turn buyers away.",
@@ -523,7 +532,7 @@
         ]
       },
       "step4": {
-        "title": "4. Listing & Marketing",
+        "title": "Listing & Marketing",
         "description": "List on MLS – Your agent posts your home with full details, professional photos, and possibly a 3D tour.",
         "details": [
           "Marketing plan – Open houses, social media ads, email campaigns, real estate websites.",
@@ -531,7 +540,7 @@
         ]
       },
       "step5": {
-        "title": "5. Receiving & Negotiating Offers",
+        "title": "Receiving & Negotiating Offers",
         "description": "Review offers with your agent – Look beyond price: contingencies, closing date, financing type, earnest money.",
         "details": [
           "Counteroffer if needed – Adjust price, terms, or credits to find common ground.",
@@ -539,7 +548,7 @@
         ]
       },
       "step6": {
-        "title": "6. Under Contract",
+        "title": "Under Contract",
         "description": "Buyer inspections – Buyer will typically conduct a home inspection within a set time.",
         "details": [
           "Negotiate repairs or credits – Decide what to fix or credit back to the buyer.",
@@ -548,7 +557,7 @@
         ]
       },
       "step7": {
-        "title": "7. Preparing for Closing",
+        "title": "Preparing for Closing",
         "description": "Address contingencies – Make any agreed repairs, gather receipts.",
         "details": [
           "Coordinate move-out – Based on agreed closing and possession dates.",
@@ -557,7 +566,7 @@
         ]
       },
       "step8": {
-        "title": "8. Closing Day",
+        "title": "Closing Day",
         "description": "Buyer does final walkthrough – Confirms property condition matches agreement.",
         "details": [
           "Attend closing (or sign remotely) – Sign final documents transferring ownership.",
@@ -566,7 +575,7 @@
         ]
       },
       "step9": {
-        "title": "9. Post-Closing",
+        "title": "Post-Closing",
         "description": "Cancel insurance – After the buyer officially owns the home.",
         "details": [
           "File address change – USPS, banks, subscriptions.",
@@ -584,8 +593,8 @@
         "description": "Learn how to price your home effectively in the competitive Greater Boston market to attract serious buyers."
       },
       "seller_documentation": {
-        "title": "Seller Documentation Guide",
-        "description": "Overview of all the documents and disclosures required when selling your home in Massachusetts."
+        "title": "What Sellers Need Before Closing",
+        "description": "The documents, disclosures and certificates a Massachusetts seller must have ready."
       }
     }
   },

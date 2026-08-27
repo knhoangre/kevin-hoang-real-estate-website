@@ -87,7 +87,7 @@ const BuyerRoadmap = () => {
     <Roadmap
       title={t('buyer_guide.roadmap_title')}
       steps={steps}
-      accent="indigo"
+      accent="blue"
       stepLabel={t('roadmap.step')}
       ofLabel={t('roadmap.of')}
     />

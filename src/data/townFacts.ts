@@ -12,6 +12,9 @@
  * appreciation, days on market, school rankings — is deliberately absent.
  *
  * When a school opens, closes or a station changes, fix it HERE.
+ *
+ * `taxRate` is the one field here that changes annually. See its doc comment
+ * for where it must be sourced from and why it stays absent until it is.
  */
 
 export interface TownFacts {
@@ -30,7 +33,41 @@ export interface TownFacts {
   outdoors: string[];
   /** Anything a buyer should specifically check in this town. */
   buyerNote?: string;
+  /**
+   * Residential property tax rate, in dollars per $1,000 of assessed value.
+   *
+   * ABSENT UNTIL VERIFIED, like SITE.geo. The panel row and the derived FAQ
+   * entry both render nothing while this is undefined, so a town with no
+   * confirmed figure simply does not make the claim.
+   *
+   * "How much is property tax in <town>" is one of the most-asked questions
+   * about any of these towns and one of the few with a specific, checkable
+   * answer — which is exactly why it may be published, where a median price or
+   * an appreciation rate may not. It is also why a WRONG figure here would be
+   * worse than none: it is checkable, so being wrong is visible.
+   *
+   * Rates are set annually and change every year. Source them ONLY from the
+   * Massachusetts Department of Revenue Division of Local Services tax rate
+   * table, record the fiscal year they belong to, and update them together
+   * when the new table is published. A rate without its fiscal year is
+   * meaningless, which is why `fiscalYear` is not optional.
+   */
+  taxRate?: {
+    /** Dollars per $1,000 of assessed value, e.g. 12.34. */
+    rate: number;
+    /** Massachusetts fiscal year the rate applies to, e.g. 2026. */
+    fiscalYear: number;
+  };
 }
+
+/**
+ * Where every `taxRate` above must come from, shown next to the figure so a
+ * reader can check it. Rates are published per municipality each fiscal year.
+ */
+export const TAX_RATE_SOURCE = {
+  name: 'Massachusetts DOR, Division of Local Services',
+  url: 'https://www.mass.gov/lists/property-tax-rates-by-city-and-town',
+};
 
 export const TOWN_FACTS: Record<string, TownFacts> = {
   "needham-ma": {

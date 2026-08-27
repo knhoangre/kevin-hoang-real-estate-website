@@ -35,8 +35,8 @@ const RealEstateCalculators = () => {
 
   return (
     <div className="bg-gray-50 py-16">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8">{t('calculators.title')}</h2>
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-3xl font-bold text-ink mb-8">{t('calculators.title')}</h2>
 
         <Tabs defaultValue="mortgage" className="w-full" onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-lg relative border border-gray-200">
@@ -457,7 +457,7 @@ const MortgageCalculator = () => {
               <h3 className="text-xl font-bold">{t('calculators.monthly_payment')}</h3>
               <p className="text-gray-500">{t('calculators.total_payment_desc')}</p>
             </div>
-            <div className="text-3xl font-bold text-[#1a1a1a]">
+            <div className="text-3xl font-bold text-ink">
               ${isNaN(payment.total) ? "0.00" : payment.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
@@ -744,7 +744,7 @@ const SellerProceedsCalculator = () => {
               <h3 className="text-xl font-bold">{t('calculators.net_proceeds')}</h3>
               <p className="text-gray-500">{t('calculators.estimated_closing')}</p>
             </div>
-            <div className="text-3xl font-bold text-[#1a1a1a]">
+            <div className="text-3xl font-bold text-ink">
               ${proceeds.netProceeds.toLocaleString()}
             </div>
           </div>

@@ -54,7 +54,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-01-21",
-      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
       "permanent": true
     },
     {
@@ -89,7 +89,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-01-28",
-      "destination": "/blog/first-time-buying-boston",
+      "destination": "/first-time-buyers",
       "permanent": true
     },
     {
@@ -114,7 +114,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-02-02",
-      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "destination": "/blog/home-preparation-guide",
       "permanent": true
     },
     {
@@ -179,7 +179,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-02-15",
-      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
       "permanent": true
     },
     {
@@ -214,7 +214,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-02-22",
-      "destination": "/blog/first-time-buying-boston",
+      "destination": "/first-time-buyers",
       "permanent": true
     },
     {
@@ -239,7 +239,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-02-27",
-      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "destination": "/blog/home-preparation-guide",
       "permanent": true
     },
     {
@@ -304,7 +304,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-03-12",
-      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
       "permanent": true
     },
     {
@@ -339,7 +339,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-03-19",
-      "destination": "/blog/first-time-buying-boston",
+      "destination": "/first-time-buyers",
       "permanent": true
     },
     {
@@ -364,7 +364,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-03-24",
-      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "destination": "/blog/home-preparation-guide",
       "permanent": true
     },
     {
@@ -429,7 +429,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-04-06",
-      "destination": "/blog/hoa-rules-regulations-massachusetts",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
       "permanent": true
     },
     {
@@ -464,7 +464,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-04-13",
-      "destination": "/blog/first-time-buying-boston",
+      "destination": "/first-time-buyers",
       "permanent": true
     },
     {
@@ -489,7 +489,7 @@
     },
     {
       "source": "/blog/metro-boston-real-estate-2026-04-18",
-      "destination": "/blog/preparing-home-for-sale-massachusetts",
+      "destination": "/blog/home-preparation-guide",
       "permanent": true
     },
     {
@@ -500,6 +500,206 @@
     {
       "source": "/blog/metro-boston-real-estate-2026-04-20",
       "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-office-market-future",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/coworking-spaces-boston",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-industrial-spaces-evolution",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-retail-evolution",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-seaport-future",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-tech-corridors",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/tech-professionals-boston-real-estate",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/universities-boston-real-estate",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/wellness-focused-living-boston",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-emerging-neighborhoods",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/up-and-coming-boston-neighborhoods",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-suburban-market",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-luxury-home-market",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/luxury-real-estate-trends-mass",
+      "destination": "/neighborhoods",
+      "permanent": true
+    },
+    {
+      "source": "/blog/co-living-spaces-boston",
+      "destination": "/blog/renting-in-greater-boston-costs",
+      "permanent": true
+    },
+    {
+      "source": "/blog/micro-apartments-boston",
+      "destination": "/blog/renting-in-greater-boston-costs",
+      "permanent": true
+    },
+    {
+      "source": "/blog/student-housing-boston",
+      "destination": "/blog/renting-in-greater-boston-costs",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-luxury-rental-market",
+      "destination": "/blog/renting-in-greater-boston-costs",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-reits-investment",
+      "destination": "/blog/rental-property-investment-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/mass-real-estate-investment-guide",
+      "destination": "/blog/rental-property-investment-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-adaptive-reuse",
+      "destination": "/blog/historic-homes-massachusetts-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/historic-preservation-boston",
+      "destination": "/blog/historic-homes-massachusetts-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-waterfront-future",
+      "destination": "/blog/waterfront-property-buying-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-green-buildings",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/mixed-use-development-boston",
+      "destination": "/blog/mbta-communities-act-zoning",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-real-estate-tech",
+      "destination": "/blog/smart-home-property-value",
+      "permanent": true
+    },
+    {
+      "source": "/blog/remote-work-boston-real-estate",
+      "destination": "/blog/transit-oriented-development-boston",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-luxury-condo-market",
+      "destination": "/blog/condominium-living-boston-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-real-estate-2023-outlook",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/boston-real-estate-market-2025",
+      "destination": "/blog/multiple-offers-boston-market",
+      "permanent": true
+    },
+    {
+      "source": "/blog/market-reports",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/massachusetts-property-taxes-comprehensive-guide",
+      "destination": "/blog/mass-property-tax-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/hoa-rules-regulations-massachusetts",
+      "destination": "/blog/condo-fees-hoa-regulations-massachusetts",
+      "permanent": true
+    },
+    {
+      "source": "/blog/smart-home-technology-mass",
+      "destination": "/blog/smart-home-property-value",
+      "permanent": true
+    },
+    {
+      "source": "/blog/sustainable-home-features-massachusetts",
+      "destination": "/blog/energy-efficient-homes-mass",
+      "permanent": true
+    },
+    {
+      "source": "/blog/preparing-home-for-sale-massachusetts",
+      "destination": "/blog/home-preparation-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/seller-documentation-guide",
+      "destination": "/blog/massachusetts-seller-closing-requirements",
+      "permanent": true
+    },
+    {
+      "source": "/blog/first-time-buying-boston",
+      "destination": "/first-time-buyers",
+      "permanent": true
+    },
+    {
+      "source": "/blog/home-security-systems-massachusetts",
+      "destination": "/blog/smart-home-property-value",
+      "permanent": true
+    },
+    {
+      "source": "/blog/seasonal-home-ownership-massachusetts",
+      "destination": "/blog/massachusetts-home-maintenance-checklist",
       "permanent": true
     }
   ],

@@ -9,10 +9,10 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
-import { Bed, Bath, Square } from 'lucide-react';
-import Seo from "@/components/Seo";
-import BreadcrumbBar from "@/components/BreadcrumbBar";
-import { breadcrumbs } from "@/lib/schema";
+import { Bed, Bath, Square, Phone } from 'lucide-react';
+import PageShell, { ShellSection } from "@/components/PageShell";
+import { Link } from "react-router-dom";
+import { SITE, telHref } from "@/lib/siteConfig";
 
 interface Property {
   id: number;
@@ -59,34 +59,6 @@ const PropertiesList = () => {
       });
       
       setProperties(sortedData);
-      
-      // Debug: Log first property to check image_urls
-      if (sortedData && sortedData.length > 0) {
-        console.log('First property sample:', {
-          mlsnum: sortedData[0].mlsnum,
-          image_urls: sortedData[0].image_urls,
-          image_urls_type: typeof sortedData[0].image_urls,
-          image_urls_is_array: Array.isArray(sortedData[0].image_urls),
-          image_urls_length: Array.isArray(sortedData[0].image_urls) ? sortedData[0].image_urls.length : 'N/A',
-        });
-        
-        // Test if first image URL is accessible
-        if (Array.isArray(sortedData[0].image_urls) && sortedData[0].image_urls.length > 0) {
-          const testUrl = sortedData[0].image_urls[0];
-          console.log('Testing first image URL:', testUrl);
-          fetch(testUrl, { method: 'HEAD' })
-            .then(response => {
-              console.log('Image URL accessibility test:', {
-                url: testUrl,
-                status: response.status,
-                accessible: response.ok,
-              });
-            })
-            .catch(error => {
-              console.error('Image URL accessibility test failed:', error);
-            });
-        }
-      }
     } catch (error) {
       console.error('Error fetching properties:', error);
     } finally {
@@ -124,47 +96,128 @@ const PropertiesList = () => {
     { name: "Properties", path: "/properties" },
   ];
 
-  /*
-   * Hoisted above the isLoading early-return on purpose.
-   *
-   * Listings are fetched from Supabase in an effect, so at static-generation
-   * time this component renders the spinner branch and returns before it ever
-   * reaches the markup below — which meant this route prerendered with no
-   * title, description, or canonical at all. The head has to be emitted from
-   * both branches.
-   *
-   * No ItemList schema here for the same reason: there are no listings in the
-   * prerendered HTML to describe, and marking up an empty list would be a
-   * claim about content that is not on the page.
-   */
-  const seo = (
-    <Seo
-      title="Current Listings in Greater Boston"
-      description="Browse current and recent listings across Needham, MetroWest, and Greater Boston, with photos, details, and a direct line to ask about any of them."
-      keywords="homes for sale Needham MA, Greater Boston listings, MetroWest homes for sale, Massachusetts property listings"
-      jsonLd={breadcrumbs(crumbs)}
-/>
-  );
-
   return (
-    <>
-      {seo}
-      <div className="min-h-screen bg-white">
-        <div className="pt-16">
-        <div className="container mx-auto px-4 py-24">
-            <BreadcrumbBar items={crumbs} />
-          {/* The heading renders unconditionally. It used to sit behind the
-              isLoading gate along with everything else, so the prerendered page
-              contained a spinner and no <h1> at all. Only the grid waits for
-              the Supabase response. */}
-          <div className="enter-down">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
-              {t('properties.title')}
-            </h1>
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
-              {t('properties.subtitle')}
-            </p>
+    <PageShell
+      path="/properties"
+      crumbs={crumbs}
+      /*
+       * The head is emitted by the shell, above the isLoading branch below.
+       *
+       * Listings are fetched from Supabase in an effect, so at static-generation
+       * time this component renders the spinner branch — which used to mean the
+       * route prerendered with no title, description, or canonical at all.
+       *
+       * No ItemList schema, for the same reason: there are no listings in the
+       * prerendered HTML to describe, and marking up an empty list would be a
+       * claim about content that is not on the page.
+       */
+      seo={{
+        title: 'Current Listings in Greater Boston',
+        description:
+          'Browse current and recent listings across Needham, MetroWest, and Greater Boston, with photos, details, and a direct line to ask about any of them.',
+        keywords:
+          'homes for sale Needham MA, Greater Boston listings, MetroWest homes for sale, Massachusetts property listings',
+      }}
+      eyebrow="Listings"
+      h1={t('properties.title')}
+      lede={t('properties.subtitle')}
+      heroSize="compact"
+      width="wide"
+      cta={{
+        heading: 'Want to see one of these in person?',
+        body:
+          'Ask about any listing here, or about one that is not. Touring costs nothing and is the fastest way to find out what you actually want.',
+      }}
+    >
+      <ShellSection width="wide">
+        {/*
+          Prerendered context, above the data fetch.
+
+          Everything below the heading on this page comes from Supabase, so what
+          a crawler and a first-time visitor receive is a heading, a subtitle and
+          a spinner. This block does not depend on the query, so it is in the
+          static HTML, and it gives both a reason to stay.
+
+          Two columns rather than three equal cells: the explanation is
+          explanation, and "looking for something not here?" is a phone CTA that
+          was wearing the same clothes as its neighbours — same heading size,
+          same body colour, with the number buried as an inline underline in the
+          fourth sentence of a paragraph.
+        */}
+        <div className="mb-14 grid gap-10 border-y border-gray-200 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,340px)] lg:gap-14">
+          <div className="space-y-8">
+            <div>
+              <h2 className="mb-3 text-lg font-semibold text-ink">
+                What you are looking at
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Current and recently closed listings represented by Kevin Hoang,
+                across {SITE.areaServed.length} towns in MetroWest and Greater
+                Boston. Sold properties stay listed because what a home actually
+                closed at is more useful than what it was asked.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="mb-3 text-lg font-semibold text-ink">
+                What a listing price actually tells you
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                In much of MetroWest and Greater Boston, homes routinely close
+                above asking, and in other segments and seasons they close below
+                it — so the asking price is a starting position rather than a
+                value. What a comparable home actually closed at, and how long it
+                took, tells you far more. That is the same evidence a{' '}
+                <Link to="/home-valuation" className="underline">
+                  written valuation
+                </Link>{' '}
+                is built from, and it is why sold listings stay on this page.
+              </p>
+            </div>
+
+            <div>
+              <h2 className="mb-3 text-lg font-semibold text-ink">
+                Before you tour anything
+              </h2>
+              <p className="text-gray-600 leading-relaxed">
+                Two things make the difference between looking and buying: a
+                written{' '}
+                <Link to="/blog/pre-approval-checklist" className="underline">
+                  pre-approval
+                </Link>{' '}
+                rather than a pre-qualification, and knowing the{' '}
+                <Link to="/neighborhoods" className="underline">
+                  town and the street
+                </Link>{' '}
+                before you fall for a house. The{' '}
+                <Link to="/buyer" className="underline">
+                  buyer&rsquo;s roadmap
+                </Link>{' '}
+                walks through the rest.
+              </p>
+            </div>
           </div>
+
+          <div className="rounded-2xl border border-gray-200 bg-bone p-7 lg:sticky lg:top-28 lg:self-start">
+            <span className="mb-4 block h-px w-10 bg-champagne" aria-hidden />
+            <h2 className="font-display text-xl font-semibold text-ink">
+              Looking for something not here?
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              This is not the whole market — it is one broker&rsquo;s listings. If
+              you are buying, the search that matters covers everything available
+              in your towns and price band, including homes not yet publicly
+              listed.
+            </p>
+            <a
+              href={telHref}
+              className="mt-5 inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+            >
+              <Phone className="h-4 w-4" aria-hidden />
+              Call {SITE.phone}
+            </a>
+          </div>
+        </div>
 
           {isLoading ? (
             <div className="text-center py-16">
@@ -183,16 +236,7 @@ const PropertiesList = () => {
                 ? property.image_urls 
                 : [];
               const hasImages = images.length > 0;
-              
-              // Debug logging for this property
-              if (property.mlsnum) {
-                console.log(`Property ${property.mlsnum}:`, {
-                  hasImages,
-                  imageCount: images.length,
-                  imageUrls: images,
-                });
-              }
-              
+
               return (
                 <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   {/* Photo Carousel */}
@@ -203,7 +247,7 @@ const PropertiesList = () => {
                       </span>
                     </div>
                     <div className="absolute top-3 right-3 z-10">
-                      <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-[#1a1a1a] backdrop-blur-sm">
+                      <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-ink backdrop-blur-sm">
                         {formatBadgeText(property.property_type, 'PROPERTY')}
                       </span>
                     </div>
@@ -224,13 +268,15 @@ const PropertiesList = () => {
                                   style={{
                                   objectPosition: 'center center',
                                   }}
+                                  loading={index === 0 ? undefined : 'lazy'}
+                                  decoding="async"
                                   onError={(e) => {
-                                  console.error(`Failed to load image ${index + 1} for property ${property.mlsnum}:`, imageUrl);
-                                  // If image fails to load, hide it
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                  onLoad={() => {
-                                  console.log(`Successfully loaded image ${index + 1} for property ${property.mlsnum}`);
+                                    // Hide a photo that 404s rather than
+                                    // leaving a broken-image glyph in the
+                                    // carousel. The console pair that used to
+                                    // sit here fired on every image on every
+                                    // render, in production.
+                                    (e.target as HTMLImageElement).style.display = 'none';
                                   }}
                                 />
                               </div>
@@ -262,7 +308,7 @@ const PropertiesList = () => {
                   {/* Property Details */}
                   <CardContent className="p-4">
                     <div className="space-y-2">
-                      <div className="text-2xl font-bold text-[#1a1a1a]">
+                      <div className="text-2xl font-bold text-ink">
                         {formatCurrency(property.sale_price)}
                       </div>
                       <div className="text-gray-600">
@@ -294,33 +340,10 @@ const PropertiesList = () => {
               );
             })}
             
-            {/* AND MORE Card */}
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow border-2 border-dashed border-gray-300">
-              <div className="relative aspect-[16/9] bg-gray-100 flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="text-4xl font-bold text-gray-400 mb-4">AND MORE</div>
-                  <p className="text-gray-500 text-sm">
-                    More properties coming soon
-                  </p>
-                </div>
-              </div>
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <div className="text-2xl font-bold text-gray-400">
-                    Coming Soon
-                  </div>
-                  <div className="text-gray-500 text-sm">
-                    Check back for new listings
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
-        </div>
-        </div>
-      </div>
-    </>
+      </ShellSection>
+    </PageShell>
   );
 };
 

@@ -1,5 +1,6 @@
 {
   "nav": {
+    "about": "Giới Thiệu",
     "home": "Trang Chủ",
     "buyer": "Người Mua",
     "seller": "Người Bán",
@@ -293,7 +294,15 @@
         "question": "Người mua nhà lần đầu nên biết gì về thị trường Boston?",
         "answer": "Người mua nhà lần đầu ở Boston nên hiểu rằng thị trường di chuyển nhanh chóng, cạnh tranh có thể gay gắt và việc chuẩn bị tài chính là điều cần thiết. Chúng tôi khuyến nghị được phê duyệt trước cho tài chính, hiểu rõ nhu cầu thiết yếu so với mong muốn, sẵn sàng hành động quyết đoán và có kỳ vọng thực tế về những gì ngân sách của bạn có thể mua ở các khu phố khác nhau."
       }
-    }
+    },
+    "browse": "Danh mục",
+    "answered": "câu hỏi đã được giải đáp",
+    "still_asking": "Vẫn còn thắc mắc?",
+    "still_asking_body": "Nếu câu hỏi của bạn chưa có ở đây, hãy hỏi trực tiếp. Không có gì bắt buộc, và cuộc trao đổi đầu tiên luôn miễn phí.",
+    "text_kevin": "Gửi tin nhắn",
+    "cta_heading": "Còn câu hỏi mà trang này chưa trả lời?",
+    "cta_body": "Mỗi trường hợp đều có chi tiết riêng mà một câu trả lời chung không thể bao quát. Hãy gọi, nhắn tin hoặc gửi lời nhắn — bằng tiếng Anh hoặc tiếng Việt, tùy bạn.",
+    "cta_button": "Hỏi Kevin"
   },
   "calculators": {
     "title": "MÁY TÍNH BẤT ĐỘNG SẢN",
@@ -385,7 +394,7 @@
     "view_resource": "Xem Tài Nguyên",
     "roadmap_steps": {
       "step1": {
-        "title": "1. Chuẩn Bị & Sẵn Sàng Tài Chính",
+        "title": "Chuẩn Bị & Sẵn Sàng Tài Chính",
         "description": "Kiểm tra điểm tín dụng – Nhắm đến 620+ cho khoản vay thông thường (điểm cao hơn = điều khoản tốt hơn).",
         "details": [
           "Thiết lập ngân sách – Sử dụng máy tính trực tuyến hoặc nói chuyện với người cho vay để xác định bạn có thể chi trả bao nhiêu (bao gồm thuế, bảo hiểm và phí HOA nếu có).",
@@ -395,7 +404,7 @@
         ]
       },
       "step2": {
-        "title": "2. Thuê Chuyên Gia",
+        "title": "Thuê Chuyên Gia",
         "description": "Chọn đại lý người mua – Họ đại diện cho lợi ích của bạn, thương lượng thay mặt bạn và hướng dẫn bạn qua quá trình (được trả từ hoa hồng người bán trong hầu hết các trường hợp).",
         "details": [
           "Chọn người cho vay/môi giới thế chấp – So sánh lãi suất, phí và chương trình (FHA, VA, USDA, thông thường).",
@@ -403,7 +412,7 @@
         ]
       },
       "step3": {
-        "title": "3. Tìm Kiếm Nhà",
+        "title": "Tìm Kiếm Nhà",
         "description": "Tìm kiếm trực tuyến & tham quan tài sản – MLS, Zillow, Redfin, nhà mở cửa.",
         "details": [
           "Thu hẹp tìm kiếm – Xem xét xu hướng thị trường, thuế tài sản, an toàn khu phố và giá trị bán lại trong tương lai.",
@@ -411,7 +420,7 @@
         ]
       },
       "step4": {
-        "title": "4. Đưa Ra Đề Nghị",
+        "title": "Đưa Ra Đề Nghị",
         "description": "Xem xét bán hàng tương tự – Giúp xác định giá công bằng và cạnh tranh.",
         "details": [
           "Thiết lập điều khoản – Giá, số tiền đặt cọc (tiền đặt cọc), điều kiện (kiểm tra, tài chính, định giá), ngày đóng cửa.",
@@ -420,7 +429,7 @@
         ]
       },
       "step5": {
-        "title": "5. Dưới Hợp Đồng",
+        "title": "Dưới Hợp Đồng",
         "description": "Đặt cọc tiền đặt cọc – Thường 1–3% giá mua; được giữ trong tài khoản ủy thác.",
         "details": [
           "Lên lịch kiểm tra – Kiểm tra nhà chung, cộng với các kiểm tra chuyên biệt (radon, nấm mốc, bể phốt, côn trùng) nếu cần.",
@@ -429,7 +438,7 @@
         ]
       },
       "step6": {
-        "title": "6. Tài Chính & Thẩm Tra",
+        "title": "Tài Chính & Thẩm Tra",
         "description": "Cung cấp tài liệu cho người cho vay – Phiếu lương, khai thuế, sao kê ngân hàng.",
         "details": [
           "Bảo hiểm chủ nhà – Yêu cầu của người cho vay trước khi đóng cửa.",
@@ -438,7 +447,7 @@
         ]
       },
       "step7": {
-        "title": "7. Đóng Cửa",
+        "title": "Đóng Cửa",
         "description": "Đi kiểm tra cuối cùng – Xác nhận sửa chữa hoàn thành và nhà ở tình trạng đã thỏa thuận.",
         "details": [
           "Ký tài liệu đóng cửa – Thế chấp, chứng thư, tiết lộ.",
@@ -447,7 +456,7 @@
         ]
       },
       "step8": {
-        "title": "8. Sau Đóng Cửa",
+        "title": "Sau Đóng Cửa",
         "description": "Thay khóa & cập nhật bảo mật – An toàn trước tiên.",
         "details": [
           "Chuyển tiện ích – Gas, điện, nước, internet.",
@@ -474,8 +483,8 @@
         "description": "Những gì cần tìm và câu hỏi cần hỏi trong quá trình kiểm tra nhà."
       },
       "market_reports": {
-        "title": "Báo Cáo Thị Trường",
-        "description": "Cập nhật với xu hướng thị trường bất động sản mới nhất và thống kê tại Boston."
+        "title": "Thắng Cuộc Đấu Giá",
+        "description": "Cách thực sự thắng một đề nghị cạnh tranh ở Greater Boston, và điều khoản nào đáng nhượng bộ."
       },
       "neighborhood_profiles": {
         "title": "Hồ Sơ Khu Phố",
@@ -494,7 +503,7 @@
     "view_resource": "Xem Tài Nguyên",
     "roadmap_steps": {
       "step1": {
-        "title": "1. Chuẩn Bị & Lập Kế Hoạch",
+        "title": "Chuẩn Bị & Lập Kế Hoạch",
         "description": "Đánh giá động lực & thời gian của bạn – Bạn đang nhắm đến giá cao nhất, bán nhanh nhất, hay cả hai?",
         "details": [
           "Nghiên cứu thị trường – Xem xét các giao dịch bán tương tự gần đây (comps) để hiểu xu hướng định giá.",
@@ -503,7 +512,7 @@
         ]
       },
       "step2": {
-        "title": "2. Thuê Chuyên Gia",
+        "title": "Thuê Chuyên Gia",
         "description": "Chọn đại lý niêm yết – Họ sẽ tiếp thị, thương lượng và hướng dẫn bạn qua quá trình bán (phí tiêu chuẩn 5–6% chia giữa đại lý niêm yết và đại lý người mua).",
         "details": [
           "Chuyên gia tùy chọn – Luật sư bất động sản (phổ biến ở các tiểu bang như MA), người dàn dựng nhà, nhiếp ảnh gia.",
@@ -511,7 +520,7 @@
         ]
       },
       "step3": {
-        "title": "3. Chuẩn Bị Tài Sản",
+        "title": "Chuẩn Bị Tài Sản",
         "description": "Dọn dẹp & lau chùi sâu – Làm cho các phòng trông lớn hơn và hấp dẫn hơn.",
         "details": [
           "Hoàn thành sửa chữa & chạm sửa – Sửa các khiếm khuyết rõ ràng có thể khiến người mua từ chối.",
@@ -521,7 +530,7 @@
         ]
       },
       "step4": {
-        "title": "4. Niêm Yết & Tiếp Thị",
+        "title": "Niêm Yết & Tiếp Thị",
         "description": "Niêm yết trên MLS – Đại lý của bạn đăng nhà với chi tiết đầy đủ, ảnh chuyên nghiệp và có thể là tour 3D.",
         "details": [
           "Kế hoạch tiếp thị – Nhà mở cửa, quảng cáo mạng xã hội, chiến dịch email, trang web bất động sản.",
@@ -529,7 +538,7 @@
         ]
       },
       "step5": {
-        "title": "5. Nhận & Thương Lượng Đề Nghị",
+        "title": "Nhận & Thương Lượng Đề Nghị",
         "description": "Xem xét đề nghị với đại lý của bạn – Nhìn xa hơn giá: điều kiện, ngày đóng cửa, loại tài chính, tiền đặt cọc.",
         "details": [
           "Đề nghị phản đối nếu cần – Điều chỉnh giá, điều khoản hoặc tín dụng để tìm điểm chung.",
@@ -537,7 +546,7 @@
         ]
       },
       "step6": {
-        "title": "6. Dưới Hợp Đồng",
+        "title": "Dưới Hợp Đồng",
         "description": "Kiểm tra của người mua – Người mua thường sẽ tiến hành kiểm tra nhà trong thời gian nhất định.",
         "details": [
           "Thương lượng sửa chữa hoặc tín dụng – Quyết định những gì cần sửa hoặc tín dụng lại cho người mua.",
@@ -546,7 +555,7 @@
         ]
       },
       "step7": {
-        "title": "7. Chuẩn Bị Đóng Cửa",
+        "title": "Chuẩn Bị Đóng Cửa",
         "description": "Xử lý điều kiện – Thực hiện bất kỳ sửa chữa đã thỏa thuận nào, thu thập biên lai.",
         "details": [
           "Phối hợp di chuyển ra ngoài – Dựa trên ngày đóng cửa và sở hữu đã thỏa thuận.",
@@ -555,7 +564,7 @@
         ]
       },
       "step8": {
-        "title": "8. Ngày Đóng Cửa",
+        "title": "Ngày Đóng Cửa",
         "description": "Người mua đi kiểm tra cuối cùng – Xác nhận tình trạng tài sản phù hợp với thỏa thuận.",
         "details": [
           "Tham dự đóng cửa (hoặc ký từ xa) – Ký tài liệu cuối cùng chuyển quyền sở hữu.",
@@ -564,7 +573,7 @@
         ]
       },
       "step9": {
-        "title": "9. Sau Đóng Cửa",
+        "title": "Sau Đóng Cửa",
         "description": "Hủy bảo hiểm – Sau khi người mua chính thức sở hữu nhà.",
         "details": [
           "Nộp thay đổi địa chỉ – USPS, ngân hàng, đăng ký.",
@@ -582,8 +591,8 @@
         "description": "Học cách định giá nhà hiệu quả trong thị trường Greater Boston cạnh tranh để thu hút người mua nghiêm túc."
       },
       "seller_documentation": {
-        "title": "Hướng Dẫn Tài Liệu Người Bán",
-        "description": "Tổng quan về tất cả tài liệu và tiết lộ cần thiết khi bán nhà tại Massachusetts."
+        "title": "Người Bán Cần Gì Trước Khi Đóng",
+        "description": "Các tài liệu, tiết lộ và chứng chỉ mà người bán ở Massachusetts phải chuẩn bị sẵn."
       }
     }
   },

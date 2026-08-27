@@ -111,6 +111,31 @@ even though in-app navigation to it works. Adding a route means all three of:
 2. [scripts/routes.mjs](scripts/routes.mjs) — the sitemap registry,
 3. confirming the `.html` exists in `dist/` after a build.
 
+### Freshness signals
+
+- **`lastmod` is emitted only where a real content date exists.** It used to be
+  the build date on all 117 URLs, which is not a freshness signal but noise —
+  every page claimed to change on every deploy. `scripts/routes.mjs` reads each
+  post's `updated ?? date` out of `blogData.ts`; static routes carry no
+  `lastmod` at all, because an absent one is ignored while a false one teaches
+  crawlers to distrust the whole file.
+- **`BlogPost.updated` is set only when the body actually changed.** It drives
+  the visible "Updated" line *and* schema.org `dateModified`, in that order —
+  structured data that states something the page does not show is the same
+  violation as a BreadcrumbList with no visible trail.
+- **`scripts/submit-indexnow.mjs` runs at the end of `npm run build`** and is a
+  no-op without `INDEXNOW_KEY`, the same way `<Analytics>` is inert without
+  `SITE.ga4Id`. It submits only URLs whose `lastmod` is within 30 days: a
+  submission is a claim that a page changed, and claiming all 117 every deploy
+  is that claim made falsely. IndexNow reaches Bing, which is what ChatGPT
+  Search and Copilot retrieve from; Google does not participate.
+- **robots.txt names the AI crawlers explicitly.** `User-agent: *` already
+  allowed them, but `Google-Extended` and `Applebot-Extended` are not crawlers —
+  they govern whether indexed content may ground generated answers, and there
+  the difference is between "allowed" and "unstated". robots.txt has no
+  inheritance, so an agent matching its own `User-agent` line ignores the `*`
+  group; the named agents share one group rather than repeating the rules.
+
 ## SEO / GEO conventions
 
 - **All head tags go through [src/components/Seo.tsx](src/components/Seo.tsx)** —
@@ -128,10 +153,20 @@ even though in-app navigation to it works. Adding a route means all three of:
   the agent's `employee` reference `#kevin` by `@id`, so `person()` must be
   emitted on the *same page* for the reference to resolve — it is included on
   the homepage and every blog post.
-- **Unverified fields stay absent.** `SITE.geo`, `SITE.hours`, and `SITE.sameAs`
-  are empty, and `compact()` drops any empty field from the schema. Wrong
-  coordinates or invented hours are worse than none. Fill them in
+- **Unverified fields stay absent.** `compact()` drops any empty field from the
+  schema, so a value that is not known yet is simply omitted rather than
+  placeheld — wrong coordinates or invented hours are worse than none. `geo`,
+  `hours` and the profile list have since been filled in and each carries the
+  date it was confirmed; `CLIENTS_SERVED` in
+  [Stats.tsx](src/components/Stats.tsx) and `LICENCE_NUMBER` in
+  [About.tsx](src/pages/About.tsx) are the two still gated at zero/empty, and
+  both render an alternative rather than a placeholder. Fill values in
   [siteConfig.ts](src/lib/siteConfig.ts), never inline.
+- **`SITE.profiles` is the one profile list.** `sameAs` in the schema is derived
+  from it (`profileUrls`), and [/about](src/pages/About.tsx) renders the same
+  array as visible outbound links. A `sameAs` URL that appears nowhere visible
+  is an unbacked assertion; the visible link plus a link back from the profile
+  is what actually merges them into one entity.
 - **`BreadcrumbList` must mirror a visible `<Breadcrumbs>` trail**, built from
   the same array — marking up an invisible trail violates Google's guidelines.
   Pages with no visible trail emit no BreadcrumbList.
@@ -160,6 +195,8 @@ even though in-app navigation to it works. Adding a route means all three of:
   or `<h2>` string may appear on more than one** — if they converge they compete
   for the same query and neither ranks. Verify against the *built* HTML, since
   the shells contribute headings too.
+  - [/about](src/pages/About.tsx) — **person** ("who is Kevin Hoang"); declares
+    the `#kevin` Person node and carries the visible profile links
   - [/needham-real-estate-agent](src/pages/NeedhamAgent.tsx) — **intent**
     ("who do I hire"); the hub, links out to the others
   - [/home-valuation](src/pages/HomeValuation.tsx) — **seller intent**
@@ -169,6 +206,9 @@ even though in-app navigation to it works. Adding a route means all three of:
     served. Do not edit that framing away.
   - [/relocation](src/pages/Relocation.tsx) — **origin market** (CT → MA)
   - `/neighborhoods/:slug` — **place**, informational only
+  - `/vi/*` — **language**, and unlike the four above these are *documents in
+    Vietnamese*, not English pages about Vietnamese service. They pair with an
+    English counterpart rather than competing with one.
 - **NAP consistency**: name, address, and phone must be identical
   character-for-character everywhere, and all of it comes from
   [siteConfig.ts](src/lib/siteConfig.ts) — display phone `(860) 682-2251`,
@@ -177,6 +217,88 @@ even though in-app navigation to it works. Adding a route means all three of:
   number entirely from the one printed next to it.
 - **`scripts/routes.mjs` reads slugs out of the `src/data/*.ts` modules** rather
   than duplicating them, so the sitemap cannot drift from the corpus.
+
+### The Vietnamese tree (`/vi`)
+
+- **Six real prerendered routes**, listed in
+  [src/lib/viRoutes.ts](src/lib/viRoutes.ts) with the English page each one
+  pairs with. They exist because the language toggle swaps copy *after*
+  hydration — so before this, not one word of Vietnamese appeared in any
+  prerendered document and no crawler had ever seen any of it. The toggle
+  still works everywhere else; `/vi` supersedes it only for these six.
+- **Content is literal Vietnamese JSX, never `t()`.** i18n is pinned to
+  `lng: 'en'` during generation, so anything assembled through
+  `useTranslation()` prerenders in English regardless of what the reader has
+  selected. This is the same constraint that forced `LanguagePreference` to
+  apply the stored language after mount.
+- **hreflang must be reciprocal or it is ignored.** Every page in a set lists
+  every member *including itself*, plus `x-default` pointing at the English
+  one. Both sides derive from `alternatesFor()` so that is structurally true
+  rather than something to remember. hreflang is **not** a canonical — each
+  page keeps its own self-referencing canonical.
+- **NAP is not translated.** Phone, email and address come from `SITE` on the
+  Vietnamese pages exactly as everywhere else.
+- **The town guides are deliberately NOT translated.** Seventeen near-identical
+  translations is the scaled-content shape this corpus was cleaned of once.
+  `/vi/khu-vuc` describes them and links out to the English guides instead.
+
+## Design system
+
+The site ran **two** visual systems for months and was unified on 2026-08-27. Anything
+new must join the one system rather than start a third.
+
+### Two column widths, and only two
+
+`theme.container` caps at 1400px, but every page also applies `px-4`, which beats the
+container's own `2rem` padding (utilities layer beats components layer) — so an uncapped
+page runs body text to ~1368px. Nothing on this site should. Every page picks one of:
+
+- **`max-w-4xl` (896px) — prose.** Landing pages, `/vi/*`, blog posts, town guides,
+  `/about`, the legal pages. Reading measure is the constraint.
+- **`max-w-6xl` (1152px) — wide.** `/properties`, `/buyer`, `/seller`, `/blog`,
+  `/neighborhoods`, `/testimonials`, `/contact`, `/calculator`, `/first-time-buyers`,
+  the FAQ body. These carry card grids, tables, or the roadmap's sticky-sidebar layout,
+  which at 896px squeezes the step-detail columns to ~38 characters.
+
+A component that opens its own `container mx-auto px-4` — `BuyerResources`,
+`SellerResources`, `RealEstateCalculators` — must respect the same cap, or it renders
+wider than the page containing it.
+
+### Colour tokens
+
+Defined once in [tailwind.config.ts](tailwind.config.ts), with the full allow/deny table
+in a comment there. The short version:
+
+- `ink` `#1a1a1a` — text on light. `ink-deep` `#0d0d0f` — the dark surface.
+  `bone` `#faf8f5` — the warm light surface.
+- **Champagne has two values and they are not interchangeable.** `champagne` `#c5a572`
+  is 8.31:1 on `ink-deep` but **2.33:1 on white** — it fails WCAG at every size on a
+  light surface, so on light it may only be a *non-text mark* (`bg-champagne` rules,
+  `decoration-champagne`, `marker:text-champagne`, borders, rings).
+  `champagne-ink` `#8c6b35` is the same hue at 4.92:1 on white and is what text on a
+  light surface uses — links, active nav labels, eyebrows. It is 3.94:1 on `ink-deep`,
+  so it never goes there.
+- Three real failures shipped before this rule existed: the homepage About subtitle,
+  the ordered-list numerals on every blog post, and the FAQ contact card, whose links
+  got *less* legible on hover.
+
+**Colour that carries meaning is exempt from champagne**: the amber review stars, the
+blue `important-notice` panels on `/buyer` and `/seller`, form-error red, and the
+blue/purple `ACCENTS` in [Roadmap.tsx](src/components/Roadmap.tsx) — that pair is the
+only thing telling the buyer and seller guides apart at a glance, which champagne alone
+cannot do. Recolouring a signal to the brand accent deletes the signal.
+
+### One chrome
+
+[PageShell.tsx](src/components/PageShell.tsx) owns the dark hero, breadcrumbs, eyebrow,
+h1, lede, credential strip and CTA band. `LandingPage`, `ViPage`, `/about` and `/faq`
+sit on top of it; before this each had hand-copied the same class strings, and the dark
+CTA band alone existed in four places. It also makes the BreadcrumbList rule structural:
+the shell renders the visible trail and emits `breadcrumbs(crumbs)` from the same array,
+or renders neither — there is no longer a way to ship one without the other.
+
+The navbar is `fixed` at `h-20`. Pages that clear it use `pt-20`; pages whose dark hero
+deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
 
 ## Content rules
 

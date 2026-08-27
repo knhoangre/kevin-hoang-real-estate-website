@@ -1,7 +1,7 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { SITE } from "@/lib/siteConfig";
+import { SITE, telHref } from "@/lib/siteConfig";
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -22,25 +22,45 @@ const Hero = () => {
           backgroundSize: "cover",
         }}
       >
-        <div className="absolute inset-0 bg-[#1a1a1a]/70" />
+        {/* The same scrim the landing heroes use, so the front door and the
+            interior pages are lit the same way. */}
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-deep via-ink-deep/80 to-ink-deep/50" />
       </div>
 
       <div className="container relative z-10 px-4 py-32 text-center text-white">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          {t('hero.title')}
-        </h1>
-        <p className="text-xl md:text-2xl mb-8 max-w-4xl mx-auto">
-          {t('hero.subtitle')}
-        </p>
-        <a 
-          href={SITE.appointmentUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-white text-[#1a1a1a] px-8 py-3 rounded-md inline-flex items-center group hover:bg-[#1a1a1a] hover:text-white transition-all duration-300"
-        >
-          <span className="uppercase">{t('hero.cta')}</span>
-          <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-        </a>
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-7 flex items-center justify-center gap-4">
+            <span className="h-px w-10 bg-champagne" aria-hidden />
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-champagne">
+              {SITE.brokerage}
+            </p>
+            <span className="h-px w-10 bg-champagne" aria-hidden />
+          </div>
+          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight mb-6">
+            {t('hero.title')}
+          </h1>
+          <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-300">
+            {t('hero.subtitle')}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <a
+              href={SITE.appointmentUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne"
+            >
+              <span className="uppercase">{t('hero.cta')}</span>
+              <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+            </a>
+            <a
+              href={telHref}
+              className="inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep"
+            >
+              <Phone className="h-4 w-4" aria-hidden />
+              {SITE.phone}
+            </a>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -76,24 +76,30 @@ export const SITE = {
     | null,
 
   /**
-   * Profile URLs for schema.org `sameAs`, which ties this site to the same
-   * real-world entity as these profiles.
+   * The profiles that identify the same real-world person as this site.
    *
-   * Still needed: the Google Business Profile URL (by far the highest-value
-   * one for local search), plus Zillow, Realtor.com, LinkedIn, Instagram, and
-   * Facebook. Add them here rather than inline anywhere else.
+   * Named rather than a bare URL list, because these are rendered as VISIBLE
+   * links on /about as well as emitted into schema.org `sameAs`. That pairing
+   * is the point: `sameAs` on its own is an unbacked assertion, and what
+   * actually lets a search or answer engine merge these into one entity is a
+   * visible link out plus a matching link back from the profile. See
+   * `profileUrls` below for the derived array the schema builders use.
+   *
+   * Google Business Profile is first — the highest-value citation for local
+   * search, and the one that anchors the rest of the graph.
    */
-  sameAs: [
-    // Google Business Profile first — the highest-value citation for local
-    // search, and the one that anchors the rest of the graph.
-    'https://share.google/dBpe3OLBDeYHfZq28',
-    'https://kevinhoang.kw.com/',
-    'https://www.zillow.com/profile/knhoangre',
-    'https://www.realtor.com/realestateagents/60b8c196fa43a30012984ad1',
-    'https://www.linkedin.com/in/knhoangre/',
-    'https://www.instagram.com/knhoangre/',
-    'https://www.facebook.com/knhoangre/',
-  ] as string[],
+  profiles: [
+    { name: 'Google Business Profile', url: 'https://share.google/dBpe3OLBDeYHfZq28' },
+    { name: 'Keller Williams', url: 'https://kevinhoang.kw.com/' },
+    { name: 'Zillow', url: 'https://www.zillow.com/profile/knhoangre' },
+    {
+      name: 'Realtor.com',
+      url: 'https://www.realtor.com/realestateagents/60b8c196fa43a30012984ad1',
+    },
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/knhoangre/' },
+    { name: 'Instagram', url: 'https://www.instagram.com/knhoangre/' },
+    { name: 'Facebook', url: 'https://www.facebook.com/knhoangre/' },
+  ] as { name: string; url: string }[],
 
   /** Default Open Graph image, relative to origin. Must be 1200x630. */
   defaultOgImage: '/og-image.jpg',
@@ -155,6 +161,16 @@ export const SITE = {
     { name: 'Winchester', slug: 'winchester-ma' },
   ],
 } as const;
+
+/**
+ * Just the URLs, for schema.org `sameAs`. Derived rather than maintained
+ * separately so the visible links on /about and the machine-readable claim can
+ * never name different sets of profiles.
+ */
+export const profileUrls = SITE.profiles.map((p) => p.url);
+
+/** The Google Business Profile — the first entry, by the convention above. */
+export const googleProfileUrl = SITE.profiles[0].url;
 
 /** Absolute URL for a site-relative path, for canonicals and OG tags. */
 export const absoluteUrl = (path: string): string => {

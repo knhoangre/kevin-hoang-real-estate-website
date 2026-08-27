@@ -27,7 +27,10 @@ const Reviews = () => {
     <div className="bg-white py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 enter">
-          <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">{t('reviews.title')}</h2>
+          <span className="mx-auto mb-5 block h-px w-10 bg-champagne" aria-hidden />
+          <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-4">
+            {t('reviews.title')}
+          </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
             {t('reviews.subtitle')}
           </p>
@@ -53,7 +56,7 @@ const Reviews = () => {
 
               {/* Reviewer Name */}
               <div className="border-t border-gray-200 pt-4 mt-auto">
-                <cite className="text-[#1a1a1a] font-semibold not-italic">
+                <cite className="text-ink font-semibold not-italic">
                   — {review.name}
                 </cite>
               </div>
@@ -65,11 +68,11 @@ const Reviews = () => {
         <div className="text-center enter" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
           <Link
             to="/testimonials"
-            className="inline-flex items-center text-[#1a1a1a] font-semibold hover:text-gray-600 transition-colors group"
+            className="inline-flex items-center text-ink font-semibold hover:text-gray-600 transition-colors group"
           >
             <span className="relative">
               {t('reviews.view_all')}
-              <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300" />
             </span>
             <ChevronRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden />
           </Link>

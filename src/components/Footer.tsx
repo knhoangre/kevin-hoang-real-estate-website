@@ -25,51 +25,51 @@ const Footer = () => {
   const { t } = useTranslation();
 
   return (
-    <footer className="bg-[#1a1a1a] text-white py-12">
+    <footer className="bg-ink text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           <div>
             <h3 className="text-xl font-bold mb-4">KEVIN HOANG</h3>
-            <div className="flex items-center space-x-4 mb-2">
-              <Phone className="h-4 w-4" />
+            <div className="flex items-start space-x-4 mb-2">
+              <Phone className="h-4 w-4 mt-1 shrink-0" />
               {/* Both the href and the label come from SITE now. They used to be
                   written out separately here and had drifted apart: the link
                   dialled +1 617 555 1234 while the text said (860) 682-2251.
                   NAP has to be identical everywhere or it suppresses local
                   ranking — and in this case the call button did not work. */}
-              <a href={telHref} className="group relative text-gray-300 hover:text-white transition-colors">
+              <a href={telHref} className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors">
                 {SITE.phone}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
-            <div className="flex items-center space-x-4 mb-2">
-              <Mail className="h-4 w-4" />
-              <a href={`mailto:${SITE.email}`} className="group relative text-gray-300 hover:text-white transition-colors uppercase">
+            <div className="flex items-start space-x-4 mb-2">
+              <Mail className="h-4 w-4 mt-1 shrink-0" />
+              <a href={`mailto:${SITE.email}`} className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase">
                 {SITE.email}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
-            <div className="flex items-center space-x-4 mb-2">
-              <MapPin className="h-4 w-4" />
+            <div className="flex items-start space-x-4 mb-2">
+              <MapPin className="h-4 w-4 mt-1 shrink-0" />
               <a
                 href={`https://maps.google.com/?q=${encodeURIComponent(
                   `${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative text-gray-300 hover:text-white transition-colors uppercase"
+                className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase"
               >
                 {`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
-            <div className="flex items-center space-x-4">
-              <Calendar className="h-4 w-4" />
+            <div className="flex items-start space-x-4">
+              <Calendar className="h-4 w-4 mt-1 shrink-0" />
               <a
                 href={SITE.appointmentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative text-gray-300 hover:text-white transition-colors uppercase"
+                className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase"
               >
                 SET AN APPOINTMENT WITH ME
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
@@ -92,10 +92,12 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">{t('footer.quick_links')}</h3>
             <ul className="space-y-2">
               <FooterLink to="/">{t('nav.home')}</FooterLink>
-              {/* Was `/about`, which has no route and 404d from the footer of
-                  every page on the site. */}
+              {/* /about is a real route again — the person page. It was
+                  pointed at /needham-real-estate-agent while no such route
+                  existed; that page owns hiring intent, not the biography. */}
+              <FooterLink to="/about">{t('footer.about')}</FooterLink>
               <FooterLink to="/needham-real-estate-agent">
-                {t('footer.about')}
+                Needham Real Estate
               </FooterLink>
               <FooterLink to="/neighborhoods">Areas Served</FooterLink>
               <FooterLink to="/properties">Properties</FooterLink>
@@ -116,6 +118,11 @@ const Footer = () => {
               <FooterLink to="/vietnamese-speaking-real-estate-agent">
                 {t('nav.vietnamese')}
               </FooterLink>
+              {/* The prerendered Vietnamese tree. Distinct from the link above,
+                  which is the English page about Vietnamese service. This one
+                  is the Vietnamese-language site, and it needs a real inbound
+                  link on every page or it is reachable only via the sitemap. */}
+              <FooterLink to="/vi">Trang Tiếng Việt</FooterLink>
               <FooterLink to="/calculator">Calculators</FooterLink>
               <FooterLink to="/faq">FAQ</FooterLink>
             </ul>

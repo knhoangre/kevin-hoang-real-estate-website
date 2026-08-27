@@ -1,5 +1,5 @@
 {
-  "_comment": "Slugs of the 100 auto-generated daily posts retired on 2026-08-26, each mapped to the nearest surviving post. Source of truth for the 301s in vercel.json \u2014 regenerate them with node scripts/generate-blog-redirects.mjs, never hand-edit vercel.json. Deleting a post that is a redirect target here would strand these URLs.",
+  "_comment": "Retired blog slugs, each mapped to where a reader of that URL is best served now. Source of truth for the 301s in vercel.json — regenerate with node scripts/generate-blog-redirects.mjs, never hand-edit vercel.json. Two waves: 100 auto-generated daily posts retired 2026-08-26, and 40 thin or off-topic posts retired 2026-08-27. A redirectTo starting with / is a page rather than a post. Deleting a post named here as a target would strand every URL pointing at it — the generator refuses to write if that happens.",
   "retired": [
     {
       "slug": "metro-boston-real-estate-2026-01-11",
@@ -500,6 +500,206 @@
       "slug": "metro-boston-real-estate-2026-04-20",
       "topic": 24,
       "redirectTo": "home-preparation-guide"
+    },
+    {
+      "slug": "boston-office-market-future",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "coworking-spaces-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-industrial-spaces-evolution",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-retail-evolution",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-seaport-future",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-tech-corridors",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "tech-professionals-boston-real-estate",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "universities-boston-real-estate",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "wellness-focused-living-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-emerging-neighborhoods",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "up-and-coming-boston-neighborhoods",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-suburban-market",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "boston-luxury-home-market",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "luxury-real-estate-trends-mass",
+      "retired": "2026-08-27",
+      "redirectTo": "/neighborhoods"
+    },
+    {
+      "slug": "co-living-spaces-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "renting-in-greater-boston-costs"
+    },
+    {
+      "slug": "micro-apartments-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "renting-in-greater-boston-costs"
+    },
+    {
+      "slug": "student-housing-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "renting-in-greater-boston-costs"
+    },
+    {
+      "slug": "boston-luxury-rental-market",
+      "retired": "2026-08-27",
+      "redirectTo": "renting-in-greater-boston-costs"
+    },
+    {
+      "slug": "boston-reits-investment",
+      "retired": "2026-08-27",
+      "redirectTo": "rental-property-investment-massachusetts"
+    },
+    {
+      "slug": "mass-real-estate-investment-guide",
+      "retired": "2026-08-27",
+      "redirectTo": "rental-property-investment-massachusetts"
+    },
+    {
+      "slug": "boston-adaptive-reuse",
+      "retired": "2026-08-27",
+      "redirectTo": "historic-homes-massachusetts-guide"
+    },
+    {
+      "slug": "historic-preservation-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "historic-homes-massachusetts-guide"
+    },
+    {
+      "slug": "boston-waterfront-future",
+      "retired": "2026-08-27",
+      "redirectTo": "waterfront-property-buying-guide"
+    },
+    {
+      "slug": "boston-green-buildings",
+      "retired": "2026-08-27",
+      "redirectTo": "energy-efficient-homes-mass"
+    },
+    {
+      "slug": "mixed-use-development-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "mbta-communities-act-zoning"
+    },
+    {
+      "slug": "boston-real-estate-tech",
+      "retired": "2026-08-27",
+      "redirectTo": "smart-home-property-value"
+    },
+    {
+      "slug": "remote-work-boston-real-estate",
+      "retired": "2026-08-27",
+      "redirectTo": "transit-oriented-development-boston"
+    },
+    {
+      "slug": "boston-luxury-condo-market",
+      "retired": "2026-08-27",
+      "redirectTo": "condominium-living-boston-guide"
+    },
+    {
+      "slug": "boston-real-estate-2023-outlook",
+      "retired": "2026-08-27",
+      "redirectTo": "multiple-offers-boston-market"
+    },
+    {
+      "slug": "boston-real-estate-market-2025",
+      "retired": "2026-08-27",
+      "redirectTo": "multiple-offers-boston-market"
+    },
+    {
+      "slug": "market-reports",
+      "retired": "2026-08-27",
+      "redirectTo": "/blog"
+    },
+    {
+      "slug": "massachusetts-property-taxes-comprehensive-guide",
+      "retired": "2026-08-27",
+      "redirectTo": "mass-property-tax-guide"
+    },
+    {
+      "slug": "hoa-rules-regulations-massachusetts",
+      "retired": "2026-08-27",
+      "redirectTo": "condo-fees-hoa-regulations-massachusetts"
+    },
+    {
+      "slug": "smart-home-technology-mass",
+      "retired": "2026-08-27",
+      "redirectTo": "smart-home-property-value"
+    },
+    {
+      "slug": "sustainable-home-features-massachusetts",
+      "retired": "2026-08-27",
+      "redirectTo": "energy-efficient-homes-mass"
+    },
+    {
+      "slug": "preparing-home-for-sale-massachusetts",
+      "retired": "2026-08-27",
+      "redirectTo": "home-preparation-guide"
+    },
+    {
+      "slug": "seller-documentation-guide",
+      "retired": "2026-08-27",
+      "redirectTo": "massachusetts-seller-closing-requirements"
+    },
+    {
+      "slug": "first-time-buying-boston",
+      "retired": "2026-08-27",
+      "redirectTo": "/first-time-buyers"
+    },
+    {
+      "slug": "home-security-systems-massachusetts",
+      "retired": "2026-08-27",
+      "redirectTo": "smart-home-property-value"
+    },
+    {
+      "slug": "seasonal-home-ownership-massachusetts",
+      "retired": "2026-08-27",
+      "redirectTo": "massachusetts-home-maintenance-checklist"
     }
   ]
 }

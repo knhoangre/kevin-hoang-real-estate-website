@@ -23,8 +23,52 @@ const slugsFrom = (file) => {
   return slugs;
 };
 
+/** "January 10, 2026" -> "2026-01-10". Null if it will not parse. */
+const toIsoDate = (display) => {
+  const parsed = Date.parse(display);
+  return Number.isNaN(parsed) ? null : new Date(parsed).toISOString().slice(0, 10);
+};
+
+/**
+ * Every post as `{ slug, lastmod }`, read out of blogData.ts.
+ *
+ * The fields are matched at their object indentation (`\n    slug:`) rather
+ * than anywhere in the file, so a `date:` written inside a post's prose cannot
+ * be mistaken for the field. Within each object `slug` precedes `updated` and
+ * `date`, which is what lets this pair them up by position.
+ *
+ * `updated` wins over `date` when present: lastmod is meant to be the last
+ * significant change, not the publication date.
+ */
+const blogEntries = () => {
+  const src = readFileSync('src/data/blogData.ts', 'utf8');
+  const marks = [...src.matchAll(/\n    (slug|date|updated):\s*"([^"]+)"/g)];
+
+  const entries = [];
+  let current = null;
+  for (const [, field, value] of marks) {
+    if (field === 'slug') {
+      if (current) entries.push(current);
+      current = { slug: value, date: null, updated: null };
+    } else if (current) {
+      current[field] = value;
+    }
+  }
+  if (current) entries.push(current);
+
+  if (entries.length === 0) throw new Error('no posts found in src/data/blogData.ts');
+
+  return entries.map(({ slug, date, updated }) => ({
+    slug,
+    // Falls back to undefined rather than to today: an absent lastmod is
+    // ignored, while a wrong one teaches crawlers to distrust the whole file.
+    lastmod: toIsoDate(updated ?? date ?? '') ?? undefined,
+  }));
+};
+
 export const TOWN_SLUGS = slugsFrom('src/data/neighborhoodData.ts');
-export const BLOG_SLUGS = slugsFrom('src/data/blogData.ts');
+export const BLOG_ENTRIES = blogEntries();
+export const BLOG_SLUGS = BLOG_ENTRIES.map((e) => e.slug);
 
 /** Never in the sitemap, disallowed in robots.txt, noindex at the page level. */
 export const PRIVATE_PREFIXES = [
@@ -57,6 +101,10 @@ export const STATIC_ROUTES = [
     changefreq: 'monthly',
   })),
 
+  // The person. High priority: this is what "who is Kevin Hoang" resolves to,
+  // and it carries the outbound profile links that corroborate the entity.
+  { path: '/about', priority: 0.8, changefreq: 'monthly' },
+
   // Guides and evergreen content.
   { path: '/buyer', priority: 0.7, changefreq: 'monthly' },
   { path: '/seller', priority: 0.7, changefreq: 'monthly' },
@@ -68,6 +116,17 @@ export const STATIC_ROUTES = [
   { path: '/properties', priority: 0.6, changefreq: 'weekly' },
   { path: '/testimonials', priority: 0.5, changefreq: 'monthly' },
 
+  // Vietnamese. Real prerendered documents, paired with their English
+  // counterparts by src/lib/viRoutes.ts. Kept in sync with AppRoutes.tsx by
+  // hand like every other route — a route missing here is missing from the
+  // sitemap, and one missing from AppRoutes 404s on hard refresh.
+  { path: '/vi', priority: 0.8, changefreq: 'monthly' },
+  { path: '/vi/mua-nha', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/ban-nha', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/dinh-gia-nha', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/cau-hoi-thuong-gap', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/khu-vuc', priority: 0.6, changefreq: 'monthly' },
+
   // Legal. Real pages, low priority — they exist for users and for trust
   // signals, not to rank.
   { path: '/privacy-policy', priority: 0.2, changefreq: 'yearly' },
@@ -75,8 +134,9 @@ export const STATIC_ROUTES = [
   { path: '/disclaimer', priority: 0.2, changefreq: 'yearly' },
 ];
 
-export const BLOG_ROUTES = BLOG_SLUGS.map((slug) => ({
+export const BLOG_ROUTES = BLOG_ENTRIES.map(({ slug, lastmod }) => ({
   path: `/blog/${slug}`,
   priority: 0.6,
   changefreq: 'monthly',
+  lastmod,
 }));

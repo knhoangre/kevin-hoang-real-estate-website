@@ -48,7 +48,7 @@ const FAQ = () => {
   return (
     <section className="py-24 bg-gray-50">
       <div className="container px-4">
-        <h2 className="text-4xl font-bold text-[#1a1a1a] mb-12">{t('faq.title')}</h2>
+        <h2 className="text-4xl font-bold text-ink mb-12">{t('faq.title')}</h2>
         
         <Accordion type="single" collapsible className="w-full max-w-4xl mx-auto">
           {faqItems.map((item, index) => (

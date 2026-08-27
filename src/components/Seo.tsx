@@ -18,7 +18,23 @@ export interface SeoProps {
   /** Site-relative path or absolute URL. Defaults to SITE.defaultOgImage. */
   ogImage?: string;
   ogType?: 'website' | 'article' | 'profile';
+  /** OG locale for this page, e.g. 'vi_VN'. Defaults to SITE.locale. */
+  locale?: string;
   noindex?: boolean;
+  /**
+   * Language alternates for this page, as `{ 'en': '/buyer', 'vi': '/vi/mua-nha' }`.
+   *
+   * Emitted as <link rel="alternate" hreflang>, plus an x-default pointing at
+   * the English member. Two rules that make or break this:
+   *
+   *  - **It must be reciprocal.** Each page in a set has to list every member
+   *    INCLUDING itself. A one-directional hreflang is ignored outright, which
+   *    is the most common way this is deployed and does nothing.
+   *  - **hreflang is not a canonical.** Every page keeps its own
+   *    self-referencing canonical; these tags say "same content, other
+   *    language", not "index that one instead".
+   */
+  alternates?: Record<string, string>;
   /** One JSON-LD object or several. Each is emitted as its own script tag. */
   jsonLd?: object | object[];
   article?: {
@@ -31,6 +47,9 @@ export interface SeoProps {
 // SITE.name is the Google Business Profile name and already contains a pipe, so
 // the shorter titleSuffix is what goes in <title>. og:site_name still uses the
 // full profile name below.
+/** hreflang code -> Open Graph locale. */
+const OG_LOCALES: Record<string, string> = { en: 'en_US', vi: 'vi_VN' };
+
 const withBrand = (title: string) =>
   title.includes('|') ? title : `${title} | ${SITE.titleSuffix}`;
 
@@ -56,7 +75,9 @@ const Seo = ({
   canonical,
   ogImage,
   ogType = 'website',
+  locale,
   noindex = false,
+  alternates,
   jsonLd,
   article,
 }: SeoProps) => {
@@ -74,6 +95,21 @@ const Seo = ({
       <link rel="canonical" href={canonicalUrl} />
       {noindex && <meta name="robots" content="noindex, nofollow" />}
 
+      {/* Language alternates. Each set member lists every member including
+          itself, or search engines discard the whole set. */}
+      {alternates &&
+        Object.entries(alternates).map(([lang, path]) => (
+          <link
+            key={lang}
+            rel="alternate"
+            hrefLang={lang}
+            href={absoluteUrl(path)}
+          />
+        ))}
+      {alternates?.en && (
+        <link rel="alternate" hrefLang="x-default" href={absoluteUrl(alternates.en)} />
+      )}
+
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:type" content={ogType} />
@@ -82,7 +118,15 @@ const Seo = ({
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:site_name" content={SITE.name} />
-      <meta property="og:locale" content={SITE.locale} />
+      {/* The page's own locale, not the site default — a Vietnamese page
+          declaring en_US misdescribes itself to every unfurler. */}
+      <meta property="og:locale" content={locale ?? SITE.locale} />
+      {alternates &&
+        Object.keys(alternates)
+          .filter((lang) => OG_LOCALES[lang] && OG_LOCALES[lang] !== (locale ?? SITE.locale))
+          .map((lang) => (
+            <meta key={lang} property="og:locale:alternate" content={OG_LOCALES[lang]} />
+          ))}
 
       {article?.publishedTime && (
         <meta property="article:published_time" content={article.publishedTime} />

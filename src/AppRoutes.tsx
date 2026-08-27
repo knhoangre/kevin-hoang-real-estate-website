@@ -83,6 +83,12 @@ export const routes: RouteRecord[] = [
       ),
       page('relocation', () => import('./pages/Relocation'), 'src/pages/Relocation.tsx'),
 
+      // --- The person ----------------------------------------------------
+      // Owns the PERSON axis, distinct from the four service pages above.
+      // #kevin is referenced as author on every post and as the agent's
+      // employee; this is the page that describes him.
+      page('about', () => import('./pages/About'), 'src/pages/About.tsx'),
+
       // --- Guides and evergreen content ---------------------------------
       page('buyer', () => import('./pages/Buyer'), 'src/pages/Buyer.tsx'),
       page('seller', () => import('./pages/Seller'), 'src/pages/Seller.tsx'),
@@ -121,6 +127,27 @@ export const routes: RouteRecord[] = [
           return blogPosts.map((p) => `/blog/${p.slug}`);
         },
       },
+
+      // --- Vietnamese ------------------------------------------------------
+      // Real prerendered routes, NOT the language toggle. The toggle swaps copy
+      // after hydration, so no Vietnamese text existed in any prerendered
+      // document and no crawler had ever seen a word of it. These are paired
+      // with their English counterparts by src/lib/viRoutes.ts, which feeds the
+      // reciprocal hreflang on both sides.
+      page('vi', () => import('./pages/vi/ViHome'), 'src/pages/vi/ViHome.tsx'),
+      page('vi/mua-nha', () => import('./pages/vi/ViBuy'), 'src/pages/vi/ViBuy.tsx'),
+      page('vi/ban-nha', () => import('./pages/vi/ViSell'), 'src/pages/vi/ViSell.tsx'),
+      page(
+        'vi/dinh-gia-nha',
+        () => import('./pages/vi/ViValuation'),
+        'src/pages/vi/ViValuation.tsx'
+      ),
+      page(
+        'vi/cau-hoi-thuong-gap',
+        () => import('./pages/vi/ViFaq'),
+        'src/pages/vi/ViFaq.tsx'
+      ),
+      page('vi/khu-vuc', () => import('./pages/vi/ViAreas'), 'src/pages/vi/ViAreas.tsx'),
 
       // --- Legal ----------------------------------------------------------
       page('privacy-policy', () => import('./pages/PrivacyPolicy'), 'src/pages/PrivacyPolicy.tsx'),

@@ -2,12 +2,16 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { LANGUAGE_STORAGE_KEY } from '@/i18n';
+import { hasDarkHero } from '@/lib/navItems';
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
-  const isHomePage = location.pathname === '/';
+  // Same rule as the rest of the bar: transparent chrome over any ink-deep
+  // hero, not just the homepage. This used to check `pathname === '/'`, so on
+  // /about and the landing pages the label rendered near-black on near-black.
+  const overDark = hasDarkHero(location.pathname) && !isScrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,38 +43,20 @@ const LanguageSwitcher = () => {
   // Always show Vietnamese first, then English
   const buttonText = i18n.language === 'vi' ? 'ENGLISH' : 'TIẾNG VIỆT';
 
-  // Determine text color based on page and scroll position
-  const getTextColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "text-white";
-    }
-    return "text-black";
-  };
-
-  // Determine hover color based on page and scroll position
-  const getHoverColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "hover:text-gray-200";
-    }
-    return "hover:text-gray-600";
-  };
-
-  // Determine underline color based on page and scroll position
-  const getUnderlineColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "bg-white";
-    }
-    return "bg-black";
-  };
-
   return (
     <button
       onClick={toggleLanguage}
-      className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group`}
+      className={`group relative text-sm uppercase tracking-wider transition-colors ${
+        overDark ? 'text-white hover:text-champagne' : 'text-ink hover:text-champagne-ink'
+      }`}
       aria-label="Toggle language"
     >
       {buttonText}
-      <span className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2`} />
+      <span
+        className={`absolute bottom-[-4px] left-1/2 h-0.5 w-0 -translate-x-1/2 transition-all duration-300 group-hover:w-full ${
+          overDark ? 'bg-champagne' : 'bg-champagne-ink'
+        }`}
+      />
     </button>
   );
 };

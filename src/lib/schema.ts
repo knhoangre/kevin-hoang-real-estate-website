@@ -8,7 +8,7 @@
  * @id `${origin}/#agent`. Every other page references that @id instead of
  * restating the whole entity — smaller payloads, and one place to fix mistakes.
  */
-import { SITE, absoluteUrl } from './siteConfig';
+import { SITE, absoluteUrl, profileUrls } from './siteConfig';
 
 const AGENT_ID = `${SITE.origin}/#agent`;
 const WEBSITE_ID = `${SITE.origin}/#website`;
@@ -64,7 +64,7 @@ export const person = () =>
       'first-time home buyers',
       'Connecticut to Massachusetts relocation',
     ],
-    sameAs: SITE.sameAs,
+    sameAs: profileUrls,
   });
 
 /**
@@ -95,7 +95,7 @@ export const realEstateAgent = () =>
         }
       : undefined,
     areaServed: areaServed(),
-    sameAs: SITE.sameAs,
+    sameAs: profileUrls,
     knowsLanguage: SITE.languages,
     openingHoursSpecification: openingHours(),
     parentOrganization: SITE.brokerage

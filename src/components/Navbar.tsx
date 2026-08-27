@@ -1,789 +1,381 @@
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
+import { X, Phone, MessageSquare } from "lucide-react";
 import Logo from "./Logo";
+import NavLink, { type NavTone } from "./NavLink";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PRIMARY_NAV, SECONDARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
 import { SITE, smsHref, telHref } from "@/lib/siteConfig";
+
+/**
+ * A dropdown panel that opens on hover AND on click, focus and keyboard.
+ *
+ * The previous implementation bound `onMouseEnter` to the wrapper div and gave
+ * the trigger button no onClick and no key handler at all, so on any touch
+ * device wider than the 1140px breakpoint the entire secondary navigation was
+ * unreachable, and keyboard users could focus the trigger and have nothing
+ * happen. It also carried ~150 lines of hand-rolled close scheduling —
+ * elementFromPoint against a document-level mousemove listener — with both of
+ * its delay constants set to zero.
+ */
+const useDisclosure = () => {
+  const [open, setOpen] = useState(false);
+  const wrapper = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    const onPointer = (e: MouseEvent) => {
+      if (!wrapper.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onPointer);
+    };
+  }, [open]);
+
+  return { open, setOpen, wrapper };
+};
+
+const PANEL =
+  "absolute right-0 top-full z-50 w-52 min-w-[8rem] pt-2";
+const PANEL_INNER =
+  "rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg";
 
 const Navbar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
-  const [menuDropdownOpen, setMenuDropdownOpen] = useState(false);
-  const phoneContentRef = useRef<HTMLDivElement>(null);
-  const menuContentRef = useRef<HTMLDivElement>(null);
-  const phoneWrapperRef = useRef<HTMLDivElement>(null);
-  const menuWrapperRef = useRef<HTMLDivElement>(null);
-  const phoneHoveringRef = useRef(false);
-  const menuHoveringRef = useRef(false);
-  const phoneIsOpenRef = useRef(false);
-  const menuIsOpenRef = useRef(false);
-  const phoneCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const menuCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const phoneGraceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const menuGraceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastMouseX = useRef(0);
-  const lastMouseY = useRef(0);
-  const HOVER_CLOSE_DELAY_MS = 0;
-  const OPEN_GRACE_PERIOD_MS = 0;
-  const isHomePage = location.pathname === '/';
-  const menuBarColor =
-    isHomePage && !isScrolled ? "bg-white" : "bg-black";
 
-  const isOverPhoneArea = (el: Element | null) =>
-    el &&
-    (phoneWrapperRef.current?.contains(el) || phoneContentRef.current?.contains(el));
+  const phone = useDisclosure();
+  const menu = useDisclosure();
 
-  const isOverMenuArea = (el: Element | null) =>
-    el &&
-    (menuWrapperRef.current?.contains(el) || menuContentRef.current?.contains(el));
-
-  const closePhone = () => {
-    if (phoneCloseTimeoutRef.current) {
-      clearTimeout(phoneCloseTimeoutRef.current);
-      phoneCloseTimeoutRef.current = null;
-    }
-    if (phoneGraceTimeoutRef.current) {
-      clearTimeout(phoneGraceTimeoutRef.current);
-      phoneGraceTimeoutRef.current = null;
-    }
-    phoneHoveringRef.current = false;
-    phoneIsOpenRef.current = false;
-    setPhoneDropdownOpen(false);
-  };
-
-  const closeMenu = () => {
-    if (menuCloseTimeoutRef.current) {
-      clearTimeout(menuCloseTimeoutRef.current);
-      menuCloseTimeoutRef.current = null;
-    }
-    if (menuGraceTimeoutRef.current) {
-      clearTimeout(menuGraceTimeoutRef.current);
-      menuGraceTimeoutRef.current = null;
-    }
-    menuHoveringRef.current = false;
-    menuIsOpenRef.current = false;
-    setMenuDropdownOpen(false);
-  };
-
-  const runClosePhone = () => {
-    const el = document.elementFromPoint(lastMouseX.current, lastMouseY.current);
-    if (isOverPhoneArea(el)) return;
-    closePhone();
-  };
-
-  const runCloseMenu = () => {
-    const el = document.elementFromPoint(lastMouseX.current, lastMouseY.current);
-    if (isOverMenuArea(el)) return;
-    closeMenu();
-  };
-
-  const phoneOpenByHover = () => {
-    if (phoneCloseTimeoutRef.current) {
-      clearTimeout(phoneCloseTimeoutRef.current);
-      phoneCloseTimeoutRef.current = null;
-    }
-    if (phoneGraceTimeoutRef.current) {
-      clearTimeout(phoneGraceTimeoutRef.current);
-      phoneGraceTimeoutRef.current = null;
-    }
-    phoneHoveringRef.current = true;
-    phoneIsOpenRef.current = true;
-    setPhoneDropdownOpen(true);
-    phoneGraceTimeoutRef.current = setTimeout(() => {
-      phoneGraceTimeoutRef.current = null;
-      if (phoneIsOpenRef.current) {
-        const el = document.elementFromPoint(lastMouseX.current, lastMouseY.current);
-        if (!isOverPhoneArea(el)) closePhone();
-      }
-    }, OPEN_GRACE_PERIOD_MS);
-  };
-
-  const menuOpenByHover = () => {
-    if (menuCloseTimeoutRef.current) {
-      clearTimeout(menuCloseTimeoutRef.current);
-      menuCloseTimeoutRef.current = null;
-    }
-    if (menuGraceTimeoutRef.current) {
-      clearTimeout(menuGraceTimeoutRef.current);
-      menuGraceTimeoutRef.current = null;
-    }
-    menuHoveringRef.current = true;
-    menuIsOpenRef.current = true;
-    setMenuDropdownOpen(true);
-    menuGraceTimeoutRef.current = setTimeout(() => {
-      menuGraceTimeoutRef.current = null;
-      if (menuIsOpenRef.current) {
-        const el = document.elementFromPoint(lastMouseX.current, lastMouseY.current);
-        if (!isOverMenuArea(el)) closeMenu();
-      }
-    }, OPEN_GRACE_PERIOD_MS);
-  };
-
-  const handlePhoneTriggerLeave = () => {
-    if (phoneGraceTimeoutRef.current) return;
-    if (phoneCloseTimeoutRef.current) clearTimeout(phoneCloseTimeoutRef.current);
-    phoneCloseTimeoutRef.current = setTimeout(runClosePhone, HOVER_CLOSE_DELAY_MS);
-  };
-
-  const handleMenuTriggerLeave = () => {
-    if (menuGraceTimeoutRef.current) return;
-    if (menuCloseTimeoutRef.current) clearTimeout(menuCloseTimeoutRef.current);
-    menuCloseTimeoutRef.current = setTimeout(runCloseMenu, HOVER_CLOSE_DELAY_MS);
-  };
-
-  const handlePhoneContentEnter = () => {
-    if (phoneGraceTimeoutRef.current) {
-      clearTimeout(phoneGraceTimeoutRef.current);
-      phoneGraceTimeoutRef.current = null;
-    }
-    if (phoneCloseTimeoutRef.current) {
-      clearTimeout(phoneCloseTimeoutRef.current);
-      phoneCloseTimeoutRef.current = null;
-    }
-    phoneHoveringRef.current = true;
-    if (!phoneIsOpenRef.current) {
-      phoneIsOpenRef.current = true;
-      setPhoneDropdownOpen(true);
-    }
-  };
-
-  const handleMenuContentEnter = () => {
-    if (menuGraceTimeoutRef.current) {
-      clearTimeout(menuGraceTimeoutRef.current);
-      menuGraceTimeoutRef.current = null;
-    }
-    if (menuCloseTimeoutRef.current) {
-      clearTimeout(menuCloseTimeoutRef.current);
-      menuCloseTimeoutRef.current = null;
-    }
-    menuHoveringRef.current = true;
-    if (!menuIsOpenRef.current) {
-      menuIsOpenRef.current = true;
-      setMenuDropdownOpen(true);
-    }
-  };
+  const pathname = location.pathname;
+  // Transparent only while sitting over a dark hero and not yet scrolled.
+  // `isScrolled` seeds false on both the server and the client and is corrected
+  // in an effect, so it is not a hydration surface.
+  const overDark = hasDarkHero(pathname) && !isScrolled;
+  const tone: NavTone = overDark ? "dark" : "light";
+  const barColor = overDark ? "bg-white" : "bg-ink";
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (phoneCloseTimeoutRef.current) clearTimeout(phoneCloseTimeoutRef.current);
-      if (menuCloseTimeoutRef.current) clearTimeout(menuCloseTimeoutRef.current);
-      if (phoneGraceTimeoutRef.current) clearTimeout(phoneGraceTimeoutRef.current);
-      if (menuGraceTimeoutRef.current) clearTimeout(menuGraceTimeoutRef.current);
-    };
-  }, []);
+  const labelFor = useCallback(
+    (item: NavItem) => (item.labelKey ? t(item.labelKey) : (item.label as string)),
+    [t],
+  );
 
-  useEffect(() => {
-    const track = (e: MouseEvent) => {
-      lastMouseX.current = e.clientX;
-      lastMouseY.current = e.clientY;
-    };
-    document.addEventListener("mousemove", track, { passive: true });
-    return () => document.removeEventListener("mousemove", track);
-  }, []);
-
-  // Determine text color based on page and scroll position
-  const getTextColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "text-white";
-    }
-    return "text-black";
-  };
-
-  // Determine hover color based on page and scroll position
-  const getHoverColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "hover:text-gray-200";
-    }
-    return "hover:text-gray-600";
-  };
-
-  // Determine underline color based on page and scroll position
-  const getUnderlineColorClass = () => {
-    if (isHomePage && !isScrolled) {
-      return "bg-white";
-    }
-    return "bg-black";
-  };
-
-  const mobileMenuVariants = {
-    hidden: { opacity: 0, height: 0 },
-    visible: {
-      opacity: 1,
-      height: "auto",
-      transition: {
-        duration: 0.3,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    },
-    exit: {
-      opacity: 0,
-      height: 0,
-      transition: {
-        duration: 0.3,
-        when: "afterChildren",
-        staggerChildren: 0.05,
-        staggerDirection: -1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 }
-  };
-
-  const handleNavigation = (path: string) => {
-    // No scrollTo here: <ScrollToTop/> in the layout already handles PUSH
-    // navigations, and doing it again with `smooth` animated the page the user
-    // was leaving rather than the one they were going to.
-    navigate(path);
-    setMobileMenuOpen(false);
+  /** One dropdown row. Real anchors, and the champagne accent on the current one. */
+  const PanelLink = ({ item }: { item: NavItem }) => {
+    const active = isActivePath(pathname, item.to);
+    return (
+      <Link
+        to={item.to}
+        onClick={() => menu.setOpen(false)}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "flex w-full items-center rounded-lg px-3 py-2 text-sm uppercase tracking-wide transition-colors",
+          active
+            ? "bg-bone text-champagne-ink"
+            : "text-ink hover:bg-bone hover:text-champagne-ink",
+        )}
+      >
+        {labelFor(item)}
+      </Link>
+    );
   };
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled || !isHomePage ? "bg-white" : "bg-transparent"
-      }`}
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        overDark ? "bg-transparent" : "bg-white",
+      )}
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
-          <RouterLink
-            to="/"
-            className="relative z-10 flex shrink-0 items-center"
+        <Link to="/" className="relative z-10 flex shrink-0 items-center">
+          <Logo className="h-20 w-auto" />
+        </Link>
+
+        {/* Desktop. The breakpoint moved from 1011px to 1140px when /about made
+            this a four-item bar alongside the switcher, phone, menu and login. */}
+        <div className="hidden min-h-0 min-[1140px]:flex h-full items-center gap-8">
+          {PRIMARY_NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              item={item}
+              pathname={pathname}
+              tone={tone}
+              label={labelFor(item)}
+            />
+          ))}
+
+          <LanguageSwitcher />
+
+          <div
+            ref={phone.wrapper}
+            className="relative"
+            onMouseEnter={() => phone.setOpen(true)}
+            onMouseLeave={() => phone.setOpen(false)}
           >
-            <Logo className="h-20 w-auto" />
-          </RouterLink>
-
-          {/* Desktop Navigation */}
-          <div className="hidden min-h-0 min-[1011px]:flex h-full items-center gap-8">
             <button
-              onClick={() => handleNavigation('/properties')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/properties' ? 'font-bold' : ''
-              }`}
+              type="button"
+              onClick={() => phone.setOpen(!phone.open)}
+              aria-expanded={phone.open}
+              aria-label="Phone number"
+              className={cn(
+                "text-sm uppercase tracking-wider transition-colors",
+                overDark ? "text-white hover:text-champagne" : "text-ink hover:text-champagne-ink",
+              )}
             >
-              PROPERTIES
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/properties' ? 'w-full' : ''
-                }`}
-              />
+              {SITE.phone}
             </button>
-
-            <button
-              onClick={() => handleNavigation('/faq')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/faq' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.faq')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/faq' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            <button
-              onClick={() => handleNavigation('/contact')}
-              className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group ${
-                location.pathname === '/contact' ? 'font-bold' : ''
-              }`}
-            >
-              {t('nav.contact')}
-              <span
-                className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2 ${
-                  location.pathname === '/contact' ? 'w-full' : ''
-                }`}
-              />
-            </button>
-
-            {/* Language Switcher */}
-            <LanguageSwitcher />
-
-            {/* Phone Number - hover to open (custom panel, no Radix) */}
-            <div
-              ref={phoneWrapperRef}
-              className="relative"
-              onMouseEnter={phoneOpenByHover}
-              onMouseLeave={handlePhoneTriggerLeave}
-            >
-              <Button
-                variant="ghost"
-                className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} hover:bg-transparent p-0 h-auto font-normal`}
-                aria-label="Phone number"
-              >
-                {SITE.phone}
-              </Button>
-              <AnimatePresence>
-                {phoneDropdownOpen && (
-                  <motion.div
-                    ref={phoneContentRef}
-                    key="phone-panel"
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 min-w-[8rem] pt-2"
-                  >
-                    <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+            <AnimatePresence>
+              {phone.open && (
+                <motion.div
+                  key="phone-panel"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className={cn(PANEL, "w-36")}
+                >
+                  <div className={PANEL_INNER}>
                     <a
                       href={telHref}
-                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm uppercase tracking-wide text-ink transition-colors hover:bg-bone hover:text-champagne-ink"
                     >
-                      CALL
+                      <Phone className="h-3.5 w-3.5" aria-hidden />
+                      Call
                     </a>
                     <a
                       href={smsHref}
-                      className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm uppercase tracking-wide text-ink transition-colors hover:bg-bone hover:text-champagne-ink"
                     >
-                      TEXT
+                      <MessageSquare className="h-3.5 w-3.5" aria-hidden />
+                      Text
                     </a>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Menu Dropdown - hover to open (custom panel, no Radix) */}
-            <div
-              ref={menuWrapperRef}
-              className="relative"
-              onMouseEnter={menuOpenByHover}
-              onMouseLeave={handleMenuTriggerLeave}
-            >
-              <button
-                type="button"
-                className={cn(
-                  "inline-flex h-auto min-h-0 shrink-0 items-center justify-center rounded-md p-1",
-                  "bg-transparent hover:bg-transparent text-transparent",
-                  "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.97]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                )}
-                aria-label="Menu"
-                aria-expanded={menuDropdownOpen}
-              >
-                <span className="relative block h-4 w-5 shrink-0">
-                  <span
-                    className={cn(
-                      "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
-                      menuBarColor,
-                      menuDropdownOpen
-                        ? "top-1/2 -translate-y-1/2 rotate-45"
-                        : "top-0 translate-y-0 rotate-0",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "pointer-events-none absolute left-0 top-1/2 h-0.5 w-5 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
-                      menuBarColor,
-                      menuDropdownOpen ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
-                      menuBarColor,
-                      menuDropdownOpen
-                        ? "top-1/2 bottom-auto -translate-y-1/2 -rotate-45"
-                        : "bottom-0 top-auto translate-y-0 rotate-0",
-                    )}
-                  />
-                </span>
-              </button>
-              <AnimatePresence>
-                {menuDropdownOpen && (
-                  <motion.div
-                    ref={menuContentRef}
-                    key="menu-panel"
-                    initial={{ opacity: 0, y: -6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 top-full z-50 w-48 min-w-[8rem] pt-2"
-                  >
-                    <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/buyer')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/buyer' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.buyer')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/seller')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/seller' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.seller')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/relocation')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/relocation' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.relocation')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    {/* The Vietnamese landing page had no navigation entry at
-                        all — only a footer link — so the one audience it is
-                        written for could not find it from the menu. */}
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/vietnamese-speaking-real-estate-agent')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.vietnamese')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/testimonials')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/testimonials' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.testimonials')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/neighborhoods')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/neighborhoods' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.neighborhoods')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/blog')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/blog' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.blog')}
-                    </button>
-                    <div className="-mx-1 my-1 h-px bg-muted" />
-                    <button
-                      type="button"
-                      onClick={() => handleNavigation('/calculator')}
-                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
-                        location.pathname === '/calculator' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
-                      }`}
-                    >
-                      {t('nav.calculator')}
-                    </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {user ? (
-              <ProfileDropdown onItemClick={() => {}} />
-            ) : (
-              <RouterLink
-                to="/auth"
-                className={`text-sm uppercase tracking-wider ${getTextColorClass()} ${getHoverColorClass()} transition-colors relative group`}
-              >
-                {t('nav.login')}
-                <span className={`absolute bottom-[-4px] left-1/2 w-0 h-0.5 ${getUnderlineColorClass()} group-hover:w-full transition-all duration-300 -translate-x-1/2`} />
-              </RouterLink>
-            )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Mobile Navigation */}
-          <div className="flex h-full min-h-0 items-center gap-4 min-[1011px]:hidden">
-            <LanguageSwitcher />
+          <div
+            ref={menu.wrapper}
+            className="relative"
+            onMouseEnter={() => menu.setOpen(true)}
+            onMouseLeave={() => menu.setOpen(false)}
+          >
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => menu.setOpen(!menu.open)}
+              aria-expanded={menu.open}
+              aria-label="Menu"
               className={cn(
-                "relative z-10 inline-flex rounded-md p-1.5",
-                "bg-transparent hover:bg-transparent",
-                "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.94]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "inline-flex h-auto min-h-0 shrink-0 items-center justify-center rounded-md p-1",
+                "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.97]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2",
               )}
-              aria-label="Toggle menu"
-              aria-expanded={mobileMenuOpen}
             >
-              <span className="relative block h-3 w-4 shrink-0">
+              <span className="relative block h-4 w-5 shrink-0">
                 <span
                   className={cn(
-                    "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
-                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
-                    mobileMenuOpen
-                      ? "top-1/2 -translate-y-1/2 rotate-45"
-                      : "top-0 translate-y-0 rotate-0",
+                    "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
+                    barColor,
+                    menu.open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0 translate-y-0 rotate-0",
                   )}
                 />
                 <span
                   className={cn(
-                    "pointer-events-none absolute left-0 top-1/2 h-0.5 w-4 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
-                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
-                    mobileMenuOpen ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
+                    "pointer-events-none absolute left-0 top-1/2 h-0.5 w-5 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
+                    barColor,
+                    menu.open ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
                   )}
                 />
                 <span
                   className={cn(
-                    "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
-                    isHomePage && !isScrolled ? "bg-white" : "bg-black",
-                    mobileMenuOpen
+                    "pointer-events-none absolute left-0 h-0.5 w-5 origin-center rounded-full transition-all duration-300 ease-out",
+                    barColor,
+                    menu.open
                       ? "top-1/2 bottom-auto -translate-y-1/2 -rotate-45"
                       : "bottom-0 top-auto translate-y-0 rotate-0",
                   )}
                 />
               </span>
             </button>
+            <AnimatePresence>
+              {menu.open && (
+                <motion.div
+                  key="menu-panel"
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className={PANEL}
+                >
+                  <div className={PANEL_INNER}>
+                    {SECONDARY_NAV.map((item) => (
+                      <PanelLink key={item.to} item={item} />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {user ? (
+            <ProfileDropdown onItemClick={() => {}} />
+          ) : (
+            <NavLink
+              item={{ to: "/auth", labelKey: "nav.login" }}
+              pathname={pathname}
+              tone={tone}
+              label={t("nav.login")}
+            />
+          )}
+        </div>
+
+        {/* Mobile trigger */}
+        <div className="flex h-full min-h-0 items-center gap-4 min-[1140px]:hidden">
+          <LanguageSwitcher />
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={cn(
+              "relative z-10 inline-flex rounded-md p-1.5",
+              "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.94]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2",
+            )}
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+          >
+            <span className="relative block h-3 w-4 shrink-0">
+              <span
+                className={cn(
+                  "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
+                  barColor,
+                  mobileMenuOpen ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0 translate-y-0 rotate-0",
+                )}
+              />
+              <span
+                className={cn(
+                  "pointer-events-none absolute left-0 top-1/2 h-0.5 w-4 origin-center -translate-y-1/2 rounded-full transition-all duration-150 ease-out",
+                  barColor,
+                  mobileMenuOpen ? "scale-x-0 opacity-0" : "scale-x-100 opacity-100",
+                )}
+              />
+              <span
+                className={cn(
+                  "pointer-events-none absolute left-0 h-0.5 w-4 origin-center rounded-full transition-all duration-300 ease-out",
+                  barColor,
+                  mobileMenuOpen
+                    ? "top-1/2 bottom-auto -translate-y-1/2 -rotate-45"
+                    : "bottom-0 top-auto translate-y-0 rotate-0",
+                )}
+              />
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 bg-white z-40"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={mobileMenuVariants}
+            className="fixed inset-0 z-40 overflow-y-auto bg-white"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            {/* Close X Button */}
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-4 right-4 z-50 p-2 text-black hover:text-gray-600 transition-colors"
+              className="absolute right-4 top-4 z-50 p-2 text-ink transition-colors hover:text-champagne-ink"
               aria-label="Close menu"
             >
               <X className="h-6 w-6" />
             </button>
-            
-            <div className="container mx-auto px-4 pt-24 pb-8 h-full flex flex-col">
-              <motion.div className="flex flex-col space-y-3 flex-grow items-center w-full max-w-xs mx-auto px-4" variants={itemVariants}>
-                <button
-                  onClick={() => handleNavigation('/buyer')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/buyer' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.buyer')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/buyer' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
 
-                <button
-                  onClick={() => handleNavigation('/seller')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/seller' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.seller')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/seller' ? 'w-full' : ''
-                    }`}
+            <div className="container mx-auto flex min-h-full flex-col px-4 pb-8 pt-24">
+              <div className="mx-auto flex w-full max-w-xs flex-grow flex-col items-center gap-3">
+                {/*
+                  Primary first, then the rest. The old mobile list ran the eight
+                  secondary routes before the three primary ones — the exact
+                  inverse of the desktop hierarchy — with identical hairlines
+                  between all eleven and nothing marking the boundary.
+                */}
+                {PRIMARY_NAV.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    item={item}
+                    pathname={pathname}
+                    tone="light"
+                    label={labelFor(item)}
+                    className="inline-block text-center"
+                    onClick={() => setMobileMenuOpen(false)}
                   />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
+                ))}
 
-                <button
-                  onClick={() => handleNavigation('/relocation')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/relocation' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.relocation')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/relocation' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
+                <div className="my-2 h-px w-full bg-gray-200" />
 
-                <button
-                  onClick={() => handleNavigation('/vietnamese-speaking-real-estate-agent')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.vietnamese')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'w-full' : ''
-                    }`}
+                {SECONDARY_NAV.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    item={item}
+                    pathname={pathname}
+                    tone="light"
+                    label={labelFor(item)}
+                    className="inline-block text-center"
+                    onClick={() => setMobileMenuOpen(false)}
                   />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
+                ))}
 
-                <button
-                  onClick={() => handleNavigation('/testimonials')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/testimonials' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.testimonials')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/testimonials' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
+                <div className="my-2 h-px w-full bg-gray-200" />
 
-                <button
-                  onClick={() => handleNavigation('/neighborhoods')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/neighborhoods' ? 'font-bold' : ''
-                  }`}
+                <a
+                  href={telHref}
+                  className="inline-flex items-center gap-2 text-sm uppercase tracking-wider text-ink transition-colors hover:text-champagne-ink"
                 >
-                  {t('nav.neighborhoods')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/neighborhoods' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
-
-                <button
-                  onClick={() => handleNavigation('/blog')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/blog' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.blog')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/blog' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
-
-                <button
-                  onClick={() => handleNavigation('/calculator')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/calculator' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.calculator')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/calculator' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
-
-                <button
-                  onClick={() => handleNavigation('/properties')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/properties' ? 'font-bold' : ''
-                  }`}
-                >
-                  PROPERTIES
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/properties' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
-
-                <button
-                  onClick={() => handleNavigation('/faq')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/faq' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.faq')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/faq' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
-
-                <button
-                  onClick={() => handleNavigation('/contact')}
-                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
-                    location.pathname === '/contact' ? 'font-bold' : ''
-                  }`}
-                >
-                  {t('nav.contact')}
-                  <span
-                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
-                      location.pathname === '/contact' ? 'w-full' : ''
-                    }`}
-                  />
-                </button>
-                <div className="w-full h-px bg-border -mx-4"></div>
+                  <Phone className="h-3.5 w-3.5" aria-hidden />
+                  {SITE.phone}
+                </a>
 
                 {user ? (
-                  <div className="flex justify-center">
-                    <ProfileDropdown onItemClick={() => setMobileMenuOpen(false)} align="center" />
-                  </div>
+                  <ProfileDropdown onItemClick={() => setMobileMenuOpen(false)} />
                 ) : (
-                  <RouterLink
-                    to="/auth"
-                    className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center"
+                  <NavLink
+                    item={{ to: "/auth", labelKey: "nav.login" }}
+                    pathname={pathname}
+                    tone="light"
+                    label={t("nav.login")}
+                    className="inline-block text-center"
                     onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {t('nav.login')}
-                    <span className="absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300" />
-                  </RouterLink>
+                  />
                 )}
-              </motion.div>
-              
-              {/* Exit Menu Button */}
-              <motion.div variants={itemVariants} className="mt-auto pb-8 flex justify-center">
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center py-4 border-t border-gray-200"
-                >
-                  EXIT MENU
-                  <span className="absolute bottom-2 left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300" />
-                </button>
-              </motion.div>
+              </div>
+
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="mx-auto mt-8 text-xs uppercase tracking-[0.2em] text-gray-500 transition-colors hover:text-ink"
+              >
+                Exit menu
+              </button>
             </div>
           </motion.div>
         )}

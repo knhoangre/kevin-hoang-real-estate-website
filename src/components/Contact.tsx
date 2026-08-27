@@ -115,19 +115,24 @@ const Contact = () => {
       <div className="container px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-8">
-            <h2 className="text-4xl font-bold text-[#1a1a1a] uppercase">{t('contact.title')}</h2>
+            <div>
+              <span className="mb-5 block h-px w-10 bg-champagne" aria-hidden />
+              <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink uppercase">
+                {t('contact.title')}
+              </h2>
+            </div>
             <div className="space-y-6">
-              <div className="flex items-center space-x-4 w-fit group relative"
+              <div className="flex items-start space-x-4 max-w-full group relative"
                    ref={dropdownRef}
               >
-                <Phone className="h-5 w-5 text-[#1a1a1a]" />
+                <Phone className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <span
-                  className="text-[#1a1a1a] uppercase relative cursor-pointer select-all"
+                  className="text-ink uppercase relative cursor-pointer select-all"
                   onClick={() => setPhoneDropdown(!phoneDropdown)}
                 >
                   {SITE.phone}
                   <span
-                    className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2"
+                    className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2"
                   />
                 </span>
                 {phoneDropdown && (
@@ -140,42 +145,42 @@ const Contact = () => {
                 )}
               </div>
 
-              <div className="flex items-center space-x-4 w-fit">
-                <Mail className="h-5 w-5 text-[#1a1a1a]" />
+              <div className="flex items-start space-x-4 max-w-full">
+                <Mail className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <a href={`mailto:${SITE.email}`} className="relative group">
-                  <span className="text-[#1a1a1a] uppercase relative">
+                  <span className="text-ink uppercase relative min-w-0 break-words">
                     {SITE.email.toUpperCase()}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>
 
-              <div className="flex items-center space-x-4 w-fit">
-                <MapPin className="h-5 w-5 text-[#1a1a1a]" />
+              <div className="flex items-start space-x-4 max-w-full">
+                <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <a
                   href={mapsHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative group"
                 >
-                  <span className="text-[#1a1a1a] uppercase relative">
+                  <span className="text-ink uppercase relative min-w-0 break-words">
                     {formattedAddress.toUpperCase()}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>
 
-              <div className="flex items-center space-x-4 w-fit">
-                <Calendar className="h-5 w-5 text-[#1a1a1a]" />
+              <div className="flex items-start space-x-4 max-w-full">
+                <Calendar className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <a
                   href="https://calendar.app.google/P297MnAu7ei6turA6"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative group"
                 >
-                  <span className="text-[#1a1a1a] uppercase relative">
+                  <span className="text-ink uppercase relative min-w-0 break-words">
                     SET AN APPOINTMENT WITH ME
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>
@@ -269,7 +274,7 @@ const Contact = () => {
               />
 
               <button
-                className="w-full bg-[#1a1a1a] text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
+                className="w-full bg-ink text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
                 disabled={isSubmitting}
                 type="submit"
               >

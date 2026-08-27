@@ -323,7 +323,7 @@ const OpenHouse = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+          <h2 className="text-2xl font-bold text-ink mb-4">
             Access Restricted
           </h2>
           <p className="text-lg text-gray-600 mb-6">
@@ -343,7 +343,7 @@ const OpenHouse = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+          <h2 className="text-2xl font-bold text-ink mb-4">
             Thank you for signing in.
           </h2>
           <p className="text-lg text-gray-600 mb-6">
@@ -351,7 +351,7 @@ const OpenHouse = () => {
           </p>
           <Button
             onClick={handleReset}
-            className="w-full bg-[#1a1a1a] text-white hover:bg-black/80"
+            className="w-full bg-ink text-white hover:bg-black/80"
           >
             Return to Sign-In
           </Button>
@@ -368,7 +368,7 @@ const OpenHouse = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-[#1a1a1a] mb-6 text-center">
+          <h1 className="text-3xl font-bold text-ink mb-6 text-center">
             Open House Sign-In
           </h1>
           <Form {...addressForm}>
@@ -506,7 +506,7 @@ const OpenHouse = () => {
               />
               <Button
                 type="submit"
-                className="w-full bg-[#1a1a1a] text-white hover:bg-black/80 uppercase"
+                className="w-full bg-ink text-white hover:bg-black/80 uppercase"
                 disabled={loadingAddresses}
               >
                 {loadingAddresses ? 'Loading...' : 'Continue'}
@@ -523,7 +523,7 @@ const OpenHouse = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-[#1a1a1a] mb-6 text-center">
+        <h1 className="text-2xl font-bold text-ink mb-6 text-center">
           Open House - {address}
         </h1>
         
@@ -695,7 +695,7 @@ const OpenHouse = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#1a1a1a] text-white hover:bg-black/80 uppercase mt-6"
+              className="w-full bg-ink text-white hover:bg-black/80 uppercase mt-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Continue'}

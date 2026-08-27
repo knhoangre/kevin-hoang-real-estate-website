@@ -217,3 +217,28 @@
     animation: none;
   }
 }
+
+/*
+ * FAQ answer reveal.
+ *
+ * The panel itself is toggled with the `hidden` attribute — a hard SEO
+ * requirement, since a conditionally-rendered answer never reaches the
+ * prerendered HTML. `hidden` is display:none, so the panel's height is not
+ * animatable; this runs on the inner wrapper instead, which starts from
+ * display:block the instant the attribute comes off.
+ */
+@keyframes faqReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.faq-reveal {
+  animation: faqReveal 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-reveal {
+    animation: none;
+    opacity: 1;
+  }
+}

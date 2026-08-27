@@ -36,6 +36,19 @@ export const townFaqs = (townName: string, slug: string): QA[] => {
     answer: `${parts.join('; ')}.${schools.note ? ` ${schools.note}` : ''} Attendance zones change, so confirm the district for a specific address before you rely on it.`,
   });
 
+  if (f.taxRate) {
+    qas.push({
+      question: `What is the property tax rate in ${townName}?`,
+      answer:
+        `The residential rate is $${f.taxRate.rate.toFixed(2)} per $1,000 of assessed value ` +
+        `for fiscal year ${f.taxRate.fiscalYear}. Your bill is that rate times your assessed ` +
+        `value divided by 1,000. Rates are set annually by the town and published by the ` +
+        `Massachusetts Department of Revenue, so confirm the current figure before relying ` +
+        `on it — and note that a lower rate does not mean a lower bill, because the rate ` +
+        `depends on the town's total assessed value as well as its budget.`,
+    });
+  }
+
   qas.push({
     question: `What highways serve ${townName}?`,
     answer: `${f.highways.join(', ')}. Which of these you are near matters more for a daily commute than the town line does.`,

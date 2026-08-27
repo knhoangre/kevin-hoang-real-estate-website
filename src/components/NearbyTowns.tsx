@@ -24,13 +24,13 @@ const NearbyTowns = ({ currentSlug, count = 4 }: { currentSlug: string; count?: 
 
   return (
     <aside className="mt-16 pt-8 border-t border-gray-200">
-      <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Other towns nearby</h2>
+      <h2 className="text-2xl font-bold text-ink mb-6">Other towns nearby</h2>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 list-none p-0">
         {others.map((town) => (
           <li key={town.slug} className="m-0">
             <Link
               to={`/neighborhoods/${town.slug}`}
-              className="block rounded-lg border border-gray-200 px-4 py-3 font-medium text-[#1a1a1a] transition-shadow hover:shadow-md"
+              className="block rounded-lg border border-gray-200 px-4 py-3 font-medium text-ink transition-shadow hover:shadow-md"
             >
               {town.name}, MA
             </Link>

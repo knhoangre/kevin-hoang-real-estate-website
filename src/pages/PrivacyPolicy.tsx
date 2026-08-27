@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
       description="How Kevin Hoang Real Estate collects, uses, and protects the information you share through this website."
       jsonLd={breadcrumbs(crumbs)}
 />
-      <div className="pt-16">
+      <div className="pt-20">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
               <div className="max-w-4xl mx-auto">
@@ -28,7 +28,7 @@ const PrivacyPolicy = () => {
                 to run the full container width while everything else was
                 capped, which is what made the trail look over-indented. */}
             <div className="max-w-4xl mx-auto mb-16 enter-down">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
+              <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 PRIVACY POLICY
               </h1>
               <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
@@ -43,9 +43,9 @@ const PrivacyPolicy = () => {
                 </p>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">1. Information We Collect</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">1. Information We Collect</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Personal Information</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Personal Information</h3>
                   <p className="text-gray-700 mb-4">
                     We may collect personal information that you voluntarily provide to us when you:
                   </p>
@@ -70,7 +70,7 @@ const PrivacyPolicy = () => {
                     <li>Any other information you choose to provide</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Automatically Collected Information</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Automatically Collected Information</h3>
                   <p className="text-gray-700 mb-4">
                     When you visit our website, we automatically collect certain information about your device and usage:
                   </p>
@@ -86,7 +86,7 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">2. How We Use Your Information</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">2. How We Use Your Information</h2>
                   <p className="text-gray-700 mb-4">
                     We use the information we collect for various purposes, including:
                   </p>
@@ -105,12 +105,12 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">3. Information Sharing and Disclosure</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">3. Information Sharing and Disclosure</h2>
                   <p className="text-gray-700 mb-4">
                     We do not sell, trade, or rent your personal information to third parties. We may share your information in the following circumstances:
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Service Providers</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Service Providers</h3>
                   <p className="text-gray-700 mb-4">
                     We may share information with trusted third-party service providers who assist us in operating our business, including:
                   </p>
@@ -123,7 +123,7 @@ const PrivacyPolicy = () => {
                     <li>Legal and professional service providers</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Real Estate Transactions</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Real Estate Transactions</h3>
                   <p className="text-gray-700 mb-4">
                     In connection with real estate transactions, we may share information with:
                   </p>
@@ -135,14 +135,14 @@ const PrivacyPolicy = () => {
                     <li>Other parties involved in the transaction process</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Legal Requirements</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Legal Requirements</h3>
                   <p className="text-gray-700 mb-6">
                     We may disclose your information when required by law or in response to legal process, including to comply with court orders, subpoenas, or government investigations.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">4. Cookies and Tracking Technologies</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">4. Cookies and Tracking Technologies</h2>
                   <p className="text-gray-700 mb-4">
                     We use cookies and similar technologies to enhance your browsing experience and analyze site usage. Types of cookies we use include:
                   </p>
@@ -158,7 +158,7 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">5. Data Security</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">5. Data Security</h2>
                   <p className="text-gray-700 mb-4">
                     We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. These measures include:
                   </p>
@@ -175,14 +175,14 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">6. Data Retention</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">6. Data Retention</h2>
                   <p className="text-gray-700 mb-6">
                     We retain your personal information for as long as necessary to fulfill the purposes outlined in this policy, unless a longer retention period is required or permitted by law. We consider factors such as the nature of the information, potential risk of harm, and legal requirements when determining retention periods.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">7. Your Rights and Choices</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">7. Your Rights and Choices</h2>
                   <p className="text-gray-700 mb-4">
                     Depending on your location, you may have certain rights regarding your personal information:
                   </p>
@@ -200,21 +200,21 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">8. Third-Party Links</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">8. Third-Party Links</h2>
                   <p className="text-gray-700 mb-6">
                     Our website may contain links to third-party websites. We are not responsible for the privacy practices or content of these external sites. We encourage you to review the privacy policies of any third-party websites you visit.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">9. Children's Privacy</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">9. Children's Privacy</h2>
                   <p className="text-gray-700 mb-6">
                     Our services are not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected personal information from a child under 13, we will take steps to delete such information promptly.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">10. California Privacy Rights</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">10. California Privacy Rights</h2>
                   <p className="text-gray-700 mb-4">
                     If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA):
                   </p>
@@ -230,21 +230,21 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">11. International Data Transfers</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">11. International Data Transfers</h2>
                   <p className="text-gray-700 mb-6">
                     If you are accessing our services from outside the United States, please be aware that your information may be transferred to, stored, and processed in the United States. By using our services, you consent to such transfer, storage, and processing.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">12. Changes to This Policy</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">12. Changes to This Policy</h2>
                   <p className="text-gray-700 mb-6">
                     We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of any material changes by posting the updated policy on our website and updating the "Last Updated" date. Your continued use of our services after any changes constitutes acceptance of the updated policy.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">13. Contact Information</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">13. Contact Information</h2>
                   <p className="text-gray-700 mb-4">
                     If you have any questions, concerns, or requests regarding this Privacy Policy or our privacy practices, please contact us:
                   </p>
@@ -257,19 +257,19 @@ const PrivacyPolicy = () => {
                 </section>
 
                 <section className="mb-8 border-t pt-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">14. Additional Disclosures</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">14. Additional Disclosures</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Real Estate Licensing</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Real Estate Licensing</h3>
                   <p className="text-gray-700 mb-4">
                     This website is operated by a licensed real estate professional. All real estate activities are conducted in accordance with state and federal regulations governing real estate practice.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Fair Housing</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Fair Housing</h3>
                   <p className="text-gray-700 mb-4">
                     We are committed to fair housing practices and comply with all applicable fair housing laws. We do not discriminate based on race, color, religion, sex, national origin, familial status, disability, or other protected characteristics.
                   </p>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Financial Information</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Financial Information</h3>
                   <p className="text-gray-700 mb-6">
                     Any financial information you provide is used solely for the purpose of real estate transactions and is shared only with authorized parties involved in such transactions. We do not store credit card information on our servers.
                   </p>

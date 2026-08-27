@@ -15,10 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import ContactQRCode from '@/components/ContactQRCode';
 import { useTranslation } from 'react-i18next';
-import Seo from "@/components/Seo";
+import { Link } from "react-router-dom";
+import PageShell, { ShellSection } from "@/components/PageShell";
 import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
-import BreadcrumbBar from "@/components/BreadcrumbBar";
-import { breadcrumbs } from "@/lib/schema";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -99,31 +98,33 @@ const Contact = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-    <Seo
-      title="Contact Kevin Hoang"
-      description="Get in touch about buying or selling in Needham, MetroWest, or Greater Boston. Call {SITE.phone}, send a message, or book a consultation directly."
-      keywords="contact Kevin Hoang, real estate agent Needham MA contact, Greater Boston realtor phone number"
-      jsonLd={breadcrumbs(crumbs)}
-/>
-
-      <div className="pt-16">
-        <div className="container mx-auto px-4 py-24">
-              <BreadcrumbBar items={crumbs} />
-          <div className="enter-down">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
-              {t('contact.title')}
-            </h1>
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
-              {t('contact.subtitle')}
-            </p>
-          </div>
-
+    <PageShell
+      path="/contact"
+      crumbs={crumbs}
+      seo={{
+        title: 'Contact Kevin Hoang',
+        // This was a plain string containing a literal `{SITE.phone}`, which is
+        // not interpolation — the placeholder was shipping verbatim in the
+        // meta description and og:description on the live page.
+        description: `Get in touch about buying or selling in Needham, MetroWest, or Greater Boston. Call ${SITE.phone}, send a message, or book a consultation directly.`,
+        keywords:
+          'contact Kevin Hoang, real estate agent Needham MA contact, Greater Boston realtor phone number',
+      }}
+      eyebrow="Get in touch"
+      h1={t('contact.title')}
+      lede={t('contact.subtitle')}
+      heroSize="compact"
+      width="wide"
+      // No closing CTA band: this page is the call to action. A second one
+      // below the form would just be asking twice.
+      cta={false}
+    >
+      <ShellSection width="wide">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="enter-left" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="relative h-40 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#1a1a1a]/70 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-ink/70 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-6">
                     <h2 className="text-2xl font-semibold text-white uppercase">{t('contact.contact_information')}</h2>
                   </div>
@@ -134,20 +135,20 @@ const Contact = () => {
                     className="flex items-start relative"
                   >
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Phone className="w-5 h-5 text-[#1a1a1a]" />
+                      <Phone className="w-5 h-5 text-ink" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.phone')}</h3>
+                      <h3 className="font-medium text-ink uppercase">{t('contact.phone')}</h3>
                       <div className="relative">
                         <button
                           id="phone-button"
                           onClick={() => setDropdownOpen(!dropdownOpen)}
-                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          className="text-gray-600 hover:text-ink no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
                             {SITE.phone}
-                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
                         <div
@@ -165,19 +166,19 @@ const Contact = () => {
 
                   <div className="flex items-center">
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Mail className="w-5 h-5 text-[#1a1a1a]" />
+                      <Mail className="w-5 h-5 text-ink" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.email')}</h3>
+                      <h3 className="font-medium text-ink uppercase">{t('contact.email')}</h3>
                       <div className="relative">
                         <button
                           onClick={() => window.location.href = `mailto:${SITE.email}`}
-                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          className="text-gray-600 hover:text-ink no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
                             {SITE.email.toUpperCase()}
-                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
                       </div>
@@ -186,19 +187,19 @@ const Contact = () => {
 
                   <div className="flex items-center">
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
-                      <MapPin className="w-5 h-5 text-[#1a1a1a]" />
+                      <MapPin className="w-5 h-5 text-ink" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-[#1a1a1a] uppercase">{t('contact.office')}</h3>
+                      <h3 className="font-medium text-ink uppercase">{t('contact.office')}</h3>
                       <div className="relative">
                         <button
                           onClick={() => window.open(mapsHref, "_blank")}
-                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          className="text-gray-600 hover:text-ink no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all">
                             {formattedAddress.toUpperCase()}
-                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </button>
                       </div>
@@ -207,7 +208,7 @@ const Contact = () => {
 
                   <div className="flex items-center">
                     <div className="bg-gray-100 p-3 rounded-full mr-4 flex-shrink-0">
-                      <Calendar className="w-5 h-5 text-[#1a1a1a]" />
+                      <Calendar className="w-5 h-5 text-ink" />
                     </div>
                     <div>
                       <div className="relative">
@@ -215,12 +216,12 @@ const Contact = () => {
                           href="https://calendar.app.google/P297MnAu7ei6turA6"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-[#1a1a1a] no-underline group"
+                          className="text-gray-600 hover:text-ink no-underline group"
                           style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
                         >
                           <span className="relative select-all uppercase">
                             SET AN APPOINTMENT WITH ME
-                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-[#1a1a1a] group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                           </span>
                         </a>
                       </div>
@@ -237,7 +238,7 @@ const Contact = () => {
             <div className="enter-right" style={{ '--enter-delay': '0.3s' } as React.CSSProperties}>
               <div className="bg-white rounded-xl shadow-lg shadow-black/10 overflow-hidden relative border border-gray-100">
                 <div className="p-6 bg-gray-50/50">
-                  <h2 className="text-2xl font-semibold mb-6 text-[#1a1a1a] uppercase">{t('contact.send_message')}</h2>
+                  <h2 className="text-2xl font-semibold mb-6 text-ink uppercase">{t('contact.send_message')}</h2>
 
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -324,7 +325,7 @@ const Contact = () => {
                       />
 
                       <button
-                        className="w-full bg-[#1a1a1a] text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
+                        className="w-full bg-ink text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
                         disabled={form.formState.isSubmitting}
                         type="submit"
                       >
@@ -338,9 +339,88 @@ const Contact = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <section className="mt-20 border-t border-gray-200 pt-14">
+            <div className="grid gap-12 md:grid-cols-2">
+              <div>
+                <h2 className="mb-4 text-2xl font-semibold text-ink">
+                  What happens after you send this
+                </h2>
+                <p className="mb-4 text-gray-700 leading-relaxed">
+                  Kevin replies personally, usually the same day. The first
+                  conversation is a conversation — what you are trying to do, what
+                  your timeline is, and what the realistic next step actually is.
+                  There is no obligation attached to it, and if the honest answer is
+                  that you should wait, that is the answer you will get.
+                </p>
+                <p className="text-gray-700 leading-relaxed">
+                  If it is faster to talk, call or text{' '}
+                  <a href={telHref} className="underline">
+                    {SITE.phone}
+                  </a>
+                  , or{' '}
+                  <a
+                    href={SITE.appointmentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    book a time directly
+                  </a>
+                  . Service is available in English and Vietnamese —{' '}
+                  <Link to="/vietnamese-speaking-real-estate-agent" className="underline">
+                    tiếng Việt
+                  </Link>
+                  .
+                </p>
+              </div>
+              <div>
+                <h2 className="mb-4 text-2xl font-semibold text-ink">
+                  You may not need to write at all
+                </h2>
+                <p className="mb-4 text-gray-700 leading-relaxed">
+                  A lot of what people write in about is already answered on this
+                  site, in more detail than a reply would give:
+                </p>
+                <ul className="space-y-2 text-gray-700">
+                  <li>
+                    <Link to="/home-valuation" className="underline">
+                      What is my home worth?
+                    </Link>{' '}
+                    — a written valuation from comparable sales
+                  </li>
+                  <li>
+                    <Link to="/first-time-buyers" className="underline">
+                      Buying your first home in Massachusetts
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/neighborhoods" className="underline">
+                      Which town should I be looking at?
+                    </Link>{' '}
+                    — {SITE.areaServed.length} guides
+                  </li>
+                  <li>
+                    <Link to="/relocation" className="underline">
+                      Moving to Massachusetts
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/faq" className="underline">
+                      Common Massachusetts real estate questions
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/about" className="underline">
+                      Who Kevin is, and how to verify it
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+      </ShellSection>
+    </PageShell>
   );
 };
 

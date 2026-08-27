@@ -1,5 +1,5 @@
-import { Train, Milestone, GraduationCap, Trees, Info } from 'lucide-react';
-import type { TownFacts } from '@/data/townFacts';
+import { Train, Milestone, GraduationCap, Trees, Info, Receipt } from 'lucide-react';
+import { TAX_RATE_SOURCE, type TownFacts } from '@/data/townFacts';
 
 /**
  * The checkable half of a town guide: stations, routes, school names, open
@@ -39,7 +39,7 @@ const List = ({ items }: { items: string[] }) => (
 
 const TownFactsPanel = ({ town, facts }: { town: string; facts: TownFacts }) => (
   <section className="my-12 rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:p-8">
-    <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6 tracking-tight">
+    <h2 className="text-2xl font-bold text-ink mb-6 tracking-tight">
       {town} at a glance
     </h2>
 
@@ -55,18 +55,18 @@ const TownFactsPanel = ({ town, facts }: { town: string; facts: TownFacts }) => 
       <Row icon={GraduationCap} title="Public schools">
         {facts.schools.elementary && (
           <p className="mb-2">
-            <span className="font-medium text-[#1a1a1a]">Elementary:</span>{' '}
+            <span className="font-medium text-ink">Elementary:</span>{' '}
             {facts.schools.elementary.join(', ')}
           </p>
         )}
         {facts.schools.middle && (
           <p className="mb-2">
-            <span className="font-medium text-[#1a1a1a]">Middle:</span>{' '}
+            <span className="font-medium text-ink">Middle:</span>{' '}
             {facts.schools.middle.join(', ')}
           </p>
         )}
         <p>
-          <span className="font-medium text-[#1a1a1a]">High:</span>{' '}
+          <span className="font-medium text-ink">High:</span>{' '}
           {facts.schools.high.join(', ')}
         </p>
         {facts.schools.note && <p className="mt-2 text-sm text-gray-600">{facts.schools.note}</p>}
@@ -75,6 +75,33 @@ const TownFactsPanel = ({ town, facts }: { town: string; facts: TownFacts }) => 
       <Row icon={Trees} title="Parks & open space">
         <List items={facts.outdoors} />
       </Row>
+
+      {/* Absent until the rate is verified against the DOR table — see the
+          doc comment on TownFacts.taxRate. The fiscal year and the source are
+          shown with the number because a rate without them is not checkable,
+          and a rate nobody can check should not be published at all. */}
+      {facts.taxRate && (
+        <Row icon={Receipt} title="Residential tax rate">
+          <p>
+            <span className="font-medium text-ink">
+              ${facts.taxRate.rate.toFixed(2)}
+            </span>{' '}
+            per $1,000 of assessed value, fiscal year {facts.taxRate.fiscalYear}.
+          </p>
+          <p className="mt-2 text-sm text-gray-600">
+            Rates are set annually. Confirm the current figure with the{' '}
+            <a
+              href={TAX_RATE_SOURCE.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              {TAX_RATE_SOURCE.name}
+            </a>
+            .
+          </p>
+        </Row>
+      )}
     </div>
 
     {facts.buyerNote && (

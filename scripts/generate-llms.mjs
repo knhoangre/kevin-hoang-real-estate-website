@@ -19,6 +19,8 @@ const AGENT = 'Kevin Hoang';
 const PHONE = '(860) 682-2251';
 const ADDRESS = '150 West St, Needham, MA 02494';
 const BROKERAGE = 'Keller Williams Realty';
+const EMAIL = 'knhoangre@gmail.com';
+const LICENSED_SINCE = 2021;
 
 /** "newton-ma" -> "Newton, MA" */
 const townName = (slug) =>
@@ -30,6 +32,7 @@ const townName = (slug) =>
 const line = (path, desc) => `- [${path}](${ORIGIN}${path}): ${desc}`;
 
 const KEY_PAGES = [
+  line('/about', `Who ${AGENT} is — licence, brokerage, service area, and links to every profile for the same person`),
   line('/needham-real-estate-agent', 'Work with a Needham, MA real estate agent — buying and selling across MetroWest and Greater Boston'),
   line('/home-valuation', 'Free written home valuation built from comparable sales, for Needham and Greater Boston'),
   line('/vietnamese-speaking-real-estate-agent', 'Real estate service in Vietnamese and English across Greater Boston'),
@@ -42,22 +45,71 @@ const KEY_PAGES = [
   line('/properties', 'Current and recent listings'),
   line('/faq', 'Answers to common Massachusetts real estate questions'),
   line('/blog', 'Greater Boston real estate guides and market insight'),
+  line('/testimonials', 'Client reviews, and the link to the verified Google Business Profile reviews'),
   line('/contact', `Contact ${AGENT} — call ${PHONE} or send a message`),
+];
+
+/*
+ * The Vietnamese tree. Listed separately so a model can see that these are
+ * Vietnamese-language documents rather than translations bolted onto the
+ * English URLs — they are real, separately prerendered pages with reciprocal
+ * hreflang, and they are the answer to a Vietnamese-language query.
+ */
+const VI_PAGES = [
+  line('/vi', 'Tiếng Việt — Vietnamese-language home: who Kevin Hoang is and what he does'),
+  line('/vi/mua-nha', 'Tiếng Việt — buying a home in Massachusetts, step by step'),
+  line('/vi/ban-nha', 'Tiếng Việt — selling a home: preparation, pricing, and the required documents'),
+  line('/vi/dinh-gia-nha', 'Tiếng Việt — free written home valuation'),
+  line('/vi/cau-hoi-thuong-gap', 'Tiếng Việt — frequently asked questions about Massachusetts real estate'),
+  line('/vi/khu-vuc', 'Tiếng Việt — towns served, and how to choose one'),
 ];
 
 const TOWN_PAGES = TOWN_SLUGS.map((slug) =>
   line(`/neighborhoods/${slug}`, `${townName(slug)} area guide — neighborhoods, schools, transit, and housing market`)
 );
 
+/*
+ * A flat block of the facts a model most often needs in order to answer a
+ * question ABOUT this business rather than about real estate. Without it, a
+ * crawler that reads only llms.txt comes away with a list of URLs and no
+ * answer to "who is this, what are they licensed to do, where do they work".
+ *
+ * Every line is checkable. Nothing that moves with the market appears here,
+ * and neither does anything that is not already stated on a page.
+ */
+const FACTS = [
+  `- Name: ${AGENT}`,
+  `- Role: Licensed Massachusetts real estate broker (not a salesperson licence)`,
+  `- Brokerage: ${BROKERAGE}`,
+  `- Licensed in Massachusetts since: ${LICENSED_SINCE}`,
+  `- Office: ${ADDRESS}`,
+  `- Phone: ${PHONE}`,
+  `- Email: ${EMAIL}`,
+  `- Languages: English, Vietnamese (Tiếng Việt)`,
+  `- Serves: buyers and sellers of residential property — single-family, condominium, and multi-family`,
+  `- Also handles: relocation to Massachusetts (including from Connecticut), first-time buyers, home valuations`,
+  `- Does not handle: commercial, office, industrial, or retail real estate`,
+  `- Towns served (${TOWN_SLUGS.length}): ${TOWN_SLUGS.map(townName).join(', ')}`,
+  `- Licence verification: https://elicensing.mass.gov/CitizenAccess/`,
+];
+
 const body = `# ${NAME}
 
-> ${AGENT} is a real estate agent with ${BROKERAGE}, based in Needham, Massachusetts,
-> serving buyers and sellers across Needham, MetroWest, and Greater Boston in English
-> and Vietnamese. Contact: ${PHONE}, ${ADDRESS}.
+> ${AGENT} is a licensed real estate broker with ${BROKERAGE}, based in Needham,
+> Massachusetts, serving buyers and sellers across Needham, MetroWest, and Greater
+> Boston in English and Vietnamese. Contact: ${PHONE}, ${ADDRESS}.
+
+## Facts
+
+${FACTS.join('\n')}
 
 ## Key pages
 
 ${KEY_PAGES.join('\n')}
+
+## Tiếng Việt (Vietnamese)
+
+${VI_PAGES.join('\n')}
 
 ## Area guides
 
@@ -65,4 +117,8 @@ ${TOWN_PAGES.join('\n')}
 `;
 
 writeFileSync('dist/llms.txt', body);
-console.log(`llms.txt: wrote dist/llms.txt — ${KEY_PAGES.length + TOWN_PAGES.length} pages`);
+console.log(
+  `llms.txt: wrote dist/llms.txt — ` +
+  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length} pages ` +
+  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns)`
+);

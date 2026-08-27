@@ -1,7 +1,7 @@
 import { Star, BadgeCheck, CalendarDays, Handshake, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { SITE } from "@/lib/siteConfig";
+import { SITE, googleProfileUrl } from "@/lib/siteConfig";
 
 /**
  * The credibility row.
@@ -59,7 +59,7 @@ const Stats = () => {
       value: `${GOOGLE_RATING} ★`,
       label: t("stats.rating"),
       note: `${GOOGLE_REVIEW_COUNT} ${t("stats.rating_note")}`,
-      href: SITE.sameAs[0],
+      href: googleProfileUrl,
       external: true,
     },
     {
@@ -90,13 +90,16 @@ const Stats = () => {
     },
   ];
 
-  // #1a1a1a is the footer's background. This used to be bg-realDark
+  // ink-deep matches the footer background. This used to be bg-realDark
   // (#1A1F2C), a blue-tinted near-black, which read as a mismatched shade
   // sitting a few hundred pixels above the footer on the same page.
   return (
-    <section className="py-24 bg-[#1a1a1a] text-white">
+    <section className="py-24 bg-ink-deep text-white">
       <div className="container px-4">
-        <h2 className="text-4xl font-bold text-center mb-16">{t("stats.title")}</h2>
+        <div className="mb-16 text-center">
+          <span className="mx-auto mb-5 block h-px w-10 bg-champagne" aria-hidden />
+          <h2 className="font-display text-3xl md:text-4xl font-semibold">{t("stats.title")}</h2>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {tiles.map((tile, index) => {

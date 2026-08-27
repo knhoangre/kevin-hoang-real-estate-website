@@ -1,11 +1,9 @@
-import { Link } from 'react-router-dom';
-import { Phone, CalendarDays, Mail, MessageSquare, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import Seo from '@/components/Seo';
-import BreadcrumbBar from '@/components/BreadcrumbBar';
+import PageShell, { ShellSection, defaultStrip } from '@/components/PageShell';
+import ProseBody from '@/components/ProseBody';
+import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';
-import { agentIdentity, breadcrumbs, faqPage, service, type Crumb, type QA } from '@/lib/schema';
-import { SITE, telHref, smsHref } from '@/lib/siteConfig';
+import { agentIdentity, faqPage, service, type Crumb, type QA } from '@/lib/schema';
 
 /**
  * The half of a landing page that can be translated.
@@ -106,216 +104,52 @@ const LandingPage = ({
     ? (vi as LandingCopy)
     : { h1, lede, faqHeading, faqs, cta, body: children, eyebrow };
 
-  const label = copy.eyebrow ?? eyebrow ?? crumbs[crumbs.length - 1]?.name;
-
   return (
-    <div className="min-h-screen bg-white">
-      <Seo
-        title={seo.title}
-        description={seo.description}
-        keywords={seo.keywords}
-        jsonLd={[
-          // Same `crumbs` array feeds the visible trail below. Marking up a
-          // breadcrumb the user cannot see violates Google's guidelines.
-          breadcrumbs(crumbs),
-          // The English FAQs, always — the schema describes the canonical
-          // document, which is the prerendered English one.
-          faqPage(faqs),
-          // service() names #agent as its provider, so #agent has to be declared
-          // on this page for that reference to resolve.
-          agentIdentity(),
-          service({
-            name: serviceMeta.name,
-            serviceType: serviceMeta.serviceType,
-            description: seo.description,
-            path,
-          }),
-        ]}
-      />
+    <PageShell
+      path={path}
+      crumbs={crumbs}
+      seo={seo}
+      jsonLd={[
+        // The English FAQs, always — the schema describes the canonical
+        // document, which is the prerendered English one.
+        faqPage(faqs),
+        // service() names #agent as its provider, so #agent has to be declared
+        // on this page for that reference to resolve.
+        agentIdentity(),
+        service({
+          name: serviceMeta.name,
+          serviceType: serviceMeta.serviceType,
+          description: seo.description,
+          path,
+        }),
+      ]}
+      eyebrow={copy.eyebrow ?? eyebrow}
+      h1={copy.h1}
+      lede={copy.lede}
+      hero={hero}
+      heroSize="tall"
+      width="prose"
+      actionLabels={{
+        primary: copy.ctaPrimary,
+        secondary: copy.ctaSecondary,
+        text: copy.textLabel,
+      }}
+      strip={defaultStrip(copy.stripLabels)}
+      cta={{ heading: copy.cta.heading, body: copy.cta.body, button: copy.ctaButton }}
+    >
+      <ShellSection>
+        <ProseBody>{copy.body}</ProseBody>
+      </ShellSection>
 
-      {/*
-        Hero. Full-bleed photograph under a dark gradient, with the copy set on
-        it rather than beside it. The previous treatment — dark text on a pale
-        gray-to-white wash — was legible and completely anonymous; these pages
-        sell a service where the look of the page is part of the pitch.
-
-        The image is a real <img> rather than a CSS background so the preload
-        scanner can find it: it is the LCP element here, and a background-image
-        is not discoverable until the stylesheet has parsed.
-      */}
-      <section className="relative isolate flex min-h-[78vh] items-end overflow-hidden bg-[#0d0d0f]">
-        <img
-          src={hero.image}
-          alt={hero.alt}
-          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-70"
-          fetchPriority="high"
-          decoding="async"
-        />
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/85 to-[#0d0d0f]/40"
-          aria-hidden
-        />
-
-        <div className="container relative px-4 mx-auto pb-16 pt-32">
-          <div className="max-w-4xl mx-auto">
-            <BreadcrumbBar items={crumbs} />
-
-            {label && (
-              <div
-                className="mb-6 flex items-center gap-4 enter"
-                style={{ '--enter-delay': '0.05s' } as React.CSSProperties}
-              >
-                <span className="h-px w-10 bg-champagne" aria-hidden />
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-champagne">
-                  {label}
-                </p>
-              </div>
-            )}
-            <h1
-              className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter"
-              style={{ '--enter-delay': '0.1s' } as React.CSSProperties}
-            >
-              {copy.h1}
-            </h1>
-            <p
-              className="mt-7 max-w-2xl text-lg md:text-xl leading-relaxed text-gray-300 enter"
-              style={{ '--enter-delay': '0.16s' } as React.CSSProperties}
-            >
-              {copy.lede}
-            </p>
-
-            <div
-              className="mt-10 flex flex-wrap gap-3 enter"
-              style={{ '--enter-delay': '0.22s' } as React.CSSProperties}
-            >
-              <a
-                href={telHref}
-                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-[#0d0d0f] transition-colors hover:bg-champagne"
-              >
-                <Phone className="w-4 h-4" aria-hidden />
-                {copy.ctaPrimary ?? `Call ${SITE.phone}`}
-              </a>
-              <a
-                href={SITE.appointmentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-[#0d0d0f]"
-              >
-                <CalendarDays className="w-4 h-4" aria-hidden />
-                {copy.ctaSecondary ?? 'Book a consultation'}
-              </a>
-              <a
-                href={smsHref}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-white/10"
-              >
-                <MessageSquare className="w-4 h-4" aria-hidden />
-                {copy.textLabel ?? 'Text'}
-              </a>
-            </div>
-          </div>
+      <ShellSection className="py-20 md:py-28 bg-bone border-y border-black/5">
+        <SectionHeading className="mb-8">{copy.faqHeading}</SectionHeading>
+        {/* Shared accordion: keeps collapsed answers in the DOM so the FAQPage
+            markup above has real visible text backing it. */}
+        <div className="rounded-2xl border border-gray-200 bg-white px-6 py-2 md:px-8 shadow-sm">
+          <FaqAccordion faqs={copy.faqs} />
         </div>
-      </section>
-
-      {/*
-        Credential strip. Four checkable facts, all of them sourced from
-        siteConfig rather than typed in here — the brokerage, the licence, the
-        service area and the languages. Nothing on it is a claim that cannot be
-        verified.
-      */}
-      <div className="border-b border-gray-200 bg-[#0d0d0f] text-white">
-        <div className="container px-4 mx-auto">
-          <dl className="mx-auto grid max-w-4xl grid-cols-2 gap-y-6 py-8 md:grid-cols-4 md:divide-x md:divide-white/10">
-            {[
-              { term: copy.stripLabels?.[0] ?? 'Brokerage', value: SITE.brokerage },
-              { term: copy.stripLabels?.[1] ?? 'Licensed', value: 'MA Broker' },
-              {
-                term: copy.stripLabels?.[2] ?? 'Towns covered',
-                value: String(SITE.areaServed.length),
-              },
-              { term: copy.stripLabels?.[3] ?? 'Languages', value: 'English · Tiếng Việt' },
-            ].map((item) => (
-              <div key={item.term} className="px-0 text-center md:px-6">
-                <dt className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-champagne">
-                  {item.term}
-                </dt>
-                <dd className="mt-2 text-sm font-medium text-gray-100">{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-
-      {/* Body */}
-      <section className="py-20 md:py-28 bg-white">
-        <div className="container px-4 mx-auto">
-          {/* The width cap lives on the wrapper, so `prose`'s own 65ch max-width
-              does not fight it inside the same class list. */}
-          <div className="max-w-4xl mx-auto enter">
-            <div className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-h2:font-display prose-h2:font-semibold prose-h2:mt-16 prose-h2:mb-5 prose-h2:text-3xl md:prose-h2:text-4xl prose-p:leading-relaxed prose-a:text-[#1a1a1a] prose-a:underline prose-a:decoration-champagne prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:decoration-[#1a1a1a] prose-strong:text-[#1a1a1a] prose-li:marker:text-champagne">
-              {copy.body}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="py-20 md:py-28 bg-[#faf8f5] border-y border-black/5">
-        <div className="container px-4 mx-auto">
-          <div className="max-w-4xl mx-auto enter">
-            <span className="mb-5 block h-px w-10 bg-champagne" aria-hidden />
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-[#1a1a1a] mb-8">
-              {copy.faqHeading}
-            </h2>
-            {/* Shared accordion: keeps collapsed answers in the DOM so the
-                FAQPage markup above has real visible text backing it. */}
-            <div className="rounded-2xl border border-gray-200 bg-white px-6 py-2 md:px-8 shadow-sm">
-              <FaqAccordion faqs={copy.faqs} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="relative overflow-hidden bg-[#0d0d0f] py-24 text-white">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-champagne to-transparent"
-          aria-hidden
-        />
-        <div className="container px-4 mx-auto">
-          <div className="max-w-3xl mx-auto text-center enter">
-            <h2 className="font-display text-3xl md:text-5xl font-semibold leading-tight">
-              {copy.cta.heading}
-            </h2>
-            <p className="mt-5 mx-auto max-w-2xl text-lg leading-relaxed text-gray-300">
-              {copy.cta.body}
-            </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-[#0d0d0f] transition-colors hover:bg-white"
-              >
-                {copy.ctaButton ?? 'Send a message'}
-                <ArrowRight className="w-4 h-4" aria-hidden />
-              </Link>
-              <a
-                href={telHref}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
-              >
-                <Phone className="w-4 h-4" aria-hidden />
-                {SITE.phone}
-              </a>
-              <a
-                href={`mailto:${SITE.email}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
-              >
-                <Mail className="w-4 h-4" aria-hidden />
-                {SITE.email}
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+      </ShellSection>
+    </PageShell>
   );
 };
 

@@ -2,9 +2,8 @@ import { Element } from "react-scroll";
 import SellerRoadmap from "@/components/SellerRoadmap";
 import SellerResources from "@/components/SellerResources";
 import { useTranslation } from "react-i18next";
-import Seo from "@/components/Seo";
-import { agentIdentity, breadcrumbs, service } from "@/lib/schema";
-import BreadcrumbBar from "@/components/BreadcrumbBar";
+import PageShell, { ShellSection } from "@/components/PageShell";
+import { agentIdentity, service } from "@/lib/schema";
 
 const Seller = () => {
   const { t } = useTranslation();
@@ -15,13 +14,16 @@ const Seller = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-    <Seo
-      title="Home Seller's Guide for Greater Boston"
-      description="How to sell a home in Greater Boston: preparing the property, setting a price the market supports, marketing, negotiating offers, and reaching a clean closing."
-      keywords="home seller guide Massachusetts, selling a house Greater Boston, listing agent Needham MA, how to sell my home MA"
+    <PageShell
+      path="/seller"
+      crumbs={crumbs}
+      seo={{
+        title: "Home Seller's Guide for Greater Boston",
+        description:
+          "How to sell a home in Greater Boston: preparing the property, setting a price the market supports, marketing, negotiating offers, and reaching a clean closing.",
+        keywords: "home seller guide Massachusetts, selling a house Greater Boston, listing agent Needham MA, how to sell my home MA",
+      }}
       jsonLd={[
-        breadcrumbs(crumbs),
         // service() names #agent as its provider, and an @id only resolves
         // against a node declared in the same document — so #agent is declared
         // here too.
@@ -33,36 +35,40 @@ const Seller = () => {
           path: '/seller',
         }),
       ]}
-    />
-      <div className="pt-16">
-        <div className="container px-4 py-24">
-            <BreadcrumbBar items={crumbs} />
-          <div className="enter-down">
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
-{t('seller_guide.title')}
-            </h1>
-            <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
-{t('seller_guide.subtitle')}
+      eyebrow="Selling"
+      h1={t('seller_guide.title')}
+      lede={t('seller_guide.subtitle')}
+      heroSize="compact"
+      // Wide: the roadmap is a sticky sidebar beside the steps, and at the
+      // prose width its detail columns collapse to about 38 characters.
+      width="wide"
+      cta={{
+        heading: 'Thinking about listing?',
+        body:
+          'Start with what the house is worth today and what it would take to get there. No listing agreement required to have that conversation.',
+      }}
+    >
+      <ShellSection width="wide">
+        <Element name="roadmap">
+          <SellerRoadmap />
+        </Element>
+
+        <div className="py-8">
+          {/* Blue is deliberate here and stays: this panel carries a warning,
+              not the brand. Recolouring a signal to the accent deletes it. */}
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
+            <p className="text-gray-700 text-sm leading-relaxed">
+              <strong>{t('seller_guide.important_notice')}</strong>{' '}
+              {t('seller_guide.important_notice_text')}
             </p>
           </div>
-          <Element name="roadmap">
-            <SellerRoadmap />
-          </Element>
-
-          <div className="py-8">
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-6 rounded-r-lg">
-              <p className="text-gray-700 text-sm leading-relaxed">
-                <strong>{t('seller_guide.important_notice')}</strong> {t('seller_guide.important_notice_text')}
-              </p>
-            </div>
-          </div>
-
-          <Element name="resources">
-            <SellerResources />
-          </Element>
         </div>
-      </div>
-    </div>
+
+        <Element name="resources">
+          <SellerResources />
+        </Element>
+      </ShellSection>
+    </PageShell>
   );
 };
 

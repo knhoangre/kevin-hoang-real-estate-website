@@ -40,7 +40,7 @@ const inline = (text: string, keyPrefix: string): (string | JSX.Element)[] => {
     while ((b = BOLD.exec(chunk)) !== null) {
       if (b.index > l) out.push(chunk.slice(l, b.index));
       out.push(
-        <strong key={`${key}-b${b.index}`} className="font-semibold text-[#1a1a1a]">
+        <strong key={`${key}-b${b.index}`} className="font-semibold text-ink">
           {b[1]}
         </strong>,
       );
@@ -57,7 +57,7 @@ const inline = (text: string, keyPrefix: string): (string | JSX.Element)[] => {
         <Link
           key={`${keyPrefix}-l${m.index}`}
           to={href}
-          className="text-[#1a1a1a] underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-[#1a1a1a]"
+          className="text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-ink"
         >
           {label}
         </Link>
@@ -67,7 +67,7 @@ const inline = (text: string, keyPrefix: string): (string | JSX.Element)[] => {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#1a1a1a] underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-[#1a1a1a]"
+          className="text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-ink"
         >
           {label}
         </a>
@@ -90,7 +90,7 @@ const PostBody = ({ content }: { content: string }) => (
         return (
           <h2
             key={i}
-            className="mt-14 mb-5 font-display text-2xl md:text-3xl font-semibold text-[#1a1a1a]"
+            className="mt-14 mb-5 font-display text-2xl md:text-3xl font-semibold text-ink"
           >
             {heading[1]}
           </h2>
@@ -117,7 +117,7 @@ const PostBody = ({ content }: { content: string }) => (
           <ol key={i} className="mb-7 list-none space-y-3 p-0">
             {lines.map((line, j) => (
               <li key={j} className="flex gap-4 text-lg leading-relaxed text-gray-700">
-                <span className="shrink-0 font-display text-lg font-semibold text-champagne">
+                <span className="shrink-0 font-display text-lg font-semibold text-champagne-ink">
                   {j + 1}.
                 </span>
                 <span>{inline(line.trim().replace(/^\d+\.\s+/, ''), `${i}-${j}`)}</span>
@@ -131,7 +131,7 @@ const PostBody = ({ content }: { content: string }) => (
         return (
           <blockquote
             key={i}
-            className="my-10 border-l-2 border-champagne pl-6 font-display text-xl md:text-2xl italic leading-relaxed text-[#1a1a1a]"
+            className="my-10 border-l-2 border-champagne pl-6 font-display text-xl md:text-2xl italic leading-relaxed text-ink"
           >
             {inline(trimmed.replace(/^>\s+/gm, '').replace(/\n/g, ' '), `q${i}`)}
           </blockquote>

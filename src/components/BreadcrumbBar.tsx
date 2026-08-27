@@ -13,9 +13,17 @@ import type { Crumb } from '@/lib/schema';
  * trail inherits exactly the column its content uses and cannot drift out of
  * alignment as those widths change.
  */
-const BreadcrumbBar = ({ items, className = '' }: { items: Crumb[]; className?: string }) => (
+const BreadcrumbBar = ({
+  items,
+  tone = 'light',
+  className = '',
+}: {
+  items: Crumb[];
+  tone?: 'light' | 'dark';
+  className?: string;
+}) => (
   <div className={`pb-8 ${className}`}>
-    <Breadcrumbs items={items} />
+    <Breadcrumbs items={items} tone={tone} />
   </div>
 );
 

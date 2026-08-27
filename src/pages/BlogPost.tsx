@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import Seo from "@/components/Seo";
 import BreadcrumbBar from "@/components/BreadcrumbBar";
 import PostBody from "@/components/PostBody";
+import AuthorCard from "@/components/AuthorCard";
 import { agentIdentity, blogPosting, breadcrumbs, person } from "@/lib/schema";
 
 
@@ -35,6 +36,7 @@ const BlogPost = () => {
   };
 
   const published = toIsoDate(post.date);
+  const modified = post.updated ? toIsoDate(post.updated) : null;
   const crumbs = [
     { name: "Home", path: "/" },
     { name: "Blog", path: "/blog" },
@@ -56,6 +58,7 @@ const BlogPost = () => {
         ogType="article"
         article={{
         publishedTime: published ?? undefined,
+        modifiedTime: modified ?? undefined,
         author: post.author,
         }}
         jsonLd={[
@@ -75,10 +78,16 @@ const BlogPost = () => {
             // Falls back to the display string only if it will not parse; a
             // fabricated date would be worse than an imperfect one.
             datePublished: published ?? post.date,
+            // Only set when the post carries a real revision date. schema.ts
+            // falls back to datePublished when this is null, which is the
+            // honest answer for a post that has never been revised — claiming
+            // a dateModified with no revision behind it is a fabricated
+            // freshness signal, and it is one Google checks against the page.
+            dateModified: modified,
           }),
         ]}
       />
-      <div className="pt-16">
+      <div className="pt-20">
         <div className="container px-4 py-24">
           {/* Aligned to the article column, and without the duplicate
               back-link — see the note in NeighborhoodDetail.tsx. */}
@@ -88,14 +97,23 @@ const BlogPost = () => {
 
           <article className="max-w-4xl mx-auto">
             <header className="mb-12">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a1a1a] mb-6 leading-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-ink mb-6 leading-tight">
                 {getTranslatedTitle(post)}
               </h1>
 
-              <div className="flex items-center text-gray-500 mb-8">
+              {/* dateModified in the JSON-LD mirrors this line. Structured
+                  data that states something the page does not show is the same
+                  violation as a BreadcrumbList with no visible trail. */}
+              <div className="flex flex-wrap items-center text-gray-500 mb-8">
                 <span className="text-sm">{post.date}</span>
                 <span className="mx-2">•</span>
                 <span className="text-sm">By {post.author}</span>
+                {post.updated && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span className="text-sm">Updated {post.updated}</span>
+                  </>
+                )}
               </div>
 
               <div className="relative h-[400px] md:h-[500px] rounded-xl overflow-hidden mb-12">
@@ -114,10 +132,15 @@ const BlogPost = () => {
               <PostBody content={getTranslatedContent(post)} />
             </div>
 
+            {/* The visible half of the authorship signal. blogPosting()'s
+                author points at the #kevin Person node declared above; this is
+                what a reader sees, and what links every post to /about. */}
+            <AuthorCard className="mt-16" />
+
             {/* Every post links out to three topically related ones, so the
                 corpus is a connected graph rather than a set of dead ends. */}
             <aside className="mt-16 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">Related reading</h2>
+              <h2 className="text-2xl font-bold text-ink mb-6">Related reading</h2>
               <ul className="grid gap-4 md:grid-cols-3 list-none p-0">
                 {getRelatedPosts(post).map((related) => (
                   <li key={related.slug} className="m-0">
@@ -125,7 +148,7 @@ const BlogPost = () => {
                       to={`/blog/${related.slug}`}
                       className="block h-full rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md"
                     >
-                      <span className="block font-medium text-[#1a1a1a]">
+                      <span className="block font-medium text-ink">
                         {getTranslatedTitle(related)}
                       </span>
                       <span className="mt-2 block text-sm text-gray-600 line-clamp-3">
@@ -140,15 +163,15 @@ const BlogPost = () => {
             </aside>
 
             <div className="mt-16 pt-8 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-[#1a1a1a] mb-6">{t('blog.share_article')}</h2>
+              <h2 className="text-2xl font-bold text-ink mb-6">{t('blog.share_article')}</h2>
               <div className="flex space-x-4">
-                <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-[#1a1a1a]/90 transition-colors">
+                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
                   {t('blog.share_twitter')}
                 </button>
-                <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-[#1a1a1a]/90 transition-colors">
+                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
                   {t('blog.share_facebook')}
                 </button>
-                <button className="px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-[#1a1a1a]/90 transition-colors">
+                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
                   {t('blog.share_linkedin')}
                 </button>
               </div>

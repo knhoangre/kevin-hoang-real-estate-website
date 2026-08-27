@@ -4,10 +4,8 @@ import { ALL_TESTIMONIALS } from "@/data/testimonials";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Seo from "@/components/Seo";
-import { SITE } from "@/lib/siteConfig";
-import BreadcrumbBar from "@/components/BreadcrumbBar";
-import { breadcrumbs } from "@/lib/schema";
+import PageShell, { ShellSection } from "@/components/PageShell";
+import { SITE, googleProfileUrl } from "@/lib/siteConfig";
 
 const BATCH = 24;
 
@@ -26,26 +24,28 @@ const Testimonials = () => {
   ];
 
   return (
-    <>
-      <Seo
-        title="Client Reviews & Testimonials"
-        description="Read client reviews for Kevin Hoang — buying, selling, relocation, condos, and single-family homes across Needham, MetroWest, and Greater Boston."
-        keywords="Kevin Hoang reviews, real estate agent reviews Needham MA, Greater Boston realtor testimonials"
-        jsonLd={breadcrumbs(crumbs)}
-/>
-      <div className="min-h-screen bg-white">
-        <div className="pt-16">
-          <div className="container mx-auto px-4 py-24">
-                <BreadcrumbBar items={crumbs} />
-            <div className="enter-down">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
-                {t("testimonials.title")}
-              </h1>
-              <p className="text-xl text-gray-600 mb-12 max-w-2xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
-                {t("testimonials.subtitle")}
-              </p>
-            </div>
-
+    <PageShell
+      path="/testimonials"
+      crumbs={crumbs}
+      seo={{
+        title: 'Client Reviews & Testimonials',
+        description:
+          'Read client reviews for Kevin Hoang — buying, selling, relocation, condos, and single-family homes across Needham, MetroWest, and Greater Boston.',
+        keywords:
+          'Kevin Hoang reviews, real estate agent reviews Needham MA, Greater Boston realtor testimonials',
+      }}
+      eyebrow="Reviews"
+      h1={t("testimonials.title")}
+      lede={t("testimonials.subtitle")}
+      heroSize="compact"
+      width="wide"
+      cta={{
+        heading: 'Want the same on your own move?',
+        body:
+          'Every review here started with one conversation about what someone was trying to do. That is all the first one has to be.',
+      }}
+    >
+      <ShellSection width="wide">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {shown.map((item, index) => (
                 <Card
@@ -62,10 +62,10 @@ const Testimonials = () => {
                         />
                       ))}
                     </div>
-                    <p className="text-[#1a1a1a] leading-relaxed text-sm md:text-base mb-4">
+                    <p className="text-ink leading-relaxed text-sm md:text-base mb-4">
                       {item.text}
                     </p>
-                    <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide">
+                    <p className="text-sm font-semibold text-ink uppercase tracking-wide">
                       — {item.firstName}
                     </p>
                   </CardContent>
@@ -78,7 +78,7 @@ const Testimonials = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="uppercase tracking-wider border-[#1a1a1a] text-[#1a1a1a] hover:bg-[#1a1a1a] hover:text-white"
+                  className="uppercase tracking-wider border-ink text-ink hover:bg-ink hover:text-white"
                   onClick={() =>
                     setVisible((v) =>
                       Math.min(v + BATCH, ALL_TESTIMONIALS.length),
@@ -97,7 +97,7 @@ const Testimonials = () => {
               count — the previous approach was to generate 377 more.
             */}
             <div className="mt-16 rounded-xl bg-gray-50 p-8 text-center">
-              <h2 className="text-2xl font-bold text-[#1a1a1a]">
+              <h2 className="text-2xl font-bold text-ink">
                 Read them on Google
               </h2>
               <p className="mt-3 text-gray-700 leading-relaxed max-w-2xl mx-auto">
@@ -106,18 +106,16 @@ const Testimonials = () => {
                 Business Profile, where they are verified and attributed.
               </p>
               <a
-                href={SITE.sameAs[0]}
+                href={googleProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-md bg-[#1a1a1a] px-6 py-3 font-medium text-white transition-colors hover:bg-black"
+                className="mt-6 inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-black"
               >
                 View verified Google reviews
               </a>
             </div>
-          </div>
-        </div>
-      </div>
-    </>
+      </ShellSection>
+    </PageShell>
   );
 };
 

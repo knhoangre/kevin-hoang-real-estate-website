@@ -1,6 +1,37 @@
-User-agent: *
-Allow: /
+# https://kevinhoang.co
+#
+# robots.txt has no inheritance: an agent that matches its own User-agent line
+# ignores the `*` group entirely. A group may list several agents though, and
+# the rules that follow apply to all of them — which is why the named crawlers
+# below share one rule set rather than repeating it.
 
+# --- Everything that crawls or indexes ------------------------------------
+#
+# Bingbot is named because Bing's index is what ChatGPT Search and Microsoft
+# Copilot retrieve from — being crawlable by Bing is an AI-visibility decision,
+# not a Bing-traffic one.
+#
+# The AI agents are allowed deliberately. The site exists to be found, and an
+# answer engine that cannot fetch a page cannot cite it.
+#   OpenAI      GPTBot trains and indexes · OAI-SearchBot serves ChatGPT Search
+#               · ChatGPT-User fetches a page a user asked ChatGPT to open
+#   Anthropic   ClaudeBot crawls · Claude-SearchBot serves search results
+#               · Claude-User fetches at a user's request
+#   Perplexity  PerplexityBot
+#   CCBot       Common Crawl, whose archive several engines retrieve from
+#               rather than crawling themselves
+
+User-agent: *
+User-agent: Bingbot
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: CCBot
+Allow: /
 # Gated and utility routes. These also carry a noindex meta tag (see
 # src/components/PrivatePage.tsx), which is the safety net for any that get
 # linked from outside.
@@ -11,5 +42,20 @@ Disallow: /admin/
 Disallow: /crm
 Disallow: /open-house
 Disallow: /events
+
+# --- AI-usage controls ----------------------------------------------------
+#
+# Neither of these is a crawler. They are tokens that govern whether content
+# already indexed may be used to ground generated answers — Google-Extended for
+# Gemini and AI Overviews, Applebot-Extended for Apple Intelligence. Googlebot
+# and Applebot index regardless of them.
+#
+# They get their own group with no Disallow list on purpose: they do not fetch
+# anything, so path rules are meaningless to them. What matters is that the
+# permission is stated rather than left unsaid.
+
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Allow: /
 
 Sitemap: https://kevinhoang.co/sitemap.xml

@@ -164,7 +164,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container max-w-md mx-auto px-4 py-32 enter">
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-          <h1 className="text-3xl font-bold text-center text-[#1a1a1a] mb-8">ACCOUNT ACCESS</h1>
+          <h1 className="text-3xl font-bold text-center text-ink mb-8">ACCOUNT ACCESS</h1>
 
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -204,7 +204,7 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#1a1a1a] hover:bg-black"
+                  className="w-full bg-ink hover:bg-black"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
@@ -286,7 +286,7 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#1a1a1a] hover:bg-black"
+                  className="w-full bg-ink hover:bg-black"
                   disabled={isLoading || !isPasswordValid}
                 >
                   {isLoading ? "Creating account..." : "Create Account"}

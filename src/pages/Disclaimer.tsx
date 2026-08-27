@@ -17,7 +17,7 @@ const Disclaimer = () => {
       description="Important disclosures about the information published on the Kevin Hoang Real Estate website."
       jsonLd={breadcrumbs(crumbs)}
 />
-      <div className="pt-16">
+      <div className="pt-20">
         <section className="py-24 bg-gray-50">
           <div className="container px-4">
               <div className="max-w-4xl mx-auto">
@@ -28,7 +28,7 @@ const Disclaimer = () => {
                 to run the full container width while everything else was
                 capped, which is what made the trail look over-indented. */}
             <div className="max-w-4xl mx-auto mb-16 enter-down">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
+              <h1 className="text-4xl md:text-5xl font-bold text-ink mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 DISCLAIMER
               </h1>
               <p className="text-xl text-gray-600 mb-12 max-w-3xl enter-down" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
@@ -43,7 +43,7 @@ const Disclaimer = () => {
                 </p>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">General Disclaimer</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">General Disclaimer</h2>
                   <p className="text-gray-700 mb-4">
                     The information contained on this website is for general informational purposes only. While we strive to provide accurate and up-to-date information, we make no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability, or availability of the information, products, services, or related graphics contained on this website.
                   </p>
@@ -53,9 +53,9 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Real Estate Information Disclaimer</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Real Estate Information Disclaimer</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Property Listings and Information</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Property Listings and Information</h3>
                   <p className="text-gray-700 mb-4">
                     Property listings, descriptions, pricing, and other real estate information displayed on this website are subject to errors, omissions, changes, and withdrawal without notice. We do not guarantee the accuracy of:
                   </p>
@@ -70,7 +70,7 @@ const Disclaimer = () => {
                     <li>HOA fees, rules, or restrictions</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Multiple Listing Service (MLS) Data</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Multiple Listing Service (MLS) Data</h3>
                   <p className="text-gray-700 mb-4">
                     Property information may be obtained from MLS databases and third-party sources. While this information is believed to be reliable, it is not guaranteed. MLS data is subject to:
                   </p>
@@ -84,7 +84,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Market Analysis and Valuations</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Market Analysis and Valuations</h2>
                   <p className="text-gray-700 mb-4">
                     Market analyses, property valuations, and price estimates provided are for informational purposes only and should not be considered as formal appraisals or guarantees of market value. These estimates are based on:
                   </p>
@@ -100,9 +100,9 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Financial and Investment Disclaimers</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Financial and Investment Disclaimers</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Not Financial Advice</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Not Financial Advice</h3>
                   <p className="text-gray-700 mb-4">
                     Information provided about real estate investments, market conditions, or financial strategies is for educational purposes only and does not constitute financial, investment, or tax advice. We recommend consulting with qualified professionals including:
                   </p>
@@ -114,7 +114,7 @@ const Disclaimer = () => {
                     <li>Estate planning attorneys</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Mortgage and Financing Information</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Mortgage and Financing Information</h3>
                   <p className="text-gray-700 mb-4">
                     Mortgage calculators, interest rate information, and financing options presented are estimates only. Actual loan terms, rates, and approval depend on:
                   </p>
@@ -128,9 +128,9 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Legal and Professional Disclaimers</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Legal and Professional Disclaimers</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Not Legal Advice</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Not Legal Advice</h3>
                   <p className="text-gray-700 mb-4">
                     Information provided about real estate law, contracts, regulations, or legal processes is for general informational purposes only and does not constitute legal advice. Real estate laws vary by jurisdiction and change frequently. Always consult with a qualified real estate attorney for legal matters including:
                   </p>
@@ -142,14 +142,14 @@ const Disclaimer = () => {
                     <li>Regulatory compliance and licensing</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Professional Licensing</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Professional Licensing</h3>
                   <p className="text-gray-700 mb-6">
                     Kevin Hoang is a licensed real estate professional. However, licensing requirements, continuing education, and professional standards may change. Always verify current licensing status and qualifications when needed.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Third-Party Information and Links</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Third-Party Information and Links</h2>
                   <p className="text-gray-700 mb-4">
                     Our website may contain links to third-party websites, services, or resources. We do not endorse, control, or assume responsibility for:
                   </p>
@@ -166,9 +166,9 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Technology and Website Disclaimers</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Technology and Website Disclaimers</h2>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Website Functionality</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Website Functionality</h3>
                   <p className="text-gray-700 mb-4">
                     While we strive to maintain website functionality and security, we cannot guarantee:
                   </p>
@@ -180,14 +180,14 @@ const Disclaimer = () => {
                     <li>Backup or recovery of user data</li>
                   </ul>
 
-                  <h3 className="text-xl font-semibold text-[#1a1a1a] mb-3">Automated Tools and Calculators</h3>
+                  <h3 className="text-xl font-semibold text-ink mb-3">Automated Tools and Calculators</h3>
                   <p className="text-gray-700 mb-6">
                     Mortgage calculators, market analysis tools, and other automated features are provided for estimation purposes only. Results may not reflect actual costs, payments, or market conditions. Users should verify all calculations independently and consult with professionals for accurate analysis.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Geographic and Market Limitations</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Geographic and Market Limitations</h2>
                   <p className="text-gray-700 mb-4">
                     Our services primarily focus on the Greater Boston area and surrounding communities. Information provided may not be applicable to other geographic regions due to:
                   </p>
@@ -204,7 +204,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Fair Housing and Equal Opportunity</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Fair Housing and Equal Opportunity</h2>
                   <p className="text-gray-700 mb-4">
                     We are committed to fair housing practices and equal opportunity in real estate. However, we cannot control or guarantee:
                   </p>
@@ -220,7 +220,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Environmental and Safety Disclaimers</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Environmental and Safety Disclaimers</h2>
                   <p className="text-gray-700 mb-4">
                     Property information may not include complete environmental or safety disclosures. Potential issues that require professional evaluation include:
                   </p>
@@ -238,7 +238,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Photography and Virtual Tours</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Photography and Virtual Tours</h2>
                   <p className="text-gray-700 mb-4">
                     Property photos, virtual tours, and visual content are for marketing purposes and may not accurately represent:
                   </p>
@@ -256,7 +256,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Time-Sensitive Information</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Time-Sensitive Information</h2>
                   <p className="text-gray-700 mb-4">
                     Real estate information changes rapidly. The following may become outdated quickly:
                   </p>
@@ -273,7 +273,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Limitation of Liability</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Limitation of Liability</h2>
                   <p className="text-gray-700 mb-4">
                     To the maximum extent permitted by law, Kevin Hoang Real Estate and its agents, employees, and affiliates shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from:
                   </p>
@@ -291,7 +291,7 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">User Responsibilities</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">User Responsibilities</h2>
                   <p className="text-gray-700 mb-4">
                     Users of this website and our services are responsible for:
                   </p>
@@ -309,14 +309,14 @@ const Disclaimer = () => {
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Changes to Disclaimer</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Changes to Disclaimer</h2>
                   <p className="text-gray-700 mb-6">
                     We reserve the right to modify this disclaimer at any time without prior notice. Changes will be effective immediately upon posting on our website. Users are encouraged to review this disclaimer periodically for updates.
                   </p>
                 </section>
 
                 <section className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">Contact Information</h2>
+                  <h2 className="text-2xl font-bold text-ink mb-4">Contact Information</h2>
                   <p className="text-gray-700 mb-4">
                     If you have questions about this disclaimer or need clarification on any matters, please contact us:
                   </p>
