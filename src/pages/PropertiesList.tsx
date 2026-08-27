@@ -121,7 +121,7 @@ const PropertiesList = () => {
 
   const crumbs = [
     { name: "Home", path: "/" },
-    { name: "Listings", path: "/properties" },
+    { name: "Properties", path: "/properties" },
   ];
 
   /*

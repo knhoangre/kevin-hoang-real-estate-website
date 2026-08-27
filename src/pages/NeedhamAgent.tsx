@@ -60,6 +60,11 @@ const NeedhamAgent = () => (
       name: 'Residential real estate representation in Needham, MA',
       serviceType: 'Real estate agency services',
     }}
+    hero={{
+      image:
+        'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1920&q=70',
+      alt: 'A single-family home on a tree-lined street in Needham, Massachusetts',
+    }}
     h1="Needham, MA Real Estate Agent"
     lede="Kevin Hoang is a Needham-based licensed real estate broker with Keller Williams Realty, working with buyers and sellers across Needham, MetroWest, and Greater Boston — in English and Vietnamese."
     faqHeading="Needham real estate questions"

@@ -28,6 +28,11 @@ export interface LandingCopy {
   eyebrow?: string;
   ctaPrimary?: string;
   ctaSecondary?: string;
+  textLabel?: string;
+  /** Credential-strip terms, in order: brokerage, licence, towns, languages. */
+  stripLabels?: [string, string, string, string];
+  /** Label on the CTA button that goes to /contact. */
+  ctaButton?: string;
 }
 
 interface LandingPageProps {
@@ -50,6 +55,12 @@ interface LandingPageProps {
   faqs: QA[];
   cta: { heading: string; body: string };
   eyebrow?: string;
+  /**
+   * Cinematic hero image. Sized through Unsplash's params — a bare photo URL
+   * serves the multi-megabyte original, and this is the LCP element on the
+   * page it appears on.
+   */
+  hero: { image: string; alt: string };
   children: React.ReactNode;
   /**
    * Optional Vietnamese rendering of everything above. Supplied only by the
@@ -85,6 +96,7 @@ const LandingPage = ({
   faqs,
   cta,
   eyebrow,
+  hero,
   children,
   vi,
 }: LandingPageProps) => {
@@ -121,37 +133,64 @@ const LandingPage = ({
         ]}
       />
 
-      {/* Hero */}
-      <section className="border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white pt-28 pb-16">
-        <div className="container px-4 mx-auto">
+      {/*
+        Hero. Full-bleed photograph under a dark gradient, with the copy set on
+        it rather than beside it. The previous treatment — dark text on a pale
+        gray-to-white wash — was legible and completely anonymous; these pages
+        sell a service where the look of the page is part of the pitch.
+
+        The image is a real <img> rather than a CSS background so the preload
+        scanner can find it: it is the LCP element here, and a background-image
+        is not discoverable until the stylesheet has parsed.
+      */}
+      <section className="relative isolate flex min-h-[78vh] items-end overflow-hidden bg-[#0d0d0f]">
+        <img
+          src={hero.image}
+          alt={hero.alt}
+          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-70"
+          fetchPriority="high"
+          decoding="async"
+        />
+        <div
+          className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/85 to-[#0d0d0f]/40"
+          aria-hidden
+        />
+
+        <div className="container relative px-4 mx-auto pb-16 pt-32">
           <div className="max-w-4xl mx-auto">
             <BreadcrumbBar items={crumbs} />
 
             {label && (
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 enter">
-                {label}
-              </p>
+              <div
+                className="mb-6 flex items-center gap-4 enter"
+                style={{ '--enter-delay': '0.05s' } as React.CSSProperties}
+              >
+                <span className="h-px w-10 bg-champagne" aria-hidden />
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-champagne">
+                  {label}
+                </p>
+              </div>
             )}
             <h1
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#1a1a1a] enter"
-              style={{ '--enter-delay': '0.05s' } as React.CSSProperties}
+              className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter"
+              style={{ '--enter-delay': '0.1s' } as React.CSSProperties}
             >
               {copy.h1}
             </h1>
             <p
-              className="mt-6 max-w-3xl text-xl leading-relaxed text-gray-600 enter"
-              style={{ '--enter-delay': '0.1s' } as React.CSSProperties}
+              className="mt-7 max-w-2xl text-lg md:text-xl leading-relaxed text-gray-300 enter"
+              style={{ '--enter-delay': '0.16s' } as React.CSSProperties}
             >
               {copy.lede}
             </p>
 
             <div
-              className="mt-8 flex flex-wrap gap-3 enter"
-              style={{ '--enter-delay': '0.2s' } as React.CSSProperties}
+              className="mt-10 flex flex-wrap gap-3 enter"
+              style={{ '--enter-delay': '0.22s' } as React.CSSProperties}
             >
               <a
                 href={telHref}
-                className="inline-flex items-center gap-2 rounded-md bg-[#1a1a1a] px-6 py-3 font-medium text-white transition-colors hover:bg-black"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-[#0d0d0f] transition-colors hover:bg-champagne"
               >
                 <Phone className="w-4 h-4" aria-hidden />
                 {copy.ctaPrimary ?? `Call ${SITE.phone}`}
@@ -160,30 +199,59 @@ const LandingPage = ({
                 href={SITE.appointmentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-md border border-[#1a1a1a] px-6 py-3 font-medium text-[#1a1a1a] transition-colors hover:bg-gray-100"
+                className="inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-[#0d0d0f]"
               >
                 <CalendarDays className="w-4 h-4" aria-hidden />
                 {copy.ctaSecondary ?? 'Book a consultation'}
               </a>
               <a
                 href={smsHref}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-white/10"
               >
                 <MessageSquare className="w-4 h-4" aria-hidden />
-                Text
+                {copy.textLabel ?? 'Text'}
               </a>
             </div>
           </div>
         </div>
       </section>
 
+      {/*
+        Credential strip. Four checkable facts, all of them sourced from
+        siteConfig rather than typed in here — the brokerage, the licence, the
+        service area and the languages. Nothing on it is a claim that cannot be
+        verified.
+      */}
+      <div className="border-b border-gray-200 bg-[#0d0d0f] text-white">
+        <div className="container px-4 mx-auto">
+          <dl className="mx-auto grid max-w-4xl grid-cols-2 gap-y-6 py-8 md:grid-cols-4 md:divide-x md:divide-white/10">
+            {[
+              { term: copy.stripLabels?.[0] ?? 'Brokerage', value: SITE.brokerage },
+              { term: copy.stripLabels?.[1] ?? 'Licensed', value: 'MA Broker' },
+              {
+                term: copy.stripLabels?.[2] ?? 'Towns covered',
+                value: String(SITE.areaServed.length),
+              },
+              { term: copy.stripLabels?.[3] ?? 'Languages', value: 'English · Tiếng Việt' },
+            ].map((item) => (
+              <div key={item.term} className="px-0 text-center md:px-6">
+                <dt className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-champagne">
+                  {item.term}
+                </dt>
+                <dd className="mt-2 text-sm font-medium text-gray-100">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+
       {/* Body */}
-      <section className="py-20 bg-white">
+      <section className="py-20 md:py-28 bg-white">
         <div className="container px-4 mx-auto">
           {/* The width cap lives on the wrapper, so `prose`'s own 65ch max-width
               does not fight it inside the same class list. */}
           <div className="max-w-4xl mx-auto enter">
-            <div className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-bold prose-h2:mt-14 prose-h2:mb-5 prose-h2:text-3xl prose-a:text-[#1a1a1a] prose-a:underline prose-a:decoration-gray-300 prose-a:underline-offset-4 hover:prose-a:decoration-[#1a1a1a] prose-li:marker:text-gray-400">
+            <div className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-h2:font-display prose-h2:font-semibold prose-h2:mt-16 prose-h2:mb-5 prose-h2:text-3xl md:prose-h2:text-4xl prose-p:leading-relaxed prose-a:text-[#1a1a1a] prose-a:underline prose-a:decoration-champagne prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:decoration-[#1a1a1a] prose-strong:text-[#1a1a1a] prose-li:marker:text-champagne">
               {copy.body}
             </div>
           </div>
@@ -191,10 +259,11 @@ const LandingPage = ({
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-gray-50 border-y border-gray-100">
+      <section className="py-20 md:py-28 bg-[#faf8f5] border-y border-black/5">
         <div className="container px-4 mx-auto">
           <div className="max-w-4xl mx-auto enter">
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-8">
+            <span className="mb-5 block h-px w-10 bg-champagne" aria-hidden />
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-[#1a1a1a] mb-8">
               {copy.faqHeading}
             </h2>
             {/* Shared accordion: keeps collapsed answers in the DOM so the
@@ -206,32 +275,38 @@ const LandingPage = ({
         </div>
       </section>
 
-      {/* CTA — the same slate band /relocation closes on. */}
-      <section className="py-20 bg-slate-800 text-white">
+      {/* Closing CTA */}
+      <section className="relative overflow-hidden bg-[#0d0d0f] py-24 text-white">
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-champagne to-transparent"
+          aria-hidden
+        />
         <div className="container px-4 mx-auto">
-          <div className="max-w-4xl mx-auto text-center enter">
-            <h2 className="text-3xl md:text-4xl font-bold">{copy.cta.heading}</h2>
-            <p className="mt-4 mx-auto max-w-2xl text-lg leading-relaxed text-gray-200">
+          <div className="max-w-3xl mx-auto text-center enter">
+            <h2 className="font-display text-3xl md:text-5xl font-semibold leading-tight">
+              {copy.cta.heading}
+            </h2>
+            <p className="mt-5 mx-auto max-w-2xl text-lg leading-relaxed text-gray-300">
               {copy.cta.body}
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-10 flex flex-wrap justify-center gap-3">
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 rounded-md bg-white px-6 py-3 font-semibold text-slate-800 transition-colors hover:bg-gray-100"
+                className="inline-flex items-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-[#0d0d0f] transition-colors hover:bg-white"
               >
-                {useVi ? 'Gửi tin nhắn' : 'Send a message'}
+                {copy.ctaButton ?? 'Send a message'}
                 <ArrowRight className="w-4 h-4" aria-hidden />
               </Link>
               <a
                 href={telHref}
-                className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
               >
                 <Phone className="w-4 h-4" aria-hidden />
                 {SITE.phone}
               </a>
               <a
                 href={`mailto:${SITE.email}`}
-                className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 font-medium text-white transition-colors hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
               >
                 <Mail className="w-4 h-4" aria-hidden />
                 {SITE.email}

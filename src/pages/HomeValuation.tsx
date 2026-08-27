@@ -55,6 +55,11 @@ const HomeValuation = () => (
       name: 'Comparative market analysis and home valuation',
       serviceType: 'Property valuation',
     }}
+    hero={{
+      image:
+        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=70',
+      alt: 'A Massachusetts single-family home seen from the front walk',
+    }}
     h1="What Is Your Home Worth?"
     lede="A written valuation, prepared from recent comparable sales in your own neighbourhood and a walkthrough of your property. It is free, it carries no obligation to list, and it is a real analysis rather than an automated guess."
     faqHeading="Questions about home valuations"

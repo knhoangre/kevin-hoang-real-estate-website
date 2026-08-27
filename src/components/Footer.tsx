@@ -98,7 +98,7 @@ const Footer = () => {
                 {t('footer.about')}
               </FooterLink>
               <FooterLink to="/neighborhoods">Areas Served</FooterLink>
-              <FooterLink to="/properties">Listings</FooterLink>
+              <FooterLink to="/properties">Properties</FooterLink>
               <FooterLink to="/blog">{t('nav.blog')}</FooterLink>
               <FooterLink to="/testimonials">Reviews</FooterLink>
               <FooterLink to="/contact">{t('footer.contact')}</FooterLink>
@@ -114,7 +114,7 @@ const Footer = () => {
               <FooterLink to="/first-time-buyers">First-Time Buyers</FooterLink>
               <FooterLink to="/relocation">Relocating to MA</FooterLink>
               <FooterLink to="/vietnamese-speaking-real-estate-agent">
-                Tiếng Việt
+                {t('nav.vietnamese')}
               </FooterLink>
               <FooterLink to="/calculator">Calculators</FooterLink>
               <FooterLink to="/faq">FAQ</FooterLink>

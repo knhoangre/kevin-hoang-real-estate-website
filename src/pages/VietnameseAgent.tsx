@@ -65,6 +65,9 @@ const VI: LandingCopy = {
   // identical character-for-character everywhere, including here.
   ctaPrimary: `Gọi ${SITE.phone}`,
   ctaSecondary: 'Đặt lịch tư vấn',
+  textLabel: 'Nhắn tin',
+  stripLabels: ['Công ty', 'Giấy phép', 'Thị trấn phục vụ', 'Ngôn ngữ'],
+  ctaButton: 'Gửi tin nhắn',
   faqHeading: 'Câu hỏi thường gặp',
   cta: {
     heading: 'Nói chuyện với Kevin bằng tiếng Việt',
@@ -185,6 +188,11 @@ const VietnameseAgent = () => (
     h1="Vietnamese-Speaking Real Estate Agent in Greater Boston"
     lede="Kevin Hoang works with buyers and sellers in Vietnamese and in English across Needham, MetroWest, and Greater Boston. Every document is explained in the language you are most comfortable in before you sign anything."
     eyebrow="Tiếng Việt / Vietnamese"
+    hero={{
+      image:
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=70',
+      alt: 'A classic New England home at dusk in Greater Boston',
+    }}
     faqHeading="Câu hỏi thường gặp — common questions"
     faqs={FAQS}
     vi={VI}

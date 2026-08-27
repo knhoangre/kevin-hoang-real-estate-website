@@ -64,6 +64,8 @@ export default {
         },
         realDark: "#1A1F2C",
         realPurple: "#9b87f5",
+        // Muted champagne. The accent on the landing heroes and their CTA band.
+        champagne: "#c5a572",
         realGray: "#8E9196",
       },
       borderRadius: {
@@ -95,6 +97,10 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "sans-serif"],
+        // Display serif for the landing-page heroes. Playfair Display is used
+        // because it carries a full Vietnamese subset — a display face without
+        // one drops the diacritics back to a fallback mid-headline.
+        display: ["Playfair Display", "Georgia", "serif"],
       }
     }
   },
