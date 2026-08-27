@@ -7,39 +7,6 @@ import { ChevronDown, ChevronRight, MapPin, Users, Calendar, Trash2 } from 'luci
 import { format } from 'date-fns';
 import { errorMessage } from '@/lib/utils';
 
-/**
- * A row as it arrives from either source: the flattened `unified_contacts`
- * view, or the base table with its related contact_* rows nested. Supabase
- * returns the nested ones as an object or a single-element array depending on
- * the relationship, which is why each shape is a union.
- */
-
-/**
- * Reads one field out of a Supabase relation that arrives either as an object
- * or as a single-element array, depending on how the relationship resolves.
- * Each call site used to spell this out as a three-branch `||` chain.
- */
-const joined = (
-  v: Record<string, unknown> | Record<string, unknown>[] | null | undefined,
-  key: string,
-): string | null => {
-  const row = Array.isArray(v) ? v[0] : v;
-  const value = row?.[key];
-  return typeof value === 'string' ? value : null;
-};
-
-type JoinedContactRow = {
-  [key: string]: unknown;
-  first_name?: string | null;
-  last_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  [relation: `contact_${string}`]:
-    | Record<string, unknown>
-    | Record<string, unknown>[]
-    | null
-    | undefined;
-};
 
 
 interface OpenHouseSignIn {
@@ -183,7 +150,7 @@ const OpenHousesList = () => {
       });
 
       // Transform the data
-      const transformedData: OpenHouseSignIn[] = signInsData.map((item: JoinedContactRow) => {
+      const transformedData: OpenHouseSignIn[] = signInsData.map((item) => {
         const firstName = item.first_name_id ? firstNameMap.get(item.first_name_id) : null;
         const lastName = item.last_name_id ? lastNameMap.get(item.last_name_id) : null;
         const email = item.email_id ? emailMap.get(item.email_id) : null;

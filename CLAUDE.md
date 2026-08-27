@@ -344,7 +344,27 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   a bare `images.unsplash.com/photo-…` serves a multi-MB original, and the
   homepage hero (the LCP element) was exactly that. Below-the-fold `<img>` tags
   get `loading="lazy" decoding="async"`.
-- `src/integrations/supabase/types.ts` is generated — never hand-edit it.
+- **`src/integrations/supabase/types.ts` is generated — never hand-edit it.**
+  Regenerate after any schema change:
+  ```bash
+  npx supabase login
+  npx supabase gen types typescript --project-id zvipgykolpoxukyjgffx \
+    > src/integrations/supabase/types.ts
+  ```
+  It described only 8 of the 29 tables and views until 2026-08-27, and the mock
+  client in [client.ts](src/integrations/supabase/client.ts) was cast `as any`,
+  which collapsed the exported `supabase` union to `any` — so **no Supabase call
+  anywhere in the app was type-checked**. That cast is now
+  `as unknown as SupabaseClient<Database>`; keep it that way. Letting either
+  regress turns the whole data layer back into `any`, which is how the CRM CSV
+  shipped a blank "Sources" column after `contact.sources` became `source`.
+- **`/complete-profile` is broken and the types now say so.**
+  [ProfileCompletion.tsx](src/components/ProfileCompletion.tsx) reads and writes
+  a `profiles` table that does not exist; the schema has `contacts` plus the
+  related `contact_*` tables instead. `Auth.tsx` navigates here after signup, so
+  it is a live path. It compiles only through a deliberately loud
+  `untypedSupabase` escape hatch in that file. Fixing it means deciding where
+  the data belongs, which is a data-model call rather than a typo.
 - **`@supabase/supabase-js` is pinned to `~2.57.4`, and that ceiling is
   load-bearing.** From roughly 2.11x of `@supabase/realtime-js` onward the `ws`
   fallback was dropped in favour of a native `WebSocket`, which Node 20 does not

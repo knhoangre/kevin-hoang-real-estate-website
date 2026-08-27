@@ -34,6 +34,7 @@ import { Plus, Edit, Trash2, Upload, ArrowLeft, ArrowRight } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { errorMessage } from '@/lib/utils';
+import type { Database } from '@/integrations/supabase/types';
 import {
   Select,
   SelectContent,
@@ -411,7 +412,7 @@ const Properties = () => {
     if (selectedPropertyIds.size === 0) return;
 
     try {
-      const updateData: Record<string, unknown> = {
+      const updateData: Database['public']['Tables']['properties']['Update'] = {
         updated_at: new Date().toISOString(),
       };
 
@@ -654,7 +655,9 @@ const Properties = () => {
 
       // Process all rows
       const propertiesToInsert = csvData.map((row) => {
-        const property: Record<string, unknown> = {};
+        const property: Database['public']['Tables']['properties']['Insert'] = {
+              // Required columns; the CSV mapping fills them in below.
+            } as Database['public']['Tables']['properties']['Insert'];
         csvHeaders.forEach((header, index) => {
           const dbColumn = headerMapping[header];
           if (dbColumn && row[index]) {

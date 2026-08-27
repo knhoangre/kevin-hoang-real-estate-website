@@ -15,6 +15,30 @@ interface ProfileFormData {
   phoneNumber: string;
 }
 
+/*
+ * BROKEN: this component reads and writes a `profiles` table that does not
+ * exist in the database.
+ *
+ * Regenerating types.ts against the live schema surfaced it — the 29 real
+ * tables include `contacts`, `contact_emails`, `contact_first_names`,
+ * `contact_phones` and so on, but nothing called `profiles`. Both the lookup
+ * below and the upsert therefore fail at runtime; the lookup's error is
+ * swallowed by its own `if (data && !error)` guard, and the upsert surfaces as
+ * a generic save failure.
+ *
+ * It is a live path: Auth.tsx navigates here after signup.
+ *
+ * Left as-is rather than repointed, because where this data belongs is a
+ * data-model decision — most likely `contacts` plus the related contact_*
+ * tables, which is not a mapping to guess at. `untypedSupabase` below keeps
+ * the current behaviour compiling and is the only reason this file builds.
+ */
+
+/** Escape hatch for the missing table above. Delete with the fix. */
+const untypedSupabase = supabase as unknown as {
+  from: (table: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
+
 const ProfileCompletion = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +69,7 @@ const ProfileCompletion = () => {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase
+        const { data, error } = await untypedSupabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
@@ -85,7 +109,7 @@ const ProfileCompletion = () => {
       }
 
       // Create profile in the database
-      const { error } = await supabase
+      const { error } = await untypedSupabase
         .from("profiles")
         .upsert({
           id: user.id,

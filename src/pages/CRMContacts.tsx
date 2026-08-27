@@ -496,7 +496,9 @@ export default function CRMContacts() {
 
       // Process all rows and create contact entries
       const contactsToImport = csvData.map((row) => {
-        const contact: Record<string, unknown> = {};
+        // Every value is a trimmed CSV cell, so these really are strings; typing
+        // it as `unknown` made each one need a cast before it could be inserted.
+        const contact: Record<string, string> = {};
         csvHeaders.forEach((header, index) => {
           const dbColumn = headerMapping[header];
           if (dbColumn && row[index]) {
@@ -589,7 +591,7 @@ export default function CRMContacts() {
             let phoneId = null;
             if (contact.phone) {
               // Format phone number if provided
-              let formattedPhone = String(contact.phone);
+              let formattedPhone = contact.phone;
               const numbers = formattedPhone.replace(/\D/g, "");
               if (numbers.length === 10) {
                 formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
@@ -760,7 +762,7 @@ export default function CRMContacts() {
 
             // Add tags if provided (comma-separated)
             if (contact.tags) {
-              const tagNames = String(contact.tags).split(',').map((t) => t.trim()).filter(Boolean);
+              const tagNames = contact.tags.split(',').map((t) => t.trim()).filter(Boolean);
               for (const tagName of tagNames) {
                 // Get or create tag
                 let tagId;

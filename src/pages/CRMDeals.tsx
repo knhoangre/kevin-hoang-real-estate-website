@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { createContact } from "@/lib/crmContacts";
 import { digitsOnly, groupThousands, formatCurrency } from "@/lib/money";
+import type { Database } from '@/integrations/supabase/types';
 import {
   Command,
   CommandEmpty,
@@ -445,7 +446,7 @@ export default function CRMDeals() {
   // Update deal stage mutation
   const updateDealStage = useMutation({
     mutationFn: async ({ dealId, newStage }: { dealId: number; newStage: Deal['stage'] }) => {
-      const updateData: Record<string, unknown> = { stage: newStage };
+      const updateData: Database['public']['Tables']['deals']['Update'] = { stage: newStage };
       
       // If moving to closed, try to calculate commission if house_price exists but commission doesn't
       if (newStage === 'closed') {
@@ -488,7 +489,7 @@ export default function CRMDeals() {
 
       // `probability` is deliberately absent — the field is gone from the UI
       // and the column carries a default.
-      const updateData: Record<string, unknown> = {
+      const updateData: Database['public']['Tables']['deals']['Update'] = {
         title: dealData.title,
         stage: dealData.stage,
         expected_close_date: dealData.expected_close_date || null,
@@ -560,7 +561,7 @@ export default function CRMDeals() {
       // Build insert object, only including fields that exist. `probability`
       // is deliberately absent — the column has a default, and the field is
       // gone from the UI.
-      const insertData: Record<string, unknown> = {
+      const insertData: Database['public']['Tables']['deals']['Insert'] = {
         user_id: user.id,
         title: deal.title,
         stage: deal.stage,
