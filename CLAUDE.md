@@ -355,6 +355,21 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `docker-compose.yml`, and in Vercel's project settings) or passing an explicit
   `transport` to the client. 2.57.4 carries `@supabase/auth-js` 2.71.1, which is
   what clears CVE-2025-48370.
+- **There are two `useAuth` implementations, and the login page uses the one
+  you would not expect.** `src/contexts/AuthContext.tsx` owns the session,
+  `isAdmin`, and the avatar, and every component reads it via
+  `@/contexts/AuthContext`. But [Auth.tsx](src/pages/Auth.tsx) imports
+  `../hooks/useAuth` instead — a standalone hook with its own `signIn`,
+  `signUp`, `signInWithGoogle` and a duplicate copy of the OAuth
+  `sessionStorage` dance. It is not dead code, so it survived the dead-code
+  sweep. It is also not currently a bug: `Auth.tsx` destructures only the three
+  action functions, never the hook's `user`/`loading`, which is fortunate
+  because that local `user` state has no `onAuthStateChange` subscription and
+  is write-only. The risk is drift — a fix to the redirect logic in one copy
+  will not reach the other. Consolidating means moving `Auth.tsx` onto the
+  context and reconciling the return shapes (`{data, error}` with errors caught
+  vs. the raw Supabase result), which changes the login path and needs testing
+  against a real project.
 - **React Router is held at 6.x by `vite-react-ssg`**, whose peer range is
   `react-router-dom ^6.14.1` even at 0.9.2 — it has no React Router 7 support at
   all. Two advisories (CVE-2026-53666, CVE-2026-53669) are fixed only in 7.18.0
