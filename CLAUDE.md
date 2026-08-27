@@ -345,3 +345,23 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   homepage hero (the LCP element) was exactly that. Below-the-fold `<img>` tags
   get `loading="lazy" decoding="async"`.
 - `src/integrations/supabase/types.ts` is generated — never hand-edit it.
+- **`@supabase/supabase-js` is pinned to `~2.57.4`, and that ceiling is
+  load-bearing.** From roughly 2.11x of `@supabase/realtime-js` onward the `ws`
+  fallback was dropped in favour of a native `WebSocket`, which Node 20 does not
+  have. Since `AuthProvider` sits in the root layout, `createClient()` runs
+  during static generation, so a newer version fails the build outright with
+  "Node.js 20 detected without native WebSocket support" — on the first page, not
+  at runtime. Lifting the pin means moving the build to Node 22+ (here, in
+  `docker-compose.yml`, and in Vercel's project settings) or passing an explicit
+  `transport` to the client. 2.57.4 carries `@supabase/auth-js` 2.71.1, which is
+  what clears CVE-2025-48370.
+- **React Router is held at 6.x by `vite-react-ssg`**, whose peer range is
+  `react-router-dom ^6.14.1` even at 0.9.2 — it has no React Router 7 support at
+  all. Two advisories (CVE-2026-53666, CVE-2026-53669) are fixed only in 7.18.0
+  and therefore cannot be resolved without replacing the SSG engine. Neither is
+  reachable here: the open-redirect needs attacker-controlled input reaching
+  `navigate()`, and the only dynamic target is `oauth_return_path`, built from
+  `window.location.pathname` (always browser-normalised, always leading `/`) on a
+  route that has no SPA rewrite and so 404s before React mounts. The
+  `deserializeErrors()` injection needs attacker-influenced hydration data; ours
+  is a build-time literal baked into each prerendered file.
