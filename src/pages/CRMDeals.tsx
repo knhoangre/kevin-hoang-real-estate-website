@@ -25,10 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, DollarSign, Calendar, FileText, User, Check, ChevronsUpDown, Phone, Mail, MessageSquare, Trash2 } from "lucide-react";
+import { Plus, DollarSign, Calendar, FileText, User, Check, ChevronsUpDown, Phone, Mail, MessageSquare, Trash2, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { createContact } from "@/lib/crmContacts";
+import { digitsOnly, groupThousands, formatCurrency } from "@/lib/money";
 import {
   Command,
   CommandEmpty,
@@ -77,6 +79,55 @@ type Contact = {
   phone: string | null;
 };
 
+/**
+ * A deal is one side of one transaction, so the title is one of two things.
+ * It used to be a free-text field, which produced a pipeline board where no two
+ * cards were labelled the same way. Legacy titles still round-trip: the edit
+ * dialog adds whatever the deal already says as an extra option.
+ */
+const DEAL_TITLES = ['BUYER', 'SELLER'];
+
+/**
+ * Commission is stored in `deals.commission` as a DOLLAR AMOUNT either way —
+ * this only decides how it is entered. A percentage is multiplied out against
+ * the house price; a flat fee is taken as typed, which is what a rental
+ * placement or a referral usually is.
+ *
+ * The database has no column recording which was used, so the edit dialog
+ * opens in 'flat' with the exact stored amount. That is lossless in both
+ * directions: saving an untouched percentage deal writes back the identical
+ * number, and the field shows the equivalent percentage underneath.
+ */
+type CommissionType = 'percent' | 'flat';
+
+/** Entered commission -> the dollar amount stored on the deal, or null. */
+const resolveCommission = (
+  entered: string,
+  housePrice: string,
+  type: CommissionType,
+): number | null => {
+  const amount = parseFloat(entered);
+  if (!entered || isNaN(amount)) return null;
+  if (type === 'flat') return amount;
+  const price = parseFloat(housePrice);
+  // A percentage of nothing is nothing — without a house price there is
+  // nothing to take a percentage of, so the deal carries no commission yet.
+  if (!housePrice || isNaN(price)) return null;
+  return (price * amount) / 100;
+};
+
+/** The shape both the create and the edit dialog hold. */
+type DealForm = {
+  title: string;
+  contact_id: string;
+  house_price: string;
+  commission: string;
+  commission_type: CommissionType;
+  stage: Deal['stage'];
+  expected_close_date: string;
+  notes: string;
+};
+
 const STAGES = [
   { id: 'lead', label: 'Lead', color: 'bg-blue-500' },
   { id: 'client', label: 'Client', color: 'bg-purple-500' },
@@ -84,6 +135,142 @@ const STAGES = [
   { id: 'closed', label: 'Closed', color: 'bg-green-500' },
   { id: 'lost', label: 'Lost', color: 'bg-red-500' },
 ];
+
+/**
+ * Title / price / commission / stage / close date — the block that is
+ * identical in the create and the edit dialog. It lives here so the two cannot
+ * drift; they used to be two copies of the same markup, which is how the edit
+ * dialog would have been left behind by this change.
+ */
+const DealFields = ({
+  deal,
+  patch,
+}: {
+  deal: DealForm;
+  patch: (p: Partial<DealForm>) => void;
+}) => {
+  // A legacy free-text title stays selectable so editing an old deal does not
+  // silently relabel it.
+  const titleOptions = deal.title && !DEAL_TITLES.includes(deal.title)
+    ? [...DEAL_TITLES, deal.title]
+    : DEAL_TITLES;
+
+  const price = parseFloat(deal.house_price);
+  const entered = parseFloat(deal.commission);
+  const hasPrice = !!deal.house_price && !isNaN(price) && price > 0;
+  const hasCommission = !!deal.commission && !isNaN(entered);
+
+  // The equivalent in the other unit, so switching between them is never a
+  // guess.
+  const equivalent = !hasCommission
+    ? null
+    : deal.commission_type === 'percent'
+      ? hasPrice
+        ? `= ${formatCurrency((price * entered) / 100)}`
+        : 'Enter a house price to turn this into an amount'
+      : hasPrice
+        ? `= ${((entered / price) * 100).toFixed(2)}% of the house price`
+        : null;
+
+  return (
+    <>
+      <div>
+        <Label>Deal Type *</Label>
+        <Select value={deal.title} onValueChange={(value) => patch({ title: value })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Buyer or seller?" />
+          </SelectTrigger>
+          <SelectContent>
+            {titleOptions.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>House Price</Label>
+          {/*
+            type="text" with inputMode="numeric", not type="number": a number
+            input cannot show thousands separators, and at six and seven
+            figures an unseparated string is where a mistyped digit hides. The
+            state stays plain digits; only the display is grouped.
+          */}
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={groupThousands(deal.house_price)}
+            onChange={(e) => patch({ house_price: digitsOnly(e.target.value) })}
+            placeholder="850,000"
+          />
+        </div>
+        <div>
+          <Label>Commission</Label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              inputMode="decimal"
+              value={
+                deal.commission_type === 'flat'
+                  ? groupThousands(deal.commission)
+                  : deal.commission
+              }
+              onChange={(e) => patch({ commission: digitsOnly(e.target.value) })}
+              placeholder={deal.commission_type === 'percent' ? '2.5' : '5,000'}
+              className="flex-1"
+            />
+            <Select
+              value={deal.commission_type}
+              onValueChange={(value) => patch({ commission_type: value as CommissionType })}
+            >
+              <SelectTrigger className="w-[92px] shrink-0">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="percent">%</SelectItem>
+                <SelectItem value="flat">$ flat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {equivalent && (
+            <p className="mt-1 text-xs text-gray-500">{equivalent}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <Label>Stage</Label>
+        <Select
+          value={deal.stage}
+          onValueChange={(value) => patch({ stage: value as Deal['stage'] })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STAGES.map((stage) => (
+              <SelectItem key={stage.id} value={stage.id}>
+                {stage.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Expected Close Date</Label>
+        <Input
+          type="date"
+          value={deal.expected_close_date}
+          onChange={(e) => patch({ expected_close_date: e.target.value })}
+        />
+      </div>
+    </>
+  );
+};
 
 /** Pre-populated in new deal notes so you can fill in answers during initial consultation. */
 const INITIAL_CONSULTATION_TEMPLATE = `--- INITIAL CONSULTATION ---
@@ -132,25 +319,34 @@ export default function CRMDeals() {
   const [editContactSearchOpen, setEditContactSearchOpen] = useState(false);
   const [contactSearchQuery, setContactSearchQuery] = useState('');
   const [editContactSearchQuery, setEditContactSearchQuery] = useState('');
-  const [newDeal, setNewDeal] = useState({
+  const [newDeal, setNewDeal] = useState<DealForm>({
     title: '',
     contact_id: '',
     house_price: '',
     commission: '',
+    commission_type: 'percent' as CommissionType,
     stage: 'lead' as Deal['stage'],
-    probability: 0,
     expected_close_date: '',
     notes: INITIAL_CONSULTATION_TEMPLATE,
   });
-  const [editDeal, setEditDeal] = useState({
+  const [editDeal, setEditDeal] = useState<DealForm>({
     title: '',
     contact_id: '',
     house_price: '',
     commission: '',
+    commission_type: 'flat' as CommissionType,
     stage: 'lead' as Deal['stage'],
-    probability: 0,
     expected_close_date: '',
     notes: '',
+  });
+  // Inline contact creation, so a deal can be opened for someone who is not in
+  // the CRM yet without leaving the dialog and losing the form.
+  const [isNewContactOpen, setIsNewContactOpen] = useState(false);
+  const [newContact, setNewContact] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
   });
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
 
@@ -284,48 +480,28 @@ export default function CRMDeals() {
     mutationFn: async ({ dealId, dealData }: { dealId: number; dealData: typeof editDeal }) => {
       if (!user) throw new Error('Not authenticated');
       
-      // Calculate commission amount from percentage if both are provided
-      let commissionAmount = null;
-      if (dealData.commission && dealData.house_price) {
-        const housePrice = parseFloat(dealData.house_price);
-        const commissionPercent = parseFloat(dealData.commission);
-        if (!isNaN(housePrice) && !isNaN(commissionPercent)) {
-          commissionAmount = (housePrice * commissionPercent) / 100;
-        }
-      }
+      const commissionAmount = resolveCommission(
+        dealData.commission,
+        dealData.house_price,
+        dealData.commission_type,
+      );
 
+      // `probability` is deliberately absent — the field is gone from the UI
+      // and the column carries a default.
       const updateData: any = {
         title: dealData.title,
         stage: dealData.stage,
-        probability: dealData.probability,
         expected_close_date: dealData.expected_close_date || null,
         notes: dealData.notes || null,
         contact_id: dealData.contact_id ? parseInt(dealData.contact_id) : null,
       };
 
-      // Add house_price if provided
-      if (dealData.house_price) {
-        const housePrice = parseFloat(dealData.house_price);
-        if (!isNaN(housePrice)) {
-          updateData.house_price = housePrice;
-          updateData.value = housePrice; // Keep for backward compatibility
-        }
-      }
-
-      // If stage is closed, calculate and set commission from percentage
-      if (dealData.stage === 'closed' && commissionAmount !== null) {
-        updateData.commission = commissionAmount;
-      } else if (dealData.stage === 'closed' && dealData.commission && dealData.house_price) {
-        // Recalculate if we have both values
-        const housePrice = parseFloat(dealData.house_price);
-        const commissionPercent = parseFloat(dealData.commission);
-        if (!isNaN(housePrice) && !isNaN(commissionPercent)) {
-          updateData.commission = (housePrice * commissionPercent) / 100;
-        }
-      } else if (commissionAmount !== null) {
-        // Set commission for any stage if calculated
-        updateData.commission = commissionAmount;
-      }
+      // Cleared fields have to be written back as null, or clearing the box in
+      // the form would silently leave the old number in the database.
+      const housePrice = dealData.house_price ? parseFloat(dealData.house_price) : NaN;
+      updateData.house_price = isNaN(housePrice) ? null : housePrice;
+      updateData.value = isNaN(housePrice) ? null : housePrice; // backward compatibility
+      updateData.commission = commissionAmount;
 
       const { error } = await supabase
         .from('deals')
@@ -374,21 +550,20 @@ export default function CRMDeals() {
   const createDeal = useMutation({
     mutationFn: async (deal: typeof newDeal) => {
       if (!user) throw new Error('Not authenticated');
-      
-      // Calculate commission amount from percentage
-      let commissionAmount = null;
-      if (deal.commission && deal.house_price) {
-        const housePrice = parseFloat(deal.house_price);
-        const commissionPercent = parseFloat(deal.commission);
-        commissionAmount = (housePrice * commissionPercent) / 100;
-      }
 
-      // Build insert object, only including fields that exist
+      const commissionAmount = resolveCommission(
+        deal.commission,
+        deal.house_price,
+        deal.commission_type,
+      );
+
+      // Build insert object, only including fields that exist. `probability`
+      // is deliberately absent — the column has a default, and the field is
+      // gone from the UI.
       const insertData: any = {
         user_id: user.id,
         title: deal.title,
         stage: deal.stage,
-        probability: deal.probability,
         expected_close_date: deal.expected_close_date || null,
         notes: deal.notes || null,
         contact_id: deal.contact_id ? parseInt(deal.contact_id) : null,
@@ -420,8 +595,8 @@ export default function CRMDeals() {
         contact_id: '',
         house_price: '',
         commission: '',
+        commission_type: 'percent',
         stage: 'lead',
-        probability: 0,
         expected_close_date: '',
         notes: INITIAL_CONSULTATION_TEMPLATE,
       });
@@ -459,7 +634,7 @@ export default function CRMDeals() {
 
   const handleCreateDeal = () => {
     if (!newDeal.title.trim()) {
-      toast.error('Please enter a deal title');
+      toast.error('Choose whether this is a buyer or a seller deal');
       return;
     }
     if (!newDeal.contact_id) {
@@ -469,21 +644,37 @@ export default function CRMDeals() {
     createDeal.mutate(newDeal);
   };
 
+  /** Create a contact inline and attach it to the deal being drafted. */
+  const handleCreateContact = async () => {
+    try {
+      const id = await createContact({ ...newContact, source: 'Deal' });
+      // Refetch first, so the combobox can resolve the new id to a name
+      // instead of falling back to "Select contact...".
+      await queryClient.invalidateQueries({ queryKey: ['crm-contacts-for-deals'] });
+      await queryClient.invalidateQueries({ queryKey: ['crm-contacts'] });
+      setNewDeal((prev) => ({ ...prev, contact_id: id.toString() }));
+      setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+      setIsNewContactOpen(false);
+      toast.success('Contact created and attached to this deal');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to create contact');
+      console.error(err);
+    }
+  };
+
   const handleEditDeal = (deal: Deal) => {
     setEditingDeal(deal);
-    // Calculate commission percentage from commission amount if available
-    let commissionPercent = '';
-    if (deal.commission && deal.house_price) {
-      commissionPercent = ((deal.commission / deal.house_price) * 100).toFixed(2);
-    }
-    
     setEditDeal({
       title: deal.title,
       contact_id: deal.contact_id?.toString() || '',
       house_price: deal.house_price?.toString() || '',
-      commission: commissionPercent,
+      // Opened as a flat amount because that is exactly what is stored — the
+      // database does not record whether it was originally entered as a
+      // percentage. Saving an untouched deal writes back the same number, and
+      // the equivalent percentage is shown under the field.
+      commission: deal.commission != null ? String(deal.commission) : '',
+      commission_type: 'flat',
       stage: deal.stage,
-      probability: deal.probability,
       expected_close_date: deal.expected_close_date ? new Date(deal.expected_close_date).toISOString().split('T')[0] : '',
       notes: deal.notes || '',
     });
@@ -493,7 +684,7 @@ export default function CRMDeals() {
   const handleSaveEditDeal = () => {
     if (!editingDeal) return;
     if (!editDeal.title.trim()) {
-      toast.error('Please enter a deal title');
+      toast.error('Choose whether this is a buyer or a seller deal');
       return;
     }
     if (!editDeal.contact_id) {
@@ -672,74 +863,110 @@ export default function CRMDeals() {
                       </Command>
                     </PopoverContent>
                   </Popover>
+
+                  {/*
+                    Not every deal starts with a contact already in the CRM.
+                    Before this the only way to attach one was to leave for the
+                    contacts page and start the deal over, so this creates the
+                    contact in place and selects it. The record it writes is the
+                    same shape the contacts page writes — see lib/crmContacts.
+                  */}
+                  {!isNewContactOpen ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 h-auto p-0 text-sm text-[#9b87f5] hover:bg-transparent hover:text-[#8b7ae5]"
+                      onClick={() => setIsNewContactOpen(true)}
+                    >
+                      <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                      Not in the list? Add a new contact
+                    </Button>
+                  ) : (
+                    <div className="mt-3 space-y-3 rounded-md border border-gray-200 bg-gray-50 p-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">First name *</Label>
+                          <Input
+                            value={newContact.first_name}
+                            onChange={(e) =>
+                              setNewContact({ ...newContact, first_name: e.target.value })
+                            }
+                            placeholder="Jane"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Last name *</Label>
+                          <Input
+                            value={newContact.last_name}
+                            onChange={(e) =>
+                              setNewContact({ ...newContact, last_name: e.target.value })
+                            }
+                            placeholder="Nguyen"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-xs">Email</Label>
+                          <Input
+                            type="email"
+                            value={newContact.email}
+                            onChange={(e) =>
+                              setNewContact({ ...newContact, email: e.target.value })
+                            }
+                            placeholder="jane@example.com"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">Phone</Label>
+                          <Input
+                            type="tel"
+                            value={newContact.phone}
+                            onChange={(e) =>
+                              setNewContact({ ...newContact, phone: e.target.value })
+                            }
+                            placeholder="617-555-0140"
+                          />
+                        </div>
+                      </div>
+                      {/* One of the two is required: a contact with neither is
+                          unreachable, and the CSV importer rejects it for the
+                          same reason. */}
+                      <p className="text-xs text-gray-500">Email or phone — at least one.</p>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-[#9b87f5] hover:bg-[#8b7ae5]"
+                          onClick={handleCreateContact}
+                          disabled={
+                            !newContact.first_name.trim() ||
+                            !newContact.last_name.trim() ||
+                            (!newContact.email.trim() && !newContact.phone.trim())
+                          }
+                        >
+                          Save contact
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsNewContactOpen(false);
+                            setNewContact({ first_name: '', last_name: '', email: '', phone: '' });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <Label>Deal Title *</Label>
-                  <Input
-                    value={newDeal.title}
-                    onChange={(e) => setNewDeal({ ...newDeal, title: e.target.value })}
-                    placeholder="e.g., Property Sale - 123 Main St"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>House Price ($)</Label>
-                    <Input
-                      type="number"
-                      value={newDeal.house_price}
-                      onChange={(e) => setNewDeal({ ...newDeal, house_price: e.target.value })}
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <Label>Commission (%)</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={newDeal.commission}
-                      onChange={(e) => setNewDeal({ ...newDeal, commission: e.target.value })}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>Probability (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={newDeal.probability}
-                    onChange={(e) => setNewDeal({ ...newDeal, probability: parseInt(e.target.value) || 0 })}
-                  />
-                </div>
-                <div>
-                  <Label>Stage</Label>
-                  <Select
-                    value={newDeal.stage}
-                    onValueChange={(value) => setNewDeal({ ...newDeal, stage: value as Deal['stage'] })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STAGES.map((stage) => (
-                        <SelectItem key={stage.id} value={stage.id}>
-                          {stage.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Expected Close Date</Label>
-                  <Input
-                    type="date"
-                    value={newDeal.expected_close_date}
-                    onChange={(e) => setNewDeal({ ...newDeal, expected_close_date: e.target.value })}
-                  />
-                </div>
+                <DealFields
+                  deal={newDeal}
+                  patch={(p) => setNewDeal((prev) => ({ ...prev, ...p }))}
+                />
                 <div>
                   <Label>Notes — Initial consultation (edit as you go)</Label>
                   <Textarea
@@ -893,20 +1120,6 @@ export default function CRMDeals() {
                             </span>
                           </div>
                         )}
-                        {deal.probability > 0 && (
-                          <div className="mb-2">
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-gray-600">Probability</span>
-                              <span className="text-gray-700">{deal.probability}%</span>
-                            </div>
-                            <div className="h-1.5 rounded-full bg-gray-200">
-                              <div
-                                className={`h-full rounded-full ${stage.color}`}
-                                style={{ width: `${deal.probability}%` }}
-                              />
-                            </div>
-                          </div>
-                        )}
                         {deal.notes && (
                           <div className="flex items-start gap-1 mt-2">
                             <FileText className="h-3 w-3 mt-0.5 text-gray-600" />
@@ -1028,73 +1241,10 @@ export default function CRMDeals() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div>
-                <Label>Deal Title *</Label>
-                <Input
-                  value={editDeal.title}
-                  onChange={(e) => setEditDeal({ ...editDeal, title: e.target.value })}
-                  placeholder="e.g., Property Sale - 123 Main St"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>House Price ($)</Label>
-                  <Input
-                    type="number"
-                    value={editDeal.house_price}
-                    onChange={(e) => setEditDeal({ ...editDeal, house_price: e.target.value })}
-                    placeholder="0.00"
-                  />
-                </div>
-                <div>
-                  <Label>Commission (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={editDeal.commission}
-                    onChange={(e) => setEditDeal({ ...editDeal, commission: e.target.value })}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label>Probability (%)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={editDeal.probability}
-                  onChange={(e) => setEditDeal({ ...editDeal, probability: parseInt(e.target.value) || 0 })}
-                />
-              </div>
-              <div>
-                <Label>Stage</Label>
-                <Select
-                  value={editDeal.stage}
-                  onValueChange={(value) => setEditDeal({ ...editDeal, stage: value as Deal['stage'] })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STAGES.map((stage) => (
-                      <SelectItem key={stage.id} value={stage.id}>
-                        {stage.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Expected Close Date</Label>
-                <Input
-                  type="date"
-                  value={editDeal.expected_close_date}
-                  onChange={(e) => setEditDeal({ ...editDeal, expected_close_date: e.target.value })}
-                />
-              </div>
+              <DealFields
+                deal={editDeal}
+                patch={(p) => setEditDeal((prev) => ({ ...prev, ...p }))}
+              />
               <div>
                 <Label>Notes</Label>
                 <Textarea

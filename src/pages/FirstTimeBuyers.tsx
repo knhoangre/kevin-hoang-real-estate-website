@@ -18,14 +18,15 @@ const FirstTimeBuyers = () => {
       title="First-Time Home Buyer Guide for Massachusetts"
       description="Buying your first home in Massachusetts, start to finish: what you need saved, how pre-approval works, what the inspection is really for, and closing day."
       keywords="first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer"
-      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+      jsonLd={breadcrumbs(crumbs)}
 />
       
       <div className="pt-24 pb-16">
-          <div className="max-w-6xl mx-auto">
-            <BreadcrumbBar items={crumbs} />
-          </div>
         <div className="container mx-auto px-4">
+          {/* Inside the container, so the trail carries the same horizontal
+              padding and column as the content. It used to sit outside it
+              entirely and ran flush to the viewport edge on mobile. */}
+          <BreadcrumbBar items={crumbs} />
           <div className="text-center mb-12 enter">
             <h1 className="text-4xl sm:text-5xl font-bold text-[#1a1a1a] mb-4">FIRST-TIME HOME BUYER GUIDE</h1>
             <p className="text-gray-600 max-w-2xl mx-auto">

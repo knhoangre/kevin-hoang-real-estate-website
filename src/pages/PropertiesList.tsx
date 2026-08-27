@@ -142,7 +142,7 @@ const PropertiesList = () => {
       title="Current Listings in Greater Boston"
       description="Browse current and recent listings across Needham, MetroWest, and Greater Boston, with photos, details, and a direct line to ask about any of them."
       keywords="homes for sale Needham MA, Greater Boston listings, MetroWest homes for sale, Massachusetts property listings"
-      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+      jsonLd={breadcrumbs(crumbs)}
 />
   );
 
@@ -152,9 +152,7 @@ const PropertiesList = () => {
       <div className="min-h-screen bg-white">
         <div className="pt-16">
         <div className="container mx-auto px-4 py-24">
-          <div className="max-w-6xl mx-auto">
             <BreadcrumbBar items={crumbs} />
-          </div>
           {/* The heading renders unconditionally. It used to sit behind the
               isLoading gate along with everything else, so the prerendered page
               contained a spinner and no <h1> at all. Only the grid waits for

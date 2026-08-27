@@ -455,6 +455,19 @@ const Navbar = () => {
                       {t('nav.relocation')}
                     </button>
                     <div className="-mx-1 my-1 h-px bg-muted" />
+                    {/* The Vietnamese landing page had no navigation entry at
+                        all — only a footer link — so the one audience it is
+                        written for could not find it from the menu. */}
+                    <button
+                      type="button"
+                      onClick={() => handleNavigation('/vietnamese-speaking-real-estate-agent')}
+                      className={`flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-neutral-200 dark:hover:bg-zinc-700 uppercase ${
+                        location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'font-bold bg-neutral-300 dark:bg-zinc-600' : ''
+                      }`}
+                    >
+                      {t('nav.vietnamese')}
+                    </button>
+                    <div className="-mx-1 my-1 h-px bg-muted" />
                     <button
                       type="button"
                       onClick={() => handleNavigation('/testimonials')}
@@ -620,6 +633,21 @@ const Navbar = () => {
                   <span
                     className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
                       location.pathname === '/relocation' ? 'w-full' : ''
+                    }`}
+                  />
+                </button>
+                <div className="w-full h-px bg-border -mx-4"></div>
+
+                <button
+                  onClick={() => handleNavigation('/vietnamese-speaking-real-estate-agent')}
+                  className={`text-sm uppercase tracking-wider text-black hover:text-gray-600 transition-colors relative group inline-block text-center ${
+                    location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'font-bold' : ''
+                  }`}
+                >
+                  {t('nav.vietnamese')}
+                  <span
+                    className={`absolute bottom-[-4px] left-0 w-0 h-0.5 bg-black group-hover:w-full transition-all duration-300 ${
+                      location.pathname === '/vietnamese-speaking-real-estate-agent' ? 'w-full' : ''
                     }`}
                   />
                 </button>

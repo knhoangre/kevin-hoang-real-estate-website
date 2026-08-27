@@ -12,7 +12,8 @@
     "profile": "Profile",
     "login": "Login",
     "logout": "Logout",
-    "testimonials": "Testimonials"
+    "testimonials": "Testimonials",
+    "vietnamese": "Tiếng Việt"
   },
   "testimonials": {
     "title": "CLIENT TESTIMONIALS",

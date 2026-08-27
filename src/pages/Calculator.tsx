@@ -15,14 +15,12 @@ const Calculator = () => {
         title="Mortgage & Home Affordability Calculators"
         description="Work out a realistic monthly payment, what you can afford, and your likely closing costs before you start touring homes in Greater Boston."
         keywords="mortgage calculator Massachusetts, home affordability calculator, closing cost calculator MA, monthly payment calculator Boston"
-        jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+        jsonLd={breadcrumbs(crumbs)}
 />
       {/* The calculator components themselves only render h2s, so this page had
           no h1 at all — every page needs exactly one. */}
       <div className="container mx-auto px-4 pt-12">
-          <div className="max-w-6xl mx-auto">
             <BreadcrumbBar items={crumbs} />
-          </div>
         <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down">
           Massachusetts Mortgage &amp; Affordability Calculators
         </h1>

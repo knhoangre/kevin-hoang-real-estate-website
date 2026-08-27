@@ -28,7 +28,7 @@ const About = () => {
                 <source srcSet="/kevin_hoang.webp" type="image/webp" />
                 <img
                   src="/kevin_hoang.jpg"
-                  alt="Kevin Hoang, real estate agent, in a navy suit"
+                  alt="Kevin Hoang, licensed Massachusetts real estate broker, in a navy suit"
                   loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover object-top scale-125"

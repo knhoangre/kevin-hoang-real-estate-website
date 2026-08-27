@@ -2511,7 +2511,7 @@ const NeighborhoodDetail = () => {
       */}
       <Seo
         title={neighborhood.title}
-        description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based agent covering Greater Boston.`}
+        description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based broker covering Greater Boston.`}
         keywords={`${neighborhood.name} real estate, living in ${neighborhood.name}, ${neighborhood.name} neighborhood guide, homes for sale ${neighborhood.name}`}
         ogImage={neighborhood.image}
         jsonLd={faqs.length ? [breadcrumbs(crumbs), faqPage(faqs)] : breadcrumbs(crumbs)}

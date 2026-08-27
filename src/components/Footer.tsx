@@ -57,7 +57,7 @@ const Footer = () => {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative text-gray-300 hover:text-white transition-colors"
+                className="group relative text-gray-300 hover:text-white transition-colors uppercase"
               >
                 {`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />

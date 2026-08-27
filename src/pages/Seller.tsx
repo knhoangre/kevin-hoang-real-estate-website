@@ -36,9 +36,7 @@ const Seller = () => {
     />
       <div className="pt-16">
         <div className="container px-4 py-24">
-          <div className="max-w-6xl mx-auto">
             <BreadcrumbBar items={crumbs} />
-          </div>
           <div className="enter-down">
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
 {t('seller_guide.title')}

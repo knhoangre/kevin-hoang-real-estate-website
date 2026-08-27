@@ -12,7 +12,8 @@
     "profile": "Hồ Sơ",
     "login": "Đăng Nhập",
     "logout": "Đăng Xuất",
-    "testimonials": "Đánh Giá Khách Hàng"
+    "testimonials": "Đánh Giá Khách Hàng",
+    "vietnamese": "Tiếng Việt"
   },
   "testimonials": {
     "title": "Đánh giá từ khách hàng",

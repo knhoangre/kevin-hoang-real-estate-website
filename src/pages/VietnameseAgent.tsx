@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
-import LandingPage from '@/components/LandingPage';
+import LandingPage, { type LandingCopy } from '@/components/LandingPage';
 import type { QA } from '@/lib/schema';
+import { SITE } from '@/lib/siteConfig';
 
 /**
  * Landing page for the LANGUAGE axis — "Vietnamese-speaking real estate agent",
@@ -44,6 +45,122 @@ const FAQS: QA[] = [
   },
 ];
 
+/**
+ * The Vietnamese rendering of this page.
+ *
+ * It is shown only after the language toggle is set to `vi`, which happens
+ * after mount — the prerendered HTML and the first client render both stay in
+ * English so hydration matches, and so the canonical stays the English document
+ * that this URL is built to rank for. See LandingPage's LandingCopy comment.
+ *
+ * The framing rule above applies here too: every section that raises Vietnamese
+ * also says clients of every background are served.
+ */
+const VI: LandingCopy = {
+  eyebrow: 'Môi giới nói tiếng Việt',
+  h1: 'Môi giới bất động sản nói tiếng Việt tại Greater Boston',
+  lede:
+    'Kevin Hoang làm việc với người mua và người bán nhà bằng tiếng Việt và tiếng Anh tại Needham, MetroWest và khu vực Greater Boston. Mọi giấy tờ đều được giải thích bằng ngôn ngữ bạn thoải mái nhất trước khi bạn ký.',
+  // Phone comes from SITE like every other rendering of it — NAP has to be
+  // identical character-for-character everywhere, including here.
+  ctaPrimary: `Gọi ${SITE.phone}`,
+  ctaSecondary: 'Đặt lịch tư vấn',
+  faqHeading: 'Câu hỏi thường gặp',
+  cta: {
+    heading: 'Nói chuyện với Kevin bằng tiếng Việt',
+    body:
+      'Gọi điện, nhắn tin, hoặc gửi email — bằng tiếng Việt hoặc tiếng Anh, tùy bạn. Không có gì bắt buộc, và cuộc trao đổi đầu tiên luôn miễn phí.',
+  },
+  faqs: [
+    {
+      question: 'Tôi có thể mua nhà hoàn toàn bằng tiếng Việt không?',
+      answer:
+        'Phần trao đổi thì có — đi xem nhà, bàn chiến lược, thương lượng, và giải thích từng giấy tờ bạn được yêu cầu ký. Bản thân hợp đồng vẫn được lập bằng tiếng Anh, vì đó là ngôn ngữ có giá trị pháp lý tại Massachusetts. Mục đích của việc làm việc bằng tiếng Việt là để bạn hiểu chính xác mình đang ký gì trước khi ký, chứ không phải để thay đổi giấy tờ.',
+    },
+    {
+      question: 'Ngôn ngữ thật sự tạo ra khác biệt ở đâu?',
+      answer:
+        'Không phải lúc đi xem nhà. Nó quan trọng ở ba hoặc bốn thời điểm mà một sự hiểu lầm sẽ rất tốn kém và không thể quay lại: khi đặt giá mua (các điều kiện, thời hạn và tiền đặt cọc), khi đọc báo cáo kiểm định nhà, khi chọn khoản vay, và khi đọc các bản công bố thông tin bắt buộc.',
+    },
+    {
+      question: 'Tôi mua căn nhà đầu tiên ở Mỹ. Có gì khác biệt?',
+      answer:
+        'Ba điều thường làm người mua lần đầu bất ngờ nếu không lớn lên trong hệ thống của Mỹ: thư chấp thuận vay trước (pre-approval) quan trọng đến mức gần như không thể ra giá nếu chưa có; báo cáo kiểm định nhà có sức nặng như một công cụ thương lượng chứ không chỉ là thủ tục; và phần lớn giao dịch đi qua luật sư, vốn là chuyện bình thường ở Massachusetts. Không điều nào khó, chỉ cần có người đi cùng bạn từ đầu.',
+    },
+    {
+      question: 'Kevin có chỉ làm việc với khách nói tiếng Việt không?',
+      answer:
+        'Không. Kevin làm việc với người mua và người bán thuộc mọi cộng đồng tại Needham, MetroWest và Greater Boston. Tiếng Việt được cung cấp thêm bên cạnh tiếng Anh vì nó gỡ bỏ một rào cản có thật cho những gia đình cần đến — chứ không phải là giới hạn về đối tượng khách hàng.',
+    },
+    {
+      question: 'Gia đình nhiều thế hệ mua chung nhà thì sao?',
+      answer:
+        'Được, và chuyện này khá phổ biến. Mua chung nhiều thế hệ đặt ra những câu hỏi thật sự: đứng tên nhà như thế nào, ai đứng tên khoản vay, và liệu nhà hai căn hộ hay nhà có phần in-law có phù hợp hơn nhà đơn lập không. Nên bàn những điều đó trước khi bắt đầu đi xem nhà, chứ không phải sau khi đã tìm được căn ưng ý.',
+    },
+  ],
+  body: (
+    <>
+      <h2>Ngôn ngữ tạo ra khác biệt ở đâu?</h2>
+      <p>
+        Không phải lúc đi xem nhà. Nó quan trọng ở ba hoặc bốn thời điểm mà một sự hiểu lầm sẽ rất
+        tốn kém và không thể sửa lại:
+      </p>
+      <ul>
+        <li>
+          <strong>Lúc ra giá.</strong> Các điều kiện kèm theo, thời hạn và tiền đặt cọc mới là thứ
+          bạn thật sự đang cam kết. Bỏ đi một điều kiện để thắng cuộc đấu giá là quyết định bạn nên
+          đưa ra khi đã hiểu rõ.
+        </li>
+        <li>
+          <strong>Báo cáo kiểm định nhà.</strong> Bốn mươi trang liệt kê mọi khiếm khuyết của căn
+          nhà, phần lớn là bình thường. Biết ba mục nào đáng để mở lại thương lượng mới là kỹ năng
+          thật sự.
+        </li>
+        <li>
+          <strong>Khoản vay.</strong> Lãi suất, điểm chiết khấu, tiền ký quỹ và bảo hiểm khoản vay
+          tác động qua lại với nhau — tiền trả hàng tháng không phải là con số duy nhất cần nhìn.
+        </li>
+        <li>
+          <strong>Bản công bố thông tin.</strong> Tại Massachusetts, công bố về sơn chì là bắt buộc
+          với nhà xây trước năm 1978 — tức là một phần rất lớn nhà ở tại các thị trấn này.
+        </li>
+      </ul>
+      <p>
+        Trao đổi những điều đó bằng tiếng Việt không phải để cho tiện. Đó là để bạn hỏi được đúng
+        câu hỏi tiếp theo mà bạn thật sự muốn hỏi.
+      </p>
+
+      <h2>Đồng hành cùng gia đình mua căn nhà đầu tiên ở Mỹ</h2>
+      <p>
+        Quy trình tại Massachusetts có vài điểm khác với điều nhiều người hình dung, nhất là ở vai
+        trò của luật sư và sức nặng của khâu kiểm định nhà. Không có gì khó, nhưng mọi thứ trôi chảy
+        hơn nhiều khi có người trình bày toàn bộ trình tự ngay từ đầu, thay vì chạy theo từng thời
+        hạn một.
+      </p>
+      <p>
+        <Link to="/first-time-buyers">Hướng dẫn cho người mua lần đầu</Link> trình bày trọn con
+        đường, và <Link to="/calculator">các công cụ tính toán</Link> sẽ cho bạn thấy chi phí hàng
+        tháng thực tế ứng với một mức giá. Khách hàng thuộc mọi cộng đồng đều được chào đón ở tất cả
+        những nội dung này — trang này tồn tại để nói rằng lựa chọn tiếng Việt luôn sẵn có, chứ
+        không phải để thu hẹp đối tượng phục vụ.
+      </p>
+
+      <h2>Những thị trấn nào được phục vụ?</h2>
+      <p>
+        Cùng các thị trấn như phần còn lại của công việc: Needham và các cộng đồng lân cận thuộc
+        MetroWest và Greater Boston, mỗi nơi đều có{' '}
+        <Link to="/neighborhoods">bài giới thiệu khu vực riêng</Link>. Nếu bạn chuyển đến từ tiểu
+        bang khác, <Link to="/relocation">trang chuyển nhà</Link> nói về cách sắp xếp thời gian khi
+        di chuyển giữa hai thị trường.
+      </p>
+      <p>
+        Với người bán, <Link to="/home-valuation">bản định giá nhà bằng văn bản</Link> là nơi nên
+        bắt đầu, và nội dung đó cũng có thể được trình bày bằng tiếng Việt.
+      </p>
+    </>
+  ),
+};
+
 const VietnameseAgent = () => (
   <LandingPage
     path="/vietnamese-speaking-real-estate-agent"
@@ -67,8 +184,10 @@ const VietnameseAgent = () => (
     }}
     h1="Vietnamese-Speaking Real Estate Agent in Greater Boston"
     lede="Kevin Hoang works with buyers and sellers in Vietnamese and in English across Needham, MetroWest, and Greater Boston. Every document is explained in the language you are most comfortable in before you sign anything."
+    eyebrow="Tiếng Việt / Vietnamese"
     faqHeading="Câu hỏi thường gặp — common questions"
     faqs={FAQS}
+    vi={VI}
     cta={{
       heading: 'Nói chuyện với Kevin bằng tiếng Việt',
       body: 'Gọi điện, nhắn tin, hoặc gửi tin nhắn — bằng tiếng Việt hoặc tiếng Anh, tùy bạn. Call or write in whichever language you prefer.',

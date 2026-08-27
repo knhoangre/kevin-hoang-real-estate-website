@@ -308,7 +308,7 @@ const Relocation = () => {
                   and the subtle but important lifestyle shifts between these two states.
                 </p>
                 <p className="text-lg">
-                  As your relocation specialist, I'm not just a real estate agent—I'm your bridge between Connecticut 
+                  As your relocation specialist, I'm not just a licensed broker—I'm your bridge between Connecticut 
                   and Massachusetts. I'll help you find the perfect home that matches your lifestyle, navigate the 
                   complexities of the move, and ensure you're making the most informed decision for your family's future.
                 </p>

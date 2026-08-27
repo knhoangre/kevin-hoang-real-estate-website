@@ -15,7 +15,7 @@ const Disclaimer = () => {
     <Seo
       title="Disclaimer"
       description="Important disclosures about the information published on the Kevin Hoang Real Estate website."
-      jsonLd={[breadcrumbs(crumbs), breadcrumbs(crumbs)]}
+      jsonLd={breadcrumbs(crumbs)}
 />
       <div className="pt-16">
         <section className="py-24 bg-gray-50">
@@ -23,7 +23,11 @@ const Disclaimer = () => {
               <div className="max-w-4xl mx-auto">
                 <BreadcrumbBar items={crumbs} />
               </div>
-            <div className="mb-16 enter-down">
+            {/* max-w-4xl matches the breadcrumb above and the document card
+                below, so the whole page reads as one column. The heading used
+                to run the full container width while everything else was
+                capped, which is what made the trail look over-indented. */}
+            <div className="max-w-4xl mx-auto mb-16 enter-down">
               <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-4 enter-down" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
                 DISCLAIMER
               </h1>

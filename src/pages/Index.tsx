@@ -36,7 +36,7 @@ const Index = () => {
       */}
       <Seo
         title="Needham & Greater Boston Real Estate Agent | Kevin Hoang"
-        description="Kevin Hoang is a Needham, MA real estate agent with Keller Williams Realty, helping buyers and sellers across MetroWest and Greater Boston in English and Vietnamese."
+        description="Kevin Hoang is a licensed Massachusetts real estate broker in Needham with Keller Williams Realty, helping buyers and sellers across MetroWest and Greater Boston in English and Vietnamese."
         keywords="Needham MA real estate agent, Greater Boston realtor, MetroWest homes for sale, Kevin Hoang real estate, Vietnamese speaking realtor Boston"
         jsonLd={[realEstateAgent(), webSite(), person()]}
       />
