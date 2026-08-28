@@ -127,7 +127,7 @@ const Contact = () => {
               >
                 <Phone className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <span
-                  className="text-ink uppercase relative cursor-pointer select-all"
+                  className="text-ink transition-colors group-hover:text-champagne-ink uppercase relative cursor-pointer select-all"
                   onClick={() => setPhoneDropdown(!phoneDropdown)}
                 >
                   {SITE.phone}
@@ -148,7 +148,7 @@ const Contact = () => {
               <div className="flex items-start space-x-4 max-w-full">
                 <Mail className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <a href={`mailto:${SITE.email}`} className="relative group">
-                  <span className="text-ink uppercase relative min-w-0 break-words">
+                  <span className="text-ink transition-colors group-hover:text-champagne-ink uppercase relative min-w-0 break-words">
                     {SITE.email.toUpperCase()}
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
@@ -163,7 +163,7 @@ const Contact = () => {
                   rel="noopener noreferrer"
                   className="relative group"
                 >
-                  <span className="text-ink uppercase relative min-w-0 break-words">
+                  <span className="text-ink transition-colors group-hover:text-champagne-ink uppercase relative min-w-0 break-words">
                     {formattedAddress.toUpperCase()}
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
@@ -178,7 +178,7 @@ const Contact = () => {
                   rel="noopener noreferrer"
                   className="relative group"
                 >
-                  <span className="text-ink uppercase relative min-w-0 break-words">
+                  <span className="text-ink transition-colors group-hover:text-champagne-ink uppercase relative min-w-0 break-words">
                     SET AN APPOINTMENT WITH ME
                     <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>

@@ -52,7 +52,7 @@ const Calculator = () => {
               Principal and interest, plus estimates for property tax and
               insurance. Use the real tax bill for a specific address from the
               town assessor rather than a percentage —{' '}
-              <Link to="/blog/mass-property-tax-guide" className="underline">
+              <Link to="/blog/mass-property-tax-guide" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 rates vary widely between neighbouring towns
               </Link>{' '}
               and the bill never goes away.
@@ -65,7 +65,7 @@ const Calculator = () => {
             <p className="text-gray-600 leading-relaxed">
               What a lender will approve and what you should spend are different
               numbers, and the gap is where people get into trouble. A{' '}
-              <Link to="/blog/pre-approval-checklist" className="underline">
+              <Link to="/blog/pre-approval-checklist" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 written pre-approval
               </Link>{' '}
               is the figure that counts in an offer.
@@ -80,7 +80,7 @@ const Calculator = () => {
               title examination and insurance, recording, prepaid interest and
               the escrow account are the ones that surprise them — along with
               needing reserves left over{' '}
-              <Link to="/blog/first-time-homebuyer-mistakes-massachusetts" className="underline">
+              <Link to="/blog/first-time-homebuyer-mistakes-massachusetts" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 after
               </Link>{' '}
               closing.

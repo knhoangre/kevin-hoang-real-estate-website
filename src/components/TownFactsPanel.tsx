@@ -94,7 +94,7 @@ const TownFactsPanel = ({ town, facts }: { town: string; facts: TownFacts }) => 
               href={TAX_RATE_SOURCE.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
             >
               {TAX_RATE_SOURCE.name}
             </a>

@@ -57,7 +57,7 @@ const Neighborhoods = () => {
               town. Which commuter rail stop you can walk to, which elementary
               school an address actually feeds, and whether a lot is on town
               sewer or{' '}
-              <Link to="/blog/title-5-septic-massachusetts" className="underline">
+              <Link to="/blog/title-5-septic-massachusetts" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 Title 5 septic
               </Link>{' '}
               matter more to what you pay and how you live than the town line
@@ -73,15 +73,15 @@ const Neighborhoods = () => {
             <p className="text-gray-700 leading-relaxed">
               If you are choosing between towns, start from your commute rather
               than a list of names:{' '}
-              <Link to="/blog/transit-oriented-development-boston" className="underline">
+              <Link to="/blog/transit-oriented-development-boston" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 choosing a MetroWest town by your commute
               </Link>
               . Moving from out of state? The{' '}
-              <Link to="/relocation" className="underline">
+              <Link to="/relocation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 relocation guide
               </Link>{' '}
               covers the practical side, and{' '}
-              <Link to="/blog/mass-property-tax-guide" className="underline">
+              <Link to="/blog/mass-property-tax-guide" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                 how Massachusetts property tax works
               </Link>{' '}
               explains why a town&rsquo;s tax rate on its own tells you nothing.

@@ -12,7 +12,7 @@ const FooterLink = ({ to, children }: { to: string; children: React.ReactNode })
   <li>
     <Link
       to={to}
-      className="group relative text-gray-300 hover:text-champagne transition-colors inline-block uppercase"
+      className="group relative inline-block text-sm tracking-wide text-gray-300 transition-colors hover:text-champagne uppercase"
     >
       {children}
       <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
@@ -29,7 +29,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">KEVIN HOANG</h3>
+            <h3 className="text-xl font-bold mb-4 uppercase">KEVIN HOANG</h3>
             <div className="flex items-start space-x-4 mb-2">
               <Phone className="h-4 w-4 mt-1 shrink-0" />
               {/* Both the href and the label come from SITE now. They used to be
@@ -37,14 +37,14 @@ const Footer = () => {
                   dialled +1 617 555 1234 while the text said (860) 682-2251.
                   NAP has to be identical everywhere or it suppresses local
                   ranking — and in this case the call button did not work. */}
-              <a href={telHref} className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors">
+              <a href={telHref} className="group relative min-w-0 break-words text-sm tracking-wide text-gray-300 transition-colors hover:text-champagne">
                 {SITE.phone}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-start space-x-4 mb-2">
               <Mail className="h-4 w-4 mt-1 shrink-0" />
-              <a href={`mailto:${SITE.email}`} className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase">
+              <a href={`mailto:${SITE.email}`} className="group relative min-w-0 break-words text-sm tracking-wide text-gray-300 transition-colors hover:text-champagne uppercase">
                 {SITE.email}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
@@ -57,7 +57,7 @@ const Footer = () => {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase"
+                className="group relative min-w-0 break-words text-sm tracking-wide text-gray-300 transition-colors hover:text-champagne uppercase"
               >
                 {`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`}
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
@@ -69,7 +69,7 @@ const Footer = () => {
                 href={SITE.appointmentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase"
+                className="group relative min-w-0 break-words text-sm tracking-wide text-gray-300 transition-colors hover:text-champagne uppercase"
               >
                 SET AN APPOINTMENT WITH ME
                 <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
@@ -89,7 +89,7 @@ const Footer = () => {
             listing them here gives every page a real inbound link.
           */}
           <div>
-            <h3 className="text-xl font-bold mb-4">{t('footer.quick_links')}</h3>
+            <h3 className="text-xl font-bold mb-4 uppercase">{t('footer.quick_links')}</h3>
             <ul className="space-y-2">
               <FooterLink to="/">{t('nav.home')}</FooterLink>
               {/* /about is a real route again — the person page. It was
@@ -108,7 +108,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-bold mb-4">Guides &amp; Services</h3>
+            <h3 className="text-xl font-bold mb-4 uppercase">Guides &amp; Services</h3>
             <ul className="space-y-2">
               <FooterLink to="/home-valuation">Free Home Valuation</FooterLink>
               <FooterLink to="/buyer">Buyer&rsquo;s Guide</FooterLink>
@@ -129,7 +129,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-xl font-bold mb-4">{t('footer.legal')}</h3>
+            <h3 className="text-xl font-bold mb-4 uppercase">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               <FooterLink to="/privacy-policy">
                 {t('footer.privacy_policy')}

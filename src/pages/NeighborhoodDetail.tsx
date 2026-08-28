@@ -2746,15 +2746,15 @@ const NeighborhoodDetail = () => {
               <p className="text-gray-700 leading-relaxed mb-4">
                 This guide is the background. For what it would actually take in your
                 situation, start with a{" "}
-                <Link to="/home-valuation" className="underline">
+                <Link to="/home-valuation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   free written home valuation
                 </Link>{" "}
                 if you are selling, or the{" "}
-                <Link to="/first-time-buyers" className="underline">
+                <Link to="/first-time-buyers" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   buyer&rsquo;s guide
                 </Link>{" "}
                 if you are buying. Kevin Hoang is a{" "}
-                <Link to="/needham-real-estate-agent" className="underline">
+                <Link to="/needham-real-estate-agent" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   Needham-based agent
                 </Link>{" "}
                 covering this town and the rest of Greater Boston.

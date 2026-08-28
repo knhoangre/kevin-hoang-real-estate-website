@@ -38,7 +38,7 @@ const Reviews = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
           {reviews.map((review, index) => (
-            <div key={index} className="bg-gray-50 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-full enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
+            <div key={index} className="flex h-full flex-col rounded-xl border border-transparent bg-bone p-6 shadow-sm transition-all duration-300 hover:border-champagne hover:shadow-md enter" style={{ '--enter-delay': `${index * 0.08}s` } as React.CSSProperties}>
               {/* Star Rating */}
               <div className="flex items-center mb-4">
                 {[...Array(review.rating)].map((_, starIndex) => (

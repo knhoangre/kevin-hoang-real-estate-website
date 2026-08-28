@@ -360,7 +360,7 @@ const Contact = () => {
                 </p>
                 <p className="text-gray-700 leading-relaxed">
                   If it is faster to talk, call or text{' '}
-                  <a href={telHref} className="underline">
+                  <a href={telHref} className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                     {SITE.phone}
                   </a>
                   , or{' '}
@@ -368,12 +368,12 @@ const Contact = () => {
                     href={SITE.appointmentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline"
+                    className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
                   >
                     book a time directly
                   </a>
                   . Service is available in English and Vietnamese —{' '}
-                  <Link to="/vietnamese-speaking-real-estate-agent" className="underline">
+                  <Link to="/vietnamese-speaking-real-estate-agent" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                     tiếng Việt
                   </Link>
                   .
@@ -389,34 +389,34 @@ const Contact = () => {
                 </p>
                 <ul className="space-y-2 text-gray-700">
                   <li>
-                    <Link to="/home-valuation" className="underline">
+                    <Link to="/home-valuation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       What is my home worth?
                     </Link>{' '}
                     — a written valuation from comparable sales
                   </li>
                   <li>
-                    <Link to="/first-time-buyers" className="underline">
+                    <Link to="/first-time-buyers" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       Buying your first home in Massachusetts
                     </Link>
                   </li>
                   <li>
-                    <Link to="/neighborhoods" className="underline">
+                    <Link to="/neighborhoods" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       Which town should I be looking at?
                     </Link>{' '}
                     — {SITE.areaServed.length} guides
                   </li>
                   <li>
-                    <Link to="/relocation" className="underline">
+                    <Link to="/relocation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       Moving to Massachusetts
                     </Link>
                   </li>
                   <li>
-                    <Link to="/faq" className="underline">
+                    <Link to="/faq" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       Common Massachusetts real estate questions
                     </Link>
                   </li>
                   <li>
-                    <Link to="/about" className="underline">
+                    <Link to="/about" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                       Who Kevin is, and how to verify it
                     </Link>
                   </li>

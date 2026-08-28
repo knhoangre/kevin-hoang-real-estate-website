@@ -2,6 +2,7 @@ import { Star, BadgeCheck, CalendarDays, Handshake, MapPin } from "lucide-react"
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SITE, googleProfileUrl } from "@/lib/siteConfig";
+import CountUp from '@/components/CountUp';
 
 /**
  * The credibility row.
@@ -109,7 +110,7 @@ const Stats = () => {
                 <div className="flex justify-center mb-4">
                   <Icon className="h-8 w-8 text-champagne" aria-hidden />
                 </div>
-                <div className="text-3xl font-bold mb-2">{tile.value}</div>
+                <CountUp value={tile.value} className="text-3xl font-bold mb-2" />
                 <div className="text-gray-400 uppercase text-sm tracking-wide">{tile.label}</div>
                 <div className="text-gray-500 text-xs mt-1">{tile.note}</div>
               </>

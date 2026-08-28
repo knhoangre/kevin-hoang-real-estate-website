@@ -250,7 +250,7 @@ const PageShell = ({
                       </a>
                       <a
                         href={smsHref}
-                        className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-white/10 btn-pill"
+                        className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:border-champagne hover:text-champagne btn-pill"
                       >
                         <MessageSquare className="w-4 h-4" aria-hidden />
                         {actionLabels?.text ?? 'Text'}

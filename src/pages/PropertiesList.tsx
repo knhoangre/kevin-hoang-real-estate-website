@@ -173,7 +173,7 @@ const PropertiesList = () => {
                 it — so the asking price is a starting position rather than a
                 value. What a comparable home actually closed at, and how long it
                 took, tells you far more. That is the same evidence a{' '}
-                <Link to="/home-valuation" className="underline">
+                <Link to="/home-valuation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   written valuation
                 </Link>{' '}
                 is built from, and it is why sold listings stay on this page.
@@ -187,15 +187,15 @@ const PropertiesList = () => {
               <p className="text-gray-600 leading-relaxed">
                 Two things make the difference between looking and buying: a
                 written{' '}
-                <Link to="/blog/pre-approval-checklist" className="underline">
+                <Link to="/blog/pre-approval-checklist" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   pre-approval
                 </Link>{' '}
                 rather than a pre-qualification, and knowing the{' '}
-                <Link to="/neighborhoods" className="underline">
+                <Link to="/neighborhoods" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   town and the street
                 </Link>{' '}
                 before you fall for a house. The{' '}
-                <Link to="/buyer" className="underline">
+                <Link to="/buyer" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
                   buyer&rsquo;s roadmap
                 </Link>{' '}
                 walks through the rest.
@@ -243,7 +243,10 @@ const PropertiesList = () => {
               const hasImages = images.length > 0;
 
               return (
-                <Card key={property.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={property.id}
+                  className="overflow-hidden border border-transparent transition-all duration-300 hover:border-champagne hover:shadow-lg"
+                >
                   {/* Photo Carousel */}
                   <div className="relative aspect-[16/9] bg-gray-200 overflow-hidden">
                     <div className="absolute top-3 left-3 z-10">
