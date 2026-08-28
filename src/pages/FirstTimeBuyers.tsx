@@ -24,7 +24,12 @@ const FirstTimeBuyers = () => {
       eyebrow="First-time buyers"
       h1="First-Time Home Buyer Guide"
       lede="Buying your first home is a milestone and a process. This walks through every step of it, in the order you will actually meet them."
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=65',
+        alt: 'The interior of a first home, sparsely furnished',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'Buying your first home?',
@@ -37,7 +42,7 @@ const FirstTimeBuyers = () => {
           <div className="relative rounded-xl overflow-hidden mb-16 enter-fade" style={{ '--enter-delay': '0.2s' } as React.CSSProperties}>
             <div 
               className="h-[300px] md:h-[400px] w-full bg-cover bg-center"
-              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1073&q=80')" }}
+              style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=70')" }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                 <div className="p-8 text-white max-w-2xl">

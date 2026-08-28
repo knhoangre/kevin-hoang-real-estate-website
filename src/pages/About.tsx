@@ -130,7 +130,7 @@ const About = () => {
         <>
           <a
             href={telHref}
-            className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne"
+            className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill"
           >
             <Phone className="w-4 h-4" aria-hidden />
             {SITE.phone}
@@ -139,7 +139,7 @@ const About = () => {
             href={SITE.appointmentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep"
+            className="group inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep btn-pill"
           >
             <CalendarDays className="w-4 h-4" aria-hidden />
             Book a consultation

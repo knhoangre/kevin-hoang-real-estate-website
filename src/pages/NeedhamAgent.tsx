@@ -62,7 +62,7 @@ const NeedhamAgent = () => (
     }}
     hero={{
       image:
-        'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1920&q=70',
+        'https://images.unsplash.com/photo-1558036117-15d82a90b9b1?auto=format&fit=crop&w=1920&q=70',
       alt: 'A single-family home on a tree-lined street in Needham, Massachusetts',
     }}
     h1="Needham, MA Real Estate Agent"

@@ -30,7 +30,12 @@ const Neighborhoods = () => {
       eyebrow="Areas served"
       h1={t('neighborhoods.title')}
       lede={t('neighborhoods.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A residential street of brick colonial homes',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'Still deciding which town?',

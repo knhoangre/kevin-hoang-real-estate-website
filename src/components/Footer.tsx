@@ -12,10 +12,10 @@ const FooterLink = ({ to, children }: { to: string; children: React.ReactNode })
   <li>
     <Link
       to={to}
-      className="group relative text-gray-300 hover:text-white transition-colors inline-block uppercase"
+      className="group relative text-gray-300 hover:text-champagne transition-colors inline-block uppercase"
     >
       {children}
-      <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+      <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
     </Link>
   </li>
 );
@@ -37,16 +37,16 @@ const Footer = () => {
                   dialled +1 617 555 1234 while the text said (860) 682-2251.
                   NAP has to be identical everywhere or it suppresses local
                   ranking — and in this case the call button did not work. */}
-              <a href={telHref} className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors">
+              <a href={telHref} className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors">
                 {SITE.phone}
-                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-start space-x-4 mb-2">
               <Mail className="h-4 w-4 mt-1 shrink-0" />
-              <a href={`mailto:${SITE.email}`} className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase">
+              <a href={`mailto:${SITE.email}`} className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase">
                 {SITE.email}
-                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-start space-x-4 mb-2">
@@ -57,10 +57,10 @@ const Footer = () => {
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase"
+                className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase"
               >
                 {`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`}
-                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
             <div className="flex items-start space-x-4">
@@ -69,10 +69,10 @@ const Footer = () => {
                 href={SITE.appointmentUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative min-w-0 break-words text-gray-300 hover:text-white transition-colors uppercase"
+                className="group relative min-w-0 break-words text-gray-300 hover:text-champagne transition-colors uppercase"
               >
                 SET AN APPOINTMENT WITH ME
-                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-white group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne group-hover:w-full transition-all duration-300 -translate-x-1/2" />
               </a>
             </div>
           </div>

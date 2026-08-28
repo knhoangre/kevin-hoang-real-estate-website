@@ -57,7 +57,7 @@ const HomeValuation = () => (
     }}
     hero={{
       image:
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=70',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=70',
       alt: 'A Massachusetts single-family home seen from the front walk',
     }}
     h1="What Is Your Home Worth?"

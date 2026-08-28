@@ -234,7 +234,7 @@ const PageShell = ({
                     <>
                       <a
                         href={telHref}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne"
+                        className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill"
                       >
                         <Phone className="w-4 h-4" aria-hidden />
                         {actionLabels?.primary ?? `Call ${SITE.phone}`}
@@ -243,14 +243,14 @@ const PageShell = ({
                         href={SITE.appointmentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep"
+                        className="group inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep btn-pill"
                       >
                         <CalendarDays className="w-4 h-4" aria-hidden />
                         {actionLabels?.secondary ?? 'Book a consultation'}
                       </a>
                       <a
                         href={smsHref}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-white/10"
+                        className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:bg-white/10 btn-pill"
                       >
                         <MessageSquare className="w-4 h-4" aria-hidden />
                         {actionLabels?.text ?? 'Text'}

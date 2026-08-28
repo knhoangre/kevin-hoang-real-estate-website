@@ -38,7 +38,12 @@ const Buyer = () => {
       eyebrow="Buying"
       h1={t('buyer_guide.title')}
       lede={t('buyer_guide.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=65',
+        alt: 'Keys being handed over on the doorstep of a new home',
+      }}
+      heroSize="standard"
       // Wide: the roadmap is a sticky sidebar beside the steps, and at the
       // prose width its detail columns collapse to about 38 characters.
       width="wide"

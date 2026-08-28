@@ -113,7 +113,12 @@ const Contact = () => {
       eyebrow="Get in touch"
       h1={t('contact.title')}
       lede={t('contact.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A bright kitchen and dining area',
+      }}
+      heroSize="standard"
       width="wide"
       // No closing CTA band: this page is the call to action. A second one
       // below the form would just be asking twice.

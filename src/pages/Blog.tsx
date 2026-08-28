@@ -55,7 +55,12 @@ const Blog = () => {
       eyebrow="Writing"
       h1={t('blog.title')}
       lede={t('blog.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A shelf of reference books',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'A question the blog did not cover?',

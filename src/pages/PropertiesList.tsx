@@ -121,7 +121,12 @@ const PropertiesList = () => {
       eyebrow="Listings"
       h1={t('properties.title')}
       lede={t('properties.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A grey New England colonial set back behind a wide front lawn',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'Want to see one of these in person?',
@@ -211,7 +216,7 @@ const PropertiesList = () => {
             </p>
             <a
               href={telHref}
-              className="mt-5 inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+              className="btn-pill btn-pill-light mt-5 inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
             >
               <Phone className="h-4 w-4" aria-hidden />
               Call {SITE.phone}

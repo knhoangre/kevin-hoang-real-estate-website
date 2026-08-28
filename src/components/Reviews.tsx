@@ -68,11 +68,11 @@ const Reviews = () => {
         <div className="text-center enter" style={{ '--enter-delay': '0.4s' } as React.CSSProperties}>
           <Link
             to="/testimonials"
-            className="inline-flex items-center text-ink font-semibold hover:text-gray-600 transition-colors group"
+            className="group inline-flex items-center font-semibold text-ink transition-colors hover:text-champagne-ink"
           >
             <span className="relative">
               {t('reviews.view_all')}
-              <span className="absolute -bottom-[2px] left-0 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-[2px] left-0 h-0.5 w-0 bg-champagne-ink transition-all duration-300 group-hover:w-full" />
             </span>
             <ChevronRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden />
           </Link>

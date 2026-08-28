@@ -24,7 +24,12 @@ const Calculator = () => {
       // no h1 at all — every page needs exactly one.
       h1="Massachusetts Mortgage & Affordability Calculators"
       lede="Estimate a monthly payment, work out what you can afford, and see the closing costs to budget for before you start touring homes in Greater Boston."
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A desk with paperwork for a home purchase',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'Want these numbers for a real address?',

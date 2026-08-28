@@ -201,7 +201,12 @@ const FAQPage = () => {
       jsonLd={faqPage([...generalFaqItems, ...sellerFaqItems, ...buyerFaqItems])}
       h1={t('faq.title')}
       lede={t('faq.subtitle')}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A conversation across a table in a home office',
+      }}
+      heroSize="standard"
       width="wide"
       // No credential strip: this page answers questions rather than pitching,
       // and the four facts belong where someone is deciding whom to hire.

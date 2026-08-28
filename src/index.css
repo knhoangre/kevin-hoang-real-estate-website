@@ -242,3 +242,46 @@
     opacity: 1;
   }
 }
+
+/*
+ * Pill buttons.
+ *
+ * A short lift with a soft shadow on hover and a press-down on :active, so the
+ * primary calls to action feel like objects rather than coloured rectangles.
+ * The easing is a gentle overshoot curve; the distance is deliberately small
+ * (2px) because these sit on photographic heroes where anything larger reads
+ * as jitter.
+ *
+ * Colour transitions stay on the elements themselves via Tailwind's
+ * `transition-colors`, so this only owns transform and shadow.
+ */
+.btn-pill {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+}
+
+.btn-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -10px rgb(0 0 0 / 0.55);
+}
+
+.btn-pill:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px -6px rgb(0 0 0 / 0.5);
+}
+
+/* A pill that sits on a light surface needs a lighter shadow to match. */
+.btn-pill-light:hover {
+  box-shadow: 0 12px 28px -12px rgb(26 26 26 / 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-pill,
+  .btn-pill:hover,
+  .btn-pill:active {
+    transition: none;
+    transform: none;
+    box-shadow: none;
+  }
+}

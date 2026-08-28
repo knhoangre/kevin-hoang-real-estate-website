@@ -37,7 +37,12 @@ const Testimonials = () => {
       eyebrow="Reviews"
       h1={t("testimonials.title")}
       lede={t("testimonials.subtitle")}
-      heroSize="compact"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A warm, lived-in living room',
+      }}
+      heroSize="standard"
       width="wide"
       cta={{
         heading: 'Want the same on your own move?',
@@ -109,7 +114,7 @@ const Testimonials = () => {
                 href={googleProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-md bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-black"
+                className="btn-pill btn-pill-light mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-champagne hover:text-ink-deep"
               >
                 View verified Google reviews
               </a>

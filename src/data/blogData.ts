@@ -273,7 +273,7 @@ const baseBlogPosts: BlogPost[] = [
     title: "Buying a Two- or Three-Family in Greater Boston",
     excerpt: "Owner-occupied multi-family purchase is the most accessible way into Greater Boston property ownership. How the financing works, what the rental income does to your qualification, and what to check that a single-family buyer never has to.",
     slug: "boston-multifamily-investment",
-    image: "https://images.unsplash.com/photo-1564013799919-ab616027ffc6?auto=format&fit=crop&w=800&h=500",
+    image: "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=800&h=500&q=70",
     content: "A two-family where you live in one unit and rent the other is, for a lot of people, the only realistic route into ownership in this market. It is also a genuinely different transaction from buying a single-family, and the differences start at the mortgage application.\n\n**Why owner-occupancy changes everything**\n\nAn investor buying a two-family puts 20–25% down at investor rates. An owner-occupant buying the identical building can use residential financing on up to four units:\n\n- **FHA** allows a low down payment on two to four units if you live in one, occupy within 60 days, and stay a year.\n- **Conventional** loans allow owner-occupied multi-family with lower down payments than an investor would face.\n- **VA**, if you are eligible, allows up to four units with no down payment.\n\nThe gap between owner-occupant and investor terms is the entire opportunity. It is also why so many two-families in Greater Boston sell to owner-occupants rather than investors.\n\n**Rental income can help you qualify**\n\nLenders will usually count a portion of the projected rent from the units you are not occupying towards your qualifying income — commonly around 75%, the discount covering vacancy and maintenance. Whether they use a signed lease or an appraiser's market rent schedule depends on the programme.\n\nThis is the mechanism that lets people buy a building they could not afford as a single-family. It is also the thing to model conservatively, because the rent is an input to the loan, not a guarantee.\n\n**What to underwrite before you fall in love**\n\nRun the numbers on the building as it is, not as you hope it will be:\n\n- **Rent roll.** What is each unit actually renting for now, and when does each lease end?\n- **Below-market rents.** Very common in long-held family buildings. It is an opportunity, but Massachusetts has real tenant protections and you cannot assume you will simply raise rents on day one.\n- **Water and sewer.** Frequently one meter for the whole building, meaning you pay all of it. In Greater Boston that is a serious annual number.\n- **Heating.** Separate systems per unit, or one boiler you pay for? This single question can swing the economics.\n- **Taxes and insurance.** Multi-family insurance is not single-family insurance. Get a real quote.\n- **Capital items.** Roof, boilers, electrical service, porches. Two- and three-family porches in this region are a recurring, expensive repair.\n- **Vacancy and turnover.** Budget for it even in a tight market.\n\n**The inspection items specific to multi-family**\n\nBeyond everything in [the inspection guide](/blog/home-inspection-guide), a two- or three-family adds:\n\n- **Legal unit count.** Confirm with the town's building or assessing department that the building is a legal two- or three-family, not a single-family with an added unit. An illegal third unit is a financing problem, an insurance problem, and an enforcement problem you inherit.\n- **Certificate of occupancy** and permit history for any conversion.\n- **Fire separation** between units, and the condition of egress from every unit — this is what fire inspections turn on.\n- **Knob-and-tube wiring**, common in triple-deckers and increasingly uninsurable.\n- **Lead paint.** Presumed in pre-1978 buildings. If you rent to a family with a child under six, Massachusetts law requires deleading of accessible surfaces. Budget for it before you buy, not after a tenant asks.\n- **Separate utilities**, or the cost of separating them.\n\n**You are becoming a landlord**\n\nThat is a job with statutory obligations, and Massachusetts is a tenant-protective state. Before your first tenancy, know:\n\n- What you may collect at move-in — first, last, a security deposit capped at one month, and a lock and key, and nothing else. The mechanics, including the separate bank account and the statement of condition, are in [what it costs to move into a Greater Boston rental](/blog/renting-in-greater-boston-costs).\n- The state sanitary code standards for heat, hot water and habitability.\n- The eviction process, which is slow, formal, and unforgiving of landlords who cut corners.\n- Whether the city or town has additional registration or inspection requirements. Several do.\n\nThe penalties for mishandling a security deposit alone are enough to erase a year of cash flow.\n\n**Where to look around Greater Boston**\n\nTwo- and three-families cluster where the streetcar suburbs grew: parts of [Malden](/neighborhoods/malden-ma), [Medford](/neighborhoods/medford-ma), [Waltham](/neighborhoods/waltham-ma), [Quincy](/neighborhoods/quincy-ma) and [Belmont](/neighborhoods/belmont-ma) all carry meaningful multi-family stock, and Belmont in particular has an unusually high share of two-families for a town of its price point. The outer MetroWest towns have far fewer — much of that land was subdivided as single-family and zoned that way.\n\nThe [town guides](/neighborhoods) note where the housing stock actually is.\n\n**Is it worth it?**\n\nHonestly assessed: you are buying a job alongside an asset. Tenants call at inconvenient hours, a vacancy hurts, and the building will need capital work on its own schedule rather than yours. In exchange, you get into a market you may not otherwise be able to buy in, someone else contributes to your mortgage, and you build equity in one of the most durable housing markets in the country.\n\nFor plenty of people in this region that trade is clearly worth making. It is worth making with the numbers written down first.\n\nNot investment or legal advice. Loan programme terms and landlord-tenant obligations are current as of 2026 and change; confirm with your lender, your attorney, and the city or town.",
     date: "August 15, 2023",
     author: "Kevin Hoang"
@@ -599,12 +599,29 @@ const gapPosts: BlogPost[] = [
   },
 ];
 
+/**
+ * The corpus, newest first.
+ *
+ * The four source arrays are grouped by when they were written rather than by
+ * date, so concatenating them put a May 2025 post above a January 2026 one on
+ * /blog. Sorted on the published date, not `updated` — "newest" means when a
+ * post was written, and sorting on `updated` would shuffle the listing every
+ * time an old post was corrected.
+ *
+ * Array.prototype.sort is stable, so posts sharing a date keep their authored
+ * order and the prerendered output stays byte-identical between builds.
+ */
 export const blogPosts: BlogPost[] = [
   ...baseBlogPosts,
   ...additionalPosts,
   ...longformPosts,
   ...gapPosts,
-];
+].sort((a, b) => {
+  const at = Date.parse(a.date);
+  const bt = Date.parse(b.date);
+  if (Number.isNaN(at) || Number.isNaN(bt)) return 0;
+  return bt - at;
+});
 
 /**
  * Converts a display date ("January 10, 2026") to ISO "2026-01-10".

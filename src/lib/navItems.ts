@@ -45,21 +45,34 @@ export const SECONDARY_NAV: NavItem[] = [
 ];
 
 /**
- * Routes whose hero is `ink-deep`, so the bar must start transparent over them.
+ * Routes whose hero is `ink-deep`, so the bar must start transparent over them
+ * and turn white on scroll.
  *
- * This used to be `pathname === '/'` alone, which meant a solid white 80px bar
- * sat on top of the dark hero on /about, /relocation, the other landing pages
- * and all six /vi routes.
+ * Exact matches, not prefixes: `/blog` has a dark hero but `/blog/a-post` does
+ * not, and the same goes for `/neighborhoods` and its town guides. Those detail
+ * pages still use the older light chrome.
  */
-const DARK_HERO_ROUTES = [
+const DARK_HERO_EXACT = new Set([
   '/',
   '/about',
   '/needham-real-estate-agent',
   '/home-valuation',
   '/vietnamese-speaking-real-estate-agent',
   '/relocation',
-  '/vi',
-];
+  '/faq',
+  '/properties',
+  '/buyer',
+  '/seller',
+  '/blog',
+  '/neighborhoods',
+  '/testimonials',
+  '/contact',
+  '/calculator',
+  '/first-time-buyers',
+]);
+
+/** `/vi` and every page under it is a ViPage, and they all have dark heroes. */
+const DARK_HERO_PREFIX = ['/vi'];
 
 /**
  * Prefix-aware, so a detail route lights up its section.
@@ -72,5 +85,10 @@ const DARK_HERO_ROUTES = [
 export const isActivePath = (pathname: string, to: string) =>
   to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
 
-export const hasDarkHero = (pathname: string) =>
-  DARK_HERO_ROUTES.some((r) => isActivePath(pathname, r));
+export const hasDarkHero = (pathname: string) => {
+  const path = pathname.length > 1 ? pathname.replace(/\/$/, '') : pathname;
+  return (
+    DARK_HERO_EXACT.has(path) ||
+    DARK_HERO_PREFIX.some((p) => path === p || path.startsWith(`${p}/`))
+  );
+};

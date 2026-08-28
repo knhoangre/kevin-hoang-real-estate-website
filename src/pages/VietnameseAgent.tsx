@@ -190,7 +190,7 @@ const VietnameseAgent = () => (
     eyebrow="Tiếng Việt / Vietnamese"
     hero={{
       image:
-        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=70',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1920&q=70',
       alt: 'A classic New England home at dusk in Greater Boston',
     }}
     faqHeading="Câu hỏi thường gặp — common questions"

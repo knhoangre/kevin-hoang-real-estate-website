@@ -132,7 +132,7 @@ const Contact = () => {
                 >
                   {SITE.phone}
                   <span
-                    className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2"
+                    className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2"
                   />
                 </span>
                 {phoneDropdown && (
@@ -150,7 +150,7 @@ const Contact = () => {
                 <a href={`mailto:${SITE.email}`} className="relative group">
                   <span className="text-ink uppercase relative min-w-0 break-words">
                     {SITE.email.toUpperCase()}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>
@@ -165,7 +165,7 @@ const Contact = () => {
                 >
                   <span className="text-ink uppercase relative min-w-0 break-words">
                     {formattedAddress.toUpperCase()}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>
@@ -180,7 +180,7 @@ const Contact = () => {
                 >
                   <span className="text-ink uppercase relative min-w-0 break-words">
                     SET AN APPOINTMENT WITH ME
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
+                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
                   </span>
                 </a>
               </div>

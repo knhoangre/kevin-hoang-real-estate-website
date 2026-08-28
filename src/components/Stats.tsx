@@ -107,7 +107,7 @@ const Stats = () => {
             const body = (
               <>
                 <div className="flex justify-center mb-4">
-                  <Icon className="h-8 w-8 text-realPurple" aria-hidden />
+                  <Icon className="h-8 w-8 text-champagne" aria-hidden />
                 </div>
                 <div className="text-3xl font-bold mb-2">{tile.value}</div>
                 <div className="text-gray-400 uppercase text-sm tracking-wide">{tile.label}</div>
