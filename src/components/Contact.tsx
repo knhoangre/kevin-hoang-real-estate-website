@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Form,
   FormControl,
@@ -17,6 +16,8 @@ import {
 import ContactQRCode from "./ContactQRCode";
 import { useTranslation } from "react-i18next";
 import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
+import { submitContactMessage } from "@/lib/submitContact";
+import { EVENTS, track } from "@/lib/analytics";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -69,22 +70,21 @@ const Contact = () => {
     setError(null);
 
     try {
-      // Call the submit-contact Edge Function
-      const { error: submitError } = await supabase.functions.invoke('submit-contact', {
-        body: {
-          firstName: form.getValues('firstName').trim(),
-          lastName: form.getValues('lastName').trim(),
-          email: form.getValues('email').trim().toLowerCase(),
-          phone: form.getValues('phone') ? form.getValues('phone').trim() : null,
-          message: form.getValues('message').trim(),
-        }
+      // Shared with the /contact form via @/lib/submitContact, which owns the
+      // endpoint and the payload normalisation so the two cannot drift.
+      await submitContactMessage({
+        firstName: form.getValues('firstName'),
+        lastName: form.getValues('lastName'),
+        email: form.getValues('email'),
+        phone: form.getValues('phone'),
+        message: form.getValues('message'),
       });
 
-      if (submitError) {
-        throw submitError;
-      }
-
       setSuccess(true);
+      // The primary conversion. Fired only after the send actually succeeded —
+      // a lead event on a failed submit inflates the one number the whole
+      // funnel is judged by.
+      track(EVENTS.lead, { form_location: 'homepage' });
       form.reset();
       toast({
         title: "Success!",
@@ -173,7 +173,7 @@ const Contact = () => {
               <div className="flex items-start space-x-4 max-w-full">
                 <Calendar className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
                 <a
-                  href="https://calendar.app.google/P297MnAu7ei6turA6"
+                  href={SITE.appointmentUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative group"

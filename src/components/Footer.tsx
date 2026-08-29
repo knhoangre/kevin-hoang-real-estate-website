@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone, Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { VI_ROUTES } from "@/lib/viRoutes";
 import ContactQRCode from "./ContactQRCode";
 import { SITE, telHref } from "@/lib/siteConfig";
 
@@ -118,13 +119,31 @@ const Footer = () => {
               <FooterLink to="/vietnamese-speaking-real-estate-agent">
                 {t('nav.vietnamese')}
               </FooterLink>
-              {/* The prerendered Vietnamese tree. Distinct from the link above,
-                  which is the English page about Vietnamese service. This one
-                  is the Vietnamese-language site, and it needs a real inbound
-                  link on every page or it is reachable only via the sitemap. */}
-              <FooterLink to="/vi">Trang Tiếng Việt</FooterLink>
+              {/* The Vietnamese-language tree gets its own column below, not a
+                  single entry here — five of its six pages previously had no
+                  inbound link from anywhere except /vi itself. The link above is
+                  the ENGLISH page about Vietnamese service, which is a different
+                  thing and stays in this column. */}
               <FooterLink to="/calculator">Calculators</FooterLink>
               <FooterLink to="/faq">FAQ</FooterLink>
+            </ul>
+          </div>
+
+          {/*
+            The Vietnamese tree, rendered from VI_ROUTES so a route added there
+            lands in the crawlable link graph without anyone remembering to add
+            it here. Labels come from the same array and are literal Vietnamese,
+            never t() — i18n is pinned to 'en' during static generation, so a
+            translated label would prerender in English on all ~122 pages.
+          */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 uppercase">Tiếng Việt</h3>
+            <ul className="space-y-2">
+              {VI_ROUTES.map((route) => (
+                <FooterLink key={route.vi} to={route.vi}>
+                  {route.label}
+                </FooterLink>
+              ))}
             </ul>
           </div>
 

@@ -21,15 +21,26 @@ export interface ViRoute {
   vi: string;
   /** The English page this is the Vietnamese counterpart of. */
   en: string;
+  /**
+   * Vietnamese link label, for the footer column.
+   *
+   * It lives here rather than in Footer.tsx for the same reason the pairing
+   * does: this is the one place the Vietnamese tree is described, so a route
+   * added here arrives in the footer's crawlable link graph automatically
+   * instead of being remembered into it. It must NOT go through `t()` — i18n is
+   * pinned to `lng: 'en'` during static generation, so a translated label would
+   * prerender in English on every page.
+   */
+  label: string;
 }
 
 export const VI_ROUTES: ViRoute[] = [
-  { vi: '/vi', en: '/' },
-  { vi: '/vi/mua-nha', en: '/buyer' },
-  { vi: '/vi/ban-nha', en: '/seller' },
-  { vi: '/vi/dinh-gia-nha', en: '/home-valuation' },
-  { vi: '/vi/cau-hoi-thuong-gap', en: '/faq' },
-  { vi: '/vi/khu-vuc', en: '/neighborhoods' },
+  { vi: '/vi', en: '/', label: 'Trang chủ' },
+  { vi: '/vi/mua-nha', en: '/buyer', label: 'Mua nhà' },
+  { vi: '/vi/ban-nha', en: '/seller', label: 'Bán nhà' },
+  { vi: '/vi/dinh-gia-nha', en: '/home-valuation', label: 'Định giá nhà' },
+  { vi: '/vi/cau-hoi-thuong-gap', en: '/faq', label: 'Câu hỏi thường gặp' },
+  { vi: '/vi/khu-vuc', en: '/neighborhoods', label: 'Khu vực phục vụ' },
 ];
 
 /** `{ en, vi }` for a path on either side of a pair, or undefined if unpaired. */

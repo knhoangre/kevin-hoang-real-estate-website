@@ -248,6 +248,26 @@ export const blogPosting = (post: BlogPostLike) =>
   });
 
 /**
+ * The contact page, as an addressable node that names the agent it contacts.
+ *
+ * /contact is the page carrying the full NAP — phone, email, postal address,
+ * office hours — and it emitted nothing but breadcrumbs. For a local business
+ * that page is the strongest corroboration of the citation, so it declares the
+ * FULL agent node rather than the compact `agentIdentity()` reference: this is
+ * one of only two places (with the homepage) where restating address, hours and
+ * geo is worth the payload, because it is the page a consumer lands on when it
+ * is specifically looking for how to reach the business.
+ */
+export const contactPage = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  '@id': absoluteUrl('/contact'),
+  url: absoluteUrl('/contact'),
+  name: `Contact ${SITE.agentName}`,
+  mainEntity: { '@id': AGENT_ID },
+});
+
+/**
  * A plain ordered list (town guides, blog index, listings).
  *
  * Deliberately not RealEstateListing or Product: neither produces a rich result
