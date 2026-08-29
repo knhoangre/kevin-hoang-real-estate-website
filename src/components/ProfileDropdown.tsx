@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, MessageSquare, Home, ClipboardList, Briefcase, Calendar } from "lucide-react";
+import { LogOut, User, MessageSquare, Home, ClipboardList, Briefcase, Calendar, KeyRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface ProfileDropdownProps {
@@ -60,6 +60,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
 
   const handlePropertiesClick = () => {
     navigate("/admin/properties");
+    onItemClick?.();
+  };
+
+  const handleLockboxesClick = () => {
+    navigate("/admin/lockboxes");
     onItemClick?.();
   };
 
@@ -124,6 +129,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
             <DropdownMenuItem onClick={handlePropertiesClick}>
               <Home className="mr-2 h-4 w-4" />
               <span>MANAGE PROPERTIES</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLockboxesClick}>
+              <KeyRound className="mr-2 h-4 w-4" />
+              <span>LOCKBOXES</span>
             </DropdownMenuItem>
           </>
         )}
