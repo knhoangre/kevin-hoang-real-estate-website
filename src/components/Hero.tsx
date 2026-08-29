@@ -2,6 +2,7 @@ import { ArrowRight, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SITE, telHref } from "@/lib/siteConfig";
+import { HOME_HERO_IMAGE } from "@/lib/images";
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -15,9 +16,9 @@ const Hero = () => {
           // images.unsplash.com/photo-… URL serves the multi-megabyte
           // original, and this is the homepage's LCP element — it was the
           // single most expensive request on the site. The matching
-          // <link rel="preload" fetchpriority="high"> is in index.html.
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1920&q=70')",
+          // <link rel="preload" fetchpriority="high"> is emitted by <Seo> in
+          // Index.tsx, from this same constant, and ONLY on the homepage.
+          backgroundImage: `url('${HOME_HERO_IMAGE}')`,
           backgroundPosition: "center",
           backgroundSize: "cover",
         }}

@@ -6,7 +6,9 @@ import BreadcrumbBar from "@/components/BreadcrumbBar";
 import NearbyTowns from "@/components/NearbyTowns";
 import AuthorCard from "@/components/AuthorCard";
 import { breadcrumbs, faqPage } from "@/lib/schema";
+import { ogVariant } from "@/lib/images";
 import TownFactsPanel from "@/components/TownFactsPanel";
+import TownSoldListings from "@/components/TownSoldListings";
 import FaqAccordion from "@/components/FaqAccordion";
 import { TOWN_FACTS } from "@/data/townFacts";
 import { townFaqs } from "@/lib/townFaqs";
@@ -2543,7 +2545,7 @@ const NeighborhoodDetail = () => {
         title={neighborhood.title}
         description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based broker covering Greater Boston.`}
         keywords={`${neighborhood.name} real estate, living in ${neighborhood.name}, ${neighborhood.name} neighborhood guide, homes for sale ${neighborhood.name}`}
-        ogImage={neighborhood.image}
+        ogImage={ogVariant(neighborhood.image)}
         jsonLd={faqs.length ? [breadcrumbs(crumbs), faqPage(faqs)] : breadcrumbs(crumbs)}
       />
       <div className="pt-20">
@@ -2725,6 +2727,10 @@ const NeighborhoodDetail = () => {
             </div>
 
             {facts && <TownFactsPanel town={shortName} facts={facts} />}
+
+            {/* First-party transaction evidence for this town. Renders nothing
+                where there are no closings — see the component's header. */}
+            <TownSoldListings townSlug={slug || ""} townName={shortName} />
 
             {faqs.length > 0 && (
               <section className="my-12">

@@ -8,6 +8,7 @@ import BreadcrumbBar from "@/components/BreadcrumbBar";
 import PostBody from "@/components/PostBody";
 import AuthorCard from "@/components/AuthorCard";
 import { agentIdentity, blogPosting, breadcrumbs, person } from "@/lib/schema";
+import { ogVariant } from "@/lib/images";
 
 
 const BlogPost = () => {
@@ -54,7 +55,7 @@ const BlogPost = () => {
       <Seo
         title={post.title}
         description={post.excerpt}
-        ogImage={post.image}
+        ogImage={ogVariant(post.image)}
         ogType="article"
         article={{
         publishedTime: published ?? undefined,

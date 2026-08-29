@@ -17,18 +17,13 @@
     <meta name="theme-color" content="#1a1a1a" />
 
     <!--
-      Preload the homepage hero background — it is the LCP element, and as a
-      CSS background-image the browser cannot discover it until the stylesheet
-      has parsed. This tag lives in the shared shell so it fires on every
-      prerendered route; the file is ~150KB at these parameters, which is a
-      reasonable price for the homepage LCP.
+      No hero preload here. This file is the shared shell, so a preload declared
+      in it is inherited by all ~122 prerendered routes — 121 of which never show
+      the homepage hero, yet fetched its ~150KB at high priority and raced their
+      OWN hero image for bandwidth, losing because the shell tag is discovered
+      first. The preload now comes from <Seo preloadImage> in Index.tsx, so it
+      lands on the homepage alone. See src/lib/images.ts.
     -->
-    <link
-      rel="preload"
-      as="image"
-      href="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&amp;fit=crop&amp;w=1920&amp;q=70"
-      fetchpriority="high"
-    />
 
     <!-- Preconnect to critical origins to cut connection latency. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

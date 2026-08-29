@@ -38,6 +38,9 @@ export interface PageShellProps {
     description: string;
     keywords?: string;
     ogImage?: string;
+    /** Only for an ogImage that is deliberately not 1200x630. See SeoProps. */
+    ogImageWidth?: number;
+    ogImageHeight?: number;
     ogType?: 'website' | 'article' | 'profile';
     locale?: string;
   };
@@ -162,6 +165,8 @@ const PageShell = ({
         description={seo.description}
         keywords={seo.keywords}
         ogImage={seo.ogImage}
+        ogImageWidth={seo.ogImageWidth}
+        ogImageHeight={seo.ogImageHeight}
         ogType={seo.ogType}
         locale={seo.locale}
         // Reciprocal with the /vi counterpart where one exists, undefined where

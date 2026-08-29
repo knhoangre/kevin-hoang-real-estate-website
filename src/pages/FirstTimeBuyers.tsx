@@ -3,6 +3,7 @@ import React from 'react';
 import { ArrowRight, CheckCircle, Home, DollarSign, KeyRound, FileText, HelpCircle, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PageShell, { ShellSection } from "@/components/PageShell";
+import { agentIdentity } from "@/lib/schema";
 
 const FirstTimeBuyers = () => {
   const crumbs = [
@@ -21,6 +22,9 @@ const FirstTimeBuyers = () => {
         keywords:
           'first time home buyer Massachusetts, first time buyer programs MA, buying first home Boston, MassHousing first time buyer',
       }}
+      // Resolves the #agent reference these pages would otherwise leave
+      // dangling, and ties the page to the business entity.
+      jsonLd={agentIdentity()}
       eyebrow="First-time buyers"
       h1="First-Time Home Buyer Guide"
       lede="Buying your first home is a milestone and a process. This walks through every step of it, in the order you will actually meet them."

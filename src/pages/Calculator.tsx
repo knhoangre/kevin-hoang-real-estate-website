@@ -1,5 +1,6 @@
 import RealEstateCalculators from "@/components/RealEstateCalculators";
 import PageShell, { ShellSection } from "@/components/PageShell";
+import { agentIdentity } from "@/lib/schema";
 import { Link } from "react-router-dom";
 
 const Calculator = () => {
@@ -19,6 +20,9 @@ const Calculator = () => {
         keywords:
           'mortgage calculator Massachusetts, home affordability calculator, closing cost calculator MA, monthly payment calculator Boston',
       }}
+      // Resolves the #agent reference these pages would otherwise leave
+      // dangling, and ties the page to the business entity.
+      jsonLd={agentIdentity()}
       eyebrow="Tools"
       // The calculator components themselves only render h2s, so this page had
       // no h1 at all — every page needs exactly one.

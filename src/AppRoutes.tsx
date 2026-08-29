@@ -202,6 +202,12 @@ export const routes: RouteRecord[] = [
         () => import('./pages/Properties'),
         'src/pages/Properties.tsx'
       ),
+      privatePage(
+        'admin/lockboxes',
+        'Lockboxes',
+        () => import('./pages/Lockboxes'),
+        'src/pages/Lockboxes.tsx'
+      ),
       privatePage('crm', 'CRM', () => import('./pages/CRMDashboard'), 'src/pages/CRMDashboard.tsx'),
       privatePage('crm/contacts', 'CRM Contacts', () => import('./pages/CRMContacts'), 'src/pages/CRMContacts.tsx'),
       privatePage('crm/deals', 'CRM Deals', () => import('./pages/CRMDeals'), 'src/pages/CRMDeals.tsx'),

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
+import { soldListings, type SoldListing } from '@/data/soldListings';
+import { itemList } from '@/lib/schema';
 import {
   Carousel,
   CarouselContent,
@@ -14,7 +16,12 @@ import PageShell, { ShellSection } from "@/components/PageShell";
 import { Link } from "react-router-dom";
 import { SITE, telHref } from "@/lib/siteConfig";
 
-interface Property {
+/**
+ * The Supabase row shape, which is snake_case and differs from the camelCase
+ * SoldListing the prerendered snapshot uses. Only the live revalidation below
+ * sees this; everything that renders works in SoldListing.
+ */
+interface PropertyRow {
   id: number;
   mlsnum: string;
   property_type: string;
@@ -27,44 +34,99 @@ interface Property {
   full_baths: number | null;
   half_baths: number | null;
   living_area: number | null;
-  image_urls: string[];
+  image_urls: string[] | null;
 }
+
+/** Every MA ZIP starts with 0, and 8 of 10 rows lost it to a numeric import. */
+const normalizeZip = (raw: string) => {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  return digits.length === 4 ? digits.padStart(5, '0') : digits;
+};
+
+/**
+ * Maps a live Supabase row onto the snapshot's shape.
+ *
+ * Deliberately mirrors scripts/sync-listings.mjs — the town suffix strip and
+ * the ZIP padding have to agree, or a listing would visibly change format the
+ * instant the client-side revalidation replaced the prerendered copy.
+ */
+const fromRow = (r: PropertyRow): SoldListing => ({
+  id: r.id,
+  mlsnum: r.mlsnum ?? '',
+  slug: String(r.id),
+  status: (r.status ?? 'Sold').trim(),
+  propertyType: (r.property_type ?? '').trim(),
+  address: (r.address ?? '').trim(),
+  town: String(r.town ?? '').replace(/,?\s*(MA|Massachusetts)\.?$/i, '').trim(),
+  townSlug: null,
+  zipCode: normalizeZip(r.zip_code),
+  salePrice: r.sale_price,
+  bedrooms: r.bedrooms,
+  fullBaths: r.full_baths,
+  halfBaths: r.half_baths,
+  livingArea: r.living_area,
+  images: Array.isArray(r.image_urls) ? r.image_urls.filter(Boolean) : [],
+});
+
+/** Highest price first; unpriced listings last rather than sorted as zero. */
+const byPriceDesc = (a: SoldListing, b: SoldListing) => {
+  if (a.salePrice === null && b.salePrice === null) return 0;
+  if (a.salePrice === null) return 1;
+  if (b.salePrice === null) return -1;
+  return b.salePrice - a.salePrice;
+};
 
 const PropertiesList = () => {
   const { t } = useTranslation();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
+  /*
+    Seeded from the committed snapshot rather than from an empty array.
+
+    This is the whole reason src/data/soldListings.ts exists. The listings used
+    to arrive only from the effect below, so at static-generation time this
+    component rendered its spinner and the prerendered HTML for /properties
+    contained no listings at all — on the one page whose subject is listings.
+    Seeding from the snapshot puts the real content in the HTML, and because the
+    server and the first client render both read the same module, hydration
+    matches.
+  */
+  const [properties, setProperties] = useState<SoldListing[]>(() =>
+    [...soldListings].sort(byPriceDesc)
+  );
+
+  /*
+    Revalidate against Supabase after mount, so a listing added in
+    /admin/properties appears before the next deploy re-runs the sync script.
+
+    An effect, never during render: this reads the network and would otherwise
+    diverge from the prerendered markup. A failure is deliberately silent — the
+    snapshot is already on screen, and replacing real listings with an error
+    state because a refresh failed would be strictly worse than showing slightly
+    stale ones.
+  */
   useEffect(() => {
-    fetchProperties();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('is_active', true);
+
+        if (error) throw error;
+        if (cancelled || !data?.length) return;
+
+        setProperties((data as PropertyRow[]).map(fromRow).sort(byPriceDesc));
+      } catch (err) {
+        console.error('Error refreshing properties:', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const fetchProperties = async () => {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      
-      // Sort properties by price (highest first, null prices go to end)
-      const sortedData = (data || []).sort((a, b) => {
-        if (a.sale_price === null && b.sale_price === null) return 0;
-        if (a.sale_price === null) return 1;
-        if (b.sale_price === null) return -1;
-        return (b.sale_price as number) - (a.sale_price as number);
-      });
-      
-      setProperties(sortedData);
-    } catch (error) {
-      console.error('Error fetching properties:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const formatCurrency = (value: number | null) => {
     if (value === null) return 'Price on Request';
@@ -101,16 +163,26 @@ const PropertiesList = () => {
       path="/properties"
       crumbs={crumbs}
       /*
-       * The head is emitted by the shell, above the isLoading branch below.
+       * ItemList is now emitted, and the reason it previously was not has been
+       * removed rather than worked around.
        *
-       * Listings are fetched from Supabase in an effect, so at static-generation
-       * time this component renders the spinner branch — which used to mean the
-       * route prerendered with no title, description, or canonical at all.
+       * It used to be withheld because the listings arrived from an effect, so
+       * nothing was in the prerendered HTML and describing a list that was not
+       * on the page would have been a claim about content that did not exist.
+       * The page now renders from a committed snapshot, so the items ARE in the
+       * document and the markup describes what a reader actually sees.
        *
-       * No ItemList schema, for the same reason: there are no listings in the
-       * prerendered HTML to describe, and marking up an empty list would be a
-       * claim about content that is not on the page.
+       * ItemList and not RealEstateListing or Product: see the note at the foot
+       * of src/lib/schema.ts. Neither yields a rich result for residential
+       * listings, and Product markup on real estate is off-label enough to carry
+       * manual-action risk.
        */
+      jsonLd={itemList(
+        properties.map((p) => ({
+          name: `${p.address}, ${p.town}, MA`,
+          url: `/properties#listing-${p.slug}`,
+        }))
+      )}
       seo={{
         title: 'Current Listings in Greater Boston',
         description:
@@ -224,12 +296,13 @@ const PropertiesList = () => {
           </div>
         </div>
 
-          {isLoading ? (
-            <div className="text-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading properties...</p>
-            </div>
-          ) : properties.length === 0 ? (
+          {/*
+            No loading branch any more. The list is seeded from the committed
+            snapshot, so there is content on the very first paint — including in
+            the prerendered HTML — and a spinner would only ever have flashed for
+            the background revalidation.
+          */}
+          {properties.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-gray-500 text-lg">No properties available at this time.</p>
             </div>
@@ -237,14 +310,15 @@ const PropertiesList = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => {
               // Handle null, undefined, or empty array cases
-              const images = Array.isArray(property.image_urls) && property.image_urls.length > 0 
-                ? property.image_urls 
+              const images = Array.isArray(property.images) && property.images.length > 0 
+                ? property.images 
                 : [];
               const hasImages = images.length > 0;
 
               return (
                 <Card
                   key={property.id}
+                  id={`listing-${property.slug}`}
                   className="overflow-hidden border border-transparent transition-all duration-300 hover:border-champagne hover:shadow-lg"
                 >
                   {/* Photo Carousel */}
@@ -256,7 +330,7 @@ const PropertiesList = () => {
                     </div>
                     <div className="absolute top-3 right-3 z-10">
                       <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-ink backdrop-blur-sm">
-                        {formatBadgeText(property.property_type, 'PROPERTY')}
+                        {formatBadgeText(property.propertyType, 'PROPERTY')}
                       </span>
                     </div>
                     {hasImages ? (
@@ -317,10 +391,10 @@ const PropertiesList = () => {
                   <CardContent className="p-4">
                     <div className="space-y-2">
                       <div className="text-2xl font-bold text-ink">
-                        {formatCurrency(property.sale_price)}
+                        {formatCurrency(property.salePrice)}
                       </div>
                       <div className="text-gray-600">
-                        {property.address}, {property.town}, MA {property.zip_code}
+                        {property.address}, {property.town}, MA {property.zipCode}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-500 pt-2 border-t">
                         {property.bedrooms !== null && (
@@ -329,16 +403,16 @@ const PropertiesList = () => {
                             <span>{property.bedrooms}</span>
                           </div>
                         )}
-                        {(property.full_baths !== null || property.half_baths !== null) && (
+                        {(property.fullBaths !== null || property.halfBaths !== null) && (
                           <div className="flex items-center gap-1">
                             <Bath className="h-4 w-4" />
-                            <span>{formatBaths(property.full_baths, property.half_baths)}</span>
+                            <span>{formatBaths(property.fullBaths, property.halfBaths)}</span>
                           </div>
                         )}
-                        {property.living_area !== null && (
+                        {property.livingArea !== null && (
                           <div className="flex items-center gap-1">
                             <Square className="h-4 w-4" />
-                            <span>{property.living_area.toLocaleString()} sq ft</span>
+                            <span>{property.livingArea.toLocaleString()} sq ft</span>
                           </div>
                         )}
                       </div>

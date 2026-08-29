@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import PageShell, { ShellSection } from "@/components/PageShell";
+import { agentIdentity } from "@/lib/schema";
 import { SITE, googleProfileUrl } from "@/lib/siteConfig";
 
 const BATCH = 24;
@@ -34,6 +35,9 @@ const Testimonials = () => {
         keywords:
           'Kevin Hoang reviews, real estate agent reviews Needham MA, Greater Boston realtor testimonials',
       }}
+      // Resolves the #agent reference these pages would otherwise leave
+      // dangling, and ties the page to the business entity.
+      jsonLd={agentIdentity()}
       eyebrow="Reviews"
       h1={t("testimonials.title")}
       lede={t("testimonials.subtitle")}

@@ -682,6 +682,42 @@ export type Database = {
           },
         ]
       }
+      lockboxes: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          id: number
+          is_active: boolean | null
+          location: string
+          lockbox_type: string
+          notes: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          id?: number
+          is_active?: boolean | null
+          location: string
+          lockbox_type: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          id?: number
+          is_active?: boolean | null
+          location?: string
+          lockbox_type?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       open_house_sign_ins: {
         Row: {
           address: string

@@ -18,6 +18,9 @@ import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
+import { submitContactMessage } from "@/lib/submitContact";
+import { EVENTS, track } from "@/lib/analytics";
+import { agentIdentity, contactPage } from "@/lib/schema";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -82,14 +85,42 @@ const Contact = () => {
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
-  const onSubmit = (data: FormValues) => {
-    setTimeout(() => {
+  /**
+   * Sends the message.
+   *
+   * This used to be a `setTimeout` that showed the success toast and reset the
+   * fields without contacting anything — so every message written on this page
+   * was discarded while its sender was told it had been delivered. It now goes
+   * through the same transport as the homepage form (@/lib/submitContact), and
+   * a failure surfaces as a failure instead of a success.
+   */
+  const onSubmit = async () => {
+    try {
+      // Read through getValues() rather than the handler's argument: with this
+      // version of @hookform/resolvers, handleSubmit's transformed-values
+      // generic widens every field to optional, which does not satisfy
+      // ContactMessage. The homepage form reads the same way.
+      await submitContactMessage({
+        firstName: form.getValues('firstName'),
+        lastName: form.getValues('lastName'),
+        email: form.getValues('email'),
+        phone: form.getValues('phone'),
+        message: form.getValues('message'),
+      });
+      track(EVENTS.lead, { form_location: 'contact_page' });
       toast({
         title: t('contact.form.message_sent_title'),
         description: t('contact.form.message_sent_description'),
       });
       form.reset();
-    }, 1000);
+    } catch (err) {
+      console.error('Error submitting contact form:', err);
+      toast({
+        title: 'Message not sent',
+        description: `Something went wrong sending that. Please try again, or call ${SITE.phone}.`,
+        variant: 'destructive',
+      });
+    }
   };
 
   const crumbs = [
@@ -110,6 +141,21 @@ const Contact = () => {
         keywords:
           'contact Kevin Hoang, real estate agent Needham MA contact, Greater Boston realtor phone number',
       }}
+      /*
+        agentIdentity(), not realEstateAgent().
+
+        contactPage()'s mainEntity references #agent, and an @id only resolves
+        against a node in the SAME document — so #agent has to be declared here.
+        But the FULL node carries `employee: {'@id': '#kevin'}`, which is itself
+        a reference, and #kevin is declared on the homepage and /about. Emitting
+        it here traded one dangling reference for another; the SEO auditor
+        caught exactly that. agentIdentity() is the compact declaration built for
+        this case and has no onward references to strand.
+
+        This also keeps the documented convention: the business is declared once,
+        on the homepage, and every other page references that @id.
+      */
+      jsonLd={[agentIdentity(), contactPage()]}
       eyebrow="Get in touch"
       h1={t('contact.title')}
       lede={t('contact.subtitle')}
@@ -218,7 +264,7 @@ const Contact = () => {
                     <div>
                       <div className="relative">
                         <a
-                          href="https://calendar.app.google/P297MnAu7ei6turA6"
+                          href={SITE.appointmentUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-gray-600 hover:text-ink no-underline group"

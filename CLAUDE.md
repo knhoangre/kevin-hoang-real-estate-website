@@ -14,8 +14,9 @@ npm run lint       # eslint
 
 docker compose up app   # same dev server in a container
 
-node scripts/generate-icons.mjs          # regenerate favicons + og-image.jpg
+node scripts/generate-icons.mjs          # regenerate favicons + og-image.jpg + og-about.jpg
 node scripts/generate-blog-redirects.mjs # rewrite the blog 301s in vercel.json
+node scripts/sync-listings.mjs           # refresh src/data/soldListings.ts from Supabase
 ```
 
 There is no Node toolchain required on the host if you use Docker:
@@ -148,6 +149,26 @@ even though in-app navigation to it works. Adding a route means all three of:
   `isLoading` guard, because at build time the loading branch is what renders.
 - JSON-LD builders live in [src/lib/schema.ts](src/lib/schema.ts); identity and
   NAP in [src/lib/siteConfig.ts](src/lib/siteConfig.ts).
+- **`og:image` must actually be 1200x630.** `<Seo>` declares those dimensions,
+  and for 65 pages it was declaring them over an image that was not: blog posts
+  served an 800x500 Unsplash crop, the 17 town guides a 500x300 one — under
+  Facebook's 600x315 floor, so those unfurled as a thumbnail or not at all — and
+  /about the raw 750x1125 *portrait*. Content images stay small for the page and
+  are widened only for the card, by `ogVariant()` in
+  [src/lib/images.ts](src/lib/images.ts); raising them in `src/data/*.ts` would
+  trade a social bug for an LCP one, since the same URL feeds the on-page `<img>`.
+  A local file passed as `ogImage` must already be 1200x630 — that is why /about
+  has a generated `og-about.jpg` rather than reusing the photo.
+- **`preloadImage` goes on the page that shows the image, never in
+  [index.html](index.html).** That file is the shared shell, so a `<link
+  rel="preload">` in it is inherited by all ~122 prerendered routes: 121 fetched
+  the homepage hero at high priority without displaying it, and on every page
+  with its own hero it won the race purely by being discovered first.
+- **Declaring `#agent` on a page is not free.** The full `realEstateAgent()` node
+  carries `employee: {'@id': '#kevin'}`, so emitting it anywhere without
+  `person()` alongside strands that reference. Use `agentIdentity()` on pages
+  that merely reference the business — it is the compact declaration with no
+  onward references. The SEO auditor catches this; it caught it on /contact.
 - **JSON-LD entities**: three addressable `@id` nodes — `#agent`
   (RealEstateAgent), `#website`, `#kevin` (Person). `blogPosting`'s author and
   the agent's `employee` reference `#kevin` by `@id`, so `person()` must be
@@ -217,6 +238,42 @@ even though in-app navigation to it works. Adding a route means all three of:
   number entirely from the one printed next to it.
 - **`scripts/routes.mjs` reads slugs out of the `src/data/*.ts` modules** rather
   than duplicating them, so the sitemap cannot drift from the corpus.
+
+### Listings
+
+- **`src/data/soldListings.ts` is generated — never hand-edit it.** Listings are
+  edited in `/admin/properties` and pulled down with
+  `node scripts/sync-listings.mjs`, which is deliberately NOT in `npm run build`:
+  the output is committed, so the build stays deterministic and needs neither
+  network nor database credentials. It refuses to write an empty file, because an
+  empty result is far more often a broken query or an RLS change than an emptied
+  table.
+- **The snapshot exists so `/properties` prerenders content.** The page fetched
+  from Supabase in an effect, so at generation time it rendered its spinner and
+  the HTML contained no listings at all — on the one page whose subject is
+  listings. It now seeds state from the snapshot and revalidates after mount; the
+  live fetch is a refresh, not the source. Its `ItemList` schema was withheld for
+  the same reason and is now honest.
+- **The `town` and `zip_code` columns are dirty and are normalised on read.**
+  `town` holds "Newton, MA", "Newton" and "Brookline" — one field, three formats —
+  and 8 of 10 `zip_code` values lost their leading zero to a numeric CSV import,
+  so the page rendered "Newton, MA 2459". `sync-listings.mjs` fixes both, and
+  `fromRow()` in [PropertiesList.tsx](src/pages/PropertiesList.tsx) mirrors that
+  logic **exactly** — if the two disagree, a listing visibly changes format the
+  moment client-side revalidation replaces the prerendered copy. The underlying
+  rows have not been rewritten; that is a separate decision.
+- **IDX and owned listings are opposite SEO cases.** The sold listings are
+  first-party, unique and indexable — the strongest evidence on the site, which
+  is why they also appear per-town via
+  [TownSoldListings](src/components/TownSoldListings.tsx). A future IDX feed is
+  the same syndicated data as thousands of other agent sites, and MLS PIN's rules
+  generally require it be non-indexable — so it belongs on its own `noindex`
+  route as a conversion feature, never merged into `/properties`.
+- **`TownSoldListings` renders nothing where there are no sales.** 11 of the 17
+  guides have no closing behind them, and a heading over an empty box is the thin
+  templated filler this corpus was cleaned of once. Its `<h2>` interpolates the
+  town name so the six instances stay distinct under the topical-distinctness
+  rule.
 
 ### The Vietnamese tree (`/vi`)
 
@@ -324,6 +381,16 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   Recency is the tempting tiebreak and the wrong one: it sends every
   zero-overlap post to the same newest few, concentrating inbound links on a
   handful and orphaning the rest.
+- **Never advise waiving a home inspection.** Since 2025-10-15, [760 CMR
+  74.00](https://www.mass.gov/info-details/residential-home-inspections) (from the
+  Affordable Homes Act, c. 150 of the Acts of 2024) bars a Massachusetts seller or
+  listing agent from conditioning acceptance of an offer on an inspection waiver, or
+  accepting an offer that requires one. Six posts recommended it as a competitive
+  tactic until 2026-08-28; they were corrected and now point at
+  `massachusetts-home-inspection-waiver-law`. A buyer may still decline to inspect
+  once under agreement as their own uninfluenced decision — that is the only version
+  that is still accurate. Waiving the *appraisal* or *financing* contingency is
+  unaffected and is still discussed throughout.
 - **Review / AggregateRating schema is intentionally not implemented.** Google
   disregards self-serving review markup on an organization's own page regardless
   of authenticity, and publishing unverifiable testimonials as machine-readable
@@ -336,6 +403,24 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `vite build` skipped `tsc` entirely, which masked a real bug (the CRM contact
   CSV exported a blank "Sources" column because it read `contact.sources` after
   the field was renamed to `source`).
+- **Conversion tracking is delegated, not per-anchor.**
+  [Analytics.tsx](src/components/Analytics.tsx) listens on `document` for clicks
+  on any `tel:`, `sms:` or `SITE.appointmentUrl` link — there are ~25 across 12
+  files and no two share a className, so wrapping each would risk a styling
+  regression per site and silently miss any added later. Event names and the
+  referrer classifier live in [src/lib/analytics.ts](src/lib/analytics.ts);
+  `traffic_source` must be registered as a GA4 custom dimension or it is
+  collected but not reportable. See [ANALYTICS_SETUP.md](ANALYTICS_SETUP.md).
+  **No tool can report the query behind an AI-assistant visit** — assistants send
+  no query and often no referrer, so `ai_*` counts are a floor, not a measurement.
+- **Both contact forms submit through
+  [src/lib/submitContact.ts](src/lib/submitContact.ts).** There are two forms —
+  `components/Contact.tsx` on the homepage and `pages/Contact.tsx` on /contact —
+  and they had diverged badly: /contact's `onSubmit` was a `setTimeout` that
+  showed the success toast and reset the fields **without sending anything**, so
+  every message written on the page the navbar and footer link to was discarded
+  while its sender was told it had been delivered. One transport now, so a fix to
+  either reaches both. `generate_lead` fires only after a genuine success.
 - **Analytics ship disabled.** [Analytics.tsx](src/components/Analytics.tsx) is
   driven by `SITE.ga4Id` / `SITE.gscVerification`; nothing is injected while they
   are empty. GA is configured `send_page_view: false` with a manual page_view on
