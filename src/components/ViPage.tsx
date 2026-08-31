@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import PageShell, { ShellSection } from '@/components/PageShell';
+import PageShell, { ShellSection, type ShellWidth } from '@/components/PageShell';
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';
@@ -36,12 +36,31 @@ export interface ViPageProps {
   /** Visible breadcrumb trail, in Vietnamese. Mirrored into BreadcrumbList. */
   crumbs: { name: string; path: string }[];
   hero: { image: string; alt: string };
-  children: React.ReactNode;
+  /**
+   * Optional prose body. /vi/mua-nha and /vi/ban-nha have none, because their
+   * English counterparts have none: the roadmap IS the content there, and a
+   * numbered prose walkthrough above it restated the same eight steps twice on
+   * one page.
+   */
+  children?: React.ReactNode;
   faqHeading: string;
   faqs: QA[];
   cta: { heading: string; body: string; button: string };
   /** Link back to the English counterpart, shown in the page body. */
   enLabel: string;
+  /**
+   * Full-width sections rendered after the prose body — the roadmap and the
+   * resource grid, which are what the English buyer and seller guides are
+   * mostly made of. A Vietnamese page that only carried prose was a different
+   * document from its counterpart rather than a translation of it.
+   */
+  sections?: React.ReactNode;
+  /**
+   * `wide` for the pages carrying a roadmap: its sticky index sits beside the
+   * steps, and at the prose measure the detail columns collapse to ~38
+   * characters. Matches the English counterpart's own width.
+   */
+  width?: ShellWidth;
 }
 
 const ViPage = ({
@@ -57,6 +76,8 @@ const ViPage = ({
   faqs,
   cta,
   enLabel,
+  sections,
+  width = 'prose',
 }: ViPageProps) => {
   const alternates = alternatesFor(path);
 
@@ -77,7 +98,7 @@ const ViPage = ({
       lede={lede}
       hero={hero}
       heroSize="tall"
-      width="prose"
+      width={width}
       // Phone and email still come from SITE. NAP has to be identical
       // character-for-character in every language; only the labels translate.
       actionLabels={{
@@ -93,8 +114,10 @@ const ViPage = ({
       ]}
       cta={{ heading: cta.heading, body: cta.body, button: cta.button }}
     >
-      <ShellSection>
-        <ProseBody>{children}</ProseBody>
+      <ShellSection width={width}>
+        {children && <ProseBody>{children}</ProseBody>}
+
+        {sections}
 
         {alternates?.en && (
           <p className="mt-14 border-t border-gray-200 pt-8 text-sm text-gray-500">
@@ -109,7 +132,7 @@ const ViPage = ({
         )}
       </ShellSection>
 
-      <ShellSection className="py-20 md:py-28 bg-bone border-y border-black/5">
+      <ShellSection width={width} className="py-20 md:py-28 bg-bone border-y border-black/5">
         <SectionHeading className="mb-8">{faqHeading}</SectionHeading>
         <div className="rounded-2xl border border-gray-200 bg-white px-6 py-2 md:px-8 shadow-sm">
           <FaqAccordion faqs={faqs} />

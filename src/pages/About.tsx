@@ -99,7 +99,18 @@ const About = () => {
           and works in English and Vietnamese.
         </>
       }
-      heroSize="compact"
+      /*
+        /about had no `hero` at all, so PageShell rendered its flat ink-deep
+        fallback while every other landing page sits on a photograph — that is
+        why this page looked unlike the rest. The image is Needham itself
+        rather than a stock interior, and it runs behind the portrait.
+      */
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1920&q=70',
+        alt: '',
+      }}
+      heroSize="standard"
       width="prose"
       /* Portrait-led rather than the landscape photograph the service pages
          use — the subject of this page is a person, and his face is the most
@@ -260,14 +271,24 @@ const About = () => {
               South Shore. Each has its own guide, with named stations, named schools,
               and the specific thing a buyer should check there:
             </p>
-            <p>
-              {SITE.areaServed.map((town, i) => (
-                <span key={town.slug}>
-                  {i > 0 && ' · '}
-                  <Link to={`/neighborhoods/${town.slug}`}>{town.name}</Link>
-                </span>
+            {/*
+              Buttons rather than a run-on interpunct list, and three across so
+              17 towns take six rows instead of a paragraph. Same treatment as
+              the profile links further down, so the page has one card style
+              rather than two.
+            */}
+            <ul className="mt-6 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3">
+              {SITE.areaServed.map((town) => (
+                <li key={town.slug} className="m-0">
+                  <Link
+                    to={`/neighborhoods/${town.slug}`}
+                    className="flex h-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-sm font-medium text-ink no-underline transition-colors hover:border-champagne hover:bg-bone"
+                  >
+                    {town.name}
+                  </Link>
+                </li>
               ))}
-            </p>
+            </ul>
             <p>
               He also works with families{' '}
               <Link to="/relocation">moving to Massachusetts from Connecticut</Link>, a

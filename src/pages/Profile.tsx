@@ -367,7 +367,14 @@ export default function Profile() {
       // Upload the file to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        /*
+          An hour, not the year used for listing photos: this path is a fixed
+          `avatar.<ext>` that upsert overwrites in place, so a long immutable TTL
+          would serve the old picture until it expired. The point is only to stop
+          the default `no-cache`, which makes the CDN re-transfer the avatar on
+          every request for every page an admin views.
+        */
+        .upload(filePath, file, { upsert: true, cacheControl: '3600' });
 
       if (uploadError) throw uploadError;
 

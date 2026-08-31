@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import AdminShell from '@/components/AdminShell';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import OpenHousesList from '@/components/OpenHousesList';
 import MessagesList from '@/components/MessagesList';
 import EventsList from '@/components/EventsList';
 
+/** The three tabs, in the order they are shown. */
+const TABS = [
+  { value: 'open-houses', label: 'Open Houses' },
+  { value: 'events', label: 'Events' },
+  { value: 'messages', label: 'Messages' },
+] as const;
+
 const FollowUp = () => {
-  const { isAdmin, loading } = useAuth();
   const { unreadCounts } = useUnreadCounts();
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,20 +29,13 @@ const FollowUp = () => {
 
   const [activeTab, setActiveTab] = useState(() => getTabFromPath(location.pathname));
 
-  // Handle admin check and initial redirect
+  // AdminShell owns the admin gate, and /admin is its own hub page now. This
+  // effect only lands the bare /admin/follow-up on a real tab.
   useEffect(() => {
-    if (loading) return;
-    
-    if (!isAdmin) {
-      navigate('/');
-      return;
-    }
-
-    // Redirect /admin/follow-up to /admin/follow-up/open-house
     if (location.pathname === '/admin/follow-up') {
       navigate('/admin/follow-up/open-house', { replace: true });
     }
-  }, [isAdmin, loading, navigate, location.pathname]);
+  }, [navigate, location.pathname]);
 
   // Sync tab state with URL changes (e.g., back button)
   useEffect(() => {
@@ -59,70 +57,56 @@ const FollowUp = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null; // Will redirect
-  }
+  const counts: Record<string, number> = {
+    'open-houses': unreadCounts.openHouses,
+    events: unreadCounts.events,
+    messages: unreadCounts.messages,
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 pt-24 pb-8">
-        <h1 className="text-3xl font-bold mb-6">Follow Up</h1>
-        
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
-            <TabsTrigger value="open-houses" className="flex items-center gap-2">
-              <span>Open Houses</span>
-              {unreadCounts.openHouses > 0 && (
-                <Badge variant="destructive">
-                  {unreadCounts.openHouses}
-                </Badge>
+    <AdminShell
+      title="Follow Up"
+      description="Open house and event sign-ins, and messages sent through the site."
+    >
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+        {/*
+          An underlined tab rail rather than the shadcn grey pill group, which
+          is the one piece of default chrome the site's own nav treatments never
+          use. Overridden here rather than in ui/tabs.tsx, because /auth and the
+          calculators still render the stock component.
+        */}
+        <TabsList className="h-auto w-full justify-start gap-8 rounded-none border-b border-gray-200 bg-transparent p-0">
+          {TABS.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className="group relative flex items-center gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 pt-0 text-sm font-semibold uppercase tracking-[0.15em] text-gray-500 transition-colors hover:text-ink data-[state=active]:border-champagne data-[state=active]:bg-transparent data-[state=active]:text-ink data-[state=active]:shadow-none"
+            >
+              {tab.label}
+              {counts[tab.value] > 0 && (
+                <span className="rounded-full bg-red-600 px-2 py-0.5 text-[0.65rem] font-semibold tracking-normal text-white">
+                  {counts[tab.value]}
+                  <span className="sr-only"> unread</span>
+                </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center gap-2">
-              <span>Events</span>
-              {unreadCounts.events > 0 && (
-                <Badge variant="destructive">
-                  {unreadCounts.events}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="flex items-center gap-2">
-              <span>Messages</span>
-              {unreadCounts.messages > 0 && (
-                <Badge variant="destructive">
-                  {unreadCounts.messages}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="open-houses" className="mt-6">
-            <OpenHousesList />
-          </TabsContent>
-          
-          <TabsContent value="events" className="mt-6">
-            <EventsList />
-          </TabsContent>
-          
-          <TabsContent value="messages" className="mt-6">
-            <MessagesList />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+          ))}
+        </TabsList>
+
+        <TabsContent value="open-houses" className="mt-6">
+          <OpenHousesList />
+        </TabsContent>
+
+        <TabsContent value="events" className="mt-6">
+          <EventsList />
+        </TabsContent>
+
+        <TabsContent value="messages" className="mt-6">
+          <MessagesList />
+        </TabsContent>
+      </Tabs>
+    </AdminShell>
   );
 };
 
 export default FollowUp;
-

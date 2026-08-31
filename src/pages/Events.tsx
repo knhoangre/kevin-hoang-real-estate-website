@@ -22,7 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import KioskShell, {
+  KioskDenied,
+  KioskLoading,
+  KioskSuccess,
+  kioskButtonClass,
+} from '@/components/KioskShell';
 
 const eventSchema = z.object({
   eventName: z.string().min(1, 'Event name is required'),
@@ -99,7 +105,10 @@ const Events = () => {
         .from('event_sign_ins')
         .select('event_name')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // Deduplicated below into a short autocomplete list, so the unbounded
+        // version transferred the whole table to build it. Newest first.
+        .limit(200);
 
       if (fetchError) {
         console.error('Error fetching previous events:', fetchError);
@@ -204,61 +213,27 @@ const Events = () => {
     fetchPreviousEvents();
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-ink mb-4">Access Restricted</h2>
-          <p className="text-lg text-gray-600 mb-6">
-            This page is only accessible to administrators.
-          </p>
-          <p className="text-sm text-gray-500">
-            Please contact an administrator if you need access.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <KioskLoading />;
+  if (!isAdmin) return <KioskDenied />;
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-ink mb-4">Thank you for signing in.</h2>
-          <p className="text-lg text-gray-600 mb-6">Enjoy the event!</p>
-          <Button
-            onClick={handleReset}
-            className="w-full bg-ink text-white hover:bg-black/80"
-          >
-            Return to Sign-In
-          </Button>
-          <p className="text-sm text-gray-500 mt-4">Redirecting in a few seconds...</p>
-        </div>
-      </div>
+      <KioskSuccess
+        heading="Thank you for signing in."
+        body={<p className="text-lg">Enjoy the event!</p>}
+      >
+        <Button onClick={handleReset} className={kioskButtonClass}>
+          Return to sign-in
+        </Button>
+        <p className="mt-4 text-sm text-gray-500">Redirecting in a few seconds...</p>
+      </KioskSuccess>
     );
   }
 
   // Event selection / name input
   if (!showForm) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-ink mb-6 text-center">
-            Events
-          </h1>
+      <KioskShell title="Events" subtitle="Please start with the event name.">
           <Form {...eventForm}>
             <form onSubmit={eventForm.handleSubmit(handleEventSubmit)} className="space-y-6">
               <FormField
@@ -350,7 +325,7 @@ const Events = () => {
               />
               <Button
                 type="submit"
-                className="w-full bg-ink text-white hover:bg-black/80 uppercase"
+                className={`${kioskButtonClass} uppercase tracking-wide`}
                 disabled={loadingEvents}
               >
                 {loadingEvents ? 'Loading...' : 'Continue'}
@@ -358,18 +333,13 @@ const Events = () => {
               </Button>
             </form>
           </Form>
-        </div>
-      </div>
+      </KioskShell>
     );
   }
 
   // Sign-in form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-ink mb-6 text-center">
-          Events – {eventName}
-        </h1>
+    <KioskShell title="Events" subtitle={eventName}>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
@@ -467,7 +437,7 @@ const Events = () => {
 
             <Button
               type="submit"
-              className="w-full bg-ink text-white hover:bg-black/80 uppercase mt-6"
+              className={`${kioskButtonClass} mt-6 uppercase tracking-wide`}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
@@ -475,8 +445,7 @@ const Events = () => {
             </Button>
           </form>
         </Form>
-      </div>
-    </div>
+    </KioskShell>
   );
 };
 

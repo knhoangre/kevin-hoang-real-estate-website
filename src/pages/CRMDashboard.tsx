@@ -6,9 +6,30 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DollarSign, Users, TrendingUp, Target } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CRMLayout from "@/components/CRMLayout";
+import AdminShell, {
+  AdminCard,
+  AdminLoading,
+  CRM_LINKS,
+} from "@/components/AdminShell";
 
-const COLORS = ['#9b87f5', '#6366f1', '#8b5cf6', '#a855f7'];
+/**
+ * Chart series. Champagne leads because it is the brand mark; the rest are a
+ * neutral ramp chosen for separation on white rather than for brand — a pie
+ * slice has to be told apart from its neighbour first.
+ */
+const COLORS = ['#c5a572', '#0d0d0f', '#8c6b35', '#9ca3af'];
+
+/** Whole dollars. The charts had no formatter, so a tooltip read "value: 4200". */
+const usd = (n: number) =>
+  `$${Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+
+/** One tooltip treatment for all three charts. */
+const TOOLTIP_STYLE = {
+  backgroundColor: '#fff',
+  border: '1px solid #e5e7eb',
+  borderRadius: '0.5rem',
+  color: '#1a1a1a',
+} as const;
 
 export default function CRMDashboard() {
   const { user, isAdmin, loading } = useAuth();
@@ -101,35 +122,17 @@ export default function CRMDashboard() {
     { name: 'In Progress', value: activeLeads },
   ];
 
-  if (loading) {
-    return (
-      <CRMLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </CRMLayout>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  // AdminShell owns the admin gate; this one is the data fetch.
+  if (loading) return <AdminLoading />;
+  if (!user) return null;
 
   return (
-    <CRMLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            CRM Dashboard
-          </h1>
-          <p className="text-gray-600">
-            Overview of your sales pipeline and performance
-          </p>
-        </div>
-
+    <AdminShell
+      eyebrow="CRM"
+      links={CRM_LINKS}
+      title="Dashboard"
+      description="Overview of your sales pipeline and performance."
+    >
         {/* Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -140,7 +143,7 @@ export default function CRMDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                 ${totalRevenue.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -157,7 +160,7 @@ export default function CRMDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                 {activeLeads}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -174,7 +177,7 @@ export default function CRMDashboard() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                 {conversionRate}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -191,7 +194,7 @@ export default function CRMDashboard() {
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                 {totalDeals}
               </div>
               <p className="text-xs text-muted-foreground">
@@ -214,23 +217,32 @@ export default function CRMDashboard() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="name" 
+                  {/*
+                    interval={0} is load-bearing: recharts drops X-axis ticks
+                    that would overlap, and "Under Contract" is long enough that
+                    it was the one being dropped — the stage looked absent from
+                    the chart entirely.
+                  */}
+                  <XAxis
+                    dataKey="name"
+                    stroke="#6b7280"
+                    tick={{ fill: '#6b7280', fontSize: 12 }}
+                    interval={0}
+                  />
+                  <YAxis
                     stroke="#6b7280"
                     tick={{ fill: '#6b7280' }}
+                    allowDecimals={false}
                   />
-                  <YAxis 
-                    stroke="#6b7280"
-                    tick={{ fill: '#6b7280' }}
+                  <Tooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    cursor={{ fill: 'rgba(197,165,114,0.12)' }}
+                    formatter={(value: number) => [
+                      `${value} ${value === 1 ? 'deal' : 'deals'}`,
+                      'Deals',
+                    ]}
                   />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #e5e7eb',
-                      color: '#000',
-                    }}
-                  />
-                  <Bar dataKey="value" fill="#9b87f5" />
+                  <Bar dataKey="value" name="Deals" fill="#c5a572" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -260,12 +272,12 @@ export default function CRMDashboard() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #e5e7eb',
-                      color: '#000',
-                    }}
+                  <Tooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value: number, name: string) => [
+                      `${value} ${value === 1 ? 'deal' : 'deals'}`,
+                      name,
+                    ]}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -294,24 +306,28 @@ export default function CRMDashboard() {
                     textAnchor="end"
                     height={80}
                   />
-                  <YAxis 
+                  <YAxis
                     stroke="#6b7280"
                     tick={{ fill: '#6b7280' }}
+                    tickFormatter={usd}
+                    width={80}
                   />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#fff',
-                      border: '1px solid #e5e7eb',
-                      color: '#000',
-                    }}
+                  <Tooltip
+                    contentStyle={TOOLTIP_STYLE}
+                    formatter={(value: number) => [usd(value), 'Commission']}
                   />
-                  <Line type="monotone" dataKey="value" stroke="#9b87f5" strokeWidth={2} />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    name="Commission"
+                    stroke="#8c6b35"
+                    strokeWidth={2}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         )}
-      </div>
-    </CRMLayout>
+    </AdminShell>
   );
 }

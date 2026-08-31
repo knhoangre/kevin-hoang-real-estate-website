@@ -38,7 +38,7 @@ Allow: /
 Disallow: /auth
 Disallow: /profile
 Disallow: /complete-profile
-Disallow: /admin/
+Disallow: /admin
 Disallow: /crm
 Disallow: /open-house
 Disallow: /events

@@ -62,10 +62,6 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
         },
-        realDark: "#1A1F2C",
-        realPurple: "#9b87f5",
-        realGray: "#8E9196",
-
         // The site's three surfaces and two accents. Each of these was an
         // arbitrary hex repeated across dozens of files (`text-[#1a1a1a]` alone
         // appeared 265 times) before it was named here.

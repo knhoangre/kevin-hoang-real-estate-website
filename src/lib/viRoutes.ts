@@ -41,6 +41,11 @@ export const VI_ROUTES: ViRoute[] = [
   { vi: '/vi/dinh-gia-nha', en: '/home-valuation', label: 'Định giá nhà' },
   { vi: '/vi/cau-hoi-thuong-gap', en: '/faq', label: 'Câu hỏi thường gặp' },
   { vi: '/vi/khu-vuc', en: '/neighborhoods', label: 'Khu vực phục vụ' },
+  { vi: '/vi/gioi-thieu', en: '/about', label: 'Về Kevin' },
+  { vi: '/vi/chuyen-den-massachusetts', en: '/relocation', label: 'Chuyển đến Massachusetts' },
+  { vi: '/vi/danh-gia', en: '/testimonials', label: 'Khách hàng nói gì' },
+  { vi: '/vi/cong-cu-tinh-toan', en: '/calculator', label: 'Công cụ tính toán' },
+  { vi: '/vi/lien-he', en: '/contact', label: 'Liên hệ' },
 ];
 
 /** `{ en, vi }` for a path on either side of a pair, or undefined if unpaired. */
