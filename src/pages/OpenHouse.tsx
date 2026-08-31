@@ -23,7 +23,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowRight, CheckCircle, Lock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import KioskShell, {
+  KioskDenied,
+  KioskLoading,
+  KioskSuccess,
+  kioskButtonClass,
+} from '@/components/KioskShell';
 import { errorMessage } from '@/lib/utils';
 
 const addressSchema = z.object({
@@ -127,7 +133,12 @@ const OpenHouse = () => {
         .from('open_house_sign_ins')
         .select('address')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        // This feeds an autocomplete of addresses already used, and it is
+        // deduplicated below — so the whole table was being transferred to build
+        // a short list. Newest first, so the cap only ever drops addresses old
+        // enough that nobody is signing in at them today.
+        .limit(200);
 
       if (fetchError) {
         console.error('Error fetching previous addresses:', fetchError);
@@ -311,72 +322,29 @@ const OpenHouse = () => {
     fetchPreviousAddresses();
   };
 
-  // Loading state while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (authLoading) return <KioskLoading />;
+  if (!isAdmin) return <KioskDenied />;
 
-  // Admin check - show access denied if not admin
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <Lock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-ink mb-4">
-            Access Restricted
-          </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            This page is only accessible to administrators.
-          </p>
-          <p className="text-sm text-gray-500">
-            Please contact an administrator if you need access to this feature.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Success screen
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-ink mb-4">
-            Thank you for signing in.
-          </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            Please enjoy the tour!
-          </p>
-          <Button
-            onClick={handleReset}
-            className="w-full bg-ink text-white hover:bg-black/80"
-          >
-            Return to Sign-In
-          </Button>
-          <p className="text-sm text-gray-500 mt-4">
-            You will be automatically redirected in a few seconds...
-          </p>
-        </div>
-      </div>
+      <KioskSuccess
+        heading="Thank you for signing in."
+        body={<p className="text-lg">Please enjoy the tour!</p>}
+      >
+        <Button onClick={handleReset} className={kioskButtonClass}>
+          Return to sign-in
+        </Button>
+        <p className="mt-4 text-sm text-gray-500">
+          You will be automatically redirected in a few seconds...
+        </p>
+      </KioskSuccess>
     );
   }
 
   // Address input screen
   if (!showForm) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-ink mb-6 text-center">
-            Open House Sign-In
-          </h1>
+      <KioskShell title="Open House Sign-In" subtitle="Please start with the property address.">
           <Form {...addressForm}>
             <form onSubmit={addressForm.handleSubmit(handleAddressSubmit)} className="space-y-6">
               <FormField
@@ -512,7 +480,7 @@ const OpenHouse = () => {
               />
               <Button
                 type="submit"
-                className="w-full bg-ink text-white hover:bg-black/80 uppercase"
+                className={`${kioskButtonClass} uppercase tracking-wide`}
                 disabled={loadingAddresses}
               >
                 {loadingAddresses ? 'Loading...' : 'Continue'}
@@ -520,18 +488,13 @@ const OpenHouse = () => {
               </Button>
             </form>
           </Form>
-        </div>
-      </div>
+      </KioskShell>
     );
   }
 
   // Sign-in form screen
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-ink mb-6 text-center">
-          Open House - {address}
-        </h1>
+    <KioskShell title="Open House" subtitle={address}>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
@@ -701,7 +664,7 @@ const OpenHouse = () => {
 
             <Button
               type="submit"
-              className="w-full bg-ink text-white hover:bg-black/80 uppercase mt-6"
+              className={`${kioskButtonClass} mt-6 uppercase tracking-wide`}
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Continue'}
@@ -709,8 +672,7 @@ const OpenHouse = () => {
             </Button>
           </form>
         </Form>
-      </div>
-    </div>
+    </KioskShell>
   );
 };
 

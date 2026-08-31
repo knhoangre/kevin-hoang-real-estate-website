@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import AdminShell, { AdminCard, AdminLoading, adminActionClass } from '@/components/AdminShell';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,8 +81,7 @@ const emptyForm = {
 };
 
 const Lockboxes = () => {
-  const { isAdmin, loading } = useAuth();
-  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { toast } = useToast();
   const [lockboxes, setLockboxes] = useState<Lockbox[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,15 +92,6 @@ const Lockboxes = () => {
   // anyone who can load this page can already read every row.
   const [revealedCodes, setRevealedCodes] = useState<Set<number>>(new Set());
   const [formData, setFormData] = useState({ ...emptyForm });
-
-  // Handle admin check
-  useEffect(() => {
-    if (loading) return;
-
-    if (!isAdmin) {
-      navigate('/');
-    }
-  }, [isAdmin, loading, navigate]);
 
   const fetchLockboxes = useCallback(async () => {
     try {
@@ -250,59 +240,53 @@ const Lockboxes = () => {
     }
   };
 
-  if (loading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
+  // The admin gate is AdminShell's; this one is the data fetch.
+  if (isLoading) return <AdminLoading />;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 pt-24 pb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Lockboxes</h1>
-          <Button onClick={handleAdd}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Lockbox
-          </Button>
-        </div>
-
-        <div className="rounded-md border">
+    <AdminShell
+      title="Lockboxes"
+      description="Every lockbox in the field, where it is, and the code on it."
+      actions={
+        <button type="button" onClick={handleAdd} className={adminActionClass('primary')}>
+          <Plus className="mr-2 h-4 w-4" aria-hidden />
+          Add Lockbox
+        </button>
+      }
+    >
+        <AdminCard className="lining-nums tabular-nums">
+          {/*
+            Everything is centred except Location: addresses are ragged and
+            read badly off a centre axis, so that one column stays left.
+          */}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
+                <TableHead className="text-center">Type</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-center">Code</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Notes</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {lockboxes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={6} className="py-10 text-center text-gray-500">
                     No lockboxes yet. Click "Add Lockbox" to get started.
                   </TableCell>
                 </TableRow>
               ) : (
                 lockboxes.map((lockbox) => (
                   <TableRow key={lockbox.id}>
-                    <TableCell className="font-medium">{lockbox.lockbox_type}</TableCell>
+                    <TableCell className="whitespace-nowrap text-center font-medium">
+                      {lockbox.lockbox_type}
+                    </TableCell>
                     <TableCell>{lockbox.location}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       {lockbox.code ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-center gap-2">
                           <span className="font-mono">
                             {revealedCodes.has(lockbox.id) ? lockbox.code : '••••••'}
                           </span>
@@ -326,18 +310,21 @@ const Lockboxes = () => {
                         '-'
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge variant={statusVariant(lockbox.status)}>
                         {statusLabel(lockbox.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="max-w-xs truncate">{lockbox.notes || '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                    <TableCell className="max-w-xs truncate text-center">
+                      {lockbox.notes || '-'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(lockbox)}
+                          aria-label={`Edit the ${lockbox.lockbox_type} lockbox at ${lockbox.location}`}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -345,6 +332,7 @@ const Lockboxes = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(lockbox)}
+                          aria-label={`Delete the ${lockbox.lockbox_type} lockbox at ${lockbox.location}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -355,7 +343,7 @@ const Lockboxes = () => {
               )}
             </TableBody>
           </Table>
-        </div>
+        </AdminCard>
 
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -460,8 +448,7 @@ const Lockboxes = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </div>
+    </AdminShell>
   );
 };
 

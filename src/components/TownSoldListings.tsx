@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { listingsForTown } from '@/data/soldListings';
+import { formatPrice, formatBaths } from '@/lib/listings';
 
 /**
  * The homes Kevin has actually closed in one town.
@@ -22,20 +23,8 @@ import { listingsForTown } from '@/data/soldListings';
  * portfolio, not a data set, and presenting it as evidence of what homes in a
  * town are worth would be a fabricated statistic.
  */
-const currency = (value: number | null) =>
-  value === null
-    ? 'Price on request'
-    : new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0,
-      }).format(value);
-
-const baths = (full: number | null, half: number | null) => {
-  const f = full ?? 0;
-  const h = half ?? 0;
-  return h > 0 ? `${f}.${h}` : String(f);
-};
+// Shared with /properties and the detail pages, rather than a third private
+// copy of the same two functions. See src/lib/listings.ts.
 
 interface Props {
   /** areaServed slug, e.g. "newton-ma". */
@@ -80,18 +69,31 @@ const TownSoldListings = ({ townSlug, townName }: Props) => {
             className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 rounded-lg border border-gray-200 px-5 py-4"
           >
             <div className="min-w-0">
-              <p className="font-semibold text-ink">{listing.address}</p>
-              <p className="text-sm text-gray-600">
+              {/*
+                Each sale now links to its own page. This is the payoff for
+                building them: a town guide's strongest content used to dead-end
+                in a list item, and now it points at a document about that
+                specific house.
+              */}
+              <p className="font-semibold text-ink">
+                <Link
+                  to={`/properties/${listing.slug}`}
+                  className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
+                >
+                  {listing.address}
+                </Link>
+              </p>
+              <p className="numeral text-sm text-gray-600">
                 {listing.propertyType}
                 {listing.bedrooms !== null && ` · ${listing.bedrooms} bd`}
                 {(listing.fullBaths !== null || listing.halfBaths !== null) &&
-                  ` · ${baths(listing.fullBaths, listing.halfBaths)} ba`}
+                  ` · ${formatBaths(listing.fullBaths, listing.halfBaths)} ba`}
                 {listing.livingArea !== null &&
                   ` · ${listing.livingArea.toLocaleString()} sq ft`}
               </p>
             </div>
             <div className="text-right">
-              <p className="font-semibold text-ink">{currency(listing.salePrice)}</p>
+              <p className="numeral font-semibold text-ink">{formatPrice(listing.salePrice)}</p>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {listing.status}
               </p>

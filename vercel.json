@@ -705,6 +705,16 @@
   ],
   "headers": [
     {
+      "comment": "Listing photos, committed by scripts/sync-listings.mjs. Filenames carry a Date.now() stamp from the upload and are never rewritten, so immutable is correct. Files in public/ default to must-revalidate, which for ~340 photos is a lot of pointless conditional requests.",
+      "source": "/listings/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/assets/(.*)",
       "headers": [
         {

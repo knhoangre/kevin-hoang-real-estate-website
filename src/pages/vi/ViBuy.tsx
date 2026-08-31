@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
+import { BookOpen, Calculator, Eye, FileText, Home, BarChart3 } from 'lucide-react';
 import ViPage from '@/components/ViPage';
+import ViBuyerRoadmap from '@/components/vi/ViBuyerRoadmap';
+import ViResources from '@/components/vi/ViResources';
 
 /**
  * /vi/mua-nha — the buyer's guide in Vietnamese.
@@ -63,77 +65,83 @@ const ViBuy = () => (
       button: 'Liên hệ Kevin',
     }}
     enLabel="The buyer's guide and roadmap"
-  >
-    <h2>Bước 1 — Thư chấp thuận vay, không phải ước lượng</h2>
-    <p>
-      Có hai loại giấy tờ nghe giống nhau nhưng khác hẳn. <strong>Pre-qualification</strong>{' '}
-      chỉ là phép tính dựa trên con số bạn tự khai. <strong>Pre-approval</strong> nghĩa là
-      một nhân viên thẩm định đã xem giấy tờ thật của bạn. Người bán và môi giới bên bán
-      biết rõ sự khác biệt, và trong một thị trường có nhiều người cùng tranh mua, điều đó
-      quyết định offer của bạn có được xem xét nghiêm túc hay không.
-    </p>
+    // Wide, like /buyer: the roadmap's sticky index sits beside the steps.
+    width="wide"
+    sections={
+      <>
+        <ViBuyerRoadmap />
 
-    <h2>Bước 2 — Chọn thị trấn trước khi chọn nhà</h2>
-    <p>
-      Đây là bước người ta hay làm ngược. Hãy lái thử quãng đường đi làm vào đúng giờ bạn
-      sẽ đi. Đi bộ từ nhà ra ga tàu và bấm giờ. Xác nhận địa chỉ cụ thể đó thuộc trường
-      tiểu học nào — không phải thị trấn nào. Xem{' '}
-      <Link to="/vi/khu-vuc">các khu vực Kevin phục vụ</Link>.
-    </p>
+        <div className="py-8">
+          {/* Blue is deliberate and stays: this panel carries a warning, not
+              the brand. Recolouring a signal to the accent deletes it. */}
+          <div className="rounded-r-lg border-l-4 border-blue-400 bg-blue-50 p-6">
+            <p className="text-sm leading-relaxed text-gray-700">
+              <strong>Lưu ý quan trọng:</strong> Mỗi giao dịch mua nhà một khác, và lộ
+              trình này chỉ là hướng dẫn chung. Trường hợp cụ thể của bạn có thể cần thêm
+              bước, thời hạn khác, hoặc cách làm khác với những gì mô tả ở đây. Đây là
+              thông tin mang tính tham khảo, không phải tư vấn pháp lý hay tài chính. Hãy
+              làm việc với agent, ngân hàng và luật sư để có hướng dẫn phù hợp với hoàn
+              cảnh của bạn.
+            </p>
+          </div>
+        </div>
 
-    <h2>Bước 3 — Offer to Purchase</h2>
-    <p>
-      Đây là hợp đồng ràng buộc. Nó ghi giá, tiền đặt cọc (thường 1.000 đô la ở bước này),
-      và toàn bộ thời hạn cho các điều khoản bảo vệ. Kể từ lúc ký, đồng hồ bắt đầu chạy.
-      Hãy đọc kỹ các ngày tháng — đó mới là phần thương lượng thật sự.
-    </p>
-
-    <h2>Bước 4 — Kiểm tra nhà, thường trong 5 đến 10 ngày</h2>
-    <p>
-      Bạn thuê người kiểm tra. Ngoài kiểm tra tổng quát, nên cân nhắc kiểm tra{' '}
-      <strong>radon</strong>, và với nhà xây trước năm 1978 thì cả <strong>sơn chì</strong>.
-      Nếu nhà dùng hầm tự hoại, chủ nhà có nghĩa vụ kiểm tra theo Title 5 — hãy xác nhận
-      thời điểm ngay lúc này.
-    </p>
-    <p>
-      Sau khi hết thời hạn này, quyền thương lượng dựa trên kết quả kiểm tra của bạn không
-      còn nữa.
-    </p>
-
-    <h2>Bước 5 — Purchase and Sale agreement</h2>
-    <p>
-      Khoảng mười đến mười bốn ngày sau Offer. Đây là hợp đồng chính thức, thay thế Offer,
-      và mọi điều khoản quan trọng đều được viết lại chi tiết hơn: tiêu chuẩn chủ quyền,
-      chuyện gì xảy ra nếu nhà bị hư hại trước ngày đóng, cách gia hạn, và{' '}
-      <strong>tiền đặt cọc sẽ ra sao nếu giao dịch đổ vỡ</strong> — điều khoản quan trọng
-      nhất và ít người đọc nhất.
-    </p>
-    <p>
-      Tiền đặt cọc thường tăng lên khoảng 5% giá mua ở bước này. Đây là lúc việc có luật
-      sư riêng không còn là tùy chọn.
-    </p>
-
-    <h2>Bước 6 — Cam kết cho vay và thời hạn của nó</h2>
-    <p>
-      P&S ấn định một ngày mà ngân hàng phải cấp cam kết cho vay bằng văn bản. Nếu ngày đó
-      trôi qua mà bạn không có cam kết và cũng không có gia hạn bằng văn bản, bạn có thể bị
-      coi là vi phạm hợp đồng — và tiền đặt cọc, lúc này đã là 5%, bị đe dọa.
-    </p>
-    <p>Hãy tự theo dõi ngày này. Đừng cho rằng có người khác đang theo dõi giúp bạn.</p>
-
-    <h2>Bước 7 — Chủ quyền, giấy chứng nhận báo khói, và ngày đóng</h2>
-    <p>
-      Luật sư của bạn tra cứu lịch sử chủ quyền, thường là 50 năm. Bên bán có nghĩa vụ xin
-      giấy chứng nhận thiết bị báo khói và báo khí CO từ sở cứu hỏa địa phương. Ngày đóng
-      diễn ra tại sở đăng bộ hoặc văn phòng luật sư, và giao dịch chỉ hoàn tất khi giấy tờ
-      được <strong>đăng bộ</strong>, không phải khi ký xong.
-    </p>
-    <p>
-      Một cảnh báo quan trọng: <strong>luôn gọi điện xác nhận thông tin chuyển tiền</strong>{' '}
-      bằng số điện thoại bạn đã có sẵn, ngay trước khi chuyển. Lừa đảo chuyển khoản nhắm vào
-      các giao dịch nhà đất rất phổ biến và tiền thường không lấy lại được.
-    </p>
-  </ViPage>
+        <ViResources
+          heading="TÀI LIỆU CHO NGƯỜI MUA"
+          subtitle="Những tài liệu giúp bạn ra quyết định trong suốt quá trình mua nhà."
+          resources={[
+            {
+              icon: BookOpen,
+              title: 'Hướng dẫn cho người mua lần đầu',
+              description:
+                'Toàn bộ quy trình dành cho người mua căn nhà đầu tiên, từ tiết kiệm đến ngày nhận chìa khóa.',
+              link: '/first-time-buyers',
+              english: true,
+            },
+            {
+              icon: Calculator,
+              title: 'Máy tính tiền vay',
+              description:
+                'Ước tính khoản trả hàng tháng theo giá nhà, tiền trả trước và lãi suất.',
+              link: '/calculator',
+              english: true,
+            },
+            {
+              icon: FileText,
+              title: 'Giấy tờ xin chấp thuận vay',
+              description:
+                'Danh sách giấy tờ và các bước cần chuẩn bị trước khi nộp hồ sơ vay.',
+              link: '/blog/pre-approval-checklist',
+              english: true,
+            },
+            {
+              icon: Home,
+              title: 'Hướng dẫn kiểm tra nhà',
+              description:
+                'Cần xem gì và hỏi gì trong buổi kiểm tra nhà, đặc biệt với nhà xây trước 1940.',
+              link: '/blog/home-inspection-guide',
+              english: true,
+            },
+            {
+              icon: BarChart3,
+              title: 'Khi có nhiều người cùng tranh mua',
+              description:
+                'Offer thắng ở vùng Boston thường thắng nhờ điều khoản, không chỉ nhờ giá.',
+              link: '/blog/winning-a-bidding-war-greater-boston',
+              english: true,
+            },
+            {
+              icon: Eye,
+              title: 'Các khu vực phục vụ',
+              description:
+                'Thông tin từng thị trấn Kevin phục vụ, để chọn nơi ở trước khi chọn nhà.',
+              link: '/vi/khu-vuc',
+            },
+          ]}
+        />
+      </>
+    }
+  />
 );
 
 export default ViBuy;

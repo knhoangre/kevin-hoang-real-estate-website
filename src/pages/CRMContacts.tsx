@@ -3,7 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import CRMLayout from "@/components/CRMLayout";
+import AdminShell, {
+  AdminCard,
+  AdminLoading,
+  adminActionClass,
+  CRM_LINKS,
+} from "@/components/AdminShell";
 import {
   Table,
   TableBody,
@@ -777,7 +782,7 @@ export default function CRMContacts() {
                 } else {
                   const { data: newTag, error: tagError } = await supabase
                     .from('contact_tags')
-                    .insert({ tag: tagName, color: '#9b87f5' })
+                    .insert({ tag: tagName, color: '#c5a572' })
                     .select('id')
                     .single();
                   if (!tagError && newTag) {
@@ -1172,64 +1177,52 @@ export default function CRMContacts() {
     }
   };
 
-  if (loading) {
-    return (
-      <CRMLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </CRMLayout>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  // AdminShell owns the admin gate; this one is the data fetch.
+  if (loading) return <AdminLoading />;
+  if (!user) return null;
 
   return (
-    <CRMLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Contacts
-            </h1>
-            <p className="text-gray-600">
-              Manage and view all your contacts
-            </p>
-          </div>
-          <div className="flex gap-2">
-            {selectedContactIds.length > 0 && (
-              <Button 
-                variant="destructive" 
-                onClick={() => setBulkDeleteDialogOpen(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Selected ({selectedContactIds.length})
-              </Button>
-            )}
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                queryClient.invalidateQueries({ queryKey: ['crm-contacts'] });
-              }}
-              disabled={isLoading}
+    <AdminShell
+      eyebrow="CRM"
+      links={CRM_LINKS}
+      title="Contacts"
+      description="Everyone who has signed in, written in, or been imported."
+      actions={
+        <>
+          {selectedContactIds.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setBulkDeleteDialogOpen(true)}
+              className={adminActionClass('danger')}
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
-            <Button variant="outline" onClick={() => setIsCsvDialogOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              Import CSV
-            </Button>
-            <Button onClick={() => {
+              <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+              Delete Selected ({selectedContactIds.length})
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['crm-contacts'] })}
+            disabled={isLoading}
+            className={adminActionClass()}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden />
+            Refresh
+          </button>
+          <button type="button" onClick={handleExport} className={adminActionClass()}>
+            <Download className="mr-2 h-4 w-4" aria-hidden />
+            Export CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsCsvDialogOpen(true)}
+            className={adminActionClass()}
+          >
+            <Upload className="mr-2 h-4 w-4" aria-hidden />
+            Import CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => {
               setSelectedContact({
                 contact_id: 0, // Use 0 to indicate new contact
                 first_name: '',
@@ -1243,13 +1236,15 @@ export default function CRMContacts() {
                 event_count: 0,
               });
               setIsEditing(true);
-            }}>
-              <Edit className="mr-2 h-4 w-4" />
-              Add Contact
-            </Button>
-          </div>
-        </div>
-
+            }}
+            className={adminActionClass('primary')}
+          >
+            <Edit className="mr-2 h-4 w-4" aria-hidden />
+            Add Contact
+          </button>
+        </>
+      }
+    >
         {/* Filters */}
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -1505,7 +1500,7 @@ export default function CRMContacts() {
                                     key={tag.id}
                                     className="px-2 py-0.5 text-xs rounded-full"
                                     style={{
-                                      backgroundColor: tag.color || '#9b87f5',
+                                      backgroundColor: tag.color || '#c5a572',
                                       color: 'white',
                                     }}
                                   >
@@ -1758,7 +1753,7 @@ export default function CRMContacts() {
                               key={tag.id}
                               className="px-2 py-1 text-xs rounded-full flex items-center gap-1"
                               style={{
-                                backgroundColor: tag.color || '#9b87f5',
+                                backgroundColor: tag.color || '#c5a572',
                                 color: 'white',
                               }}
                             >
@@ -1815,7 +1810,7 @@ export default function CRMContacts() {
                                   // Create new tag
                                   supabase
                                     .from('contact_tags')
-                                    .insert({ tag: newTagName.trim(), color: '#9b87f5' })
+                                    .insert({ tag: newTagName.trim(), color: '#c5a572' })
                                     .select()
                                     .single()
                                     .then(({ data, error }) => {
@@ -1840,7 +1835,7 @@ export default function CRMContacts() {
                                 onClick={() => {
                                   supabase
                                     .from('contact_tags')
-                                    .insert({ tag: newTagName.trim(), color: '#9b87f5' })
+                                    .insert({ tag: newTagName.trim(), color: '#c5a572' })
                                     .select()
                                     .single()
                                     .then(({ data, error }) => {
@@ -1966,7 +1961,7 @@ export default function CRMContacts() {
                             {addresses.map((addr, idx) => (
                               <div key={idx} className="p-2 border rounded text-sm">
                                 {addr.is_primary && (
-                                  <span className="text-xs font-semibold text-[#9b87f5] mr-2">PRIMARY</span>
+                                  <span className="mr-2 text-xs font-semibold text-champagne-ink">PRIMARY</span>
                                 )}
                                 <p className="text-gray-600">
                                   {addr.address_line1}
@@ -2006,7 +2001,7 @@ export default function CRMContacts() {
                                 key={tag.id}
                                 className="px-2 py-1 text-xs rounded-full"
                                 style={{
-                                  backgroundColor: tag.color || '#9b87f5',
+                                  backgroundColor: tag.color || '#c5a572',
                                   color: 'white',
                                 }}
                               >
@@ -2252,7 +2247,6 @@ export default function CRMContacts() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </CRMLayout>
+    </AdminShell>
   );
 }

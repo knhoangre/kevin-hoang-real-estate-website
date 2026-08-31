@@ -15,6 +15,10 @@ import { Bed, Bath, Square, Phone } from 'lucide-react';
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { Link } from "react-router-dom";
 import { SITE, telHref } from "@/lib/siteConfig";
+// Shared with the detail page and the town guides. These were three private
+// copies of the same two functions, already drifting — one rendered a null
+// price as "Price on Request" and another as "Price on request".
+import { formatPrice, formatBaths } from "@/lib/listings";
 
 /**
  * The Supabase row shape, which is snake_case and differs from the camelCase
@@ -44,29 +48,107 @@ const normalizeZip = (raw: string) => {
 };
 
 /**
+ * Storage object path -> the committed local photo, e.g.
+ *   "73288339/1769233871163-0" -> "/listings/73288339/1769233871163-0.webp"
+ *
+ * Built once from the snapshot, whose `images` are already local paths.
+ */
+const localPhotos = new Map(
+  soldListings.flatMap((l) =>
+    l.images
+      .filter((src) => src.startsWith('/listings/'))
+      .map((src) => [src.slice('/listings/'.length).replace(/\.webp$/, ''), src] as const)
+  )
+);
+
+/**
+ * Resolves one live `image_urls` entry to the committed local photo.
+ *
+ * This is the rule that keeps the revalidation from undoing the egress fix. The
+ * snapshot renders photos from /listings/ (see scripts/sync-listings.mjs); left
+ * alone, the refresh below would swap all 339 back to Supabase Storage URLs a
+ * moment after hydration — re-introducing the entire bill, plus a visible flash.
+ *
+ * The remote URL is the deliberate fallback for a listing added in
+ * /admin/properties since the last sync: its photos have no local copy yet, and
+ * showing them from Supabase until the next sync is far better than showing
+ * none. Uploads now set a long cacheControl (see pages/Properties.tsx), so that
+ * fallback is genuinely CDN-cached rather than revalidated on every hit.
+ */
+const toLocalPhoto = (url: string) => {
+  const m = /\/object\/public\/property-images\/(.+)$/.exec(url);
+  if (!m) return url;
+  const key = decodeURIComponent(m[1]).split('?')[0].replace(/\.[^./]+$/, '');
+  return localPhotos.get(key) ?? url;
+};
+
+/** The snapshot, by row id — the source for everything the live query cannot see. */
+const snapshotById = new Map(soldListings.map((l) => [l.id, l]));
+
+/**
+ * "12 Main St" + "Newton" + id -> "12-main-st-newton-5".
+ *
+ * A byte-for-byte mirror of slugify() in scripts/sync-listings.mjs, and it has
+ * to stay one: this string is now a URL. It used to be `String(r.id)`, which
+ * nothing rendered — the slug was only an anchor target and the mismatch was
+ * invisible. Now that each listing has a real page, a revalidation computing a
+ * different slug would rewrite every card's link to a URL that does not exist.
+ */
+const slugify = (address: string, town: string, id: number) => {
+  const base = `${address} ${town}`
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  return `${base}-${id}`;
+};
+
+/**
  * Maps a live Supabase row onto the snapshot's shape.
  *
- * Deliberately mirrors scripts/sync-listings.mjs — the town suffix strip and
- * the ZIP padding have to agree, or a listing would visibly change format the
- * instant the client-side revalidation replaced the prerendered copy.
+ * Deliberately mirrors scripts/sync-listings.mjs — the town suffix strip, the
+ * ZIP padding, the slug and the photo path mapping all have to agree, or a
+ * listing would visibly change the instant the client-side revalidation
+ * replaced the prerendered copy.
+ *
+ * The detail fields (soldDate, description, listPrice, represented, ogImage)
+ * are carried over from the snapshot rather than re-fetched. This page does not
+ * render any of them — they belong to /properties/<slug> — so adding five
+ * columns to the query would be egress for nothing. Falling back to the
+ * snapshot keeps the object a complete SoldListing; a listing too new to be in
+ * the snapshot simply has none of them, which is exactly what it has in the
+ * database too.
  */
-const fromRow = (r: PropertyRow): SoldListing => ({
-  id: r.id,
-  mlsnum: r.mlsnum ?? '',
-  slug: String(r.id),
-  status: (r.status ?? 'Sold').trim(),
-  propertyType: (r.property_type ?? '').trim(),
-  address: (r.address ?? '').trim(),
-  town: String(r.town ?? '').replace(/,?\s*(MA|Massachusetts)\.?$/i, '').trim(),
-  townSlug: null,
-  zipCode: normalizeZip(r.zip_code),
-  salePrice: r.sale_price,
-  bedrooms: r.bedrooms,
-  fullBaths: r.full_baths,
-  halfBaths: r.half_baths,
-  livingArea: r.living_area,
-  images: Array.isArray(r.image_urls) ? r.image_urls.filter(Boolean) : [],
-});
+const fromRow = (r: PropertyRow): SoldListing => {
+  const town = String(r.town ?? '').replace(/,?\s*(MA|Massachusetts)\.?$/i, '').trim();
+  const snapshot = snapshotById.get(r.id);
+
+  return {
+    id: r.id,
+    mlsnum: r.mlsnum ?? '',
+    slug: slugify((r.address ?? '').trim(), town, r.id),
+    status: (r.status ?? 'Sold').trim(),
+    propertyType: (r.property_type ?? '').trim(),
+    address: (r.address ?? '').trim(),
+    town,
+    // The town guide link, from the snapshot's own resolution against
+    // SITE.areaServed. Recomputing it here would be a fourth copy of that list.
+    townSlug: snapshot?.townSlug ?? null,
+    zipCode: normalizeZip(r.zip_code),
+    salePrice: r.sale_price,
+    bedrooms: r.bedrooms,
+    fullBaths: r.full_baths,
+    halfBaths: r.half_baths,
+    livingArea: r.living_area,
+    soldDate: snapshot?.soldDate ?? null,
+    description: snapshot?.description ?? null,
+    listPrice: snapshot?.listPrice ?? null,
+    represented: snapshot?.represented ?? null,
+    ogImage: snapshot?.ogImage ?? null,
+    images: Array.isArray(r.image_urls) ? r.image_urls.filter(Boolean).map(toLocalPhoto) : [],
+  };
+};
 
 /** Highest price first; unpriced listings last rather than sorted as zero. */
 const byPriceDesc = (a: SoldListing, b: SoldListing) => {
@@ -111,7 +193,9 @@ const PropertiesList = () => {
       try {
         const { data, error } = await supabase
           .from('properties')
-          .select('*')
+          // The columns PropertyRow declares, not '*'. The table carries fields
+          // this page never reads, and every one of them is egress on a free tier.
+          .select('id, mlsnum, property_type, status, address, town, zip_code, sale_price, bedrooms, full_baths, half_baths, living_area, image_urls')
           .eq('is_active', true);
 
         if (error) throw error;
@@ -127,25 +211,6 @@ const PropertiesList = () => {
       cancelled = true;
     };
   }, []);
-
-  const formatCurrency = (value: number | null) => {
-    if (value === null) return 'Price on Request';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const formatBaths = (full: number | null, half: number | null) => {
-    const fullBaths = full || 0;
-    const halfBaths = half || 0;
-    if (halfBaths > 0) {
-      return `${fullBaths}.${halfBaths}`;
-    }
-    return fullBaths.toString();
-  };
 
   const formatBadgeText = (value: string | null | undefined, fallback: string) => {
     const normalized = value?.trim();
@@ -180,7 +245,9 @@ const PropertiesList = () => {
       jsonLd={itemList(
         properties.map((p) => ({
           name: `${p.address}, ${p.town}, MA`,
-          url: `/properties#listing-${p.slug}`,
+          // Real page URLs now, not `#listing-…` fragments. A fragment is not
+          // an addressable item, and each of these is its own document.
+          url: `/properties/${p.slug}`,
         }))
       )}
       seo={{
@@ -390,13 +457,23 @@ const PropertiesList = () => {
                   {/* Property Details */}
                   <CardContent className="p-4">
                     <div className="space-y-2">
-                      <div className="text-2xl font-bold text-ink">
-                        {formatCurrency(property.salePrice)}
+                      <div className="numeral text-2xl font-bold text-ink">
+                        {formatPrice(property.salePrice)}
                       </div>
-                      <div className="text-gray-600">
+                      {/*
+                        A real <a>, not a click handler on the card. The card
+                        wraps a carousel with its own buttons, so the anchor is
+                        the address rather than the whole tile — nesting the
+                        carousel's <button>s inside a link would make them
+                        unusable, and nesting anchors breaks hydration outright.
+                      */}
+                      <Link
+                        to={`/properties/${property.slug}`}
+                        className="block text-gray-600 underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:text-ink hover:decoration-champagne-ink"
+                      >
                         {property.address}, {property.town}, MA {property.zipCode}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 pt-2 border-t">
+                      </Link>
+                      <div className="numeral flex items-center gap-4 text-sm text-gray-500 pt-2 border-t">
                         {property.bedrooms !== null && (
                           <div className="flex items-center gap-1">
                             <Bed className="h-4 w-4" />

@@ -101,6 +101,19 @@ export const routes: RouteRecord[] = [
       page('calculator', () => import('./pages/Calculator'), 'src/pages/Calculator.tsx'),
       page('testimonials', () => import('./pages/Testimonials'), 'src/pages/Testimonials.tsx'),
       page('properties', () => import('./pages/PropertiesList'), 'src/pages/PropertiesList.tsx'),
+      {
+        // One page per closing, expanded from the committed snapshot. These
+        // were `#listing-<slug>` fragments on /properties until now, which
+        // nothing could rank, cite or link to as a subject of its own — and
+        // they are the only first-party evidence on the site.
+        path: 'properties/:slug',
+        lazy: async () => ({ Component: (await import('./pages/PropertyDetail')).default }),
+        entry: 'src/pages/PropertyDetail.tsx',
+        getStaticPaths: async () => {
+          const { soldListings } = await import('./data/soldListings');
+          return soldListings.map((l) => `/properties/${l.slug}`);
+        },
+      },
       page('contact', () => import('./pages/Contact'), 'src/pages/Contact.tsx'),
 
       // --- Town guides ---------------------------------------------------
@@ -148,6 +161,23 @@ export const routes: RouteRecord[] = [
         'src/pages/vi/ViFaq.tsx'
       ),
       page('vi/khu-vuc', () => import('./pages/vi/ViAreas'), 'src/pages/vi/ViAreas.tsx'),
+      page('vi/gioi-thieu', () => import('./pages/vi/ViAbout'), 'src/pages/vi/ViAbout.tsx'),
+      page(
+        'vi/chuyen-den-massachusetts',
+        () => import('./pages/vi/ViRelocation'),
+        'src/pages/vi/ViRelocation.tsx'
+      ),
+      page(
+        'vi/danh-gia',
+        () => import('./pages/vi/ViTestimonials'),
+        'src/pages/vi/ViTestimonials.tsx'
+      ),
+      page(
+        'vi/cong-cu-tinh-toan',
+        () => import('./pages/vi/ViCalculator'),
+        'src/pages/vi/ViCalculator.tsx'
+      ),
+      page('vi/lien-he', () => import('./pages/vi/ViContact'), 'src/pages/vi/ViContact.tsx'),
 
       // --- Legal ----------------------------------------------------------
       page('privacy-policy', () => import('./pages/PrivacyPolicy'), 'src/pages/PrivacyPolicy.tsx'),
@@ -177,6 +207,7 @@ export const routes: RouteRecord[] = [
       ),
       privatePage('open-house', 'Open House Sign In', () => import('./pages/OpenHouse'), 'src/pages/OpenHouse.tsx'),
       privatePage('events', 'Event Sign In', () => import('./pages/Events'), 'src/pages/Events.tsx'),
+      privatePage('admin', 'Admin', () => import('./pages/AdminHome'), 'src/pages/AdminHome.tsx'),
       privatePage('admin/follow-up', 'Follow Up', () => import('./pages/FollowUp'), 'src/pages/FollowUp.tsx'),
       privatePage(
         'admin/follow-up/open-house',

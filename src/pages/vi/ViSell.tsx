@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom';
+import { ClipboardCheck, FileText, TrendingUp } from 'lucide-react';
 import ViPage from '@/components/ViPage';
+import ViSellerRoadmap from '@/components/vi/ViSellerRoadmap';
+import ViResources from '@/components/vi/ViResources';
 
 /**
  * /vi/ban-nha — the seller's guide in Vietnamese. Counterpart of /seller.
@@ -63,71 +65,57 @@ const ViSell = () => (
       button: 'Yêu cầu định giá',
     }}
     enLabel="The seller's guide and roadmap"
-  >
-    <h2>Giá bán được quyết định trong hai tuần đầu</h2>
-    <p>
-      Một căn nhà vừa lên thị trường nhận được đợt chú ý lớn nhất mà nó sẽ không bao giờ có
-      lại: mọi người mua có tìm kiếm đã lưu, mọi môi giới theo dõi thị trấn đó, và mọi thông
-      báo tự động đều kích hoạt cùng lúc.
-    </p>
-    <p>
-      Định giá đúng thì sự chú ý ấy chuyển thành các buổi xem nhà, rồi thành offer — đôi khi
-      là nhiều offer cùng lúc. Định giá quá cao thì cũng nhóm người ấy nhìn thấy, đánh giá là
-      đắt, và đi tiếp. Đó là toàn bộ lập luận, và{' '}
-      <Link to="/vi/dinh-gia-nha">một bản định giá dựa trên dữ liệu thật</Link> là cách tránh nó.
-    </p>
+    // Wide, like /seller: the roadmap's sticky index sits beside the steps.
+    width="wide"
+    sections={
+      <>
+        <ViSellerRoadmap />
 
-    <h2>Lo các giấy tờ bắt buộc trước</h2>
-    <p>Mỗi món dưới đây đều có thể làm chậm ngày đóng nếu để đến phút cuối.</p>
-    <ul>
-      <li>
-        <strong>Giấy chứng nhận báo khói và báo khí CO</strong> — nghĩa vụ của người bán, xin
-        từ sở cứu hỏa địa phương. Đặt lịch ngay khi có ngày đóng.
-      </li>
-      <li>
-        <strong>Title 5</strong>, nếu nhà dùng hầm tự hoại. Làm trước khi đăng bán. Một hệ
-        thống không đạt vừa tốn kém vừa mất thời gian thay thế.
-      </li>
-      <li>
-        <strong>Sơn chì</strong>, nếu nhà xây trước năm 1978. Luật liên bang buộc phải công
-        bố những gì bạn biết và cung cấp tài liệu của EPA; luật Massachusetts còn chặt hơn.
-      </li>
-      <li>
-        <strong>Giấy 6(d)</strong>, nếu là chung cư. Ban quản trị xác nhận bạn không còn nợ
-        phí. Đây là thứ ngăn người mua thừa hưởng khoản nợ của chủ cũ.
-      </li>
-      <li>
-        <strong>Lịch sử giấy phép xây dựng</strong> — lấy từ phòng xây dựng và đối chiếu với
-        thực tế. Công trình không phép sẽ lộ ra trong quá trình người mua thẩm tra.
-      </li>
-    </ul>
+        <div className="py-8">
+          {/* Blue is deliberate and stays: a warning panel, not the brand. */}
+          <div className="rounded-r-lg border-l-4 border-blue-400 bg-blue-50 p-6">
+            <p className="text-sm leading-relaxed text-gray-700">
+              <strong>Lưu ý quan trọng:</strong> Mỗi giao dịch bán nhà một khác, và lộ
+              trình này chỉ là hướng dẫn chung. Đây là thông tin mang tính tham khảo,
+              không phải tư vấn pháp lý, thuế hay tài chính. Hãy làm việc với agent, luật
+              sư và người khai thuế để có hướng dẫn phù hợp với hoàn cảnh của bạn.
+            </p>
+          </div>
+        </div>
 
-    <h2>Chuẩn bị nhà: làm gì và không làm gì</h2>
-    <p>
-      <strong>Nên làm:</strong> dọn bớt đồ đạc — bỏ khoảng một phần ba số nội thất và hầu hết
-      đồ cá nhân; dọn vệ sinh thật kỹ, kể cả cửa kính; sơn lại những chỗ trầy xước hoặc màu
-      quá đậm; thay bóng đèn và làm sáng những phòng tối; và chăm chút mặt tiền, vì đó là tấm
-      ảnh đầu tiên người mua nhìn thấy.
-    </p>
-    <p>
-      <strong>Không nên làm:</strong> tân trang toàn bộ bếp hoặc phòng tắm chỉ để bán. Chi phí
-      hiếm khi thu hồi đủ, và người mua thường sẽ làm lại theo gu của họ.
-    </p>
-    <p>
-      Cân nhắc <strong>tự thuê kiểm tra nhà trước khi đăng bán</strong>. Nó biến những bất ngờ
-      thành những quyết định: sửa cái rẻ, tính giá cho cái đắt, và công bố đầy đủ. Người mua
-      phát hiện năm vấn đề sẽ thương lượng; người mua thấy năm vấn đề bạn đã công bố và đã
-      tính vào giá thì đang mua nhà.
-    </p>
-
-    <h2>Nếu bạn vừa bán vừa mua</h2>
-    <p>
-      Hai giao dịch phải khớp nhau về thời gian, và lãi suất ảnh hưởng đến cả hai theo hướng
-      không bù trừ cho nhau. Nếu bạn đang giữ một khoản vay lãi suất thấp, đổi sang căn lớn
-      hơn với lãi suất hiện tại có thể làm khoản trả hàng tháng tăng nhiều hơn phần chênh lệch
-      giá. Hãy tính cả hai bên trước khi đăng bán.
-    </p>
-  </ViPage>
+        <ViResources
+          heading="TÀI LIỆU CHO NGƯỜI BÁN"
+          subtitle="Những tài liệu giúp bạn chuẩn bị, định giá và hoàn tất việc bán nhà."
+          resources={[
+            {
+              icon: ClipboardCheck,
+              title: 'Chuẩn bị nhà trước khi rao',
+              description:
+                'Những việc nên làm — và không nên làm — để căn nhà đạt giá tốt nhất.',
+              link: '/blog/home-preparation-guide',
+              english: true,
+            },
+            {
+              icon: TrendingUp,
+              title: 'Chiến lược định giá',
+              description:
+                'Cách định giá trong một thị trường cạnh tranh như vùng Greater Boston.',
+              link: '/blog/pricing-strategy-guide',
+              english: true,
+            },
+            {
+              icon: FileText,
+              title: 'Giấy tờ người bán cần trước ngày đóng',
+              description:
+                'Các giấy tờ, công bố và chứng nhận mà người bán ở Massachusetts phải có.',
+              link: '/blog/massachusetts-seller-closing-requirements',
+              english: true,
+            },
+          ]}
+        />
+      </>
+    }
+  />
 );
 
 export default ViSell;

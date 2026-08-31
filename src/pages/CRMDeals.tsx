@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import CRMLayout from "@/components/CRMLayout";
+import AdminShell, {
+  AdminCard,
+  AdminLoading,
+  CRM_LINKS,
+} from "@/components/AdminShell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -710,46 +714,31 @@ export default function CRMDeals() {
     0
   );
 
-  if (loading) {
-    return (
-      <CRMLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </div>
-      </CRMLayout>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  // AdminShell owns the admin gate; this one is the data fetch.
+  if (loading) return <AdminLoading />;
+  if (!user) return null;
 
   return (
-    <CRMLayout>
-      <div className="container mx-auto px-4 py-8">
+    <AdminShell
+      eyebrow="CRM"
+      links={CRM_LINKS}
+      title="Deal Pipeline"
+      description="Drag and drop deals to move them between stages."
+    >
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Deal Pipeline
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Drag and drop deals to move them between stages
-          </p>
           <div className="flex flex-wrap gap-4">
-            <Card className="flex-1 min-w-[200px] border-[#9b87f5]/30 bg-[#9b87f5]/5">
+            <Card className="flex-1 min-w-[200px] border-champagne/40 bg-champagne/[0.07]">
               <CardContent className="pt-4 pb-4">
                 <p className="text-sm font-medium text-gray-600 mb-1">Commission earned (closed)</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                   ${commissionEarned.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
               </CardContent>
             </Card>
-            <Card className="flex-1 min-w-[200px] border-[#9b87f5]/30 bg-[#9b87f5]/5">
+            <Card className="flex-1 min-w-[200px] border-champagne/40 bg-champagne/[0.07]">
               <CardContent className="pt-4 pb-4">
                 <p className="text-sm font-medium text-gray-600 mb-1">Commission potential (pipeline)</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-semibold text-ink lining-nums tabular-nums">
                   ${commissionPotential.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
               </CardContent>
@@ -759,7 +748,7 @@ export default function CRMDeals() {
         <div className="mb-8 flex justify-end">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#9b87f5] hover:bg-[#8b7ae5]">
+              <Button className="bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep">
                 <Plus className="h-4 w-4 mr-2" />
                 New Deal
               </Button>
@@ -877,7 +866,7 @@ export default function CRMDeals() {
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="mt-2 h-auto p-0 text-sm text-[#9b87f5] hover:bg-transparent hover:text-[#8b7ae5]"
+                      className="mt-2 h-auto p-0 text-sm text-champagne-ink hover:bg-transparent hover:underline hover:decoration-champagne hover:underline-offset-4"
                       onClick={() => setIsNewContactOpen(true)}
                     >
                       <UserPlus className="mr-1.5 h-3.5 w-3.5" />
@@ -939,7 +928,7 @@ export default function CRMDeals() {
                         <Button
                           type="button"
                           size="sm"
-                          className="bg-[#9b87f5] hover:bg-[#8b7ae5]"
+                          className="bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
                           onClick={handleCreateContact}
                           disabled={
                             !newContact.first_name.trim() ||
@@ -979,7 +968,7 @@ export default function CRMDeals() {
                 </div>
                 <Button
                   onClick={handleCreateDeal}
-                  className="w-full bg-[#9b87f5] hover:bg-[#8b7ae5]"
+                  className="w-full bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
                   disabled={createDeal.isPending}
                 >
                   {createDeal.isPending ? 'Creating...' : 'Create Deal'}
@@ -1258,7 +1247,7 @@ export default function CRMDeals() {
                 <div className="flex gap-2">
                   <Button
                     onClick={handleSaveEditDeal}
-                    className="flex-1 bg-[#9b87f5] hover:bg-[#8b7ae5]"
+                    className="flex-1 bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
                     disabled={updateDeal.isPending}
                   >
                     {updateDeal.isPending ? 'Saving...' : 'Save Changes'}
@@ -1307,7 +1296,6 @@ export default function CRMDeals() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </CRMLayout>
+    </AdminShell>
   );
 }

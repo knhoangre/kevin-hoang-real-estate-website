@@ -27,9 +27,152 @@
  * than a genuinely emptied table, and silently blanking the page on a bad
  * network day is not a trade worth making.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import sharp from 'sharp';
 
 const OUT = 'src/data/soldListings.ts';
+
+// --- photo localisation ---------------------------------------------------
+// Listing photos used to be referenced as Supabase Storage object URLs straight
+// out of image_urls, and that was the entire Supabase egress bill: 339 photos,
+// 228 MB, full-resolution PNGs rendered into a ~360px card, every object served
+// with `cache-control: no-cache` so the CDN revalidated and re-transferred on
+// every single request. Supabase's own /render/image/ transform endpoint is a
+// paid feature and answers 403 on the free plan, so the resize happens here and
+// the results are committed and served from Vercel instead.
+//
+// 900px covers the card at 2x DPR. WebP because these are photographs that were
+// stored as PNG.
+const PHOTO_DIR = 'public/listings';
+const PHOTO_WIDTH = 900;
+const PHOTO_QUALITY = 78;
+
+// The social card for a listing page, cropped from its first photo.
+//
+// <Seo> declares og:image as 1200x630 and CLAUDE.md is emphatic that whatever
+// is passed must ACTUALLY be that size — 65 pages once promised those
+// dimensions over an 800x500 or 500x300 crop, and the ones under Facebook's
+// 600x315 floor unfurled as a thumbnail or not at all. The on-page photos stay
+// 900px wide because that is what the page needs; this is the same discipline
+// as ogVariant() in src/lib/images.ts, which widens a content image for the
+// card without touching the one the page renders.
+//
+// Cropped from the committed WebP rather than re-fetching the original, so a
+// re-sync costs nothing. 900 -> 1200 is a 1.33x upscale, which is invisible at
+// the size a social card is actually displayed.
+const OG_NAME = 'og.jpg';
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
+
+/**
+ * Storage object path -> local path, e.g.
+ *   https://…/object/public/property-images/73288339/1769233871163-0.png
+ *   -> { file: 'public/listings/73288339/1769233871163-0.webp',
+ *        href: '/listings/73288339/1769233871163-0.webp' }
+ *
+ * Returns null for anything that is not a property-images object URL, which is
+ * how an already-local path survives a re-sync untouched.
+ */
+const localPathFor = (url) => {
+  const m = /\/object\/public\/property-images\/(.+)$/.exec(String(url ?? ''));
+  if (!m) return null;
+  const rel = decodeURIComponent(m[1]).split('?')[0].replace(/\.[^./]+$/, '') + '.webp';
+  // Refuse anything that could climb out of the photo directory.
+  if (rel.includes('..')) return null;
+  return { file: join(PHOTO_DIR, rel), href: `/listings/${rel}` };
+};
+
+const photoStats = { downloaded: 0, reused: 0, failed: 0, pruned: 0, og: 0 };
+const kept = new Set();
+
+/**
+ * Downloads and re-encodes one photo, or reuses the committed copy.
+ *
+ * A failure returns the original Supabase URL rather than throwing: the photo
+ * still renders, and one bad object must not cost us the whole snapshot.
+ */
+const localizePhoto = async (url) => {
+  const target = localPathFor(url);
+  if (!target) return url;
+
+  kept.add(target.file);
+
+  if (existsSync(target.file)) {
+    photoStats.reused += 1;
+    return target.href;
+  }
+
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const buf = Buffer.from(await r.arrayBuffer());
+    const out = await sharp(buf)
+      .resize({ width: PHOTO_WIDTH, withoutEnlargement: true })
+      .webp({ quality: PHOTO_QUALITY })
+      .toBuffer();
+    mkdirSync(dirname(target.file), { recursive: true });
+    writeFileSync(target.file, out);
+    photoStats.downloaded += 1;
+    return target.href;
+  } catch (err) {
+    photoStats.failed += 1;
+    kept.delete(target.file);
+    console.warn(`sync-listings: could not localize ${url} (${err.message}) — keeping the remote URL`);
+    return url;
+  }
+};
+
+/**
+ * Writes public/listings/<mls>/og.jpg from a listing's first photo.
+ *
+ * Returns the href, or null when there is no photo to crop or the crop fails —
+ * in which case the page falls back to SITE.defaultOgImage, which is always the
+ * right size. A missing card is a worse unfurl; a wrongly-sized one is a broken
+ * one, and the fallback is neither.
+ */
+const buildOgImage = async (localHref) => {
+  if (!localHref || !localHref.startsWith('/listings/')) return null;
+
+  const source = join(PHOTO_DIR, localHref.slice('/listings/'.length));
+  const dir = dirname(source);
+  const file = join(dir, OG_NAME);
+  const href = `/listings/${dir.slice(PHOTO_DIR.length + 1)}/${OG_NAME}`;
+
+  kept.add(file);
+  if (existsSync(file)) return href;
+
+  try {
+    const out = await sharp(source)
+      .resize(OG_WIDTH, OG_HEIGHT, { fit: 'cover', position: 'centre' })
+      .jpeg({ quality: 82 })
+      .toBuffer();
+    writeFileSync(file, out);
+    photoStats.og += 1;
+    return href;
+  } catch (err) {
+    kept.delete(file);
+    console.warn(`sync-listings: could not build an OG card for ${localHref} (${err.message})`);
+    return null;
+  }
+};
+
+/** Every file under public/listings that no live listing references. */
+const prunePhotos = () => {
+  const walk = (dir) => {
+    if (!existsSync(dir)) return [];
+    return readdirSync(dir).flatMap((name) => {
+      const p = join(dir, name);
+      return statSync(p).isDirectory() ? walk(p) : [p];
+    });
+  };
+  for (const file of walk(PHOTO_DIR)) {
+    if (!kept.has(file)) {
+      rmSync(file);
+      photoStats.pruned += 1;
+    }
+  }
+};
 
 // --- credentials ----------------------------------------------------------
 // Read from the environment, falling back to .env — Vite loads that file, plain
@@ -107,6 +250,30 @@ const normalizeZip = (raw) => {
   return digits.length === 4 ? digits.padStart(5, '0') : digits;
 };
 
+/**
+ * A DATE column arrives as "2026-03-14" and a timestamp as "2026-03-14T…".
+ * Either way only the calendar day is kept: the page prints a month and a year,
+ * and the sitemap wants a plain ISO date.
+ *
+ * Anything that will not parse becomes null rather than a best guess, so the
+ * page omits the sold line entirely. Same rule as lastmod in routes.mjs — an
+ * absent date is ignored, a wrong one is believed.
+ */
+const soldDate = (raw) => {
+  if (!raw) return null;
+  const iso = String(raw).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) && !Number.isNaN(Date.parse(iso)) ? iso : null;
+};
+
+/** Trims to null, so an empty textarea does not become an empty prose block. */
+const text = (raw) => {
+  const s = String(raw ?? '').trim();
+  return s === '' ? null : s;
+};
+
+/** Mirrors the properties_represented_check constraint. */
+const REPRESENTED = new Set(['buyer', 'seller', 'both']);
+
 /** "12 Main St" + "Newton" -> "12-main-st-newton". Stable, and unique per row. */
 const slugify = (address, town, id) => {
   const base = `${address} ${town}`
@@ -143,9 +310,17 @@ if (!Array.isArray(rows) || rows.length === 0) {
   process.exit(1);
 }
 
-const listings = rows.map((r) => {
+// Sequential rather than Promise.all: this is a few hundred multi-megabyte
+// downloads against a free-tier bucket, and hammering it in parallel is how you
+// get rate-limited halfway through and end up with a half-localized snapshot.
+const listings = [];
+for (const r of rows) {
   const { town, townSlug } = canonicalTown(r.town);
-  return {
+  const urls = Array.isArray(r.image_urls) ? r.image_urls.filter(Boolean) : [];
+  const images = [];
+  for (const url of urls) images.push(await localizePhoto(url));
+
+  listings.push({
     id: r.id,
     mlsnum: r.mlsnum ?? '',
     slug: slugify(r.address, town, r.id),
@@ -160,9 +335,20 @@ const listings = rows.map((r) => {
     fullBaths: r.full_baths ?? null,
     halfBaths: r.half_baths ?? null,
     livingArea: r.living_area ?? null,
-    images: Array.isArray(r.image_urls) ? r.image_urls.filter(Boolean) : [],
-  };
-});
+    // The four detail fields, added for /properties/<slug>. Each is nullable
+    // and each is omitted by the page when absent — a listing with no
+    // description renders photos and specs rather than filler, and one with no
+    // sold_date says nothing about when it closed rather than guessing.
+    soldDate: soldDate(r.sold_date),
+    description: text(r.description),
+    listPrice: r.list_price ?? null,
+    represented: REPRESENTED.has(r.represented) ? r.represented : null,
+    images,
+    ogImage: await buildOgImage(images[0]),
+  });
+}
+
+prunePhotos();
 
 // --- report anything a human should look at -------------------------------
 const unmatched = [...new Set(listings.filter((l) => !l.townSlug).map((l) => l.town))];
@@ -189,13 +375,20 @@ const body = `/**
  * It is committed so that /properties can prerender real listings instead of a
  * spinner, and so the build needs neither network nor credentials.
  *
+ * \`images\` are LOCAL paths under /listings/, not Supabase Storage URLs. The
+ * files live in public/listings/ and are generated by the same script — they are
+ * part of this output and are committed with it. Photos are served from Vercel
+ * because serving them from Supabase Storage cost 228 MB of egress per full page
+ * read, on a free tier. A remaining supabase.co URL here means that one photo
+ * failed to download on the last sync; re-run the script.
+ *
  * Last synced: ${new Date().toISOString().slice(0, 10)}
  */
 
 export interface SoldListing {
   id: number;
   mlsnum: string;
-  /** Stable per-row key, also used as the #listing-… anchor target. */
+  /** Stable per-row key. The /properties/<slug> URL, and the card anchor. */
   slug: string;
   status: string;
   propertyType: string;
@@ -210,7 +403,21 @@ export interface SoldListing {
   fullBaths: number | null;
   halfBaths: number | null;
   livingArea: number | null;
+  /** ISO date the sale recorded, or null. Null renders no sold line at all. */
+  soldDate: string | null;
+  /** Kevin's own prose. Null renders no prose block — never a placeholder. */
+  description: string | null;
+  /** Asking price, for the closed-vs-asked comparison. */
+  listPrice: number | null;
+  /** Which side was represented, or null to make no claim either way. */
+  represented: 'buyer' | 'seller' | 'both' | null;
   images: string[];
+  /**
+   * A 1200x630 crop of the first photo, for og:image. Null falls back to
+   * SITE.defaultOgImage — never to a photo of the wrong size, which unfurls
+   * worse than the generic card.
+   */
+  ogImage: string | null;
 }
 
 export const soldListings: SoldListing[] = ${JSON.stringify(listings, null, 2)};
@@ -218,6 +425,10 @@ export const soldListings: SoldListing[] = ${JSON.stringify(listings, null, 2)};
 /** Listings in one town, by its areaServed slug. Empty when there are none. */
 export const listingsForTown = (townSlug: string): SoldListing[] =>
   soldListings.filter((l) => l.townSlug === townSlug);
+
+/** One listing by its slug, for the /properties/<slug> route. */
+export const listingBySlug = (slug: string): SoldListing | undefined =>
+  soldListings.find((l) => l.slug === slug);
 `;
 
 writeFileSync(OUT, body);
@@ -228,3 +439,13 @@ console.log(
   `(${sold} sold, ${listings.length - sold} other), ` +
   `${new Set(listings.map((l) => l.townSlug).filter(Boolean)).size} towns with a guide`
 );
+console.log(
+  `sync-listings: photos — ${photoStats.downloaded} downloaded, ${photoStats.reused} reused, ` +
+  `${photoStats.pruned} pruned, ${photoStats.og} OG cards, ${photoStats.failed} left remote`
+);
+if (photoStats.failed) {
+  console.warn(
+    `sync-listings: ${photoStats.failed} photo(s) still point at Supabase Storage and will\n` +
+    '  bill egress on every page view. Re-run this script to retry them.'
+  );
+}

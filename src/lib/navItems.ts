@@ -37,11 +37,14 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: '/buyer', labelKey: 'nav.buyer' },
   { to: '/seller', labelKey: 'nav.seller' },
   { to: '/relocation', labelKey: 'nav.relocation' },
-  { to: '/vietnamese-speaking-real-estate-agent', labelKey: 'nav.vietnamese' },
   { to: '/testimonials', labelKey: 'nav.testimonials' },
   { to: '/neighborhoods', labelKey: 'nav.neighborhoods' },
   { to: '/blog', labelKey: 'nav.blog' },
   { to: '/calculator', labelKey: 'nav.calculator' },
+  // Last on purpose. It is the service page ABOUT Vietnamese-language help,
+  // written in English — distinct from the /vi tree below it in the panel,
+  // which is the same site written IN Vietnamese.
+  { to: '/vietnamese-speaking-real-estate-agent', labelKey: 'nav.vietnamese' },
 ];
 
 /**
@@ -71,8 +74,12 @@ const DARK_HERO_EXACT = new Set([
   '/first-time-buyers',
 ]);
 
-/** `/vi` and every page under it is a ViPage, and they all have dark heroes. */
-const DARK_HERO_PREFIX = ['/vi'];
+/**
+ * `/vi` and every page under it is a ViPage, and they all have dark heroes.
+ * `/admin` and `/crm` render AdminShell, whose header band is the same dark
+ * photographic treatment, so the bar starts transparent over those too.
+ */
+const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm'];
 
 /**
  * Prefix-aware, so a detail route lights up its section.

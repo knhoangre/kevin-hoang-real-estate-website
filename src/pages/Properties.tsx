@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import AdminShell, { AdminCard, AdminLoading, adminActionClass } from '@/components/AdminShell';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,8 +62,7 @@ interface Property {
 }
 
 const Properties = () => {
-  const { isAdmin, loading } = useAuth();
-  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const { toast } = useToast();
   const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -105,15 +104,6 @@ const Properties = () => {
     living_area: '',
     image_urls: [] as string[],
   });
-
-  // Handle admin check
-  useEffect(() => {
-    if (loading) return;
-    
-    if (!isAdmin) {
-      navigate('/');
-    }
-  }, [isAdmin, loading, navigate]);
 
   // Fetch properties. useCallback so the effect below can depend on it
   // honestly rather than omitting it; it closes over nothing but stable
@@ -157,10 +147,24 @@ const Properties = () => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${mlsnum}/${Date.now()}-${i}.${fileExt}`;
 
-        // Upload to Supabase Storage
+        /*
+          cacheControl is load-bearing, not a tuning knob.
+
+          Without it the object is stored with `cache-control: no-cache`, so
+          Supabase's CDN revalidates and re-transfers on every single request —
+          which is how ~340 listing photos turned into the free tier's entire
+          egress budget. fileName already carries a Date.now() stamp and is never
+          overwritten, so a year is safe.
+
+          The photos uploaded before this fix keep no-cache until they are
+          re-uploaded. That is fine: /properties now serves the committed copies
+          under /listings/ (see scripts/sync-listings.mjs), so nothing public
+          requests the originals. This header is what keeps the *new*-listing
+          fallback in PropertiesList.tsx cheap in the window before the next sync.
+        */
         const { error: uploadError } = await supabase.storage
           .from('property-images')
-          .upload(fileName, file);
+          .upload(fileName, file, { cacheControl: '31536000', upsert: false });
 
         if (uploadError) throw uploadError;
 
@@ -721,128 +725,140 @@ const Properties = () => {
     }
   };
 
-  if (loading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
+  // The admin gate is AdminShell's; this one is the data fetch.
+  if (isLoading) return <AdminLoading />;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 pt-24 pb-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Properties</h1>
-          <div className="flex gap-2">
-            {selectedPropertyIds.size > 0 && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setBulkEditData({
-                      status: '',
-                      property_type: '',
-                      town: '',
-                      zip_code: '',
-                      sale_price: '',
-                      bedrooms: '',
-                      full_baths: '',
-                      half_baths: '',
-                      living_area: '',
-                    });
-                    setIsBulkEditDialogOpen(true);
-                  }}
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  Edit Selected ({selectedPropertyIds.size})
-                </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Selected ({selectedPropertyIds.size})
-                </Button>
-              </>
-            )}
-            <Button variant="outline" onClick={() => setIsCsvDialogOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              Import CSV
-            </Button>
-            <Button onClick={handleAdd}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Property
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-md border">
+    <AdminShell
+      title="Manage Properties"
+      description="The sold-listings table behind /properties. Run scripts/sync-listings.mjs to pull edits into the committed snapshot."
+      actions={
+        <>
+          {selectedPropertyIds.size > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setBulkEditData({
+                    status: '',
+                    property_type: '',
+                    town: '',
+                    zip_code: '',
+                    sale_price: '',
+                    bedrooms: '',
+                    full_baths: '',
+                    half_baths: '',
+                    living_area: '',
+                  });
+                  setIsBulkEditDialogOpen(true);
+                }}
+                className={adminActionClass()}
+              >
+                <Edit className="mr-2 h-4 w-4" aria-hidden />
+                Edit Selected ({selectedPropertyIds.size})
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className={adminActionClass('danger')}
+              >
+                <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                Delete Selected ({selectedPropertyIds.size})
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsCsvDialogOpen(true)}
+            className={adminActionClass()}
+          >
+            <Upload className="mr-2 h-4 w-4" aria-hidden />
+            Import CSV
+          </button>
+          <button
+            type="button"
+            onClick={handleAdd}
+            className={adminActionClass('primary')}
+          >
+            <Plus className="mr-2 h-4 w-4" aria-hidden />
+            Add Property
+          </button>
+        </>
+      }
+    >
+        <AdminCard className="lining-nums tabular-nums">
+          {/* Every column is centred here, headers and cells alike. */}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">
+                <TableHead className="w-12 text-center">
                   <Checkbox
                     checked={properties.length > 0 && selectedPropertyIds.size === properties.length}
                     onCheckedChange={handleSelectAll}
+                    aria-label="Select every property"
                   />
                 </TableHead>
-                <TableHead>MLS #</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Address</TableHead>
-                <TableHead>Town</TableHead>
-                <TableHead>Zip Code</TableHead>
-                <TableHead>Sale Price</TableHead>
-                <TableHead>Bedrooms</TableHead>
-                <TableHead>Full Baths</TableHead>
-                <TableHead>Half Baths</TableHead>
-                <TableHead>Living Area</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-center">MLS #</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Type</TableHead>
+                <TableHead className="text-center">Address</TableHead>
+                <TableHead className="text-center">Town</TableHead>
+                <TableHead className="text-center">Zip Code</TableHead>
+                <TableHead className="text-center">Sale Price</TableHead>
+                <TableHead className="text-center">Bedrooms</TableHead>
+                <TableHead className="text-center">Full Baths</TableHead>
+                <TableHead className="text-center">Half Baths</TableHead>
+                <TableHead className="text-center">Living Area</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={13} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={13} className="py-10 text-center text-gray-500">
                     No properties found. Click "Add Property" to get started.
                   </TableCell>
                 </TableRow>
               ) : (
                 properties.map((property) => (
                   <TableRow key={property.id}>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Checkbox
                         checked={selectedPropertyIds.has(property.id)}
                         onCheckedChange={(checked) => handleSelectProperty(property.id, checked as boolean)}
+                        aria-label={`Select ${property.address}`}
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{property.mlsnum}</TableCell>
-                    <TableCell>{property.status || '-'}</TableCell>
-                    <TableCell>{property.property_type}</TableCell>
-                    <TableCell>{property.address}</TableCell>
-                    <TableCell>{property.town}</TableCell>
-                    <TableCell>{property.zip_code}</TableCell>
-                    <TableCell>{formatCurrency(property.sale_price)}</TableCell>
-                    <TableCell>{property.bedrooms ?? '-'}</TableCell>
-                    <TableCell>{property.full_baths ?? '-'}</TableCell>
-                    <TableCell>{property.half_baths ?? '-'}</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap text-center font-medium">
+                      {property.mlsnum}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      {property.status || '-'}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      {property.property_type}
+                    </TableCell>
+                    <TableCell className="text-center">{property.address}</TableCell>
+                    <TableCell className="text-center">{property.town}</TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      {property.zip_code}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
+                      {formatCurrency(property.sale_price)}
+                    </TableCell>
+                    <TableCell className="text-center">{property.bedrooms ?? '-'}</TableCell>
+                    <TableCell className="text-center">{property.full_baths ?? '-'}</TableCell>
+                    <TableCell className="text-center">{property.half_baths ?? '-'}</TableCell>
+                    <TableCell className="whitespace-nowrap text-center">
                       {property.living_area ? `${property.living_area.toLocaleString()} sq ft` : '-'}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                    <TableCell className="text-center">
+                      <div className="flex justify-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(property)}
+                          aria-label={`Edit ${property.address}`}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -850,6 +866,7 @@ const Properties = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(property)}
+                          aria-label={`Delete ${property.address}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -860,7 +877,7 @@ const Properties = () => {
               )}
             </TableBody>
           </Table>
-        </div>
+        </AdminCard>
 
         {/* Add/Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -1285,8 +1302,7 @@ const Properties = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+    </AdminShell>
   );
 };
 

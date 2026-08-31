@@ -11,6 +11,7 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, SECONDARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
 import { SITE, smsHref, telHref } from "@/lib/siteConfig";
+import { VI_ROUTES } from "@/lib/viRoutes";
 
 /**
  * A dropdown panel that opens on hover AND on click, focus and keyboard.
@@ -234,6 +235,34 @@ const Navbar = () => {
                     {SECONDARY_NAV.map((item) => (
                       <PanelLink key={item.to} item={item} />
                     ))}
+
+                    {/*
+                      The Vietnamese tree. It was reachable only from the
+                      footer, which meant scrolling the whole page to find it.
+                      Labels come straight from VI_ROUTES and are literal
+                      Vietnamese — never t(), which is pinned to 'en' during
+                      static generation.
+                    */}
+                    <div className="my-1.5 h-px bg-gray-200" />
+                    <p className="px-3 pb-1 pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                      Tiếng Việt
+                    </p>
+                    {VI_ROUTES.map((route) => (
+                      <Link
+                        key={route.vi}
+                        to={route.vi}
+                        onClick={() => menu.setOpen(false)}
+                        aria-current={isActivePath(pathname, route.vi) ? "page" : undefined}
+                        className={cn(
+                          "flex w-full items-center rounded-lg px-3 py-2 text-sm uppercase tracking-wide transition-colors",
+                          isActivePath(pathname, route.vi)
+                            ? "bg-bone text-champagne-ink"
+                            : "text-ink hover:bg-bone hover:text-champagne-ink",
+                        )}
+                      >
+                        {route.label}
+                      </Link>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -344,6 +373,28 @@ const Navbar = () => {
                     className="inline-block text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   />
+                ))}
+
+                <div className="my-2 h-px w-full bg-gray-200" />
+
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  Tiếng Việt
+                </p>
+                {VI_ROUTES.map((route) => (
+                  <Link
+                    key={route.vi}
+                    to={route.vi}
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-current={isActivePath(pathname, route.vi) ? "page" : undefined}
+                    className={cn(
+                      "inline-block text-center text-sm uppercase tracking-wide transition-colors",
+                      isActivePath(pathname, route.vi)
+                        ? "text-champagne-ink"
+                        : "text-ink hover:text-champagne-ink",
+                    )}
+                  >
+                    {route.label}
+                  </Link>
                 ))}
 
                 <div className="my-2 h-px w-full bg-gray-200" />

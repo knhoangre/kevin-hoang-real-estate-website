@@ -247,7 +247,34 @@ even though in-app navigation to it works. Adding a route means all three of:
   the output is committed, so the build stays deterministic and needs neither
   network nor database credentials. It refuses to write an empty file, because an
   empty result is far more often a broken query or an RLS change than an emptied
-  table.
+  table. It also downloads every listing photo, re-encodes it and commits it to
+  `public/listings/` — see the next point.
+- **Listing photos are served from `public/listings/`, never from Supabase
+  Storage.** `/properties` used to reference 339 bucket objects directly: 228 MB
+  of full-resolution PNGs rendered into a ~360px card, and because
+  `.upload()` was called without a `cacheControl` option every object was stored
+  `cache-control: no-cache`, so Supabase's CDN revalidated and re-transferred on
+  *every* request. That single page was the entire free-tier egress bill.
+  `sync-listings.mjs` now downloads each photo, resizes it to 900px (2x the card)
+  and writes WebP into `public/listings/` — 19 MB total, 56 KB average — which
+  Vercel serves under the `immutable` header in [vercel.json](vercel.json). The
+  files are generated output committed alongside the snapshot; never hand-edit
+  them, and re-run the sync after adding a listing. The script is idempotent: it
+  reuses what is already on disk and prunes what no listing references.
+  - **Supabase image transformations are not an option here.** The
+    `/render/image/` endpoint is a paid-plan feature and answers **HTTP 403** on
+    this project. The resize has to happen in the sync script.
+  - **Every `storage.upload()` must pass `cacheControl`**, or the object defaults
+    to `no-cache` and bills egress on every hit — [Properties.tsx](src/pages/Properties.tsx)
+    uses a year (filenames carry a `Date.now()` stamp and are never rewritten),
+    [Profile.tsx](src/pages/Profile.tsx) an hour (the avatar path is fixed and
+    upserted in place, so a long TTL would serve a stale picture).
+  - **`fromRow()` in [PropertiesList.tsx](src/pages/PropertiesList.tsx) maps live
+    `image_urls` back onto the local paths.** Without it the post-hydration
+    revalidation would swap all 339 photos back to bucket URLs a moment after
+    load, restoring the whole problem plus a visible flash. A photo with no local
+    copy — a listing added since the last sync — deliberately falls back to its
+    Supabase URL rather than rendering nothing.
 - **The snapshot exists so `/properties` prerenders content.** The page fetched
   from Supabase in an effect, so at generation time it rendered its spinner and
   the HTML contained no listings at all — on the one page whose subject is
@@ -262,6 +289,44 @@ even though in-app navigation to it works. Adding a route means all three of:
   logic **exactly** — if the two disagree, a listing visibly changes format the
   moment client-side revalidation replaces the prerendered copy. The underlying
   rows have not been rewritten; that is a separate decision.
+- **Each closing is its own page at `/properties/<slug>`.** They were
+  `#listing-<slug>` fragments on `/properties` until 2026-08-31, and a fragment
+  cannot be ranked, cited, or linked to as a subject — so the strongest evidence
+  on the site had no address of its own and the town guides had nothing specific
+  to point at. [PropertyDetail.tsx](src/pages/PropertyDetail.tsx) renders
+  entirely from the committed snapshot with no fetch and no loading branch;
+  `/properties` revalidates because a listing added since the last sync should
+  still appear in the list, but a detail route does not exist until the next
+  build anyway.
+  - **`sold_date`, `description`, `list_price` and `represented` are what keep
+    these from being thin.** Specs alone are what every aggregator publishes
+    about the same house. All four are nullable and every one is *omitted* when
+    absent — no placeholder, no zero, and no representation side implied. The
+    closed-vs-asked line renders only when both prices are present:
+    `percentOfAsking()` returns null otherwise rather than assuming the two were
+    equal, which would be a fabricated statistic about a real transaction.
+  - **`fromRow()` must compute the same slug as `sync-listings.mjs`.** It used to
+    return `String(r.id)` and that was invisible, because the slug was only an
+    anchor target. It is now a URL: a revalidation computing a different slug
+    rewrites every card's link to a page that does not exist. The two `slugify`
+    implementations are a deliberate mirror, like the town and ZIP normalisation
+    beside them.
+  - **Listing photos are 900px and og:image must be 1200x630**, so
+    `sync-listings.mjs` crops `public/listings/<mls>/og.jpg` from each listing's
+    first photo — the same split as `ogVariant()` in
+    [images.ts](src/lib/images.ts). A listing with no card falls back to
+    `SITE.defaultOgImage` rather than to a photo of the wrong size, because a
+    generic card unfurls and an undersized one does not.
+  - **Photo alt text is positional** (`"<address> — photo 3 of 42"`). Nobody
+    recorded what each room is, and describing photographs nobody looked at is
+    the same fabrication the copy rules forbid.
+  - **Every heading interpolates the address, not just the town.** Two of the ten
+    are in Newton, and CtaBand's heading is an `<h2>` — town-level headings would
+    have those two pages competing with each other under the
+    topical-distinctness rule.
+  - `formatPrice` / `formatBaths` and the rest live in
+    [src/lib/listings.ts](src/lib/listings.ts). They were three private copies
+    that had already drifted ("Price on Request" vs "Price on request").
 - **IDX and owned listings are opposite SEO cases.** The sold listings are
   first-party, unique and indexable — the strongest evidence on the site, which
   is why they also appear per-town via
