@@ -31,7 +31,19 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+
+    /*
+     * The focus ring, on every input, textarea, select and shadcn control on
+     * the site. It was near-black (222.2 84% 4.9%), which is the stock shadcn
+     * value and belongs to no palette here — clicking a field on /contact lit
+     * it black.
+     *
+     * This is `champagne-ink` #8c6b35, not `champagne` #c5a572: a focus
+     * indicator needs 3:1 against what surrounds it, and champagne measures
+     * 2.33:1 on white. champagne-ink is the same hue at 4.92:1 and is what the
+     * design system already uses for anything gold on a light surface.
+     */
+    --ring: 37 45% 38%;
 
     --radius: 0.5rem;
 
@@ -102,6 +114,35 @@
 }
 
 @layer utilities {
+  /*
+   * Figures that stay the same height and the same width.
+   *
+   * Playfair Display — the `font-display` face — ships OLD-STYLE figures by
+   * default: 0, 1 and 2 are x-height, 6 and 8 ascend, and 3, 4, 5, 7 and 9 drop
+   * below the baseline. That is a deliberate and rather nice choice inside
+   * running prose, and completely wrong for a price, where it reads as the
+   * digits changing size at random. $2,235,000 in Playfair genuinely bounces.
+   *
+   * So numerals do not go in the display face at all — they go in Inter, which
+   * is what the rest of the site's numbers already use, which is the
+   * consistency the design system asks for anyway.
+   *
+   * `tabular-nums` on top of that fixes the second, quieter problem: Inter's
+   * default figures are proportional, so a 1 is narrower than a 7 and a column
+   * of prices does not line up, and a number that animates or re-renders
+   * visibly reflows. Tabular figures are all one width.
+   *
+   * `lining-nums` is belt-and-braces — it forces full-height figures even if a
+   * future face defaults to old-style, so this class keeps working if the type
+   * changes.
+   */
+  .numeral {
+    font-family: theme('fontFamily.sans');
+    font-variant-numeric: lining-nums tabular-nums;
+    /* For faces whose OpenType features the shorthand does not reach. */
+    font-feature-settings: 'lnum' 1, 'tnum' 1;
+  }
+
   @keyframes slide-in-from-right {
     from {
       transform: translateX(100%);

@@ -5,7 +5,7 @@
  * regenerated on every deploy.
  */
 import { writeFileSync } from 'node:fs';
-import { ORIGIN, STATIC_ROUTES, BLOG_ROUTES, isPrivate } from './routes.mjs';
+import { ORIGIN, STATIC_ROUTES, BLOG_ROUTES, LISTING_ROUTES, isPrivate } from './routes.mjs';
 
 const esc = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -33,7 +33,7 @@ const urlEntry = ({ path, priority, changefreq, lastmod }) =>
     '  </url>',
   ].filter(Boolean).join('\n');
 
-const all = [...STATIC_ROUTES, ...BLOG_ROUTES].filter((r) => !isPrivate(r.path));
+const all = [...STATIC_ROUTES, ...LISTING_ROUTES, ...BLOG_ROUTES].filter((r) => !isPrivate(r.path));
 
 if (all.length === 0) {
   console.error('sitemap: route list is empty — refusing to write');
@@ -64,6 +64,7 @@ const dated = all.filter((r) => r.lastmod).length;
 
 console.log(
   `sitemap: wrote dist/sitemap.xml — ${all.length} URLs ` +
-  `(${all.length - BLOG_ROUTES.length} static, ${BLOG_ROUTES.length} blog), ` +
+  `(${all.length - BLOG_ROUTES.length - LISTING_ROUTES.length} static, ` +
+  `${LISTING_ROUTES.length} listings, ${BLOG_ROUTES.length} blog), ` +
   `${dated} with lastmod`
 );

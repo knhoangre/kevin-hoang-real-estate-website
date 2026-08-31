@@ -288,6 +288,70 @@ export const itemList = (items: { name: string; url?: string }[]) => ({
   ),
 });
 
+/**
+ * One sold home, for its /properties/<slug> page.
+ *
+ * `Accommodation` subtypes rather than `Product`/`Offer`, and the reasoning is
+ * the same as the note on `itemList` above: neither yields a rich result for a
+ * residential listing, and Product markup on real estate is off-label enough to
+ * carry manual-action risk. What this node is actually for is letting a
+ * retrieval engine understand that the page is about one specific dwelling at
+ * one specific address — which is the whole reason the page exists.
+ *
+ * Every field is dropped when unknown. A listing with no square footage emits
+ * no `floorSize` rather than a zero, because a zero is a claim.
+ *
+ * Deliberately NOT emitted: price. `offers` on a home that is already sold
+ * describes something no longer purchasable, and structured data that
+ * contradicts the visible "Sold" state is worse than none.
+ */
+const RESIDENCE_TYPES: Record<string, string> = {
+  'single family': 'SingleFamilyResidence',
+  condo: 'Apartment',
+  condominium: 'Apartment',
+  townhouse: 'House',
+  'multi family': 'ApartmentComplex',
+  'multi-family': 'ApartmentComplex',
+};
+
+export const residence = (listing: {
+  address: string;
+  town: string;
+  zipCode: string;
+  propertyType: string;
+  bedrooms: number | null;
+  fullBaths: number | null;
+  halfBaths: number | null;
+  livingArea: number | null;
+  images: string[];
+  slug: string;
+  description: string | null;
+}) =>
+  compact({
+    '@context': 'https://schema.org',
+    // Falls back to the generic Residence rather than guessing at a subtype the
+    // free-text property_type column does not actually establish.
+    '@type': RESIDENCE_TYPES[listing.propertyType.trim().toLowerCase()] ?? 'Residence',
+    name: `${listing.address}, ${listing.town}, MA`,
+    description: listing.description ?? undefined,
+    url: absoluteUrl(`/properties/${listing.slug}`),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: listing.address,
+      addressLocality: listing.town,
+      addressRegion: 'MA',
+      postalCode: listing.zipCode,
+      addressCountry: 'US',
+    },
+    numberOfBedrooms: listing.bedrooms ?? undefined,
+    numberOfFullBathrooms: listing.fullBaths ?? undefined,
+    numberOfPartialBathrooms: listing.halfBaths ?? undefined,
+    floorSize: listing.livingArea
+      ? { '@type': 'QuantitativeValue', value: listing.livingArea, unitCode: 'FTK' }
+      : undefined,
+    photo: listing.images.slice(0, 6).map((src) => absoluteUrl(src)),
+  });
+
 /*
  * Review / AggregateRating are intentionally NOT exported.
  *

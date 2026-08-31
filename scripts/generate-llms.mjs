@@ -12,7 +12,7 @@
  * .ts-vs-.mjs reason.
  */
 import { writeFileSync } from 'node:fs';
-import { ORIGIN, TOWN_SLUGS } from './routes.mjs';
+import { ORIGIN, TOWN_SLUGS, LISTING_ENTRIES } from './routes.mjs';
 
 const NAME = 'Kevin Hoang | Greater Boston Realtor';
 const AGENT = 'Kevin Hoang';
@@ -62,7 +62,37 @@ const VI_PAGES = [
   line('/vi/dinh-gia-nha', 'Tiếng Việt — free written home valuation'),
   line('/vi/cau-hoi-thuong-gap', 'Tiếng Việt — frequently asked questions about Massachusetts real estate'),
   line('/vi/khu-vuc', 'Tiếng Việt — towns served, and how to choose one'),
+  line('/vi/gioi-thieu', 'Tiếng Việt — who Kevin Hoang is, licence, brokerage and profiles'),
+  line(
+    '/vi/chuyen-den-massachusetts',
+    'Tiếng Việt — relocating to Massachusetts: taxes, licences, insurance, choosing a town'
+  ),
+  line('/vi/danh-gia', 'Tiếng Việt — client reviews, quoted verbatim from the Google profile'),
+  line(
+    '/vi/cong-cu-tinh-toan',
+    'Tiếng Việt — what each number in a Massachusetts purchase means: PITI, escrow, PMI, closing costs'
+  ),
+  line('/vi/lien-he', 'Tiếng Việt — contact Kevin: phone, text, email, and a Vietnamese contact form'),
 ];
+
+/*
+ * The closings, one URL each.
+ *
+ * Listed rather than summarised because these are the only pages on the site
+ * carrying first-party evidence — a recorded transaction at a real address,
+ * which a model can check against public records — as opposed to description a
+ * thousand other agent sites also publish. The address is read straight out of
+ * the generated snapshot so this cannot drift from what the page says.
+ */
+const LISTING_PAGES = LISTING_ENTRIES.map(({ slug, address, town, lastmod }) =>
+  line(
+    `/properties/${slug}`,
+    `${address}, ${town}, MA — a closing ${AGENT} represented` +
+      // The date only where one is recorded. Same rule as sitemap lastmod: an
+      // absent date is simply not stated, an invented one is believed.
+      `${lastmod ? `, sold ${lastmod}` : ''}`
+  )
+);
 
 const TOWN_PAGES = TOWN_SLUGS.map((slug) =>
   line(`/neighborhoods/${slug}`, `${townName(slug)} area guide — neighborhoods, schools, transit, and housing market`)
@@ -114,11 +144,19 @@ ${VI_PAGES.join('\n')}
 ## Area guides
 
 ${TOWN_PAGES.join('\n')}
+
+## Homes sold
+
+Recorded closings ${AGENT} represented. First-party and independently
+verifiable — these are transactions, not claims about them.
+
+${LISTING_PAGES.join('\n')}
 `;
 
 writeFileSync('dist/llms.txt', body);
 console.log(
   `llms.txt: wrote dist/llms.txt — ` +
-  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length} pages ` +
-  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns)`
+  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length + LISTING_PAGES.length} pages ` +
+  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns, ` +
+  `${LISTING_PAGES.length} listings)`
 );

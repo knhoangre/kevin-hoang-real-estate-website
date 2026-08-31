@@ -66,7 +66,46 @@ const blogEntries = () => {
   }));
 };
 
+/**
+ * Every sold listing as `{ slug, address, town, lastmod }`, read out of the
+ * generated soldListings.ts.
+ *
+ * Matched at the JSON indentation the sync script emits (`\n    "slug":`), so a
+ * street name that happens to contain the word cannot be mistaken for the
+ * field. `address`, `town` and `soldDate` all follow `slug` within each object,
+ * which is what lets these be paired by position — the same technique
+ * blogEntries() uses.
+ *
+ * lastmod is the sale date where one is recorded and absent otherwise. A
+ * listing page changes when the sale does, and stamping the build date on it
+ * would be the same false freshness signal that was removed from the other 117
+ * URLs.
+ */
+const listingEntries = () => {
+  const src = readFileSync('src/data/soldListings.ts', 'utf8');
+  const marks = [
+    ...src.matchAll(/\n    "(slug|address|town|soldDate)":\s*(?:"([^"]*)"|null)/g),
+  ];
+
+  const entries = [];
+  let current = null;
+  for (const [, field, value] of marks) {
+    if (field === 'slug') {
+      if (current) entries.push(current);
+      current = { slug: value, address: '', town: '', lastmod: undefined };
+    } else if (current && value) {
+      if (field === 'soldDate') current.lastmod = value;
+      else current[field] = value;
+    }
+  }
+  if (current) entries.push(current);
+
+  if (entries.length === 0) throw new Error('no listings found in src/data/soldListings.ts');
+  return entries;
+};
+
 export const TOWN_SLUGS = slugsFrom('src/data/neighborhoodData.ts');
+export const LISTING_ENTRIES = listingEntries();
 export const BLOG_ENTRIES = blogEntries();
 export const BLOG_SLUGS = BLOG_ENTRIES.map((e) => e.slug);
 
@@ -126,6 +165,11 @@ export const STATIC_ROUTES = [
   { path: '/vi/dinh-gia-nha', priority: 0.7, changefreq: 'monthly' },
   { path: '/vi/cau-hoi-thuong-gap', priority: 0.6, changefreq: 'monthly' },
   { path: '/vi/khu-vuc', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/gioi-thieu', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/chuyen-den-massachusetts', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/danh-gia', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/cong-cu-tinh-toan', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/lien-he', priority: 0.7, changefreq: 'monthly' },
 
   // Legal. Real pages, low priority — they exist for users and for trust
   // signals, not to rank.
@@ -138,5 +182,21 @@ export const BLOG_ROUTES = BLOG_ENTRIES.map(({ slug, lastmod }) => ({
   path: `/blog/${slug}`,
   priority: 0.6,
   changefreq: 'monthly',
+  lastmod,
+}));
+
+/**
+ * One URL per closing. Priority sits above the blog and just under the town
+ * guides: these are the only pages on the site carrying evidence rather than
+ * description, and there are ten of them rather than fifty-nine.
+ *
+ * `changefreq: 'yearly'` because a recorded sale does not change. Saying
+ * otherwise invites a crawler to keep re-fetching a page that will never
+ * differ.
+ */
+export const LISTING_ROUTES = LISTING_ENTRIES.map(({ slug, lastmod }) => ({
+  path: `/properties/${slug}`,
+  priority: 0.7,
+  changefreq: 'yearly',
   lastmod,
 }));
