@@ -144,7 +144,17 @@ export async function fetchFeed(cookie: string, url: string): Promise<string> {
     throw new Error(`Feed download redirected (session not accepted): ${url}`);
   }
 
-  const text = await res.text();
+  /*
+   * Decoded as Windows-1252, NOT UTF-8.
+   *
+   * The feed is cp1252, and `res.text()` assumes UTF-8 — which turns every
+   * curly apostrophe (0x92) into the replacement character. That is 1,263
+   * occurrences in the first 4 MB of the single-family file alone, so listing
+   * remarks arrive reading "Boston<?>s most storied neighborhood". The bytes
+   * are unambiguous: 0x80-0x9F is undefined in Latin-1 and invalid as UTF-8, so
+   * cp1252 is the only reading under which they are text at all.
+   */
+  const text = new TextDecoder('windows-1252').decode(await res.arrayBuffer());
   if (!/^\s*PROP_TYPE\|/i.test(text)) {
     throw new Error(
       `Unexpected non-feed response for ${url} (got "${text.slice(0, 40).replace(/\s+/g, ' ')}…")`

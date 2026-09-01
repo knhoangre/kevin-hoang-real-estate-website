@@ -43,6 +43,13 @@ export interface PageShellProps {
     ogImageHeight?: number;
     ogType?: 'website' | 'article' | 'profile';
     locale?: string;
+    /**
+     * Keeps the page out of search while still using the site chrome. Only
+     * /search needs this: MLS PIN requires IDX displays be non-indexable, and
+     * the page is syndicated data rather than first-party content, so there is
+     * nothing to gain by indexing it either.
+     */
+    noindex?: boolean;
   };
   /**
    * Page-specific schema. `breadcrumbs(crumbs)` is MERGED into this, never
@@ -169,6 +176,7 @@ const PageShell = ({
         ogImageHeight={seo.ogImageHeight}
         ogType={seo.ogType}
         locale={seo.locale}
+        noindex={seo.noindex}
         // Reciprocal with the /vi counterpart where one exists, undefined where
         // it does not. hreflang only counts when both sides declare the set.
         alternates={alternatesFor(path)}

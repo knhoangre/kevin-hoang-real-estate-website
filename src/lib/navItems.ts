@@ -26,6 +26,11 @@ export interface NavItem {
  * page to be one click from anywhere.
  */
 export const PRIMARY_NAV: NavItem[] = [
+  // The IDX search. It links to a noindex page, which is fine — the point of
+  // the item is that a client can find it, not that a crawler can. It sits
+  // before /properties because "search everything on the market" is what a
+  // visitor arrives wanting; /properties is Kevin's own closed sales.
+  { to: '/search', label: 'SEARCH' },
   { to: '/properties', label: 'PROPERTIES' },
   { to: '/about', labelKey: 'nav.about' },
   { to: '/faq', labelKey: 'nav.faq' },

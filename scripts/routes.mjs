@@ -118,6 +118,10 @@ export const PRIVATE_PREFIXES = [
   '/crm',
   '/open-house',
   '/events',
+  // The IDX search. Not "private" in the gated sense — anyone may use it — but
+  // it belongs here for the same reason: noindex, never in the sitemap. MLS PIN
+  // requires IDX displays be non-indexable.
+  '/search',
 ];
 
 export const isPrivate = (path) =>
