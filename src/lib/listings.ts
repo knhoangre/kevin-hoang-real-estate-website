@@ -22,11 +22,30 @@ export const formatPrice = (value: number | null) =>
         maximumFractionDigits: 0,
       }).format(value);
 
-/** MLS bath convention: 2 full + 1 half reads "2.1", not "2.5". */
+/**
+ * Baths, spelled out: "2 full, 1 half".
+ *
+ * This used to render the MLS convention, where 2 full and 1 half is written
+ * "2.1". That notation is unreadable to anyone outside the trade — it looks
+ * like a decimal, so "8.2" reads as eight-point-two baths rather than eight
+ * full and two half, and a listing with 8.2 next to one with 8.5 appears to be
+ * comparing quantities that differ by a third of a bath. Neither is a number at
+ * all. Saying which is which costs a few characters and removes the ambiguity
+ * completely.
+ */
 export const formatBaths = (full: number | null, half: number | null) => {
   const f = full ?? 0;
   const h = half ?? 0;
-  return h > 0 ? `${f}.${h}` : String(f);
+  if (h > 0 && f > 0) return `${f} full, ${h} half`;
+  if (h > 0) return `${h} half`;
+  return `${f} full`;
+};
+
+/** The same, compressed for a card: "2 full · 1 half" -> "2f 1h". */
+export const formatBathsShort = (full: number | null, half: number | null) => {
+  const f = full ?? 0;
+  const h = half ?? 0;
+  return h > 0 ? `${f}f ${h}h` : `${f}f`;
 };
 
 /**

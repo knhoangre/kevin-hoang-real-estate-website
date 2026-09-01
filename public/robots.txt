@@ -42,6 +42,10 @@ Disallow: /admin
 Disallow: /crm
 Disallow: /open-house
 Disallow: /events
+# The IDX search. Not gated — anyone may use it — but MLS PIN's rules require an
+# IDX display be non-indexable, and it is syndicated data every other agent site
+# also publishes, so there is nothing to gain by indexing it.
+Disallow: /search
 
 # --- AI-usage controls ----------------------------------------------------
 #

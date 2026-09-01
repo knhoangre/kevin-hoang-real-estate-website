@@ -179,6 +179,22 @@ export const routes: RouteRecord[] = [
       ),
       page('vi/lien-he', () => import('./pages/vi/ViContact'), 'src/pages/vi/ViContact.tsx'),
 
+      // --- IDX search ------------------------------------------------------
+      // NOT prerendered with content and NOT indexed. These are the only routes
+      // on the site serving syndicated MLS data rather than first-party
+      // content: MLS PIN's rules require an IDX display be non-indexable, and
+      // the SEO case agrees — it is the same data thousands of other agent
+      // sites publish. /search/:mls additionally needs the one narrowly-scoped
+      // rewrite in vercel.json, because an MLS number cannot be prerendered.
+      page('search', () => import('./pages/Search'), 'src/pages/Search.tsx'),
+      {
+        path: 'search/:mls',
+        lazy: async () => ({ Component: (await import('./pages/SearchListing')).default }),
+        entry: 'src/pages/SearchListing.tsx',
+        // Deliberately no getStaticPaths: there are 22,000 active listings and
+        // the set changes hourly. The shell prerenders; the listing is fetched.
+      },
+
       // --- Legal ----------------------------------------------------------
       page('privacy-policy', () => import('./pages/PrivacyPolicy'), 'src/pages/PrivacyPolicy.tsx'),
       page(

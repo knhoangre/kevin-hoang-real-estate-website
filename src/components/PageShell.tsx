@@ -43,6 +43,13 @@ export interface PageShellProps {
     ogImageHeight?: number;
     ogType?: 'website' | 'article' | 'profile';
     locale?: string;
+    /**
+     * Keeps the page out of search while still using the site chrome. Only
+     * /search needs this: MLS PIN requires IDX displays be non-indexable, and
+     * the page is syndicated data rather than first-party content, so there is
+     * nothing to gain by indexing it either.
+     */
+    noindex?: boolean;
   };
   /**
    * Page-specific schema. `breadcrumbs(crumbs)` is MERGED into this, never
@@ -61,6 +68,12 @@ export interface PageShellProps {
   /** Small label above the h1. Falls back to the last crumb. */
   eyebrow?: string;
   h1: string;
+  /**
+   * Extra classes for the h1. Exists for headings that are mostly NUMBERS —
+   * a street address — where the display serif's old-style figures make the
+   * digits bounce. Pass "numeral" to set it in Inter with lining figures.
+   */
+  h1ClassName?: string;
   lede?: React.ReactNode;
   /**
    * Cinematic hero image, sized through Unsplash's params — a bare photo URL
@@ -138,6 +151,7 @@ const PageShell = ({
   crumbs,
   eyebrow,
   h1,
+  h1ClassName = '',
   lede,
   hero,
   heroSize = 'compact',
@@ -169,6 +183,7 @@ const PageShell = ({
         ogImageHeight={seo.ogImageHeight}
         ogType={seo.ogType}
         locale={seo.locale}
+        noindex={seo.noindex}
         // Reciprocal with the /vi counterpart where one exists, undefined where
         // it does not. hreflang only counts when both sides declare the set.
         alternates={alternatesFor(path)}
@@ -215,7 +230,7 @@ const PageShell = ({
               )}
 
               <h1
-                className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter"
+                className={`${h1ClassName || 'font-display'} text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter`}
                 style={{ '--enter-delay': '0.1s' } as React.CSSProperties}
               >
                 {h1}
