@@ -735,7 +735,7 @@
   "rewrites": [
     {
       "source": "/search/:path*",
-      "destination": "/search/index.html"
+      "destination": "/search"
     }
   ]
 }

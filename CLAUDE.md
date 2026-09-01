@@ -109,7 +109,9 @@ every typo and dead link.
 **There is exactly ONE rewrite, and it is scoped to `/search`.** An MLS number
 cannot be prerendered — there are ~22,000 active listings and the set changes
 hourly — so `/search/:path*` rewrites to the prerendered `/search` shell, which
-then fetches the listing client-side. It is scoped to that one prefix on
+then fetches the listing client-side. The destination is `/search`, **not**
+`/search/index.html`: `cleanUrls: true` strips the extension, so the explicit
+file path does not resolve and every deep URL falls through to the 404. It is scoped to that one prefix on
 purpose: Vercel checks the filesystem before applying rewrites, so every real
 route is still served directly and every unknown path still falls through to
 `public/404.html` with a real 404. A broader rewrite is how this site used to
