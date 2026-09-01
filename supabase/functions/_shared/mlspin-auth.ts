@@ -162,3 +162,73 @@ export async function fetchFeed(cookie: string, url: string): Promise<string> {
   }
   return text;
 }
+
+/**
+ * Download one feed as a STREAM of lines.
+ *
+ * fetchFeed() reads the whole body into a string, which is fine for the active
+ * feeds and fatal for the sold ones: the sold single-family file is 66 MB, and
+ * a JS string holds it as UTF-16 — roughly 132 MB, before the parsed rows. That
+ * exhausted the Edge Function worker outright (WORKER_RESOURCE_LIMIT).
+ *
+ * Nothing needs the whole file at once. This decodes and splits incrementally,
+ * so peak memory is one chunk plus one batch of rows regardless of feed size.
+ *
+ * The header check still happens, on the first line, and still throws — a
+ * sign-in page would otherwise stream through as zero valid rows, which the
+ * ingest would read as "the feed is empty, delete everything".
+ */
+export async function* fetchFeedLines(
+  cookie: string,
+  url: string
+): AsyncGenerator<string> {
+  const res = await fetch(url, {
+    redirect: 'manual',
+    headers: { Cookie: cookie },
+    signal: timeout(),
+  });
+
+  if (res.status >= 300 && res.status < 400) {
+    throw new Error(`Feed download redirected (session not accepted): ${url}`);
+  }
+  if (!res.body) throw new Error(`Feed download returned no body: ${url}`);
+
+  // windows-1252, like fetchFeed — see the note there about curly apostrophes.
+  const reader = res.body
+    .pipeThrough(new TextDecoderStream('windows-1252'))
+    .getReader();
+
+  let buffer = '';
+  let first = true;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += value;
+
+      // Split on whichever newline the file uses, keeping the trailing partial
+      // line in the buffer for the next chunk.
+      const lines = buffer.split(/\r\n|\n|\r/);
+      buffer = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (first) {
+          first = false;
+          if (!/^\s*PROP_TYPE\|/i.test(line)) {
+            throw new Error(
+              `Unexpected non-feed response for ${url} (got "${line.slice(0, 40)}…")`
+            );
+          }
+          yield line; // the header, which the caller needs to build its parser
+          continue;
+        }
+        yield line;
+      }
+    }
+    if (buffer.trim() !== '') yield buffer;
+  } finally {
+    // Releases the connection even when the consumer stops early or throws.
+    reader.releaseLock();
+  }
+}

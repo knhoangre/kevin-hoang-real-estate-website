@@ -678,29 +678,52 @@ export type Database = {
           acres: number | null
           address: string | null
           adult_community: boolean | null
+          appliances: string | null
           basement: boolean | null
+          basement_feature: string | null
           bedrooms: number | null
           color: string | null
+          construction: string | null
+          cooling: string | null
           date_available: string | null
+          electric_feature: string | null
+          energy_features: string | null
+          exterior: string | null
+          exterior_features: string | null
+          feed: string
+          flooring: string | null
           full_baths: number | null
+          garage_parking: string | null
           garage_spaces: number | null
           half_baths: number | null
+          heating: string | null
           hoa: boolean | null
           hoa_fee: number | null
+          hot_water: string | null
+          interior_features: string | null
+          laundry_features: string | null
           list_agent_id: string | null
           list_office_id: string | null
           list_price: number | null
           living_area: number | null
+          lot_description: string | null
           lot_size: number | null
           mls_number: string
           neighborhood: string | null
           num_units: number | null
+          parking_feature: string | null
           parking_spaces: number | null
+          pets_allowed: string | null
           photo_count: number | null
+          pool_description: string | null
+          prop_subtype: string | null
           prop_type: string | null
           remarks: string | null
+          road_type: string | null
+          roof_material: string | null
           sale_price: number | null
           settled_date: string | null
+          sewer: string | null
           sqft_above_grade: number | null
           sqft_below_grade: number | null
           state: string | null
@@ -712,37 +735,65 @@ export type Database = {
           total_rooms: number | null
           town: string | null
           unit_level: number | null
+          unit_placement: string | null
+          water: string | null
           waterfront: boolean | null
+          waterfront_desc: string | null
+          waterview_features: string | null
           year_built: number | null
+          year_built_descrp: string | null
           zip: string | null
         }
         Insert: {
           acres?: number | null
           address?: string | null
           adult_community?: boolean | null
+          appliances?: string | null
           basement?: boolean | null
+          basement_feature?: string | null
           bedrooms?: number | null
           color?: string | null
+          construction?: string | null
+          cooling?: string | null
           date_available?: string | null
+          electric_feature?: string | null
+          energy_features?: string | null
+          exterior?: string | null
+          exterior_features?: string | null
+          feed?: string
+          flooring?: string | null
           full_baths?: number | null
+          garage_parking?: string | null
           garage_spaces?: number | null
           half_baths?: number | null
+          heating?: string | null
           hoa?: boolean | null
           hoa_fee?: number | null
+          hot_water?: string | null
+          interior_features?: string | null
+          laundry_features?: string | null
           list_agent_id?: string | null
           list_office_id?: string | null
           list_price?: number | null
           living_area?: number | null
+          lot_description?: string | null
           lot_size?: number | null
           mls_number: string
           neighborhood?: string | null
           num_units?: number | null
+          parking_feature?: string | null
           parking_spaces?: number | null
+          pets_allowed?: string | null
           photo_count?: number | null
+          pool_description?: string | null
+          prop_subtype?: string | null
           prop_type?: string | null
           remarks?: string | null
+          road_type?: string | null
+          roof_material?: string | null
           sale_price?: number | null
           settled_date?: string | null
+          sewer?: string | null
           sqft_above_grade?: number | null
           sqft_below_grade?: number | null
           state?: string | null
@@ -754,37 +805,65 @@ export type Database = {
           total_rooms?: number | null
           town?: string | null
           unit_level?: number | null
+          unit_placement?: string | null
+          water?: string | null
           waterfront?: boolean | null
+          waterfront_desc?: string | null
+          waterview_features?: string | null
           year_built?: number | null
+          year_built_descrp?: string | null
           zip?: string | null
         }
         Update: {
           acres?: number | null
           address?: string | null
           adult_community?: boolean | null
+          appliances?: string | null
           basement?: boolean | null
+          basement_feature?: string | null
           bedrooms?: number | null
           color?: string | null
+          construction?: string | null
+          cooling?: string | null
           date_available?: string | null
+          electric_feature?: string | null
+          energy_features?: string | null
+          exterior?: string | null
+          exterior_features?: string | null
+          feed?: string
+          flooring?: string | null
           full_baths?: number | null
+          garage_parking?: string | null
           garage_spaces?: number | null
           half_baths?: number | null
+          heating?: string | null
           hoa?: boolean | null
           hoa_fee?: number | null
+          hot_water?: string | null
+          interior_features?: string | null
+          laundry_features?: string | null
           list_agent_id?: string | null
           list_office_id?: string | null
           list_price?: number | null
           living_area?: number | null
+          lot_description?: string | null
           lot_size?: number | null
           mls_number?: string
           neighborhood?: string | null
           num_units?: number | null
+          parking_feature?: string | null
           parking_spaces?: number | null
+          pets_allowed?: string | null
           photo_count?: number | null
+          pool_description?: string | null
+          prop_subtype?: string | null
           prop_type?: string | null
           remarks?: string | null
+          road_type?: string | null
+          roof_material?: string | null
           sale_price?: number | null
           settled_date?: string | null
+          sewer?: string | null
           sqft_above_grade?: number | null
           sqft_below_grade?: number | null
           state?: string | null
@@ -796,8 +875,13 @@ export type Database = {
           total_rooms?: number | null
           town?: string | null
           unit_level?: number | null
+          unit_placement?: string | null
+          water?: string | null
           waterfront?: boolean | null
+          waterfront_desc?: string | null
+          waterview_features?: string | null
           year_built?: number | null
+          year_built_descrp?: string | null
           zip?: string | null
         }
         Relationships: []

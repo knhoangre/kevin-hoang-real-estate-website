@@ -31,8 +31,8 @@
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import { parseIdxFeed } from '../_shared/idx.ts';
-import { fetchFeed, feedUrl, isConfigured, login, baseUrl } from '../_shared/mlspin-auth.ts';
+import { rowParser, type IdxListing } from '../_shared/idx.ts';
+import { fetchFeedLines, feedUrl, isConfigured, login, baseUrl } from '../_shared/mlspin-auth.ts';
 
 const DEFAULT_PROP_TYPES = ['SF', 'CC', 'MF', 'RN'];
 // Rows per upsert. Large enough that 8,500 single-family listings is a handful
@@ -68,10 +68,30 @@ serve(async (req) => {
 
   let propTypes = DEFAULT_PROP_TYPES;
   let syncOffices = false;
+  // Which feed to pull. 'active' is the default because it is what /search
+  // shows by default and what must never go stale; 'sold' is the past year of
+  // closings, which changes far more slowly.
+  let feed: 'active' | 'sold' = 'active';
+  /*
+   * Row window, for feeds too large to ingest in one invocation.
+   *
+   * The sold single-family feed is 45,000 rows and exceeds the Edge Function's
+   * resource budget in a single pass even when streamed — the cost scales with
+   * rows, not just bytes. `offset`/`limit` let the schedule walk it in slices.
+   * The active feeds are small enough that they never use this.
+   */
+  let offset = 0;
+  let limit = Number.POSITIVE_INFINITY;
+  /** Run the sold retention sweep. See the note where it is used. */
+  let prune = false;
   try {
     const body = await req.json();
     if (Array.isArray(body?.propTypes) && body.propTypes.length) propTypes = body.propTypes;
     syncOffices = Boolean(body?.offices);
+    if (body?.feed === 'sold') feed = 'sold';
+    if (Number.isFinite(body?.offset)) offset = Math.max(0, Number(body.offset));
+    if (Number.isFinite(body?.limit)) limit = Math.max(1, Number(body.limit));
+    prune = Boolean(body?.prune);
   } catch {
     // No body is fine — the defaults above stand.
   }
@@ -90,17 +110,18 @@ serve(async (req) => {
     const cookie = await login();
 
     for (const propType of propTypes) {
-      const text = await fetchFeed(cookie, feedUrl(propType));
-      const listings = parseIdxFeed(text);
+      /*
+       * Streamed, not buffered. See fetchFeedLines — the sold single-family
+       * feed is 66 MB and holding it plus its parsed rows killed the worker.
+       * Rows are parsed and flushed a batch at a time, so peak memory does not
+       * depend on how big the feed is.
+       */
+      let parse: ((line: string) => IdxListing | null) | null = null;
+      let batch: Record<string, unknown>[] = [];
+      let seen = 0;
+      let lineNo = 0;
 
-      // See note 2 above: an empty result is far more likely to be a broken
-      // session or a changed export than a property type with no listings in
-      // the whole of Massachusetts.
-      if (listings.length === 0) {
-        throw new Error(`${propType}: feed parsed to zero listings — refusing to delete`);
-      }
-
-      const rows = listings.map((l) => ({
+      const toRow = (l: IdxListing) => ({
         mls_number: l.mlsNumber,
         status: l.status,
         prop_type: l.propType ?? propType,
@@ -121,6 +142,7 @@ serve(async (req) => {
         list_agent_id: l.listAgentId,
         photo_count: l.photoCount,
         settled_date: l.settledDate,
+        feed,
         total_rooms: l.totalRooms,
         lot_size: l.lotSize,
         acres: l.acres,
@@ -140,26 +162,123 @@ serve(async (req) => {
         date_available: l.dateAvailable,
         sqft_above_grade: l.sqftAboveGrade,
         sqft_below_grade: l.sqftBelowGrade,
+        heating: l.heating,
+        cooling: l.cooling,
+        water: l.water,
+        sewer: l.sewer,
+        hot_water: l.hotWater,
+        appliances: l.appliances,
+        flooring: l.flooring,
+        interior_features: l.interiorFeatures,
+        exterior_features: l.exteriorFeatures,
+        exterior: l.exterior,
+        construction: l.construction,
+        roof_material: l.roofMaterial,
+        basement_feature: l.basementFeature,
+        garage_parking: l.garageParking,
+        parking_feature: l.parkingFeature,
+        lot_description: l.lotDescription,
+        electric_feature: l.electricFeature,
+        energy_features: l.energyFeatures,
+        road_type: l.roadType,
+        laundry_features: l.laundryFeatures,
+        pets_allowed: l.petsAllowed,
+        pool_description: l.poolDescription,
+        unit_placement: l.unitPlacement,
+        waterfront_desc: l.waterfrontDesc,
+        waterview_features: l.waterviewFeatures,
+        year_built_descrp: l.yearBuiltDescrp,
+        prop_subtype: l.propSubtype,
         synced_at: startedAt,
-      }));
+      });
 
-      for (let i = 0; i < rows.length; i += BATCH) {
+      const flush = async () => {
+        if (batch.length === 0) return;
         const { error } = await supabase
           .from('idx_listings')
-          .upsert(rows.slice(i, i + BATCH), { onConflict: 'mls_number' });
-        if (error) throw new Error(`${propType} upsert: ${error.message}`);
-        upserted += Math.min(BATCH, rows.length - i);
+          .upsert(batch, { onConflict: 'mls_number' });
+        if (error) throw new Error(`${propType}/${feed} upsert: ${error.message}`);
+        upserted += batch.length;
+        batch = [];
+      };
+
+      for await (const line of fetchFeedLines(cookie, feedUrl(propType, feed === 'sold'))) {
+        if (!parse) {
+          parse = rowParser(line);
+          continue;
+        }
+        /*
+         * The window is counted in LINES, and the skip happens before parsing.
+         *
+         * Counting parsed rows instead meant slice 5 of the sold single-family
+         * feed still parsed the 32,000 rows ahead of it just to find its
+         * starting point — which is what exhausted the worker. Line position is
+         * deterministic and identical across slices, so the slices still tile
+         * the file exactly.
+         */
+        lineNo += 1;
+        if (lineNo <= offset) continue;
+        if (lineNo > offset + limit) break;
+
+        const listing = parse(line);
+        if (!listing) continue;
+        seen += 1;
+        batch.push(toRow(listing));
+        if (batch.length >= BATCH) await flush();
+      }
+      await flush();
+
+      /*
+       * An empty result is far more likely to be a broken session or a changed
+       * export than a property type with no listings in all of Massachusetts —
+       * so it aborts rather than letting the delete below run against nothing.
+       *
+       * Only for a full pass, though: a slice starting past the end of the file
+       * legitimately sees zero rows, and the schedule always includes one.
+       */
+      if (seen === 0 && offset === 0) {
+        throw new Error(`${propType}/${feed}: parsed to zero listings — refusing to delete`);
       }
 
-      // Anything of THIS type the run did not touch is gone from the feed.
-      const { data: gone, error: delError } = await supabase
-        .from('idx_listings')
-        .delete()
-        .eq('prop_type', propType)
-        .lt('synced_at', startedAt)
-        .select('mls_number');
-      if (delError) throw new Error(`${propType} delete: ${delError.message}`);
-      deleted += gone?.length ?? 0;
+      /*
+       * DELETION DIFFERS BY FEED, because the two feeds behave differently.
+       *
+       * ACTIVE is diffed against the whole file: a listing that leaves it has
+       * sold, expired or been withdrawn and must stop being displayed. That is
+       * a compliance requirement, and it works because an active feed is always
+       * ingested in one pass, so anything untouched really is gone.
+       *
+       * SOLD cannot be diffed that way — it is walked in slices, so within any
+       * one run most rows are legitimately untouched. It also does not need to
+       * be: MLS PIN's sold feed is a rolling one-year window, so rows leave it
+       * by ageing out rather than by being pulled. A retention sweep models
+       * exactly that, and is self-healing: once every slice has run, anything
+       * still carrying an old synced_at is genuinely absent from the feed.
+       *
+       * Three days rather than one, so a single failed slice does not delete
+       * real listings.
+       */
+      if (feed === 'active' || prune) {
+        const staleBefore =
+          feed === 'active'
+            ? startedAt
+            : new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+
+        let del = supabase
+          .from('idx_listings')
+          .delete()
+          .eq('feed', feed)
+          .lt('synced_at', staleBefore);
+
+        // Scoped to the property type for active runs — without it, a
+        // single-family run deletes every condo. The sold sweep is deliberately
+        // across types, because it runs once after the slices.
+        if (feed === 'active') del = del.eq('prop_type', propType);
+
+        const { data: gone, error: delError } = await del.select('mls_number');
+        if (delError) throw new Error(`${propType}/${feed} delete: ${delError.message}`);
+        deleted += gone?.length ?? 0;
+      }
     }
 
     if (syncOffices) {
@@ -191,7 +310,7 @@ serve(async (req) => {
       })
       .eq('id', run?.id);
 
-    return json({ ok: true, propTypes, upserted, deleted });
+    return json({ ok: true, feed, propTypes, offset, upserted, deleted });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 

@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Bed, Bath, Square, Search as SearchIcon, X, MapPin } from 'lucide-react';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
-import { formatPrice, formatBathsShort } from '@/lib/listings';
+import { formatPrice, formatBathsShort, formatSoldMonth } from '@/lib/listings';
 import {
   EMPTY_FILTERS,
+  LISTING_TYPES,
   PAGE_SIZE,
   PROP_TYPES,
+  headlinePrice,
   filtersFromParams,
   paramsFromFilters,
   photoUrl,
@@ -90,7 +92,8 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
             No photo
           </div>
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-ink backdrop-blur-sm">
+        {/* Uppercase, matching the badges on /properties. */}
+        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink backdrop-blur-sm">
           {propTypeLabel(listing.prop_type)}
         </span>
         {/*
@@ -108,11 +111,17 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
 
       <div className="p-4">
         <p className="numeral text-xl font-bold text-ink">
-          {formatPrice(listing.list_price)}
+          {/* A sold listing's headline is what it CLOSED at, not what it asked. */}
+          {formatPrice(headlinePrice(listing))}
           {listing.prop_type === 'RN' && (
             <span className="text-sm font-medium text-gray-500"> /mo</span>
           )}
         </p>
+        {listing.feed === 'sold' && formatSoldMonth(listing.settled_date) && (
+          <p className="numeral mt-0.5 text-xs font-semibold uppercase tracking-wide text-champagne-ink">
+            Sold {formatSoldMonth(listing.settled_date)}
+          </p>
+        )}
         <p className="mt-1 text-sm text-gray-600">
           {listing.address}
           {listing.town ? `, ${listing.town}` : ''}
@@ -197,6 +206,26 @@ const Search = () => {
   const commit = (next: SearchFilters) => setParams(paramsFromFilters(next));
 
   /*
+   * Paging returns to the top OF THE RESULTS, not the top of the document.
+   *
+   * Clicking Next used to leave the scroll position untouched, so the reader
+   * landed mid-grid on row four of the next page with no idea it had changed.
+   * Scrolling to the very top would be almost as bad — it puts the filter form
+   * back on screen and makes them scroll past it again every time.
+   *
+   * Only on a page change: re-running it for a filter edit would yank the page
+   * while someone is still adjusting the form.
+   */
+  const resultsRef = useRef<HTMLParagraphElement>(null);
+  const lastPageRef = useRef(filters.page);
+  useEffect(() => {
+    if (lastPageRef.current !== filters.page) {
+      lastPageRef.current = filters.page;
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [filters.page]);
+
+  /*
    * One chip per active criterion, each knowing how to clear only itself.
    * Built from the COMMITTED filters rather than the draft, so a chip always
    * describes the search that produced the results on screen.
@@ -236,8 +265,8 @@ const Search = () => {
         noindex: true,
       }}
       eyebrow="Listings"
-      h1="Search every active listing"
-      lede="Everything on the market across Massachusetts, updated hourly from MLS PIN. Filter it, then send the link — it works for whoever opens it."
+      h1="Search Massachusetts listings"
+      lede="Every home on the market, plus a year of recorded sales, straight from MLS PIN. Filter it, then send the link — it opens for whoever you send it to."
       heroSize="compact"
       width="wide"
       actions={false}
@@ -264,6 +293,39 @@ const Search = () => {
             commit({ ...draft, page: 1 });
           }}
         >
+          {/*
+            For sale / Sold / For rent. A segmented control rather than another
+            dropdown: it is the first decision, it changes what every other
+            filter means, and it should be visible without opening anything.
+          */}
+          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="What to search">
+            {LISTING_TYPES.map((t) => {
+              const active = draft.listingType === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    const next = { ...draft, listingType: t.value, page: 1 };
+                    setDraft(next);
+                    // Committed immediately: this is a mode switch, not a
+                    // criterion, and leaving it pending behind the Search
+                    // button makes the page look like it ignored the click.
+                    commit(next);
+                  }}
+                  className={
+                    active
+                      ? 'rounded-full bg-ink-deep px-5 py-2 text-sm font-semibold text-white'
+                      : 'rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne-ink'
+                  }
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
               <MapPin
@@ -277,7 +339,7 @@ const Search = () => {
                 id="q"
                 type="search"
                 className={`${inputClass} py-3.5 pl-12 text-base`}
-                placeholder="Street address or town — try “Needham” or “Gary Rd”"
+                placeholder="Address, town, or MLS number"
                 value={draft.q}
                 onChange={(e) => setDraft({ ...draft, q: e.target.value })}
               />
@@ -321,8 +383,9 @@ const Search = () => {
                 value={draft.propType}
                 onChange={(e) => setDraft({ ...draft, propType: e.target.value })}
               >
-                <option value="">For sale (all)</option>
-                {PROP_TYPES.map((t) => (
+                <option value="">All types</option>
+                {/* Rentals are the listing-type control above, not a property type. */}
+                {PROP_TYPES.filter((t) => t.value !== 'RN' || draft.listingType === 'rent').map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
                   </option>
@@ -430,7 +493,11 @@ const Search = () => {
         )}
 
         {/* aria-live so a screen reader hears the count change after a search. */}
-        <p className="numeral mb-6 text-sm text-gray-600" aria-live="polite">
+        <p
+          ref={resultsRef}
+          className="numeral mb-6 scroll-mt-28 text-sm text-gray-600"
+          aria-live="polite"
+        >
           {listings === null
             ? 'Searching…'
             : total === 0

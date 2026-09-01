@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import {
   Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft,
   Car, Trees, Layers, Receipt, Waves, Building2, DoorOpen,
+  Flame, Snowflake, Droplets, Plug, Hammer, MapPin, Sofa, Sparkles,
 } from 'lucide-react';
 import {
   Carousel,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/carousel';
 import Seo from '@/components/Seo';
 import IdxDisclosure from '@/components/IdxDisclosure';
-import { formatPrice, formatBaths } from '@/lib/listings';
+import { formatPrice, formatBaths, formatSoldMonth } from '@/lib/listings';
 import { SITE, telHref, smsHref } from '@/lib/siteConfig';
 import {
   listingByMls,
@@ -22,6 +23,8 @@ import {
   propTypeLabel,
   statusLabel,
   isAvailable,
+  decodeCodes,
+  headlinePrice,
   type IdxListing,
 } from '@/lib/idxSearch';
 
@@ -84,7 +87,10 @@ const SpecGroup = ({ title, children }: { title: string; children: React.ReactNo
   if (shown.length === 0) return null;
 
   return (
-    <section className="mt-10">
+    // border-t on every group, so "Lot and parking", "Interior" and "Costs" are
+    // separated the same way the basics block is. Previously only the first had
+    // a rule and the rest ran together as one undifferentiated column.
+    <section className="mt-10 border-t border-gray-200 pt-8">
       <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">{title}</h2>
       <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">{shown}</dl>
     </section>
@@ -272,13 +278,59 @@ const SearchListing = () => {
                   </p>
                 )}
                 <p className="numeral mt-6 text-4xl font-semibold text-ink">
-                  {formatPrice(listing.list_price)}
+                  {/* What it closed at, when that is the number that exists. */}
+                  {formatPrice(headlinePrice(listing))}
                   {listing.prop_type === 'RN' && (
                     <span className="text-lg font-medium text-gray-500"> /month</span>
                   )}
                 </p>
 
-                <dl className="mt-10 grid grid-cols-2 gap-x-8 gap-y-7 border-y border-gray-200 py-8 sm:grid-cols-3">
+                {listing.feed === 'sold' && (
+                  <p className="numeral mt-2 text-gray-600">
+                    {formatSoldMonth(listing.settled_date)
+                      ? `Sold ${formatSoldMonth(listing.settled_date)}`
+                      : 'Sold'}
+                    {/*
+                      Asked-vs-closed, and only when both numbers exist. Deriving
+                      it from a missing list price would be a fabricated statistic
+                      about a real transaction.
+                    */}
+                    {listing.list_price && listing.sale_price
+                      ? ` · asked ${formatPrice(listing.list_price)}`
+                      : ''}
+                  </p>
+                )}
+
+                {/*
+                  The address on a map. A link, not an embed: an iframe would
+                  pull Google's script onto a page that is otherwise entirely
+                  first-party, and the viewer almost always wants it in their own
+                  maps app anyway. `q=` with the full address rather than
+                  coordinates, because the feed carries no lat/long and guessing
+                  at one would drop a pin on the wrong house.
+                */}
+                {address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 text-sm text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink print:hidden"
+                  >
+                    <MapPin className="h-4 w-4 text-champagne-ink" aria-hidden />
+                    View on Google Maps
+                  </a>
+                )}
+
+                {/*
+                  Titled like every other group. It used to be an untitled slab
+                  of six specs, so the page opened with unlabelled numbers and
+                  only started naming its sections halfway down.
+                */}
+                <section className="mt-10 border-t border-gray-200 pt-8">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">
+                    Rooms and size
+                  </h2>
+                  <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">
                   <Spec icon={Bed} label="Bedrooms" value={listing.bedrooms?.toString() ?? null} />
                   <Spec
                     icon={Bath}
@@ -297,7 +349,8 @@ const SearchListing = () => {
                   />
                   <Spec icon={Calendar} label="Year built" value={listing.year_built?.toString() ?? null} />
                   <Spec icon={Home} label="MLS #" value={listing.mls_number} />
-                </dl>
+                  </dl>
+                </section>
 
                 {/*
                   Everything below is optional and every row disappears when the
@@ -328,6 +381,11 @@ const SearchListing = () => {
                   <Spec icon={Car} label="Total parking" value={number(listing.parking_spaces)} />
                   <Spec icon={Layers} label="Basement" value={yesNo(listing.basement)} />
                   <Spec icon={Waves} label="Waterfront" value={yesNo(listing.waterfront)} />
+                  <Spec icon={Waves} label="Waterfront type" value={decodeCodes('WATERFRONT', listing.waterfront_desc, listing.prop_type)} />
+                  <Spec icon={Car} label="Garage" value={decodeCodes('GARAGE_PARKING', listing.garage_parking, listing.prop_type)} />
+                  <Spec icon={Car} label="Parking" value={decodeCodes('PARKING_FEATURE', listing.parking_feature, listing.prop_type)} />
+                  <Spec icon={Trees} label="Lot" value={decodeCodes('LOT_DESCRIPTION', listing.lot_description, listing.prop_type)} />
+                  <Spec icon={Trees} label="Road" value={decodeCodes('ROAD_TYPE', listing.road_type, listing.prop_type)} />
                 </SpecGroup>
 
                 <SpecGroup title="Interior">
@@ -342,6 +400,7 @@ const SearchListing = () => {
                     value={number(listing.sqft_below_grade, ' sq ft')}
                   />
                   <Spec icon={Building2} label="Unit level" value={number(listing.unit_level)} />
+                  <Spec icon={Building2} label="Unit placement" value={decodeCodes('UNIT_PLACEMENT', listing.unit_placement, listing.prop_type)} />
                   <Spec icon={Building2} label="Units in building" value={number(listing.num_units)} />
                   <Spec icon={Home} label="Colour" value={listing.color} />
                   <Spec icon={Home} label="Neighbourhood" value={listing.neighborhood} />
@@ -380,6 +439,41 @@ const SearchListing = () => {
                     label="55+ community"
                     value={yesNo(listing.adult_community)}
                   />
+                </SpecGroup>
+
+                <SpecGroup title="Systems">
+                  {/*
+                    Decoded through src/lib/idx-codes.ts, generated from MLS
+                    PIN's own field reference. The property type is passed
+                    because the codes are not global: HEATING "C" is "Gas" on a
+                    rental and "Hot Water Baseboard" on a condo.
+                  */}
+                  <Spec icon={Flame} label="Heating" value={decodeCodes('HEATING', listing.heating, listing.prop_type)} />
+                  <Spec icon={Snowflake} label="Cooling" value={decodeCodes('COOLING', listing.cooling, listing.prop_type)} />
+                  <Spec icon={Droplets} label="Water" value={decodeCodes('WATER', listing.water, listing.prop_type)} />
+                  <Spec icon={Droplets} label="Sewer" value={decodeCodes('SEWER', listing.sewer, listing.prop_type)} />
+                  <Spec icon={Flame} label="Hot water" value={decodeCodes('HOT_WATER', listing.hot_water, listing.prop_type)} />
+                  <Spec icon={Plug} label="Electric" value={decodeCodes('ELECTRIC_FEATURE', listing.electric_feature, listing.prop_type)} />
+                  <Spec icon={Sparkles} label="Energy features" value={decodeCodes('ENERGY_FEATURES', listing.energy_features, listing.prop_type)} />
+                </SpecGroup>
+
+                <SpecGroup title="Features">
+                  <Spec icon={Sofa} label="Appliances" value={decodeCodes('APPLIANCES', listing.appliances, listing.prop_type)} />
+                  <Spec icon={Layers} label="Flooring" value={decodeCodes('FLOORING', listing.flooring, listing.prop_type)} />
+                  <Spec icon={Home} label="Interior" value={decodeCodes('INTERIOR_FEATURES', listing.interior_features, listing.prop_type)} />
+                  <Spec icon={Trees} label="Exterior" value={decodeCodes('EXTERIOR_FEATURES', listing.exterior_features, listing.prop_type)} />
+                  <Spec icon={Layers} label="Laundry" value={decodeCodes('LAUNDRY_FEATURES', listing.laundry_features, listing.prop_type)} />
+                  <Spec icon={Waves} label="Pool" value={decodeCodes('POOL_DESCRIPTION', listing.pool_description, listing.prop_type)} />
+                  <Spec icon={Home} label="Pets" value={decodeCodes('PETS_ALLOWED', listing.pets_allowed, listing.prop_type)} />
+                </SpecGroup>
+
+                <SpecGroup title="Construction">
+                  <Spec icon={Home} label="Style" value={decodeCodes('STYLE', listing.style, listing.prop_type)} />
+                  <Spec icon={Hammer} label="Construction" value={decodeCodes('CONSTRUCTION', listing.construction, listing.prop_type)} />
+                  <Spec icon={Hammer} label="Siding" value={decodeCodes('EXTERIOR', listing.exterior, listing.prop_type)} />
+                  <Spec icon={Home} label="Roof" value={decodeCodes('ROOF_MATERIAL', listing.roof_material, listing.prop_type)} />
+                  <Spec icon={Layers} label="Basement" value={decodeCodes('BASEMENT_FEATURE', listing.basement_feature, listing.prop_type)} />
+                  <Spec icon={Calendar} label="Year built source" value={decodeCodes('YEAR_BUILT_DESCRP', listing.year_built_descrp, listing.prop_type)} />
                 </SpecGroup>
 
                 {listing.remarks && (

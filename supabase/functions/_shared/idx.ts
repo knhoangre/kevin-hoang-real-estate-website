@@ -95,8 +95,52 @@ export interface IdxListing {
   dateAvailable: string | null;
   sqftAboveGrade: number | null;
   sqftBelowGrade: number | null;
-  /** Every column verbatim, so a field we do not model yet is not lost. */
-  raw: Record<string, string>;
+
+  /*
+   * Coded fields, stored as the feed's RAW codes ("B,N", "A,C,F,I,K,L").
+   *
+   * Decoded in the browser by src/lib/idx-codes.ts rather than here, for two
+   * reasons. Storing the expansions would add roughly 400 bytes a row across
+   * 124,000 rows for text the codebook can reconstruct; and a codebook
+   * correction would then require a full re-sync to take effect, instead of
+   * shipping with the next deploy.
+   *
+   * The codes are meaningless without the property type — HEATING "C" is "Gas"
+   * on a rental and "Hot Water Baseboard" on a condo — so anything that renders
+   * these must pass propType alongside.
+   *
+   * FOUNDATION, AMENITIES and LEAD_PAINT are absent on purpose: they are in the
+   * MLS but not in the IDX export, which carries only the fields Attachment C
+   * permits. Measured at 0% fill before being removed rather than assumed.
+   */
+  heating: string | null;
+  cooling: string | null;
+  water: string | null;
+  sewer: string | null;
+  hotWater: string | null;
+  appliances: string | null;
+  flooring: string | null;
+  interiorFeatures: string | null;
+  exteriorFeatures: string | null;
+  exterior: string | null;
+  construction: string | null;
+  roofMaterial: string | null;
+  basementFeature: string | null;
+  garageParking: string | null;
+  parkingFeature: string | null;
+  lotDescription: string | null;
+  electricFeature: string | null;
+  energyFeatures: string | null;
+  roadType: string | null;
+  laundryFeatures: string | null;
+  petsAllowed: string | null;
+  poolDescription: string | null;
+  unitPlacement: string | null;
+  waterfrontDesc: string | null;
+  waterviewFeatures: string | null;
+  yearBuiltDescrp: string | null;
+  /** SF_TYPE / CC_TYPE / MF_TYPE / RN_TYPE — one field per property type. */
+  propSubtype: string | null;
 }
 
 /** Candidate header names per logical field, in priority order. */
@@ -143,6 +187,34 @@ const FIELD_ALIASES = {
   dateAvailable: ['DATE_AVAILABLE'],
   sqftAboveGrade: ['AboveGradeFinishedArea'],
   sqftBelowGrade: ['BelowGradeFinishedArea'],
+  heating: ['HEATING'],
+  cooling: ['COOLING'],
+  water: ['WATER'],
+  sewer: ['SEWER'],
+  hotWater: ['HOT_WATER'],
+  appliances: ['APPLIANCES'],
+  flooring: ['FLOORING'],
+  interiorFeatures: ['INTERIOR_FEATURES', 'INTERIOR_BLDG_FEAT', 'IFE'],
+  exteriorFeatures: ['EXTERIOR_FEATURES', 'EXTERIOR_UNIT_FEATURES'],
+  exterior: ['EXTERIOR'],
+  construction: ['CONSTRUCTION'],
+  roofMaterial: ['ROOF_MATERIAL'],
+  basementFeature: ['BASEMENT_FEATURE'],
+  garageParking: ['GARAGE_PARKING'],
+  parkingFeature: ['PARKING_FEATURE'],
+  lotDescription: ['LOT_DESCRIPTION'],
+  electricFeature: ['ELECTRIC_FEATURE'],
+  energyFeatures: ['ENERGY_FEATURES'],
+  roadType: ['ROAD_TYPE'],
+  laundryFeatures: ['LAUNDRY_FEATURES'],
+  petsAllowed: ['PETS_ALLOWED'],
+  poolDescription: ['POOL_DESCRIPTION'],
+  unitPlacement: ['UNIT_PLACEMENT'],
+  waterfrontDesc: ['WATERFRONT'],
+  waterviewFeatures: ['WATERVIEW_FEATURES'],
+  yearBuiltDescrp: ['YEAR_BUILT_DESCRP'],
+  // One of these exists per feed, never more than one.
+  propSubtype: ['SF_TYPE', 'CC_TYPE', 'MF_TYPE', 'RN_TYPE'],
 } as const;
 
 type FieldKey = keyof typeof FIELD_ALIASES;
@@ -289,20 +361,15 @@ const isoDate = (raw: string | null): string | null => {
 };
 
 /**
- * Parse a whole feed file.
+ * Build a per-line parser from a feed's header row.
  *
- * Never throws on a malformed row — that row is skipped and the rest of the
- * file still ingests. A single bad record must not cost us the feed, the same
- * reasoning as one bad photo not costing us the whole listing snapshot.
+ * Separated from parseIdxFeed so a feed can be consumed as a STREAM. The sold
+ * single-family file is 66 MB and 45,000 rows; holding it as a string (UTF-16
+ * in the runtime, so ~132 MB) plus an array of parsed records exhausted the
+ * Edge Function worker outright. Nothing needs the whole file at once.
  */
-export function parseIdxFeed(text: string): IdxListing[] {
-  const lines = text.split(/\r\n|\n|\r/);
-
-  let headerIdx = 0;
-  while (headerIdx < lines.length && lines[headerIdx].trim() === '') headerIdx++;
-  if (headerIdx >= lines.length) return [];
-
-  const header = lines[headerIdx].split('|').map((h) => h.trim());
+export function rowParser(headerLine: string): (line: string) => IdxListing | null {
+  const header = headerLine.split('|').map((h) => h.trim());
   const colOf = new Map<string, number>();
   header.forEach((name, i) => {
     if (!colOf.has(name)) colOf.set(name, i);
@@ -318,11 +385,9 @@ export function parseIdxFeed(text: string): IdxListing[] {
     }
   }
 
-  const listings: IdxListing[] = [];
-
-  for (let li = headerIdx + 1; li < lines.length; li++) {
-    if (lines[li].trim() === '') continue;
-    const fields = splitLine(lines[li]);
+  return (line: string): IdxListing | null => {
+    if (line.trim() === '') return null;
+    const fields = splitLine(line);
     const at = (key: FieldKey) => {
       const col = index[key];
       return col == null ? null : clean(fields[col]);
@@ -331,7 +396,7 @@ export function parseIdxFeed(text: string): IdxListing[] {
     const mlsNumber = at('mlsNumber');
     // A row with no numeric MLS number is not a listing — it is a footer, a
     // wrapped line, or corruption. Skip rather than store a keyless record.
-    if (!mlsNumber || !/^\d+$/.test(mlsNumber)) continue;
+    if (!mlsNumber || !/^\d+$/.test(mlsNumber)) return null;
 
     const townNum = at('townNum');
     const { fullBaths, halfBaths } = buildBaths(
@@ -340,7 +405,7 @@ export function parseIdxFeed(text: string): IdxListing[] {
       at('baths')
     );
 
-    listings.push({
+    return {
       mlsNumber,
       status: at('status'),
       propType: at('propType'),
@@ -396,9 +461,56 @@ export function parseIdxFeed(text: string): IdxListing[] {
       dateAvailable: isoDate(at('dateAvailable')),
       sqftAboveGrade: positive(at('sqftAboveGrade')),
       sqftBelowGrade: positive(at('sqftBelowGrade')),
-      raw: Object.fromEntries(header.map((name, i) => [name, fields[i] ?? ''])),
-    });
-  }
+      heating: at('heating'),
+      cooling: at('cooling'),
+      water: at('water'),
+      sewer: at('sewer'),
+      hotWater: at('hotWater'),
+      appliances: at('appliances'),
+      flooring: at('flooring'),
+      interiorFeatures: at('interiorFeatures'),
+      exteriorFeatures: at('exteriorFeatures'),
+      exterior: at('exterior'),
+      construction: at('construction'),
+      roofMaterial: at('roofMaterial'),
+      basementFeature: at('basementFeature'),
+      garageParking: at('garageParking'),
+      parkingFeature: at('parkingFeature'),
+      lotDescription: at('lotDescription'),
+      electricFeature: at('electricFeature'),
+      energyFeatures: at('energyFeatures'),
+      roadType: at('roadType'),
+      laundryFeatures: at('laundryFeatures'),
+      petsAllowed: at('petsAllowed'),
+      poolDescription: at('poolDescription'),
+      unitPlacement: at('unitPlacement'),
+      waterfrontDesc: at('waterfrontDesc'),
+      waterviewFeatures: at('waterviewFeatures'),
+      yearBuiltDescrp: at('yearBuiltDescrp'),
+      propSubtype: at('propSubtype'),
+    };
+  };
+}
 
+/**
+ * Parse a whole feed held in memory. Used by local tooling against the sample
+ * files; the Edge Function streams instead — see rowParser above.
+ *
+ * Never throws on a malformed row: that row is skipped and the rest of the file
+ * still ingests. A single bad record must not cost us the feed.
+ */
+export function parseIdxFeed(text: string): IdxListing[] {
+  const lines = text.split(/\r\n|\n|\r/);
+
+  let headerIdx = 0;
+  while (headerIdx < lines.length && lines[headerIdx].trim() === '') headerIdx++;
+  if (headerIdx >= lines.length) return [];
+
+  const parse = rowParser(lines[headerIdx]);
+  const listings: IdxListing[] = [];
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const row = parse(lines[i]);
+    if (row) listings.push(row);
+  }
   return listings;
 }

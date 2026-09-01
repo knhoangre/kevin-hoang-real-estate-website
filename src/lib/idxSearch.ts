@@ -9,6 +9,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { IDX_CODES, type IdxPropType } from '@/lib/idx-codes';
 
 export type IdxListing = Database['public']['Tables']['idx_listings']['Row'];
 
@@ -96,8 +97,25 @@ export const isAvailable = (code: string | null) =>
  * link Kevin can text to a client, which is the whole point of this feature.
  * State held in a component is a search only the person who typed it can see.
  */
+/**
+ * What the search is looking at.
+ *
+ * Not a free-form status filter: these three are the questions people actually
+ * arrive with, and each implies a different feed, a different property-type
+ * rule AND a different sort. Sold results ordered by price would bury last
+ * week's closings under a mansion from eleven months ago.
+ */
+export type ListingType = 'sale' | 'sold' | 'rent';
+
+export const LISTING_TYPES: { value: ListingType; label: string }[] = [
+  { value: 'sale', label: 'For sale' },
+  { value: 'sold', label: 'Sold' },
+  { value: 'rent', label: 'For rent' },
+];
+
 export interface SearchFilters {
-  /** Free text, matched against address and town. */
+  listingType: ListingType;
+  /** Free text, matched against address, town and MLS number. */
   q: string;
   town: string;
   propType: string;
@@ -109,6 +127,7 @@ export interface SearchFilters {
 }
 
 export const EMPTY_FILTERS: SearchFilters = {
+  listingType: 'sale',
   q: '',
   town: '',
   propType: '',
@@ -119,7 +138,12 @@ export const EMPTY_FILTERS: SearchFilters = {
   page: 1,
 };
 
+const LISTING_TYPE_VALUES = LISTING_TYPES.map((t) => t.value);
+
 export const filtersFromParams = (params: URLSearchParams): SearchFilters => ({
+  listingType: (LISTING_TYPE_VALUES as string[]).includes(params.get('for') ?? '')
+    ? (params.get('for') as ListingType)
+    : 'sale',
   q: params.get('q') ?? '',
   town: params.get('town') ?? '',
   propType: params.get('type') ?? '',
@@ -133,6 +157,9 @@ export const filtersFromParams = (params: URLSearchParams): SearchFilters => ({
 /** Only non-empty values are written, so a shared URL stays readable. */
 export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
   const p = new URLSearchParams();
+  // 'sale' is the default, so it stays out of the URL — a shared link should
+  // carry what was chosen, not restate the defaults.
+  if (f.listingType !== 'sale') p.set('for', f.listingType);
   if (f.q) p.set('q', f.q);
   if (f.town) p.set('town', f.town);
   if (f.propType) p.set('type', f.propType);
@@ -153,40 +180,60 @@ export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
  * tell a narrow search from a broken one.
  */
 export const searchListings = async (f: SearchFilters) => {
-  let query = supabase
-    .from('idx_listings')
-    .select('*', { count: 'exact' })
-    // Rentals are priced per month and everything else is a sale price, so
-    // mixing them in one list sorts a $4,000/mo apartment above a $2M house.
-    // The type filter is how they are separated; the default view excludes
-    // rentals for the same reason.
-    .order('list_price', { ascending: false, nullsFirst: false });
+  const sold = f.listingType === 'sold';
+
+  let query = supabase.from('idx_listings').select('*', { count: 'exact' });
 
   /*
-   * Free text across address and town, so someone can type "Wiswall" or
-   * "Needham" without deciding which field it belongs to first.
+   * Rentals live in the same table as sales and are priced per month, so mixing
+   * them sorts a $4,000/mo apartment above a $2M house. They are a separate
+   * choice rather than a property type filter for that reason.
+   */
+  if (f.listingType === 'rent') {
+    query = query.eq('feed', 'active').eq('prop_type', 'RN');
+  } else if (sold) {
+    query = query.eq('feed', 'sold').neq('prop_type', 'RN');
+  } else {
+    query = query.eq('feed', 'active').neq('prop_type', 'RN');
+  }
+
+  // Sold listings are ordered by WHEN they closed. By price, last week's sales
+  // would sit behind a mansion that closed eleven months ago — useless for
+  // anyone judging what a street is doing now.
+  query = sold
+    ? query.order('settled_date', { ascending: false, nullsFirst: false })
+    : query.order('list_price', { ascending: false, nullsFirst: false });
+
+  /*
+   * Free text across address, town AND MLS number, so someone can paste
+   * "73524017" or type "Wiswall" without deciding which field it belongs to.
    *
-   * PostgREST's `.or()` with two ilike terms, backed by the GIN trigram indexes
-   * added in the details migration — without those this is a sequential scan of
-   * 22,000 rows on every keystroke-committed search.
+   * Backed by the GIN trigram indexes; mls_number is the primary key, and an
+   * exact paste hits it directly.
    *
    * Commas and parentheses are stripped because they are PostgREST's own
-   * delimiters inside an `or` filter: an address typed as "12 Main St, Newton"
-   * would otherwise be read as two separate conditions and error.
+   * delimiters inside an `or` filter: "12 Main St, Newton" would otherwise be
+   * read as two conditions and error.
    */
   if (f.q) {
     const term = f.q.replace(/[(),]/g, ' ').trim();
-    if (term) query = query.or(`address.ilike.%${term}%,town.ilike.%${term}%`);
+    if (term) {
+      query = query.or(
+        `address.ilike.%${term}%,town.ilike.%${term}%,mls_number.ilike.%${term}%`
+      );
+    }
   }
 
   if (f.town) query = query.eq('town', f.town);
   if (f.propType) query = query.eq('prop_type', f.propType);
-  else query = query.neq('prop_type', 'RN');
 
+  // Sold rows are filtered on what they SOLD for, not what they asked. Filtering
+  // a sold search by list price would answer a question nobody asked.
+  const priceColumn = sold ? 'sale_price' : 'list_price';
   const min = Number(f.minPrice);
   const max = Number(f.maxPrice);
-  if (f.minPrice && Number.isFinite(min)) query = query.gte('list_price', min);
-  if (f.maxPrice && Number.isFinite(max)) query = query.lte('list_price', max);
+  if (f.minPrice && Number.isFinite(min)) query = query.gte(priceColumn, min);
+  if (f.maxPrice && Number.isFinite(max)) query = query.lte(priceColumn, max);
 
   // Beds and baths are minimums, which is how anyone actually shops: "at least
   // three bedrooms", never "exactly three".
@@ -201,6 +248,10 @@ export const searchListings = async (f: SearchFilters) => {
 
   return { listings: (data ?? []) as IdxListing[], total: count ?? 0 };
 };
+
+/** What a listing's headline price is, given which list it appears in. */
+export const headlinePrice = (listing: IdxListing) =>
+  listing.feed === 'sold' ? listing.sale_price ?? listing.list_price : listing.list_price;
 
 /** One listing by MLS number, for /search/<mls>. */
 export const listingByMls = async (mls: string) => {
@@ -241,6 +292,44 @@ export const lastSyncedAt = async (): Promise<string | null> => {
     .limit(1)
     .maybeSingle();
   return data?.finished_at ?? null;
+};
+
+/**
+ * Expand one coded feed field into readable labels.
+ *
+ * The feed stores these as comma-separated letter codes — HEATING "B,N",
+ * APPLIANCES "A,C,F,I,K,L". THE PROPERTY TYPE IS REQUIRED, not optional:
+ * HEATING "C" is "Gas" on a rental, "Hot Air Gravity" on a single-family and
+ * "Hot Water Baseboard" on a condo. A lookup that ignored it would mislabel
+ * thousands of listings while looking entirely plausible.
+ *
+ * A code with no entry in the codebook is DROPPED rather than shown raw. The
+ * reference is regenerated from MLS PIN, so an unknown code means the reference
+ * is behind — and "Heating: Forced Air, N" is worse than "Heating: Forced Air".
+ * If every code is unknown the field renders as nothing at all, which is the
+ * same honest silence the rest of the site uses for data it does not have.
+ */
+export const decodeCodes = (
+  field: string,
+  value: string | null,
+  propType: string | null
+): string | null => {
+  if (!value) return null;
+
+  const byType = IDX_CODES[field];
+  if (!byType) return null;
+
+  const table = byType[(propType ?? '') as IdxPropType];
+  if (!table) return null;
+
+  const labels = value
+    .split(',')
+    .map((code) => table[code.trim()])
+    .filter(Boolean);
+
+  // De-duplicated: several codes can map to the same label across a revision
+  // of the reference, and "Other (See Remarks), Other (See Remarks)" is noise.
+  return labels.length ? [...new Set(labels)].join(', ') : null;
 };
 
 /** The towns that actually have listings, with a count each, for the filter. */
