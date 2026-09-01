@@ -64,6 +64,37 @@ export interface IdxListing {
   remarks: string | null;
   yearBuilt: number | null;
   style: string | null;
+
+  /*
+   * Detail fields, added so /search/<mls> can say more than beds and baths.
+   *
+   * ONLY fields that are numeric, boolean, or free text are modelled. Most of
+   * the feed's descriptive columns are CODED — HEATING is "B,N", APPLIANCES is
+   * "A,C,F,I,K,L", STYLE is "A" — and the lookup tables for those codes are in
+   * the Field Reference behind the MLS PIN login. Rendering "Heating: B,N"
+   * tells a reader nothing, and guessing at expansions would be inventing
+   * details about another firm's listing. They are deliberately not stored
+   * until the codebook is available; a re-sync takes an hour to backfill them.
+   */
+  totalRooms: number | null;
+  lotSize: number | null;
+  acres: number | null;
+  garageSpaces: number | null;
+  parkingSpaces: number | null;
+  basement: boolean | null;
+  taxes: number | null;
+  taxYear: number | null;
+  neighborhood: string | null;
+  color: string | null;
+  waterfront: boolean | null;
+  adultCommunity: boolean | null;
+  hoa: boolean | null;
+  hoaFee: number | null;
+  numUnits: number | null;
+  unitLevel: number | null;
+  dateAvailable: string | null;
+  sqftAboveGrade: number | null;
+  sqftBelowGrade: number | null;
   /** Every column verbatim, so a field we do not model yet is not lost. */
   raw: Record<string, string>;
 }
@@ -93,6 +124,25 @@ const FIELD_ALIASES = {
   remarks: ['REMARKS'],
   yearBuilt: ['YEAR_BUILT'],
   style: ['STYLE', 'SF_TYPE'],
+  totalRooms: ['NO_ROOMS', 'TOTAL_RMS'],
+  lotSize: ['LOT_SIZE'],
+  acres: ['ACRE'],
+  garageSpaces: ['GARAGE_SPACES'],
+  parkingSpaces: ['TOTAL_PARKING', 'PARKING_SPACES'],
+  basement: ['BASEMENT'],
+  taxes: ['TAXES'],
+  taxYear: ['TAX_YEAR'],
+  neighborhood: ['NEIGHBORHOOD'],
+  color: ['COLOR'],
+  waterfront: ['WATERFRONT_FLAG'],
+  adultCommunity: ['ADULT_COMMUNITY'],
+  hoa: ['HOME_OWN_ASSOCIATION'],
+  hoaFee: ['HOA_FEE'],
+  numUnits: ['NO_UNITS'],
+  unitLevel: ['UNIT_LEVEL'],
+  dateAvailable: ['DATE_AVAILABLE'],
+  sqftAboveGrade: ['AboveGradeFinishedArea'],
+  sqftBelowGrade: ['BelowGradeFinishedArea'],
 } as const;
 
 type FieldKey = keyof typeof FIELD_ALIASES;
@@ -198,6 +248,34 @@ const buildBaths = (
   return { fullBaths: null, halfBaths: null };
 };
 
+/**
+ * Y / N / U -> true / false / null.
+ *
+ * "U" means unknown in this feed and is roughly a third of the values on some
+ * columns, so it has to become null rather than false: "no HOA" and "nobody
+ * said" are different claims, and only one of them is safe to print.
+ */
+const yesNo = (v: string | null): boolean | null => {
+  if (!v) return null;
+  const t = v.trim().toUpperCase();
+  if (t === 'Y') return true;
+  if (t === 'N') return false;
+  return null;
+};
+
+/**
+ * A number that is meaningful, or null.
+ *
+ * Zero is discarded rather than displayed. TAXES, LOT_SIZE and ASSESSMENTS are
+ * all "0" on a large share of rows — that is the field being unfilled, not a
+ * home with no lot and no tax bill, and "Taxes: $0" is a false statement about
+ * someone else's listing.
+ */
+const positive = (v: string | null): number | null => {
+  const n = num(v);
+  return n !== null && n > 0 ? n : null;
+};
+
 /** ISO date, or null. MLS PIN dates arrive as M/D/YYYY. */
 const isoDate = (raw: string | null): string | null => {
   if (!raw) return null;
@@ -286,6 +364,38 @@ export function parseIdxFeed(text: string): IdxListing[] {
       remarks: at('remarks'),
       yearBuilt: num(at('yearBuilt')),
       style: at('style'),
+      totalRooms: positive(at('totalRooms')),
+      /*
+       * LOT_SIZE is square feet, except on 861 rows across the four active
+       * feeds where someone typed acres into it — values like 0.03 and 0.94.
+       * A three-hundredths-of-a-square-foot lot does not exist, so anything
+       * under 100 is discarded rather than rendered as "Lot: 0.03 sq ft".
+       * ACRE is filled on 97% of rows and is the field the page prefers
+       * anyway, so nothing useful is lost.
+       */
+      lotSize: (() => {
+        const n = positive(at('lotSize'));
+        return n !== null && n >= 100 ? n : null;
+      })(),
+      acres: positive(at('acres')),
+      // Zero garage spaces is a real, useful fact ("no garage"), unlike a zero
+      // tax bill — so these use num() rather than positive().
+      garageSpaces: num(at('garageSpaces')),
+      parkingSpaces: num(at('parkingSpaces')),
+      basement: yesNo(at('basement')),
+      taxes: positive(at('taxes')),
+      taxYear: positive(at('taxYear')),
+      neighborhood: at('neighborhood'),
+      color: at('color'),
+      waterfront: yesNo(at('waterfront')),
+      adultCommunity: yesNo(at('adultCommunity')),
+      hoa: yesNo(at('hoa')),
+      hoaFee: positive(at('hoaFee')),
+      numUnits: positive(at('numUnits')),
+      unitLevel: num(at('unitLevel')),
+      dateAvailable: isoDate(at('dateAvailable')),
+      sqftAboveGrade: positive(at('sqftAboveGrade')),
+      sqftBelowGrade: positive(at('sqftBelowGrade')),
       raw: Object.fromEntries(header.map((name, i) => [name, fields[i] ?? ''])),
     });
   }

@@ -68,6 +68,12 @@ export interface PageShellProps {
   /** Small label above the h1. Falls back to the last crumb. */
   eyebrow?: string;
   h1: string;
+  /**
+   * Extra classes for the h1. Exists for headings that are mostly NUMBERS —
+   * a street address — where the display serif's old-style figures make the
+   * digits bounce. Pass "numeral" to set it in Inter with lining figures.
+   */
+  h1ClassName?: string;
   lede?: React.ReactNode;
   /**
    * Cinematic hero image, sized through Unsplash's params — a bare photo URL
@@ -145,6 +151,7 @@ const PageShell = ({
   crumbs,
   eyebrow,
   h1,
+  h1ClassName = '',
   lede,
   hero,
   heroSize = 'compact',
@@ -223,7 +230,7 @@ const PageShell = ({
               )}
 
               <h1
-                className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter"
+                className={`${h1ClassName || 'font-display'} text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight text-white enter`}
                 style={{ '--enter-delay': '0.1s' } as React.CSSProperties}
               >
                 {h1}

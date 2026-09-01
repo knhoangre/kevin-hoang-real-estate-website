@@ -140,6 +140,11 @@ const PropertyDetail = () => {
       }}
       eyebrow={isSold ? 'Sold' : listing.status}
       h1={listing.address}
+      // The h1 is a street address, which is mostly digits — and PageShell sets
+      // it in Playfair Display, whose old-style figures drop 3/4/5/7/9 below the
+      // baseline. See .numeral in src/index.css.
+      h1ClassName="numeral"
+
       lede={
         <>
           {listing.town}, Massachusetts

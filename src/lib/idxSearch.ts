@@ -52,6 +52,44 @@ export const propTypeLabel = (code: string | null) =>
   PROP_TYPES.find((p) => p.value === code)?.label ?? code ?? 'Property';
 
 /**
+ * MLS PIN status codes, spelled out.
+ *
+ * These are the ten codes that actually occur across all eight feeds, counted
+ * rather than assumed: SLD, RNT, ACT, UAG, NEW, CTG, PCG, BOM, EXT, RAC. An
+ * unrecognised code falls through to itself rather than to a guess — a status
+ * is a statement about whether a home can still be bought, and inventing one is
+ * worse than showing four letters.
+ *
+ * Confirm against the Field Reference when it is to hand; these are the
+ * standard MLS PIN meanings but have not been read off the official table.
+ */
+const STATUS_LABELS: Record<string, string> = {
+  ACT: 'Active',
+  NEW: 'New listing',
+  BOM: 'Back on market',
+  PCG: 'Price changed',
+  EXT: 'Extended',
+  RAC: 'Reactivated',
+  CTG: 'Contingent',
+  UAG: 'Under agreement',
+  SLD: 'Sold',
+  RNT: 'Rented',
+};
+
+export const statusLabel = (code: string | null) =>
+  code ? STATUS_LABELS[code.trim().toUpperCase()] ?? code : null;
+
+/**
+ * Whether a status still means "you can buy this".
+ *
+ * Contingent and under-agreement listings are still shown — they fall through
+ * often enough to matter — but they are marked, because presenting one as
+ * simply available wastes a buyer's afternoon.
+ */
+export const isAvailable = (code: string | null) =>
+  ['ACT', 'NEW', 'BOM', 'PCG', 'EXT', 'RAC'].includes((code ?? '').trim().toUpperCase());
+
+/**
  * The filter state, which lives entirely in the URL query string.
  *
  * Deliberately not component state: `?town=Needham&maxPrice=900000` is itself a
@@ -59,6 +97,8 @@ export const propTypeLabel = (code: string | null) =>
  * State held in a component is a search only the person who typed it can see.
  */
 export interface SearchFilters {
+  /** Free text, matched against address and town. */
+  q: string;
   town: string;
   propType: string;
   minPrice: string;
@@ -69,6 +109,7 @@ export interface SearchFilters {
 }
 
 export const EMPTY_FILTERS: SearchFilters = {
+  q: '',
   town: '',
   propType: '',
   minPrice: '',
@@ -79,6 +120,7 @@ export const EMPTY_FILTERS: SearchFilters = {
 };
 
 export const filtersFromParams = (params: URLSearchParams): SearchFilters => ({
+  q: params.get('q') ?? '',
   town: params.get('town') ?? '',
   propType: params.get('type') ?? '',
   minPrice: params.get('min') ?? '',
@@ -91,6 +133,7 @@ export const filtersFromParams = (params: URLSearchParams): SearchFilters => ({
 /** Only non-empty values are written, so a shared URL stays readable. */
 export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
   const p = new URLSearchParams();
+  if (f.q) p.set('q', f.q);
   if (f.town) p.set('town', f.town);
   if (f.propType) p.set('type', f.propType);
   if (f.minPrice) p.set('min', f.minPrice);
@@ -100,9 +143,6 @@ export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
   if (f.page > 1) p.set('page', String(f.page));
   return p;
 };
-
-export const hasAnyFilter = (f: SearchFilters) =>
-  Boolean(f.town || f.propType || f.minPrice || f.maxPrice || f.beds || f.baths);
 
 /**
  * Run one search. Returns the page of rows plus the total match count, which is
@@ -121,6 +161,23 @@ export const searchListings = async (f: SearchFilters) => {
     // The type filter is how they are separated; the default view excludes
     // rentals for the same reason.
     .order('list_price', { ascending: false, nullsFirst: false });
+
+  /*
+   * Free text across address and town, so someone can type "Wiswall" or
+   * "Needham" without deciding which field it belongs to first.
+   *
+   * PostgREST's `.or()` with two ilike terms, backed by the GIN trigram indexes
+   * added in the details migration — without those this is a sequential scan of
+   * 22,000 rows on every keystroke-committed search.
+   *
+   * Commas and parentheses are stripped because they are PostgREST's own
+   * delimiters inside an `or` filter: an address typed as "12 Main St, Newton"
+   * would otherwise be read as two separate conditions and error.
+   */
+  if (f.q) {
+    const term = f.q.replace(/[(),]/g, ' ').trim();
+    if (term) query = query.or(`address.ilike.%${term}%,town.ilike.%${term}%`);
+  }
 
   if (f.town) query = query.eq('town', f.town);
   if (f.propType) query = query.eq('prop_type', f.propType);

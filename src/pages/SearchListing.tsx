@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { Children, isValidElement, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft } from 'lucide-react';
+import {
+  Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft,
+  Car, Trees, Layers, Receipt, Waves, Building2, DoorOpen,
+} from 'lucide-react';
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +20,8 @@ import {
   officeName,
   photoUrls,
   propTypeLabel,
+  statusLabel,
+  isAvailable,
   type IdxListing,
 } from '@/lib/idxSearch';
 
@@ -38,6 +43,12 @@ import {
  * fetch is in flight is an honest generic title, never a wrong specific one.
  */
 
+/** A yes/no that is genuinely unknown renders nothing rather than "No". */
+const yesNo = (v: boolean | null) => (v === null ? null : v ? 'Yes' : 'No');
+
+const number = (v: number | null, unit = '') =>
+  v === null ? null : `${v.toLocaleString()}${unit}`;
+
 const Spec = ({
   icon: Icon,
   label,
@@ -56,6 +67,29 @@ const Spec = ({
       </div>
     </div>
   );
+
+/**
+ * A titled block of specs that renders NOTHING when every child is null.
+ *
+ * React counts a `false`/`null` child as a child, so the emptiness has to be
+ * tested on the rendered output rather than on children.length — otherwise a
+ * listing with no lot data still shows a "Lot and parking" heading over an
+ * empty box, which is the thin templated filler TownSoldListings was written to
+ * avoid.
+ */
+const SpecGroup = ({ title, children }: { title: string; children: React.ReactNode }) => {
+  const shown = Children.toArray(children).filter(
+    (child) => isValidElement(child) && (child.props as { value?: string | null }).value != null
+  );
+  if (shown.length === 0) return null;
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">{title}</h2>
+      <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">{shown}</dl>
+    </section>
+  );
+};
 
 const SearchListing = () => {
   const { mls } = useParams<{ mls: string }>();
@@ -217,14 +251,26 @@ const SearchListing = () => {
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-ink">
                   {propTypeLabel(listing.prop_type)}
-                  {listing.status ? ` · ${listing.status}` : ''}
+                  {/* "Under agreement", not "UAG". */}
+                  {statusLabel(listing.status) ? ` · ${statusLabel(listing.status)}` : ''}
                 </p>
-                <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+                {/*
+                  Inter, not the display serif. A street address is mostly
+                  digits, and Playfair Display's default old-style figures put
+                  half of them below the baseline — "80 Gary Rd" renders with a
+                  sunken 8 and a raised 0. Same reason the prices moved off it.
+                */}
+                <h1 className="numeral mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
                   {listing.address}
                 </h1>
                 <p className="mt-2 text-gray-600">
                   {[listing.town, listing.state, listing.zip].filter(Boolean).join(', ')}
                 </p>
+                {!isAvailable(listing.status) && statusLabel(listing.status) && (
+                  <p className="mt-4 inline-block rounded-full bg-ink-deep px-4 py-1.5 text-sm font-semibold text-white">
+                    {statusLabel(listing.status)}
+                  </p>
+                )}
                 <p className="numeral mt-6 text-4xl font-semibold text-ink">
                   {formatPrice(listing.list_price)}
                   {listing.prop_type === 'RN' && (
@@ -243,27 +289,98 @@ const SearchListing = () => {
                         : formatBaths(listing.full_baths, listing.half_baths)
                     }
                   />
+                  <Spec icon={DoorOpen} label="Total rooms" value={number(listing.total_rooms)} />
                   <Spec
                     icon={Square}
                     label="Living area"
+                    value={number(listing.living_area, ' sq ft')}
+                  />
+                  <Spec icon={Calendar} label="Year built" value={listing.year_built?.toString() ?? null} />
+                  <Spec icon={Home} label="MLS #" value={listing.mls_number} />
+                </dl>
+
+                {/*
+                  Everything below is optional and every row disappears when the
+                  feed does not carry it — which is why these are grouped rather
+                  than one long grid: a section with nothing in it is not
+                  rendered at all, so a sparse listing does not show a wall of
+                  blanks.
+
+                  Deliberately absent: heating, cooling, water, sewer,
+                  appliances, flooring, construction, roof and style. The feed
+                  stores those as letter codes ("B,N", "A,C,F,I,K,L") whose
+                  lookup tables are in the Field Reference behind the MLS PIN
+                  login. Printing the codes is useless and expanding them by
+                  guesswork would fabricate details about another firm's
+                  listing.
+                */}
+                <SpecGroup title="Lot and parking">
+                  <Spec
+                    icon={Trees}
+                    label="Lot size"
                     value={
-                      listing.living_area !== null
-                        ? `${listing.living_area.toLocaleString()} sq ft`
+                      listing.acres !== null
+                        ? `${listing.acres} acres`
+                        : number(listing.lot_size, ' sq ft')
+                    }
+                  />
+                  <Spec icon={Car} label="Garage spaces" value={number(listing.garage_spaces)} />
+                  <Spec icon={Car} label="Total parking" value={number(listing.parking_spaces)} />
+                  <Spec icon={Layers} label="Basement" value={yesNo(listing.basement)} />
+                  <Spec icon={Waves} label="Waterfront" value={yesNo(listing.waterfront)} />
+                </SpecGroup>
+
+                <SpecGroup title="Interior">
+                  <Spec
+                    icon={Square}
+                    label="Above grade"
+                    value={number(listing.sqft_above_grade, ' sq ft')}
+                  />
+                  <Spec
+                    icon={Square}
+                    label="Below grade"
+                    value={number(listing.sqft_below_grade, ' sq ft')}
+                  />
+                  <Spec icon={Building2} label="Unit level" value={number(listing.unit_level)} />
+                  <Spec icon={Building2} label="Units in building" value={number(listing.num_units)} />
+                  <Spec icon={Home} label="Colour" value={listing.color} />
+                  <Spec icon={Home} label="Neighbourhood" value={listing.neighborhood} />
+                </SpecGroup>
+
+                <SpecGroup title="Costs">
+                  {/*
+                    The tax year is shown WITH the tax figure, never without.
+                    A property-tax number with no year attached is the kind of
+                    stale figure a buyer budgets against and then finds out
+                    is three years old.
+                  */}
+                  <Spec
+                    icon={Receipt}
+                    label={listing.tax_year ? `Taxes (${listing.tax_year})` : 'Taxes'}
+                    value={listing.taxes !== null ? formatPrice(listing.taxes) : null}
+                  />
+                  <Spec icon={Receipt} label="HOA" value={yesNo(listing.hoa)} />
+                  <Spec
+                    icon={Receipt}
+                    label="HOA fee"
+                    value={listing.hoa_fee !== null ? formatPrice(listing.hoa_fee) : null}
+                  />
+                  <Spec
+                    icon={Calendar}
+                    label="Available from"
+                    value={
+                      listing.date_available
+                        ? new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' })
+                            .format(new Date(`${listing.date_available}T00:00:00Z`))
                         : null
                     }
                   />
-                  <Spec icon={Calendar} label="Year built" value={listing.year_built?.toString() ?? null} />
-                  {/*
-                    STYLE is deliberately not shown. The feed stores it as a
-                    raw code ("D"), and the lookup table for those codes is in
-                    the Field Reference behind the MLS PIN login. Rendering "D"
-                    as a style tells a reader nothing, and guessing at what it
-                    expands to would be inventing data about someone else's
-                    listing. It stays in the database until the codes can be
-                    resolved properly.
-                  */}
-                  <Spec icon={Home} label="MLS #" value={listing.mls_number} />
-                </dl>
+                  <Spec
+                    icon={Home}
+                    label="55+ community"
+                    value={yesNo(listing.adult_community)}
+                  />
+                </SpecGroup>
 
                 {listing.remarks && (
                   <div className="mt-10">

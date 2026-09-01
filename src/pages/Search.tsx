@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Bed, Bath, Square, Search as SearchIcon, X } from 'lucide-react';
+import { Bed, Bath, Square, Search as SearchIcon, X, MapPin } from 'lucide-react';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
-import { formatPrice, formatBaths } from '@/lib/listings';
+import { formatPrice, formatBathsShort } from '@/lib/listings';
 import {
   EMPTY_FILTERS,
   PAGE_SIZE,
   PROP_TYPES,
   filtersFromParams,
-  hasAnyFilter,
   paramsFromFilters,
   photoUrl,
   propTypeLabel,
   searchListings,
+  statusLabel,
+  isAvailable,
   townsWithListings,
   type IdxListing,
   type SearchFilters,
@@ -92,6 +93,17 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-ink backdrop-blur-sm">
           {propTypeLabel(listing.prop_type)}
         </span>
+        {/*
+          Only shown when the status is NOT plainly available. Badging all
+          14,000 active listings "Active" is noise; badging the contingent and
+          under-agreement ones is the whole point, because presenting those as
+          simply for sale wastes a buyer's afternoon.
+        */}
+        {!isAvailable(listing.status) && statusLabel(listing.status) && (
+          <span className="absolute right-3 top-3 rounded-full bg-ink-deep/85 px-3 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
+            {statusLabel(listing.status)}
+          </span>
+        )}
       </div>
 
       <div className="p-4">
@@ -117,8 +129,11 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
           {listing.full_baths !== null && (
             <span className="flex items-center gap-1">
               <Bath className="h-4 w-4" aria-hidden />
-              {formatBaths(listing.full_baths, listing.half_baths)}
-              <span className="sr-only"> baths</span>
+              {formatBathsShort(listing.full_baths, listing.half_baths)}
+              <span className="sr-only">
+                {' '}
+                baths, full and half
+              </span>
             </span>
           )}
           {listing.living_area !== null && (
@@ -181,6 +196,33 @@ const Search = () => {
 
   const commit = (next: SearchFilters) => setParams(paramsFromFilters(next));
 
+  /*
+   * One chip per active criterion, each knowing how to clear only itself.
+   * Built from the COMMITTED filters rather than the draft, so a chip always
+   * describes the search that produced the results on screen.
+   */
+  const activeChips: { key: string; label: string; clear: Partial<SearchFilters> }[] = [
+    filters.q && { key: 'q', label: `“${filters.q}”`, clear: { q: '' } },
+    filters.town && { key: 'town', label: filters.town, clear: { town: '' } },
+    filters.propType && {
+      key: 'type',
+      label: PROP_TYPES.find((p) => p.value === filters.propType)?.label ?? filters.propType,
+      clear: { propType: '' },
+    },
+    filters.minPrice && {
+      key: 'min',
+      label: `${formatPrice(Number(filters.minPrice))}+`,
+      clear: { minPrice: '' },
+    },
+    filters.maxPrice && {
+      key: 'max',
+      label: `Up to ${formatPrice(Number(filters.maxPrice))}`,
+      clear: { maxPrice: '' },
+    },
+    filters.beds && { key: 'beds', label: `${filters.beds}+ beds`, clear: { beds: '' } },
+    filters.baths && { key: 'baths', label: `${filters.baths}+ baths`, clear: { baths: '' } },
+  ].filter(Boolean) as { key: string; label: string; clear: Partial<SearchFilters> }[];
+
   const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const firstShown = total === 0 ? 0 : (filters.page - 1) * PAGE_SIZE + 1;
   const lastShown = Math.min(filters.page * PAGE_SIZE, total);
@@ -207,8 +249,13 @@ const Search = () => {
       }}
     >
       <ShellSection width="wide" inner="">
+        {/*
+          The search box is its own row above the filters, because typing where
+          you want to live is the first thing anyone does — asking them to pick
+          a town from a 400-entry dropdown first is backwards.
+        */}
         <form
-          className="mb-10 grid gap-4 rounded-2xl border border-gray-200 bg-bone p-6 sm:grid-cols-2 lg:grid-cols-6"
+          className="mb-6 rounded-2xl border border-gray-200 bg-bone p-6"
           onSubmit={(e) => {
             e.preventDefault();
             // Any change to the criteria returns to page 1. Staying on page 7
@@ -217,127 +264,170 @@ const Search = () => {
             commit({ ...draft, page: 1 });
           }}
         >
-          <div className="lg:col-span-2">
-            <label htmlFor="town" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Town
-            </label>
-            <select
-              id="town"
-              className={inputClass}
-              value={draft.town}
-              onChange={(e) => setDraft({ ...draft, town: e.target.value })}
-            >
-              <option value="">Anywhere in Massachusetts</option>
-              {towns.map((t) => (
-                <option key={t.town} value={t.town}>
-                  {t.town} ({t.listings})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="type" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Type
-            </label>
-            <select
-              id="type"
-              className={inputClass}
-              value={draft.propType}
-              onChange={(e) => setDraft({ ...draft, propType: e.target.value })}
-            >
-              <option value="">For sale (all)</option>
-              {PROP_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="min" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Min price
-            </label>
-            <input
-              id="min"
-              className={`${inputClass} numeral`}
-              inputMode="numeric"
-              placeholder="Any"
-              value={draft.minPrice}
-              onChange={(e) => setDraft({ ...draft, minPrice: e.target.value.replace(/\D/g, '') })}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="max" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Max price
-            </label>
-            <input
-              id="max"
-              className={`${inputClass} numeral`}
-              inputMode="numeric"
-              placeholder="Any"
-              value={draft.maxPrice}
-              onChange={(e) => setDraft({ ...draft, maxPrice: e.target.value.replace(/\D/g, '') })}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label htmlFor="beds" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-                Beds
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <MapPin
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400"
+                aria-hidden
+              />
+              <label htmlFor="q" className="sr-only">
+                Search by street address or town
               </label>
-              <select
-                id="beds"
-                className={inputClass}
-                value={draft.beds}
-                onChange={(e) => setDraft({ ...draft, beds: e.target.value })}
-              >
-                <option value="">Any</option>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <option key={n} value={n}>{n}+</option>
-                ))}
-              </select>
+              <input
+                id="q"
+                type="search"
+                className={`${inputClass} py-3.5 pl-12 text-base`}
+                placeholder="Street address or town — try “Needham” or “Gary Rd”"
+                value={draft.q}
+                onChange={(e) => setDraft({ ...draft, q: e.target.value })}
+              />
             </div>
-            <div>
-              <label htmlFor="baths" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
-                Baths
-              </label>
-              <select
-                id="baths"
-                className={inputClass}
-                value={draft.baths}
-                onChange={(e) => setDraft({ ...draft, baths: e.target.value })}
-              >
-                <option value="">Any</option>
-                {[1, 2, 3, 4].map((n) => (
-                  <option key={n} value={n}>{n}+</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="flex items-end gap-3 sm:col-span-2 lg:col-span-6">
             <button
               type="submit"
-              className="btn-pill btn-pill-light inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+              className="btn-pill btn-pill-light inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink-deep px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
             >
               <SearchIcon className="h-4 w-4" aria-hidden />
               Search
             </button>
-            {hasAnyFilter(filters) && (
-              <button
-                type="button"
-                onClick={() => commit(EMPTY_FILTERS)}
-                className="inline-flex items-center gap-1.5 text-sm text-gray-600 underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:text-ink"
+          </div>
+
+          <div className="mt-5 grid gap-4 border-t border-gray-200 pt-5 sm:grid-cols-2 lg:grid-cols-6">
+            <div className="lg:col-span-2">
+              <label htmlFor="town" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Town
+              </label>
+              <select
+                id="town"
+                className={inputClass}
+                value={draft.town}
+                onChange={(e) => setDraft({ ...draft, town: e.target.value })}
               >
-                <X className="h-4 w-4" aria-hidden />
-                Clear filters
-              </button>
-            )}
+                <option value="">Anywhere in Massachusetts</option>
+                {towns.map((t) => (
+                  <option key={t.town} value={t.town}>
+                    {t.town} ({t.listings})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="type" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Type
+              </label>
+              <select
+                id="type"
+                className={inputClass}
+                value={draft.propType}
+                onChange={(e) => setDraft({ ...draft, propType: e.target.value })}
+              >
+                <option value="">For sale (all)</option>
+                {PROP_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="min" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Min price
+              </label>
+              <input
+                id="min"
+                className={`${inputClass} numeral`}
+                inputMode="numeric"
+                placeholder="Any"
+                value={draft.minPrice}
+                onChange={(e) => setDraft({ ...draft, minPrice: e.target.value.replace(/\D/g, '') })}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="max" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                Max price
+              </label>
+              <input
+                id="max"
+                className={`${inputClass} numeral`}
+                inputMode="numeric"
+                placeholder="Any"
+                value={draft.maxPrice}
+                onChange={(e) => setDraft({ ...draft, maxPrice: e.target.value.replace(/\D/g, '') })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="beds" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                  Beds
+                </label>
+                <select
+                  id="beds"
+                  className={inputClass}
+                  value={draft.beds}
+                  onChange={(e) => setDraft({ ...draft, beds: e.target.value })}
+                >
+                  <option value="">Any</option>
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <option key={n} value={n}>{n}+</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="baths" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+                  Baths
+                </label>
+                <select
+                  id="baths"
+                  className={inputClass}
+                  value={draft.baths}
+                  onChange={(e) => setDraft({ ...draft, baths: e.target.value })}
+                >
+                  <option value="">Any</option>
+                  {[1, 2, 3, 4].map((n) => (
+                    <option key={n} value={n}>{n}+</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </form>
+
+        {/*
+          Active filters as removable chips, on their own row.
+          They used to be a bare "Clear filters" link sitting beside the Search
+          button, which said nothing about WHAT was filtered and offered only
+          all-or-nothing. A chip per criterion shows the current search at a
+          glance and lets one be dropped without rebuilding the rest.
+        */}
+        {activeChips.length > 0 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Filters
+            </span>
+            {activeChips.map((chip) => (
+              <button
+                key={chip.key}
+                type="button"
+                onClick={() => commit({ ...filters, ...chip.clear, page: 1 })}
+                className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm text-ink transition-colors hover:border-champagne-ink hover:bg-bone"
+              >
+                {chip.label}
+                <X className="h-3.5 w-3.5 text-gray-500" aria-hidden />
+                <span className="sr-only">Remove this filter</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => commit(EMPTY_FILTERS)}
+              className="ml-1 text-sm text-gray-600 underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:text-ink"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* aria-live so a screen reader hears the count change after a search. */}
         <p className="numeral mb-6 text-sm text-gray-600" aria-live="polite">

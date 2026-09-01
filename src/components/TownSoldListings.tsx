@@ -87,7 +87,7 @@ const TownSoldListings = ({ townSlug, townName }: Props) => {
                 {listing.propertyType}
                 {listing.bedrooms !== null && ` · ${listing.bedrooms} bd`}
                 {(listing.fullBaths !== null || listing.halfBaths !== null) &&
-                  ` · ${formatBaths(listing.fullBaths, listing.halfBaths)} ba`}
+                  ` · ${formatBaths(listing.fullBaths, listing.halfBaths)} bath`}
                 {listing.livingArea !== null &&
                   ` · ${listing.livingArea.toLocaleString()} sq ft`}
               </p>

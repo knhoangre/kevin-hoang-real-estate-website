@@ -675,71 +675,128 @@ export type Database = {
       }
       idx_listings: {
         Row: {
+          acres: number | null
           address: string | null
+          adult_community: boolean | null
+          basement: boolean | null
           bedrooms: number | null
+          color: string | null
+          date_available: string | null
           full_baths: number | null
+          garage_spaces: number | null
           half_baths: number | null
+          hoa: boolean | null
+          hoa_fee: number | null
           list_agent_id: string | null
           list_office_id: string | null
           list_price: number | null
           living_area: number | null
+          lot_size: number | null
           mls_number: string
+          neighborhood: string | null
+          num_units: number | null
+          parking_spaces: number | null
           photo_count: number | null
           prop_type: string | null
           remarks: string | null
           sale_price: number | null
           settled_date: string | null
+          sqft_above_grade: number | null
+          sqft_below_grade: number | null
           state: string | null
           status: string | null
           style: string | null
           synced_at: string
+          tax_year: number | null
+          taxes: number | null
+          total_rooms: number | null
           town: string | null
+          unit_level: number | null
+          waterfront: boolean | null
           year_built: number | null
           zip: string | null
         }
         Insert: {
+          acres?: number | null
           address?: string | null
+          adult_community?: boolean | null
+          basement?: boolean | null
           bedrooms?: number | null
+          color?: string | null
+          date_available?: string | null
           full_baths?: number | null
+          garage_spaces?: number | null
           half_baths?: number | null
+          hoa?: boolean | null
+          hoa_fee?: number | null
           list_agent_id?: string | null
           list_office_id?: string | null
           list_price?: number | null
           living_area?: number | null
+          lot_size?: number | null
           mls_number: string
+          neighborhood?: string | null
+          num_units?: number | null
+          parking_spaces?: number | null
           photo_count?: number | null
           prop_type?: string | null
           remarks?: string | null
           sale_price?: number | null
           settled_date?: string | null
+          sqft_above_grade?: number | null
+          sqft_below_grade?: number | null
           state?: string | null
           status?: string | null
           style?: string | null
           synced_at?: string
+          tax_year?: number | null
+          taxes?: number | null
+          total_rooms?: number | null
           town?: string | null
+          unit_level?: number | null
+          waterfront?: boolean | null
           year_built?: number | null
           zip?: string | null
         }
         Update: {
+          acres?: number | null
           address?: string | null
+          adult_community?: boolean | null
+          basement?: boolean | null
           bedrooms?: number | null
+          color?: string | null
+          date_available?: string | null
           full_baths?: number | null
+          garage_spaces?: number | null
           half_baths?: number | null
+          hoa?: boolean | null
+          hoa_fee?: number | null
           list_agent_id?: string | null
           list_office_id?: string | null
           list_price?: number | null
           living_area?: number | null
+          lot_size?: number | null
           mls_number?: string
+          neighborhood?: string | null
+          num_units?: number | null
+          parking_spaces?: number | null
           photo_count?: number | null
           prop_type?: string | null
           remarks?: string | null
           sale_price?: number | null
           settled_date?: string | null
+          sqft_above_grade?: number | null
+          sqft_below_grade?: number | null
           state?: string | null
           status?: string | null
           style?: string | null
           synced_at?: string
+          tax_year?: number | null
+          taxes?: number | null
+          total_rooms?: number | null
           town?: string | null
+          unit_level?: number | null
+          waterfront?: boolean | null
           year_built?: number | null
           zip?: string | null
         }
@@ -1563,6 +1620,8 @@ export type Database = {
       is_admin:
         | { Args: never; Returns: boolean }
         | { Args: { user_id: string }; Returns: boolean }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       trigger_idx_sync: { Args: { body: Json }; Returns: number }
     }
     Enums: {

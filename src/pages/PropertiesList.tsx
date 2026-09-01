@@ -3,14 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { soldListings, type SoldListing } from '@/data/soldListings';
 import { itemList } from '@/lib/schema';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { Card, CardContent } from '@/components/ui/card';
 import { Bed, Bath, Square, Phone } from 'lucide-react';
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { Link } from "react-router-dom";
@@ -18,7 +10,7 @@ import { SITE, telHref } from "@/lib/siteConfig";
 // Shared with the detail page and the town guides. These were three private
 // copies of the same two functions, already drifting — one rendered a null
 // price as "Price on Request" and another as "Price on request".
-import { formatPrice, formatBaths } from "@/lib/listings";
+import { formatPrice, formatBathsShort } from "@/lib/listings";
 
 /**
  * The Supabase row shape, which is snake_case and differs from the camelCase
@@ -383,119 +375,92 @@ const PropertiesList = () => {
               const hasImages = images.length > 0;
 
               return (
-                <Card
+                /*
+                  The WHOLE tile is the link, matching /search.
+                  It used to be a carousel with only the address anchored,
+                  because a carousel's own next/previous buttons cannot be
+                  nested inside an <a> — the parser auto-closes the anchor and
+                  hydration fails for the entire page. Showing one photo and
+                  linking the tile is the resolution: the remaining photos are
+                  on the detail page, which is where someone who wants to look
+                  through them is going anyway.
+                */
+                <Link
                   key={property.id}
                   id={`listing-${property.slug}`}
-                  className="overflow-hidden border border-transparent transition-all duration-300 hover:border-champagne hover:shadow-lg"
+                  to={`/properties/${property.slug}`}
+                  className="group block overflow-hidden rounded-lg border border-transparent bg-white shadow-sm transition-all duration-300 hover:border-champagne hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink"
                 >
-                  {/* Photo Carousel */}
-                  <div className="relative aspect-[16/9] bg-gray-200 overflow-hidden">
-                    <div className="absolute top-3 left-3 z-10">
+                  <div className="relative aspect-[16/9] overflow-hidden bg-gray-200">
+                    <div className="absolute left-3 top-3 z-10">
                       <span className="inline-flex items-center rounded-full bg-black/75 px-3 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
                         {formatBadgeText(property.status, 'ACTIVE')}
                       </span>
                     </div>
-                    <div className="absolute top-3 right-3 z-10">
+                    <div className="absolute right-3 top-3 z-10">
                       <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold tracking-wide text-ink backdrop-blur-sm">
                         {formatBadgeText(property.propertyType, 'PROPERTY')}
                       </span>
                     </div>
                     {hasImages ? (
-                      <Carousel 
-                        className="w-full h-full" 
-                        opts={{ loop: true, dragFree: true }}
-                        style={{ height: '100%' }}
-                      >
-                        <CarouselContent className="-ml-0 h-full">
-                          {images.map((imageUrl, index) => (
-                            <CarouselItem key={index} className="pl-0 basis-full h-full">
-                              <div className="relative w-full h-full">
-                                <img
-                                  src={imageUrl}
-                                  alt={`${property.address} - Photo ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  style={{
-                                  objectPosition: 'center center',
-                                  }}
-                                  loading={index === 0 ? undefined : 'lazy'}
-                                  decoding="async"
-                                  onError={(e) => {
-                                    // Hide a photo that 404s rather than
-                                    // leaving a broken-image glyph in the
-                                    // carousel. The console pair that used to
-                                    // sit here fired on every image on every
-                                    // render, in production.
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                  }}
-                                />
-                              </div>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        {images.length > 1 && (
-                          <>
-                            <CarouselPrevious className="left-2 h-8 w-8 bg-white/80 hover:bg-white" />
-                            <CarouselNext className="right-2 h-8 w-8 bg-white/80 hover:bg-white" />
-                          </>
-                        )}
-                      </Carousel>
+                      <img
+                        src={images[0]}
+                        alt={`${property.address}, ${property.town}`}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="flex h-full w-full items-center justify-center text-gray-400">
                         <div className="text-center">
-                          <Square className="h-16 w-16 mx-auto mb-2" />
+                          <Square className="mx-auto mb-2 h-16 w-16" />
                           <p className="text-sm">No photos available</p>
                           {property.mlsnum && (
-                            <p className="text-xs mt-1 text-gray-300">
-                              MLS: {property.mlsnum}
-                            </p>
+                            <p className="mt-1 text-xs text-gray-300">MLS: {property.mlsnum}</p>
                           )}
                         </div>
                       </div>
                     )}
+                    {images.length > 1 && (
+                      <span className="numeral absolute bottom-3 right-3 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        {images.length} photos
+                      </span>
+                    )}
                   </div>
 
-                  {/* Property Details */}
-                  <CardContent className="p-4">
+                  <div className="p-4">
                     <div className="space-y-2">
                       <div className="numeral text-2xl font-bold text-ink">
                         {formatPrice(property.salePrice)}
                       </div>
-                      {/*
-                        A real <a>, not a click handler on the card. The card
-                        wraps a carousel with its own buttons, so the anchor is
-                        the address rather than the whole tile — nesting the
-                        carousel's <button>s inside a link would make them
-                        unusable, and nesting anchors breaks hydration outright.
-                      */}
-                      <Link
-                        to={`/properties/${property.slug}`}
-                        className="block text-gray-600 underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:text-ink hover:decoration-champagne-ink"
-                      >
+                      <div className="text-gray-600">
                         {property.address}, {property.town}, MA {property.zipCode}
-                      </Link>
-                      <div className="numeral flex items-center gap-4 text-sm text-gray-500 pt-2 border-t">
+                      </div>
+                      <div className="numeral flex items-center gap-4 border-t pt-2 text-sm text-gray-500">
                         {property.bedrooms !== null && (
                           <div className="flex items-center gap-1">
-                            <Bed className="h-4 w-4" />
+                            <Bed className="h-4 w-4" aria-hidden />
                             <span>{property.bedrooms}</span>
+                            <span className="sr-only"> bedrooms</span>
                           </div>
                         )}
                         {(property.fullBaths !== null || property.halfBaths !== null) && (
                           <div className="flex items-center gap-1">
-                            <Bath className="h-4 w-4" />
-                            <span>{formatBaths(property.fullBaths, property.halfBaths)}</span>
+                            <Bath className="h-4 w-4" aria-hidden />
+                            <span>{formatBathsShort(property.fullBaths, property.halfBaths)}</span>
+                            <span className="sr-only"> baths, full and half</span>
                           </div>
                         )}
                         {property.livingArea !== null && (
                           <div className="flex items-center gap-1">
-                            <Square className="h-4 w-4" />
+                            <Square className="h-4 w-4" aria-hidden />
                             <span>{property.livingArea.toLocaleString()} sq ft</span>
                           </div>
                         )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </Link>
               );
             })}
             
