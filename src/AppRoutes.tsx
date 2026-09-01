@@ -193,6 +193,11 @@ export const routes: RouteRecord[] = [
         entry: 'src/pages/SearchListing.tsx',
         // Deliberately no getStaticPaths: there are 22,000 active listings and
         // the set changes hourly. The shell prerenders; the listing is fetched.
+        //
+        // This is the one route that depends on the single rewrite in
+        // vercel.json. That file takes no `comment` keys — Vercel validates it
+        // against a schema that rejects unknown properties — so the reasoning
+        // lives in CLAUDE.md under "Routing / 404 model".
       },
 
       // --- Legal ----------------------------------------------------------

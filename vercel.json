@@ -734,7 +734,6 @@
   ],
   "rewrites": [
     {
-      "comment": "The ONLY rewrite on this site, and it is scoped to /search alone. Every other route prerenders to its own file and Vercel checks the filesystem first, so unknown paths still fall through to public/404.html with a real 404 \u2014 the sitewide rewrite that returned HTTP 200 soft-404s for every typo is not coming back. /search/<mls> cannot be prerendered: there are 22,000 active listings and the set changes hourly, so the shell is served and the listing is fetched client-side.",
       "source": "/search/:path*",
       "destination": "/search/index.html"
     }

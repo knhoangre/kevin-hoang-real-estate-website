@@ -106,6 +106,22 @@ unknown paths fall through to `public/404.html` with a real HTTP 404. The old
 config rewrote everything to `index.html`, which returned HTTP 200 soft-404s for
 every typo and dead link.
 
+**There is exactly ONE rewrite, and it is scoped to `/search`.** An MLS number
+cannot be prerendered — there are ~22,000 active listings and the set changes
+hourly — so `/search/:path*` rewrites to the prerendered `/search` shell, which
+then fetches the listing client-side. It is scoped to that one prefix on
+purpose: Vercel checks the filesystem before applying rewrites, so every real
+route is still served directly and every unknown path still falls through to
+`public/404.html` with a real 404. A broader rewrite is how this site used to
+return HTTP 200 soft-404s for every typo.
+
+**`vercel.json` must contain no `comment` keys.** It is JSON, so it has no
+comments, and Vercel validates the file against a schema that rejects unknown
+properties — `rewrites[0] should NOT have additional property comment` failed
+the build and, because the failure is at config-validation time, it silently
+stopped deploying `main` at all rather than failing one route. Explanations for
+anything in that file belong here instead.
+
 **Consequence: any route NOT in the prerender set will 404 on hard refresh**,
 even though in-app navigation to it works. Adding a route means all three of:
 1. [src/AppRoutes.tsx](src/AppRoutes.tsx) — the router and prerender set,
