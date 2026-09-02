@@ -1,22 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Bed, Bath, Square, Search as SearchIcon, X, MapPin } from 'lucide-react';
+import { Search as SearchIcon, X, MapPin } from 'lucide-react';
+import ListingCard from '@/components/listing/ListingCard';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
-import { formatPrice, formatBathsShort, formatSoldMonth } from '@/lib/listings';
+import { formatPrice } from '@/lib/listings';
 import {
   EMPTY_FILTERS,
   LISTING_TYPES,
   PAGE_SIZE,
   PROP_TYPES,
-  headlinePrice,
   filtersFromParams,
   paramsFromFilters,
-  photoUrl,
-  propTypeLabel,
   searchListings,
-  statusLabel,
-  isAvailable,
   townsWithListings,
   type IdxListing,
   type SearchFilters,
@@ -63,100 +59,6 @@ const Skeleton = () => (
     ))}
   </div>
 );
-
-const ListingCard = ({ listing }: { listing: IdxListing }) => {
-  const hasPhoto = (listing.photo_count ?? 0) > 0;
-
-  return (
-    <Link
-      to={`/search/${listing.mls_number}`}
-      className="group block overflow-hidden rounded-xl border border-gray-200 transition-colors hover:border-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        {hasPhoto ? (
-          <img
-            src={photoUrl(listing.mls_number, 0, 'card')}
-            /*
-              The address, not a description of the photograph. Nobody recorded
-              what this image shows and inventing it would be the same
-              fabrication the copy rules forbid — the same reasoning as the
-              positional alt text on the sold listing pages.
-            */
-            alt={`${listing.address ?? 'Listing'}, ${listing.town ?? ''}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-sm text-gray-400">
-            No photo
-          </div>
-        )}
-        {/* Uppercase, matching the badges on /properties. */}
-        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-ink backdrop-blur-sm">
-          {propTypeLabel(listing.prop_type)}
-        </span>
-        {/*
-          Only shown when the status is NOT plainly available. Badging all
-          14,000 active listings "Active" is noise; badging the contingent and
-          under-agreement ones is the whole point, because presenting those as
-          simply for sale wastes a buyer's afternoon.
-        */}
-        {!isAvailable(listing.status) && statusLabel(listing.status) && (
-          <span className="absolute right-3 top-3 rounded-full bg-ink-deep/85 px-3 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
-            {statusLabel(listing.status)}
-          </span>
-        )}
-      </div>
-
-      <div className="p-4">
-        <p className="numeral text-xl font-bold text-ink">
-          {/* A sold listing's headline is what it CLOSED at, not what it asked. */}
-          {formatPrice(headlinePrice(listing))}
-          {listing.prop_type === 'RN' && (
-            <span className="text-sm font-medium text-gray-500"> /mo</span>
-          )}
-        </p>
-        {listing.feed === 'sold' && formatSoldMonth(listing.settled_date) && (
-          <p className="numeral mt-0.5 text-xs font-semibold uppercase tracking-wide text-champagne-ink">
-            Sold {formatSoldMonth(listing.settled_date)}
-          </p>
-        )}
-        <p className="mt-1 text-sm text-gray-600">
-          {listing.address}
-          {listing.town ? `, ${listing.town}` : ''}
-          {listing.zip ? ` ${listing.zip}` : ''}
-        </p>
-        <div className="numeral mt-3 flex items-center gap-4 border-t pt-3 text-sm text-gray-500">
-          {listing.bedrooms !== null && (
-            <span className="flex items-center gap-1">
-              <Bed className="h-4 w-4" aria-hidden />
-              {listing.bedrooms}
-              <span className="sr-only"> bedrooms</span>
-            </span>
-          )}
-          {listing.full_baths !== null && (
-            <span className="flex items-center gap-1">
-              <Bath className="h-4 w-4" aria-hidden />
-              {formatBathsShort(listing.full_baths, listing.half_baths)}
-              <span className="sr-only">
-                {' '}
-                baths, full and half
-              </span>
-            </span>
-          )}
-          {listing.living_area !== null && (
-            <span className="flex items-center gap-1">
-              <Square className="h-4 w-4" aria-hidden />
-              {listing.living_area.toLocaleString()}
-              <span className="sr-only"> square feet</span>
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-};
 
 const inputClass =
   'w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-ink focus:border-champagne-ink focus:outline-none focus:ring-1 focus:ring-champagne-ink';
@@ -266,7 +168,7 @@ const Search = () => {
       }}
       eyebrow="Listings"
       h1="Search Massachusetts listings"
-      lede="Every home on the market, plus a year of recorded sales, straight from MLS PIN. Filter it, then send the link — it opens for whoever you send it to."
+      lede="Narrow by town, price, beds and baths — or paste an address or MLS number straight into the box. Search what is for sale, what is under agreement, what just had a price cut, and what has actually closed in the past year."
       heroSize="compact"
       width="wide"
       actions={false}
@@ -314,9 +216,17 @@ const Search = () => {
                     // button makes the page look like it ignored the click.
                     commit(next);
                   }}
+                  /*
+                    Champagne on ink-deep text, not the dark pill this used to
+                    be. The accent is the site's, and the segmented control is
+                    the one place on the page where "which of these three am I
+                    looking at" has to be answerable at a glance. Champagne is a
+                    NON-TEXT MARK here, which is what makes it legal on a light
+                    surface: the label sitting on it is ink-deep at 8.31:1.
+                  */
                   className={
                     active
-                      ? 'rounded-full bg-ink-deep px-5 py-2 text-sm font-semibold text-white'
+                      ? 'rounded-full bg-champagne px-5 py-2 text-sm font-semibold text-ink-deep'
                       : 'rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne-ink'
                   }
                 >
@@ -346,7 +256,7 @@ const Search = () => {
             </div>
             <button
               type="submit"
-              className="btn-pill btn-pill-light inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-ink-deep px-8 py-3.5 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+              className="btn-pill inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-champagne px-8 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white"
             >
               <SearchIcon className="h-4 w-4" aria-hidden />
               Search

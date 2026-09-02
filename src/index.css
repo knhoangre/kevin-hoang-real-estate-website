@@ -326,3 +326,345 @@
     box-shadow: none;
   }
 }
+
+/* ==========================================================================
+   PRINT
+   --------------------------------------------------------------------------
+   Written for the listing sheet at /search/<mls>, which exists to replace the
+   MLS printout an agent hands a client at a showing. Before this there were no
+   print rules on the site at all, so "Print listing sheet" produced the page as
+   the screen has it: the fixed navbar stamped across the top, the entire dark
+   footer after the specs, hyperlinks with no indication of where they go, and
+   card backgrounds flattened to grey by whatever the browser did with them.
+
+   THE TARGET IS ONE SHEET OF PAPER. A showing produces four or five of these
+   and they get compared side by side on a kitchen table; a two-page sheet means
+   half the specs are face-down. Everything below is in service of that — point
+   sizes rather than pixels, four-column spec grids, a photo capped in
+   millimetres — and it holds for a typical listing. It is not a guarantee: a
+   listing carrying every optional field AND several hundred words of remarks
+   will still run over, and truncating the description to force it would be
+   hiding listing content to win a layout argument.
+
+   These rules are global on purpose. Any page here can be printed, and none of
+   them want the navigation or the footer on paper.
+   ========================================================================== */
+@media print {
+  :root {
+    background: #fff;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    /* Points, not pixels: a printer has no CSS pixel and browsers guess. */
+    font-size: 7.5pt;
+    line-height: 1.3;
+  }
+
+  /* Site chrome. The navbar is `fixed`, which on paper means it prints on top
+     of the first page's content rather than scrolling away with it. */
+  nav,
+  footer,
+  [role='toolbar'],
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  /* The fixed navbar's spacer. Without this every sheet opens with 5rem of
+     white where the navbar would have been. */
+  .pt-20,
+  .pt-32 {
+    padding-top: 0 !important;
+  }
+
+  /* Vertical rhythm is the single biggest consumer of paper here. The screen
+     spacing is tuned for a scrolling column; on a sheet it is what pushes the
+     last two spec groups onto page two. */
+  .container {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .py-10,
+  .py-24 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .mt-16,
+  .mt-12,
+  .mt-10 {
+    margin-top: 2mm !important;
+  }
+
+  .mt-8,
+  .mt-6,
+  .mt-5,
+  .mt-4,
+  .mt-3,
+  .mt-2 {
+    margin-top: 1mm !important;
+  }
+
+  .pt-10,
+  .pt-8 {
+    padding-top: 1.5mm !important;
+  }
+
+  .mb-10,
+  .mb-8,
+  .mb-6 {
+    margin-bottom: 1.5mm !important;
+  }
+
+  .gap-12 {
+    gap: 0 !important;
+  }
+
+  /* Cards, panels and inputs: keep the border, drop the fill. A border survives
+     a monochrome printer; a bone-coloured background becomes a grey wash that
+     makes the text on it harder to read, not easier. */
+  .bg-bone,
+  .bg-ink-deep,
+  .bg-gray-50,
+  .bg-gray-100 {
+    background: transparent !important;
+    color: #000 !important;
+  }
+
+  .shadow-lg,
+  .shadow-md,
+  .shadow-sm {
+    box-shadow: none !important;
+  }
+
+  /* Never split a labelled block across a page boundary — a "Systems" heading
+     alone at the foot of one page with its seven rows on the next is the most
+     common way a printed spec sheet becomes unreadable. */
+  section,
+  dl,
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+    color: #000 !important;
+  }
+
+  /* Headings on paper are wayfinding, not hierarchy — the reader can see the
+     whole sheet at once, so they only need to be findable, not large. */
+  h1 {
+    font-size: 13pt !important;
+    line-height: 1.1 !important;
+  }
+
+  /* The letterhead is identification, not branding — it needs to be readable,
+     not prominent, and it was spending 76px saying so. */
+  .print-letterhead {
+    padding-bottom: 1mm !important;
+    margin-bottom: 1.5mm !important;
+  }
+
+  .print-letterhead p {
+    line-height: 1.15 !important;
+  }
+
+  .print-letterhead .text-lg {
+    font-size: 9pt !important;
+  }
+
+  /* ------------------------------------------------------------------
+     The rental application.
+
+     The document is rendered by the same component whether it is being
+     filled in or read, so on paper it is a page of DISABLED inputs. Left
+     alone the browser prints them as grey text in grey boxes — the one
+     rendering that has to survive a printer is the one nobody can read.
+
+     Kevin prints these to hand to an owner, so this is the output that
+     matters most, not an afterthought.
+     ------------------------------------------------------------------ */
+  input:disabled,
+  textarea:disabled,
+  select:disabled,
+  input[readonly],
+  textarea[readonly] {
+    color: #000 !important;
+    background: transparent !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #000 !important;
+    border: 0 !important;
+    /* A rule under the answer, so a blank field still reads as a field
+       rather than as missing whitespace. */
+    border-bottom: 0.4pt solid #999 !important;
+    border-radius: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 0 0.4mm !important;
+    font-size: 8pt !important;
+  }
+
+  /* Checkboxes lose their tick when the background is stripped, and a consent
+     that does not show whether it was given is the one thing on this sheet
+     that cannot be ambiguous. */
+  [role='checkbox'][data-state='checked']::after {
+    content: '✓';
+    font-size: 9pt;
+    color: #000;
+  }
+
+  [role='checkbox'] {
+    border: 0.5pt solid #000 !important;
+    background: transparent !important;
+  }
+
+  /* Field labels carry the meaning on paper — without the input's chrome they
+     are the only thing saying what each value is. */
+  label {
+    font-size: 7pt !important;
+    color: #444 !important;
+  }
+
+  /* The two-column grids stay two columns: on a sheet the constraint is
+     vertical, and one column per field would double the page count. The
+     repeatable rows' add/remove buttons are interactive only. */
+  button[type='button'] {
+    display: none !important;
+  }
+
+  h2 {
+    font-size: 7pt !important;
+    line-height: 1.1 !important;
+    margin-bottom: 0.5mm !important;
+  }
+
+  /* Four columns of specs, because a sheet of paper is wider than a phone and
+     these are short label/value pairs. This is most of what buys the one page. */
+  .print-specs {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.7mm 4mm !important;
+    margin-top: 1mm !important;
+  }
+
+  /* The icons are decorative and each one reserves 20px of row height it does
+     not use once the type is at 7pt. `display: none` removes the flex item
+     entirely, so its `gap-3` goes with it. */
+  .print-specs svg {
+    display: none !important;
+  }
+
+  /* THE SPEC ROW IS THE UNIT OF COST ON THIS SHEET — there are roughly thirty
+     of them, so every px here is 30px of paper. Tailwind's `text-xs` carries a
+     16px line-height regardless of the font-size set beside it, which is what
+     made these rows 29px tall for 13px of actual type. */
+  .print-specs dt {
+    font-size: 5.5pt !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .print-specs dd {
+    font-size: 7.5pt !important;
+    margin-top: 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  /* One photo, FLOATED, so it costs horizontal space instead of vertical.
+     It is there so the sheet is identifiable in a stack, not so the house is
+     admired on 300dpi paper — but stacked above the content it was spending
+     76px of a 980px page on that job. Floated right, the address, price and
+     first spec group set alongside it and it costs almost nothing, which is
+     what let it stay bigger rather than shrink to a stamp. */
+  .print-photo {
+    float: right;
+    width: 52mm !important;
+    height: 34mm !important;
+    object-fit: cover;
+    margin: 0 0 2mm 4mm !important;
+  }
+
+  /* The float has to be cleared before the disclosure, or a short listing
+     leaves it hanging past the end of the page's text. */
+  .idx-disclosure {
+    clear: both;
+  }
+
+  /* Links are dead on paper, so the destination has to be written out — but
+     only for real destinations. Printing "(#payment)" after every in-page
+     anchor is noise, and the URL after a link whose text is already the URL is
+     the same string twice. */
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 6pt;
+    color: #444;
+    word-break: break-all;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  /* The remaining three blocks that decide whether this lands on one sheet or
+     two. Each was measured rather than guessed: on a fully-populated listing
+     the disclosure ran to 98px, the description to 114px and the price line to
+     40px, against a printable page of 980px. */
+
+  /* MLS PIN requires the disclosure on every IDX display, so it cannot be cut —
+     but it is boilerplate the reader has seen before, and it sets at 5.5pt. */
+  .idx-disclosure,
+  .idx-disclosure p {
+    font-size: 5.5pt !important;
+    line-height: 1.25 !important;
+    margin-top: 1mm !important;
+  }
+
+  /* The description is the one piece of prose on the sheet and the only part
+     that is genuinely about this house rather than about its dimensions, so it
+     is tightened rather than truncated. Cutting a seller's copy to win a layout
+     argument would be hiding listing content. */
+  .print-remarks {
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+    margin-top: 1mm !important;
+    /* TWO COLUMNS, newspaper-style. Remarks run from 60 to over 400 words and
+       the long ones were the only thing still pushing a sheet onto a second
+       page — 357 words set full-width overflowed by 54px. Halving the height
+       costs nothing, because a 7pt line across the full 7.7in measure is far
+       longer than comfortable reading anyway: ~180 characters, against the
+       50-75 that prose wants. The fix that would have been wrong is trimming
+       the seller's copy. */
+    /* column-WIDTH rather than column-count, so the number of columns follows
+       the length of the text: a 60-word description stays one short block,
+       while a 400-word one splits into three. A fixed count would set six lines
+       of prose in two three-line columns, which reads as a mistake. 65mm gives
+       roughly 52 characters a line at 7pt — narrow, but that is what newspapers
+       use, and it is far closer to comfortable than the 180 characters a
+       full-width line was giving. */
+    column-width: 65mm;
+    column-gap: 6mm;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* text-4xl is 36px with a 40px line-height — a quarter of an inch of paper
+     for one number that is legible at a third of the size. */
+  .print-price {
+    font-size: 12pt !important;
+    line-height: 1.15 !important;
+  }
+
+  /* Margins belong to the page box, not to the body, or the running head and
+     foot the browser adds land on top of the content. */
+  @page {
+    size: letter portrait;
+    margin: 10mm;
+  }
+}

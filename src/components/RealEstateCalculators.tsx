@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { monthlyPayment } from "@/lib/mortgage";
 import {
   Card,
   CardContent,
@@ -131,30 +132,26 @@ const MortgageCalculator = () => {
     }
   };
 
-  // Calculate monthly payment
+  /*
+   * The arithmetic lives in @/lib/mortgage, shared with the per-listing payment
+   * estimate on /search/<mls>. It used to be inline here; a second copy on the
+   * listing page is how three private formatPrice implementations came to
+   * disagree about their own fallback string.
+   *
+   * `propertyTax` is kept as the local name for what the shared type calls
+   * `taxes`, so the JSX below is untouched.
+   */
   const calculateMonthlyPayment = () => {
-    const principal = homePrice - downPayment;
-    const monthlyInterest = interestRate / 100 / 12;
-    const numberOfPayments = loanTerm * 12;
-
-    const monthlyPrincipalAndInterest =
-      principal *
-      (monthlyInterest * Math.pow(1 + monthlyInterest, numberOfPayments)) /
-      (Math.pow(1 + monthlyInterest, numberOfPayments) - 1);
-
-    const monthlyPropertyTax = propertyTax / 12;
-    const monthlyInsurance = insurance / 12;
-    const monthlyHOA = hoa;
-
-    const totalMonthlyPayment = monthlyPrincipalAndInterest + monthlyPropertyTax + monthlyInsurance + monthlyHOA;
-
-    return {
-      principalAndInterest: monthlyPrincipalAndInterest,
-      propertyTax: monthlyPropertyTax,
-      insurance: monthlyInsurance,
-      hoa: monthlyHOA,
-      total: totalMonthlyPayment
-    };
+    const b = monthlyPayment({
+      price: homePrice,
+      downPayment,
+      rate: interestRate,
+      termYears: loanTerm,
+      annualTaxes: propertyTax,
+      annualInsurance: insurance,
+      monthlyHoa: hoa,
+    });
+    return { ...b, propertyTax: b.taxes };
   };
 
   const handleHomePriceChange = (value: number) => {

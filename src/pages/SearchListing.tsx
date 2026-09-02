@@ -4,6 +4,7 @@ import {
   Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft,
   Car, Trees, Layers, Receipt, Waves, Building2, DoorOpen,
   Flame, Snowflake, Droplets, Plug, Hammer, MapPin, Sofa, Sparkles,
+  TrendingDown, TrendingUp, MessageSquare,
 } from 'lucide-react';
 import {
   Carousel,
@@ -14,18 +15,25 @@ import {
 } from '@/components/ui/carousel';
 import Seo from '@/components/Seo';
 import IdxDisclosure from '@/components/IdxDisclosure';
+import ListingPayment from '@/components/listing/ListingPayment';
+import ListingEnquiry from '@/components/listing/ListingEnquiry';
+import SimilarListings from '@/components/listing/SimilarListings';
 import { formatPrice, formatBaths, formatSoldMonth } from '@/lib/listings';
-import { SITE, telHref, smsHref } from '@/lib/siteConfig';
+import { SITE, telHref, smsHrefWith } from '@/lib/siteConfig';
 import {
   listingByMls,
   officeName,
   photoUrls,
   propTypeLabel,
   statusLabel,
-  isAvailable,
   decodeCodes,
   headlinePrice,
+  priceChange,
+  priceHistory,
+  daysOnSite,
+  pricePerSqft,
   type IdxListing,
+  type PriceHistoryEntry,
 } from '@/lib/idxSearch';
 
 /**
@@ -45,6 +53,24 @@ import {
  * link rather than crawlers building an index — and the fallback while the
  * fetch is in flight is an honest generic title, never a wrong specific one.
  */
+
+/**
+ * A day, for a price change. `formatSoldMonth` deliberately blurs a closing to
+ * its month, but a price cut is a live event a buyer is timing against — "three
+ * days ago" and "in March" are different pieces of news, so this keeps the day.
+ * Parsed as a timestamp rather than a date string, because that is what the
+ * history column stores.
+ */
+const formatChangeDate = (value: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+};
 
 /** A yes/no that is genuinely unknown renders nothing rather than "No". */
 const yesNo = (v: boolean | null) => (v === null ? null : v ? 'Yes' : 'No');
@@ -92,7 +118,7 @@ const SpecGroup = ({ title, children }: { title: string; children: React.ReactNo
     // a rule and the rest ran together as one undifferentiated column.
     <section className="mt-10 border-t border-gray-200 pt-8">
       <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">{title}</h2>
-      <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">{shown}</dl>
+      <dl className="print-specs mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">{shown}</dl>
     </section>
   );
 };
@@ -101,12 +127,20 @@ const SearchListing = () => {
   const { mls } = useParams<{ mls: string }>();
   const [listing, setListing] = useState<IdxListing | null>(null);
   const [office, setOffice] = useState<string | null>(null);
+  /*
+   * Fetched separately and allowed to fail quietly. The history is additional
+   * context, not the subject of the page — a listing whose history query errors
+   * must still render the listing, so this never touches the page's own state
+   * machine.
+   */
+  const [history, setHistory] = useState<PriceHistoryEntry[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
 
   useEffect(() => {
     if (!mls) return;
     let cancelled = false;
     setState('loading');
+    setHistory([]);
 
     listingByMls(mls)
       .then(async (row) => {
@@ -121,6 +155,13 @@ const SearchListing = () => {
         // though it costs a second round trip.
         const name = await officeName(row.list_office_id);
         if (!cancelled) setOffice(name);
+        priceHistory(row.mls_number)
+          .then((rows) => {
+            if (!cancelled) setHistory(rows);
+          })
+          .catch(() => {
+            if (!cancelled) setHistory([]);
+          });
       })
       .catch(() => {
         if (!cancelled) setState('error');
@@ -217,6 +258,40 @@ const SearchListing = () => {
 
         {state === 'ready' && listing && (
           <>
+            {/*
+              LETTERHEAD, PRINT ONLY.
+
+              A sheet handed over at a showing leaves the building with the
+              client and is read again that evening beside four others. Without
+              this it carried no indication of who produced it — the navbar and
+              footer that would have said so are hidden on paper, and rightly,
+              because a link column is not a letterhead. NAP comes from SITE
+              like everywhere else, so the printed sheet cannot drift from the
+              Google Business Profile.
+
+              The date matters as much as the name: an IDX sheet is a snapshot
+              of an hourly feed, and a month-old printout stating today's price
+              with no date on it is the kind of stale figure the rest of this
+              page refuses to produce.
+            */}
+            <div className="print-letterhead mb-6 hidden border-b-2 border-black pb-3 print:block">
+              <div className="flex items-baseline justify-between gap-6">
+                <div>
+                  <p className="text-lg font-semibold">{SITE.agentName}</p>
+                  <p className="text-xs">{SITE.brokerage}</p>
+                </div>
+                <div className="text-right text-xs">
+                  <p>{SITE.phone}</p>
+                  <p>{SITE.email}</p>
+                </div>
+              </div>
+              <p className="mt-2 text-[8pt] text-gray-700">
+                Listing data from MLS PIN, printed{' '}
+                {new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date())}.
+                Prices and availability change; confirm before relying on this sheet.
+              </p>
+            </div>
+
             {photos.length > 0 && (
               <Carousel className="mb-10 print:hidden" opts={{ loop: photos.length > 1 }}>
                 <CarouselContent>
@@ -249,11 +324,11 @@ const SearchListing = () => {
               <img
                 src={photos[0]}
                 alt=""
-                className="mb-6 hidden max-h-64 w-full object-cover print:block"
+                className="print-photo mb-6 hidden w-full object-cover print:block"
               />
             )}
 
-            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)] print:block">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-ink">
                   {propTypeLabel(listing.prop_type)}
@@ -272,18 +347,57 @@ const SearchListing = () => {
                 <p className="mt-2 text-gray-600">
                   {[listing.town, listing.state, listing.zip].filter(Boolean).join(', ')}
                 </p>
-                {!isAvailable(listing.status) && statusLabel(listing.status) && (
-                  <p className="mt-4 inline-block rounded-full bg-ink-deep px-4 py-1.5 text-sm font-semibold text-white">
-                    {statusLabel(listing.status)}
-                  </p>
-                )}
-                <p className="numeral mt-6 text-4xl font-semibold text-ink">
+                {/*
+                  The dark status pill that used to sit here is gone. It said
+                  "Sold" directly beneath a line that already reads "Single
+                  family · Sold" — the same word twice, thirty pixels apart, the
+                  second time in the heaviest treatment on the page. On a search
+                  RESULT the badge earns its weight, because the reader is
+                  scanning two dozen cards and needs the status without reading
+                  any of them. Here they are reading one listing, and the eyebrow
+                  has already answered it.
+                */}
+                <p className="print-price numeral mt-6 text-4xl font-semibold text-ink">
                   {/* What it closed at, when that is the number that exists. */}
                   {formatPrice(headlinePrice(listing))}
                   {listing.prop_type === 'RN' && (
                     <span className="text-lg font-medium text-gray-500"> /month</span>
                   )}
                 </p>
+
+                {/*
+                  The most recent movement, spelled out in both directions and
+                  in dollars as well as percent. A buyer reading "$1,150,000"
+                  alone cannot tell a home priced there from one that has been
+                  cut twice and is still sitting — and that difference is most of
+                  what a price tells you.
+                */}
+                {(() => {
+                  const change = priceChange(listing);
+                  if (!change) return null;
+                  const Icon = change.direction === 'down' ? TrendingDown : TrendingUp;
+                  return (
+                    <p
+                      className={`numeral mt-3 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full px-4 py-1.5 text-sm font-semibold ${
+                        change.direction === 'down'
+                          ? 'bg-emerald-50 text-emerald-800'
+                          : 'bg-red-50 text-red-800'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden />
+                      {change.direction === 'down' ? 'Price cut' : 'Price raised'}{' '}
+                      {formatPrice(change.amount)} ({change.percent}%)
+                      <span className="font-normal text-gray-500 line-through">
+                        {formatPrice(change.from)}
+                      </span>
+                      {formatChangeDate(change.at) && (
+                        <span className="font-normal text-gray-600">
+                          on {formatChangeDate(change.at)}
+                        </span>
+                      )}
+                    </p>
+                  );
+                })()}
 
                 {listing.feed === 'sold' && (
                   <p className="numeral mt-2 text-gray-600">
@@ -300,6 +414,33 @@ const SearchListing = () => {
                       : ''}
                   </p>
                 )}
+
+                {/*
+                  HOW LONG IT HAS BEEN HERE — and the label is careful about
+                  what that means.
+
+                  The feed carries no list date and no market-time field, so the
+                  only date available is when this listing first appeared in our
+                  copy of it. A home listed for ninety days before we ever pulled
+                  the feed reads as one day old by that measure. Calling it "days
+                  on market" would be a confident wrong claim about someone
+                  else's listing; the same care as "Price history recorded here"
+                  a few sections down, and the sentence underneath says the rest.
+                */}
+                {(() => {
+                  const dos = daysOnSite(listing);
+                  if (!dos) return null;
+                  return (
+                    <p className="numeral mt-3 text-sm text-gray-600">
+                      On this site since {formatChangeDate(dos.since)} ({dos.days}{' '}
+                      {dos.days === 1 ? 'day' : 'days'})
+                      <span className="block text-xs text-gray-500">
+                        When we first saw it in the feed — it may have been listed
+                        earlier.
+                      </span>
+                    </p>
+                  );
+                })()}
 
                 {/*
                   The address on a map. A link, not an embed: an iframe would
@@ -322,6 +463,59 @@ const SearchListing = () => {
                 )}
 
                 {/*
+                  PRICE HISTORY, AND AN HONEST LABEL ON IT.
+
+                  The IDX feed carries no history at all — one row per listing,
+                  today's price, nothing else. Every entry below is something
+                  this site watched happen between two hourly syncs, so the
+                  section says "recorded here" and dates its own starting point.
+                  Calling it the listing's price history would claim knowledge of
+                  everything that happened before we first saw it, which is
+                  exactly the kind of confident wrongness the rest of this page
+                  refuses.
+
+                  A single entry is the listing appearing at its current price
+                  and tells the reader nothing, so it renders nothing.
+                */}
+                {history.length > 1 && (
+                  <section className="mt-10 border-t border-gray-200 pt-8 print:hidden">
+                    <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">
+                      Price history recorded here
+                    </h2>
+                    <ol className="mt-5 space-y-3">
+                      {history.map((entry) => (
+                        <li
+                          key={entry.recorded_at}
+                          className="numeral flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-gray-100 pb-3 text-sm last:border-0"
+                        >
+                          <span className="text-gray-600">
+                            {formatChangeDate(entry.recorded_at) ?? '—'}
+                          </span>
+                          <span className="flex items-center gap-2">
+                            {entry.previous_list_price !== null && (
+                              <span className="text-gray-400 line-through">
+                                {formatPrice(entry.previous_list_price)}
+                              </span>
+                            )}
+                            <span className="font-semibold text-ink">
+                              {formatPrice(entry.list_price)}
+                            </span>
+                            <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                              {entry.previous_list_price === null
+                                ? 'First seen'
+                                : entry.list_price !== null &&
+                                    entry.list_price < entry.previous_list_price
+                                  ? 'Cut'
+                                  : 'Raised'}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  </section>
+                )}
+
+                {/*
                   Titled like every other group. It used to be an untitled slab
                   of six specs, so the page opened with unlabelled numbers and
                   only started naming its sections halfway down.
@@ -330,7 +524,7 @@ const SearchListing = () => {
                   <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">
                     Rooms and size
                   </h2>
-                  <dl className="mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">
+                  <dl className="print-specs mt-5 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3">
                   <Spec icon={Bed} label="Bedrooms" value={listing.bedrooms?.toString() ?? null} />
                   <Spec
                     icon={Bath}
@@ -347,8 +541,23 @@ const SearchListing = () => {
                     label="Living area"
                     value={number(listing.living_area, ' sq ft')}
                   />
-                  <Spec icon={Calendar} label="Year built" value={listing.year_built?.toString() ?? null} />
-                  <Spec icon={Home} label="MLS #" value={listing.mls_number} />
+                  {/*
+                    Above and below grade moved here from "Interior", where they
+                    sat beside unit numbers and paint colour. They are square
+                    footages: they belong next to the square footage they break
+                    down, and a reader comparing living area against finished
+                    basement should not have to scroll two sections to do it.
+                  */}
+                  <Spec
+                    icon={Square}
+                    label="Above grade"
+                    value={number(listing.sqft_above_grade, ' sq ft')}
+                  />
+                  <Spec
+                    icon={Square}
+                    label="Below grade"
+                    value={number(listing.sqft_below_grade, ' sq ft')}
+                  />
                   </dl>
                 </section>
 
@@ -388,25 +597,39 @@ const SearchListing = () => {
                   <Spec icon={Trees} label="Road" value={decodeCodes('ROAD_TYPE', listing.road_type, listing.prop_type)} />
                 </SpecGroup>
 
-                <SpecGroup title="Interior">
-                  <Spec
-                    icon={Square}
-                    label="Above grade"
-                    value={number(listing.sqft_above_grade, ' sq ft')}
-                  />
-                  <Spec
-                    icon={Square}
-                    label="Below grade"
-                    value={number(listing.sqft_below_grade, ' sq ft')}
-                  />
+                {/*
+                  Was "Interior", which it was not. It held two square footages
+                  (now with the other square footages), the exterior paint colour
+                  (now with the other exterior materials, under Construction) and
+                  three facts about where a unit sits in a building — which is
+                  what actually unites the group, so it is named for that. The
+                  real interior finishes were always under "Features".
+                */}
+                <SpecGroup title="Building and unit">
                   <Spec icon={Building2} label="Unit level" value={number(listing.unit_level)} />
                   <Spec icon={Building2} label="Unit placement" value={decodeCodes('UNIT_PLACEMENT', listing.unit_placement, listing.prop_type)} />
                   <Spec icon={Building2} label="Units in building" value={number(listing.num_units)} />
-                  <Spec icon={Home} label="Colour" value={listing.color} />
-                  <Spec icon={Home} label="Neighbourhood" value={listing.neighborhood} />
+                  <Spec icon={MapPin} label="Neighbourhood" value={listing.neighborhood} />
                 </SpecGroup>
 
                 <SpecGroup title="Costs">
+                  {/*
+                    Price per square foot is a PRICE, not a dimension, and it
+                    belongs with the other money on the page rather than in the
+                    room count where it started. It is the number two homes are
+                    actually compared on, and it leads this group for that
+                    reason. Derived from headlinePrice, so a sold listing states
+                    what it CLOSED at per square foot rather than what it asked.
+                  */}
+                  <Spec
+                    icon={Receipt}
+                    label="Price / sq ft"
+                    value={
+                      pricePerSqft(listing) !== null
+                        ? `$${pricePerSqft(listing)!.toLocaleString()}`
+                        : null
+                    }
+                  />
                   {/*
                     The tax year is shown WITH the tax figure, never without.
                     A property-tax number with no year attached is the kind of
@@ -468,12 +691,36 @@ const SearchListing = () => {
                 </SpecGroup>
 
                 <SpecGroup title="Construction">
+                  {/*
+                    Year built sat under "Rooms and size", where it is neither a
+                    room nor a size — and, more to the point, two rows away from
+                    "Year built source", the field that says whether the date is
+                    recorded or approximate. A date and its provenance now read
+                    together, which is the same rule that keeps a tax figure
+                    beside its tax year.
+                  */}
+                  <Spec icon={Calendar} label="Year built" value={listing.year_built?.toString() ?? null} />
                   <Spec icon={Home} label="Style" value={decodeCodes('STYLE', listing.style, listing.prop_type)} />
                   <Spec icon={Hammer} label="Construction" value={decodeCodes('CONSTRUCTION', listing.construction, listing.prop_type)} />
                   <Spec icon={Hammer} label="Siding" value={decodeCodes('EXTERIOR', listing.exterior, listing.prop_type)} />
                   <Spec icon={Home} label="Roof" value={decodeCodes('ROOF_MATERIAL', listing.roof_material, listing.prop_type)} />
                   <Spec icon={Layers} label="Basement" value={decodeCodes('BASEMENT_FEATURE', listing.basement_feature, listing.prop_type)} />
                   <Spec icon={Calendar} label="Year built source" value={decodeCodes('YEAR_BUILT_DESCRP', listing.year_built_descrp, listing.prop_type)} />
+                  <Spec icon={Home} label="Exterior colour" value={listing.color} />
+                </SpecGroup>
+
+                {/*
+                  The MLS number is not a room, a size or a feature — it is how
+                  this listing is identified, so it sits with the other listing
+                  metadata at the end rather than in the spec grid at the top.
+                  It stays visible because it is what a reader quotes back on the
+                  phone; the text-message draft in the sidebar carries it for the
+                  same reason.
+                */}
+                <SpecGroup title="Listing">
+                  <Spec icon={Home} label="MLS #" value={listing.mls_number} />
+                  <Spec icon={Home} label="Property type" value={propTypeLabel(listing.prop_type)} />
+                  <Spec icon={Home} label="Status" value={statusLabel(listing.status)} />
                 </SpecGroup>
 
                 {listing.remarks && (
@@ -481,9 +728,11 @@ const SearchListing = () => {
                     <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
                       About this home
                     </h2>
-                    <p className="mt-4 leading-relaxed text-gray-700">{listing.remarks}</p>
+                    <p className="print-remarks mt-4 leading-relaxed text-gray-700">{listing.remarks}</p>
                   </div>
                 )}
+
+                <ListingEnquiry listing={listing} />
 
                 {/*
                   Listing-office attribution. MLS PIN requires the listing
@@ -515,11 +764,29 @@ const SearchListing = () => {
                     <Phone className="h-4 w-4" aria-hidden />
                     Call {SITE.phone}
                   </a>
+                  {/*
+                    The ADDRESS, not the MLS number — and the message is already
+                    written.
+
+                    "Text about MLS 73524017" asks the reader to identify a home
+                    by a number they have no reason to remember, and lands them
+                    in an empty compose window where they have to describe the
+                    listing they were just looking at. They know the house as
+                    "80 Gary Rd". The draft names it, and keeps the MLS number
+                    on the end so the message is still unambiguous on the
+                    receiving side, where several listings can share a street
+                    name across towns.
+                  */}
                   <a
-                    href={smsHref}
+                    href={smsHrefWith(
+                      `Hi Kevin, I'm interested in ${[listing.address, listing.town]
+                        .filter(Boolean)
+                        .join(', ')} (MLS ${listing.mls_number}). Is it still available?`
+                    )}
                     className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-6 py-3 text-sm font-semibold text-ink transition-colors hover:border-champagne-ink"
                   >
-                    Text about MLS {listing.mls_number}
+                    <MessageSquare className="h-4 w-4" aria-hidden />
+                    Text about {listing.address ?? `MLS ${listing.mls_number}`}
                   </a>
                   <button
                     type="button"
@@ -532,6 +799,23 @@ const SearchListing = () => {
                 </div>
               </aside>
             </div>
+            {/*
+              FULL WIDTH, BELOW THE GRID — not in the aside, where it started.
+              320px holds a total and a column of inputs and nothing else, so
+              the loan summary, the split and the down-payment scenarios had
+              nowhere to go. Placed after the specs because it is the question a
+              reader asks once they have decided they like the house.
+
+              A mortgage estimate belongs on a home someone can buy and finance.
+              On a RENTAL it is nonsense, and on a CLOSED SALE it is a monthly
+              figure for a house nobody can have — the page's own "no longer
+              available" copy is the standard here.
+            */}
+            {listing.feed !== 'sold' && listing.prop_type !== 'RN' && (
+              <ListingPayment listing={listing} />
+            )}
+
+            <SimilarListings listing={listing} />
           </>
         )}
 

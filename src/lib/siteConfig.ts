@@ -137,6 +137,41 @@ export const SITE = {
   ] as { days: string[]; opens: string; closes: string }[],
 
   /**
+   * The interest rate the payment estimate on a listing page STARTS at.
+   *
+   * Not a quote, not a rate this site can offer, and deliberately not fetched:
+   * a live rate feed would put a number on the page that changes under the
+   * reader without their input, and a stale cached one is worse than an
+   * assumption clearly labelled as one. The input it seeds is editable, and
+   * ListingPayment says in as many words that this is an assumption.
+   *
+   * Update the value and the date together, or not at all. A rate carrying a
+   * confirmation date from two years ago is at least legible as stale, which is
+   * exactly the reasoning behind showing `tax_year` beside every tax figure.
+   *
+   * Freddie Mac's Primary Mortgage Market Survey is the citable source:
+   * https://www.freddiemac.com/pmms
+   */
+  assumedMortgageRate: 6.5 as number,
+  /** When `assumedMortgageRate` was last checked against the PMMS. */
+  assumedMortgageRateAsOf: '2026-09-01',
+
+  /**
+   * Annual private mortgage insurance, as a percentage of the original loan.
+   *
+   * 0.5% is the good-credit end of a real range, not a typical figure: the
+   * Urban Institute's Housing Finance Policy Center puts conventional PMI
+   * between roughly 0.46% and 1.5% a year, with the low end reserved for
+   * borrowers around a 760 credit score and the high end for the low 600s.
+   * Seeding the optimistic end of a range would be the same error as quoting a
+   * rate — so this is an editable input and the UI states the range beside it.
+   *
+   * PMI is charged only while the loan exceeds 80% of the price; that threshold
+   * is statutory and lives in @/lib/mortgage, not here.
+   */
+  assumedPmiRate: 0.5 as number,
+
+  /**
    * Towns served, used for schema `areaServed`, the sitemap, and the nearby-
    * towns cross-links. Slugs match the keys in src/data/neighborhoodData.ts
    * and the /neighborhoods/:slug route.
@@ -187,6 +222,24 @@ export const absoluteUrl = (path: string): string => {
  */
 export const telHref = `tel:${SITE.phoneE164}`;
 export const smsHref = `sms:${SITE.phoneE164}`;
+
+/**
+ * A text message with the body already written.
+ *
+ * `?&body=` is not a typo and not belt-and-braces: iOS parses the separator
+ * after the number as `&`, Android and every desktop handler expect `?`, and
+ * `?&` is the one form both accept — the widely-used workaround for a split
+ * that was never standardised. Anything else silently drops the body on half of
+ * the phones that open it.
+ *
+ * The draft is a starting sentence, not a finished message. Someone who taps
+ * "Text about 12 Maple St" is telling us what they want to ask about; making
+ * them then type the address they were just looking at is the friction the
+ * button exists to remove, and an empty compose window is where most of these
+ * are abandoned.
+ */
+export const smsHrefWith = (body: string) =>
+  `sms:${SITE.phoneE164}?&body=${encodeURIComponent(body)}`;
 
 /** Single-line postal address, matching the Google Business Profile listing. */
 export const formattedAddress =

@@ -49,7 +49,7 @@ const IdxDisclosure = ({ className = '' }: { className?: string }) => {
     : null;
 
   return (
-    <aside className={`border-t border-gray-200 pt-6 text-xs leading-relaxed text-gray-500 ${className}`}>
+    <aside className={`idx-disclosure border-t border-gray-200 pt-6 text-xs leading-relaxed text-gray-500 ${className}`}>
       <p>
         Listing data is provided by MLS Property Information Network, Inc.
         (MLS PIN) through its Internet Data Exchange programme, and is provided
