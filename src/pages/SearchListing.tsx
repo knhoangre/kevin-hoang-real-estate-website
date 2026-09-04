@@ -30,7 +30,6 @@ import {
   headlinePrice,
   priceChange,
   priceHistory,
-  daysOnSite,
   pricePerSqft,
   type IdxListing,
   type PriceHistoryEntry,
@@ -416,33 +415,6 @@ const SearchListing = () => {
                 )}
 
                 {/*
-                  HOW LONG IT HAS BEEN HERE — and the label is careful about
-                  what that means.
-
-                  The feed carries no list date and no market-time field, so the
-                  only date available is when this listing first appeared in our
-                  copy of it. A home listed for ninety days before we ever pulled
-                  the feed reads as one day old by that measure. Calling it "days
-                  on market" would be a confident wrong claim about someone
-                  else's listing; the same care as "Price history recorded here"
-                  a few sections down, and the sentence underneath says the rest.
-                */}
-                {(() => {
-                  const dos = daysOnSite(listing);
-                  if (!dos) return null;
-                  return (
-                    <p className="numeral mt-3 text-sm text-gray-600">
-                      On this site since {formatChangeDate(dos.since)} ({dos.days}{' '}
-                      {dos.days === 1 ? 'day' : 'days'})
-                      <span className="block text-xs text-gray-500">
-                        When we first saw it in the feed — it may have been listed
-                        earlier.
-                      </span>
-                    </p>
-                  );
-                })()}
-
-                {/*
                   The address on a map. A link, not an embed: an iframe would
                   pull Google's script onto a page that is otherwise entirely
                   first-party, and the viewer almost always wants it in their own
@@ -463,7 +435,7 @@ const SearchListing = () => {
                 )}
 
                 {/*
-                  PRICE HISTORY, AND AN HONEST LABEL ON IT.
+                  PRICE CHANGES, AND AN HONEST LABEL ON THEM.
 
                   The IDX feed carries no history at all — one row per listing,
                   today's price, nothing else. Every entry below is something
@@ -474,13 +446,24 @@ const SearchListing = () => {
                   exactly the kind of confident wrongness the rest of this page
                   refuses.
 
-                  A single entry is the listing appearing at its current price
-                  and tells the reader nothing, so it renders nothing.
+                  ONLY MOVEMENTS. This used to render the first-observation
+                  row too, and a trigger bug wrote one of those on every hourly
+                  sync — so a listing showed fourteen identical "First seen
+                  $21,500,000" lines, one per sync, and called it history. The
+                  trigger is fixed; priceHistory() additionally refuses to
+                  return first-observation rows at all, so the worst this can
+                  now do is show nothing.
+
+                  Showing nothing is the common case and the correct one: at
+                  the time of writing, 25 price movements had been observed
+                  across roughly 22,000 listings. A home whose price has not
+                  moved has no price history, and saying so with silence is
+                  better than a timeline restating the number above it.
                 */}
-                {history.length > 1 && (
+                {history.length > 0 && (
                   <section className="mt-10 border-t border-gray-200 pt-8 print:hidden">
                     <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">
-                      Price history recorded here
+                      Price changes recorded here
                     </h2>
                     <ol className="mt-5 space-y-3">
                       {history.map((entry) => (
@@ -501,12 +484,17 @@ const SearchListing = () => {
                               {formatPrice(entry.list_price)}
                             </span>
                             <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                              {entry.previous_list_price === null
-                                ? 'First seen'
-                                : entry.list_price !== null &&
-                                    entry.list_price < entry.previous_list_price
-                                  ? 'Cut'
-                                  : 'Raised'}
+                              {/*
+                                Every row here is a movement — priceHistory()
+                                excludes the first-observation row, so the old
+                                "First seen" branch is gone along with the
+                                fourteen identical entries it used to render.
+                              */}
+                              {entry.list_price !== null &&
+                              entry.previous_list_price !== null &&
+                              entry.list_price < entry.previous_list_price
+                                ? 'Cut'
+                                : 'Raised'}
                             </span>
                           </span>
                         </li>

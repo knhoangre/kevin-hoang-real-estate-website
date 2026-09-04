@@ -458,12 +458,31 @@ export interface PriceHistoryEntry {
 }
 
 /**
- * Everything we have observed about one listing's price, newest first.
+ * The price CHANGES observed for one listing, newest first.
  *
  * "Observed" is the operative word and the UI says so: the feed is a snapshot
  * with no history in it, so this starts the day the listing first appeared in
  * our copy. Presenting it as the listing's complete history would be a claim we
  * cannot support.
+ *
+ * CHANGES ONLY — `previous_list_price` must be present. The first-observation
+ * row (previous NULL) is deliberately excluded: "we saw this listing at its
+ * asking price" is not history, it is the price, and it is already the largest
+ * number on the page. A timeline whose only entry restates the headline is
+ * noise dressed as data.
+ *
+ * That exclusion is also what made this section survivable while the ingest was
+ * broken. A trigger bug appended a fresh first-observation row on every hourly
+ * sync — 278,000 of them against 25 real changes — and the page rendered
+ * fourteen identical "First seen $21,500,000" lines for a single listing. The
+ * trigger is fixed in
+ * supabase/migrations/20260903090000_fix_idx_price_history_upsert.sql, but this
+ * filter is the second line of defence: the display now shows nothing at all
+ * unless a price actually moved, whatever the table happens to contain.
+ *
+ * Consecutive duplicates are collapsed for the same reason. Two rows claiming
+ * the same move are a bug wherever they come from, and rendering both states
+ * that a house was cut twice to the same number.
  */
 export const priceHistory = async (mls: string): Promise<PriceHistoryEntry[]> => {
   const { data, error } = await supabase
@@ -474,44 +493,23 @@ export const priceHistory = async (mls: string): Promise<PriceHistoryEntry[]> =>
     .from('idx_price_history' as never)
     .select('list_price, previous_list_price, recorded_at')
     .eq('mls_number', mls)
+    .not('previous_list_price', 'is', null)
     .order('recorded_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as unknown as PriceHistoryEntry[];
-};
 
-/**
- * How long this listing has been visible HERE — which is not its days on market.
- *
- * The feed carries no list date and no MARKET_TIME field, so the only date we
- * have is `first_seen_at`: the sync in which the listing first appeared in our
- * copy. A home listed for ninety days before this site ever pulled the feed
- * reads as one day old by that measure.
- *
- * So this is deliberately NOT called `daysOnMarket`, and the UI says "on this
- * site since" rather than "on the market". It is the same distinction as
- * "Price history recorded here" — the number is real and useful for a listing
- * we watched arrive, and stating it as market time would claim knowledge of
- * everything that happened before we were looking.
- */
-export interface DaysOnSite {
-  since: string;
-  days: number;
-}
+  const rows = (data ?? []) as unknown as PriceHistoryEntry[];
 
-export const daysOnSite = (listing: IdxListing): DaysOnSite | null => {
-  // A closed sale's time on our site is not a fact about the sale. What matters
-  // there is when it settled, which the page already states.
-  if (listing.feed === 'sold') return null;
-  const raw = listing.first_seen_at ?? null;
-  if (!raw) return null;
-  const seen = new Date(raw);
-  if (Number.isNaN(seen.getTime())) return null;
-
-  const days = Math.floor((Date.now() - seen.getTime()) / 86_400_000);
-  // A negative span means a clock or a timezone is wrong, not that a listing
-  // arrives tomorrow. Show nothing rather than "-1 days".
-  if (days < 0) return null;
-  return { since: raw, days };
+  return rows.filter((row, i) => {
+    if (row.list_price === null) return false;
+    // A move to the price it was already at is not a move.
+    if (row.list_price === row.previous_list_price) return false;
+    const prev = rows[i - 1];
+    return !(
+      prev &&
+      prev.list_price === row.list_price &&
+      prev.previous_list_price === row.previous_list_price
+    );
+  });
 };
 
 /**
