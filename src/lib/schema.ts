@@ -362,3 +362,39 @@ export const residence = (listing: {
  * Testimonials (16 CFR Part 465). Verified Google Business Profile reviews are
  * the correct vehicle.
  */
+
+/**
+ * One Instagram video, for /videos.
+ *
+ * `thumbnailUrl` and `uploadDate` are the two fields Google actually requires
+ * of a VideoObject, and both are real here — the thumbnail is the committed
+ * 1200x630 card, and the date is when the reel was posted.
+ *
+ * `embedUrl` is Instagram's player and `contentUrl` is deliberately ABSENT: we
+ * do not host the media and have no stable URL to the MP4 itself. Pointing
+ * contentUrl at the permalink would claim the page is the video file, which it
+ * is not. `duration` is omitted for the same reason everything unverified is —
+ * nobody recorded it, and an invented ISO 8601 duration is a fabricated fact
+ * about a real video.
+ */
+export const videoObject = (v: {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  permalink: string;
+  embedUrl: string;
+  thumbnail: string;
+}) =>
+  compact({
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: v.title,
+    description: v.description,
+    thumbnailUrl: absoluteUrl(v.thumbnail),
+    uploadDate: v.date,
+    embedUrl: v.embedUrl,
+    url: v.permalink,
+    creator: { '@id': PERSON_ID },
+    publisher: { '@id': AGENT_ID },
+  });

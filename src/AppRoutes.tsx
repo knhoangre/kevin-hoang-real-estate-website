@@ -100,6 +100,7 @@ export const routes: RouteRecord[] = [
       page('faq', () => import('./pages/FAQPage'), 'src/pages/FAQPage.tsx'),
       page('calculator', () => import('./pages/Calculator'), 'src/pages/Calculator.tsx'),
       page('testimonials', () => import('./pages/Testimonials'), 'src/pages/Testimonials.tsx'),
+      page('videos', () => import('./pages/Videos'), 'src/pages/Videos.tsx'),
       page('properties', () => import('./pages/PropertiesList'), 'src/pages/PropertiesList.tsx'),
       {
         // One page per closing, expanded from the committed snapshot. These
@@ -228,6 +229,30 @@ export const routes: RouteRecord[] = [
       ),
       privatePage('open-house', 'Open House Sign In', () => import('./pages/OpenHouse'), 'src/pages/OpenHouse.tsx'),
       privatePage('events', 'Event Sign In', () => import('./pages/Events'), 'src/pages/Events.tsx'),
+      // --- Rental applications ---------------------------------------------
+      // /apply/:token cannot be prerendered — tokens are created at runtime —
+      // so like /search/:mls it has no getStaticPaths and depends on the second
+      // scoped rewrite in vercel.json. The /apply shell is what that rewrite
+      // serves. Both are noindex: an application form must never be indexed.
+      privatePage('apply', 'Rental Application', () => import('./pages/RentalApply'), 'src/pages/RentalApply.tsx'),
+      {
+        path: 'apply/:token',
+        lazy: async () => {
+          const Component = (await import('./pages/RentalApply')).default;
+          return {
+            Component: () => (
+              <PrivatePage title="Rental Application">
+                <Component />
+              </PrivatePage>
+            ),
+          };
+        },
+        entry: 'src/pages/RentalApply.tsx',
+      },
+      // The applicant's own applications. The detail view is `?id=` on this
+      // route rather than /rentals/:id, so it needs no rewrite of its own.
+      privatePage('rentals', 'Your Rentals', () => import('./pages/Rentals'), 'src/pages/Rentals.tsx'),
+
       privatePage('admin', 'Admin', () => import('./pages/AdminHome'), 'src/pages/AdminHome.tsx'),
       privatePage('admin/follow-up', 'Follow Up', () => import('./pages/FollowUp'), 'src/pages/FollowUp.tsx'),
       privatePage(
@@ -253,6 +278,12 @@ export const routes: RouteRecord[] = [
         'Manage Properties',
         () => import('./pages/Properties'),
         'src/pages/Properties.tsx'
+      ),
+      privatePage(
+        'admin/applications',
+        'Rental Applications',
+        () => import('./pages/AdminApplications'),
+        'src/pages/AdminApplications.tsx'
       ),
       privatePage(
         'admin/lockboxes',

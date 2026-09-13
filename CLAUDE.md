@@ -17,6 +17,7 @@ docker compose up app   # same dev server in a container
 node scripts/generate-icons.mjs          # regenerate favicons + og-image.jpg + og-about.jpg
 node scripts/generate-blog-redirects.mjs # rewrite the blog 301s in vercel.json
 node scripts/sync-listings.mjs           # refresh src/data/soldListings.ts from Supabase
+node scripts/generate-video-posters.mjs   # build public/videos/ posters from public/videos/_src/
 ```
 
 There is no Node toolchain required on the host if you use Docker:
@@ -28,8 +29,13 @@ There is no test framework configured. The closest thing to one is the SEO audit
 ```bash
 docker run --rm -v "$PWD":/app -v "$HOME/.claude/skills/seo-web/scripts":/skill:ro -w /app \
   node:20-alpine node /skill/seo-audit.mjs ./dist --origin https://kevinhoang.co \
-  --private auth,admin,crm,profile,complete-profile,open-house,events
+  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,search
 ```
+
+The `--private` list must match `PRIVATE_PREFIXES` in [scripts/routes.mjs](scripts/routes.mjs).
+`/apply`, `/rentals` and `/search` are `noindex` and out of the sitemap by design, so an
+auditor that has not been told they are private reports all three as public pages that are
+noindexed and orphaned.
 
 Run it after any change that touches routes, head tags, schema, or navigation. It has already
 caught a defect that passed source review here (82 pages referencing a JSON-LD `@id` that was
@@ -106,16 +112,28 @@ unknown paths fall through to `public/404.html` with a real HTTP 404. The old
 config rewrote everything to `index.html`, which returned HTTP 200 soft-404s for
 every typo and dead link.
 
-**There is exactly ONE rewrite, and it is scoped to `/search`.** An MLS number
-cannot be prerendered — there are ~22,000 active listings and the set changes
-hourly — so `/search/:path*` rewrites to the prerendered `/search` shell, which
-then fetches the listing client-side. The destination is `/search`, **not**
-`/search/index.html`: `cleanUrls: true` strips the extension, so the explicit
-file path does not resolve and every deep URL falls through to the 404. It is scoped to that one prefix on
-purpose: Vercel checks the filesystem before applying rewrites, so every real
-route is still served directly and every unknown path still falls through to
-`public/404.html` with a real 404. A broader rewrite is how this site used to
-return HTTP 200 soft-404s for every typo.
+**There are exactly TWO rewrites, each scoped to one prefix.** Both exist for
+the same reason — a URL whose dynamic segment cannot be known at build time —
+and both take the extensionless destination:
+
+- `/search/:path*` → `/search`. An MLS number cannot be prerendered: there are
+  ~22,000 active listings and the set changes hourly, so the prerendered
+  `/search` shell fetches the listing client-side.
+- `/apply/:path*` → `/apply`. A rental-application invite token is generated at
+  runtime, so `/apply/<token>` has no prerendered file either.
+
+The destination is `/search` and `/apply`, **not** `/search/index.html`:
+`cleanUrls: true` strips the extension, so the explicit file path does not
+resolve and every deep URL falls through to the 404. They are scoped to those
+two prefixes on purpose: Vercel checks the filesystem before applying rewrites,
+so every real route is still served directly and every unknown path still falls
+through to `public/404.html` with a real 404. A broader rewrite is how this site
+used to return HTTP 200 soft-404s for every typo.
+
+**Prefer a query param over a third rewrite.** `/rentals?id=` and
+`/admin/applications?id=` open one application; as `/rentals/:id` they would each
+have needed their own rewrite. Every broadening of that file moves the site back
+toward the soft-404 behaviour, so a dynamic segment has to earn its rewrite.
 
 **`vercel.json` must contain no `comment` keys.** It is JSON, so it has no
 comments, and Vercel validates the file against a schema that rejects unknown
@@ -357,6 +375,208 @@ even though in-app navigation to it works. Adding a route means all three of:
   templated filler this corpus was cleaned of once. Its `<h2>` interpolates the
   town name so the six instances stay distinct under the topical-distinctness
   rule.
+
+### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
+
+RentSpree's model: the admin creates an invite in `/admin/applications`, shares
+`/apply/<token>`, and the recipient creates an account and fills the form. It
+replaces the Greater Boston Real Estate Board's **RH101** paper form.
+
+- **The RH101 form is copyrighted by GBREB** (© 1969) and may not be reproduced.
+  What ships is our own document collecting comparable information — do not copy
+  its layout, wording, or form ID onto the page.
+- **No SSN and no bank account numbers**, both of which the paper form collects.
+  Storing either is real breach and compliance exposure and nothing here needs
+  them; screening that requires an SSN is ordered through a bureau, which takes
+  it directly. **Do not add them back** because the paper form has them.
+- **No "are you a convicted felon?" question.** Blanket criminal-history
+  screening is the subject of active MA and federal fair-housing guidance and the
+  1969 form predates all of it. Restoring it is a decision for a broker and
+  counsel, not a default. The fair-housing notice in `ConsentsSection` is a real
+  obligation, not boilerplate — it names the classes Massachusetts protects
+  *today*, which is a longer list than the original.
+- **Source of income is a protected class in MA**, which is why the Other Income
+  section is optional in full and asks rather than demands.
+- **`rental_application_invites` has NO read policy for anon or authenticated.**
+  A token is resolved only by the `rental-application-invite` edge function under
+  the service-role key, which returns just the label and property. A SELECT
+  policy filtered by token would let anyone enumerate the table. Every failure —
+  unknown, expired, revoked, claimed by someone else — returns the identical
+  `{valid:false}`, because distinguishing them makes the endpoint a
+  token-guessing oracle.
+- **There is no applicant INSERT policy on `rental_applications`.** Rows are
+  created by that same function, which is the only thing that can verify an
+  invite; an INSERT policy would let any signed-in user create an application
+  with no invite at all.
+- **RLS is scoped by row, not by column**, so the applicant's UPDATE policy alone
+  would let them set their own status to `approved`. The
+  `guard_submitted_rental_application` trigger is what actually restricts them to
+  `draft`/`submitted`/`withdrawn`, blocks edits once submitted, and prevents
+  reassignment. It is a trigger rather than an RLS predicate deliberately: as RLS
+  the row goes silently invisible to UPDATE and the applicant sees a successful
+  save that changed nothing.
+- **The answers live in one `jsonb` column, so
+  [src/lib/rentalApplication.ts](src/lib/rentalApplication.ts) is the real
+  contract**, not the generated Supabase types. Everything reading or writing an
+  application goes through it, the way `submitContact.ts` owns both contact
+  forms. `hydrateApplication` merges a stored draft over the empty document with
+  `safeParse`, so a draft written before a schema change still opens.
+- **Draft and submit validate differently on purpose.** The form's resolver uses
+  `rentalApplicationSchema`; the submit-only rules (both consents, a signature
+  matching the typed name) live in `submissionSchema` and run once inside
+  `submitApplication`. Validating those on every keystroke puts a half-filled
+  form permanently in an error state, and autosave must never refuse to save.
+- **One rendering of an application.** `RentalApplicationForm` in `readOnly` mode
+  is what the applicant sees after submitting *and* what the admin reads, so the
+  admin's copy cannot quietly omit a field the form collects. That is also why
+  the print rules in [index.css](src/index.css) style **disabled** inputs: on
+  paper the document is a page of them, and left alone they print as grey text in
+  grey boxes.
+- **`/apply` does not redirect to `/auth`.** That page navigates to the broken
+  `/complete-profile` on signup and would lose the token, landing the applicant
+  signed in with nothing to apply for. `InviteSignIn` authenticates in place and
+  the page's effect claims the invite as soon as a session exists.
+- **The `db` escape hatch is gone, and it must not come back.** While
+  `types.ts` did not know these tables, `rentalApplication.ts` carried a cast
+  scoped to their three names; the types were regenerated on 2026-09-13 and it
+  was deleted. Real typing immediately caught both jsonb writes passing
+  `Record<string, unknown>` where the column is `Json`. After any schema change
+  here, regenerate rather than reintroducing a cast — a blanket `as any` on
+  `supabase` is what once switched off type checking for every Supabase call in
+  the app.
+
+- **The property is five fields, and `formatProperty()` is the only thing that
+  turns them into a line.** `property_address` was one free-text field, which made
+  it the one part of an invite that could not be reused — "12 Elm St, Needham MA"
+  and "12 Elm Street" are the same unit and no query can tell. It now means the
+  STREET line, with `unit`, `property_town`, `property_state` and `property_zip`
+  beside it, so `/admin/applications` can offer the properties already used and
+  the applicant's tenancy address is seeded complete. Existing invites keep
+  working: the three new columns are nullable and `formatProperty` omits what is
+  absent. Every display — the invite label, the admin list, the "Applying for"
+  card, the seeded tenancy line — goes through that one function, and the edge
+  function carries a deliberate mirror of it for the email, because the address in
+  the email disagreeing with the address on the page is the failure this prevents.
+  Same arrangement as the town/ZIP normalisation shared between
+  `sync-listings.mjs` and `fromRow`.
+- **The ZIP field is not `inputMode="numeric"`.** A leading zero is exactly what a
+  numeric field eats, and 8 of 10 ZIPs on this site start with one — that is the
+  same import bug that once rendered "Newton, MA 2459".
+- **`previousProperties()` keys on street + unit + town, not on the formatted
+  line.** An invite recorded before the zip existed still matches the same unit
+  entered later with one; the picker exists to stop the admin retyping an address,
+  not to demand they retype it identically. Rent comes back as last time's and is
+  a starting point, since it is the field most likely to have changed between
+  tenants.
+- **Documents are a separate table, and that is what keeps uploads open.**
+  `rental_application_documents` is not `rental_applications`, so
+  `guard_submitted_rental_application` — which freezes the answers once status
+  leaves `draft` — does not freeze the attachments. An applicant can send the pay
+  stub they forgot a week after submitting, and someone who filled in an
+  application on another agency's form can upload that PDF and type nothing here
+  at all. Folding documents into the application row would have made both
+  impossible.
+- **The `rental-documents` bucket is private, and `getPublicUrl` must never
+  touch it.** `property-images` is public-read because a listing photo is
+  published anyway; a pay stub is not. Reads go through `documentUrl()`, which
+  mints a 300-second signed URL **on click** — a URL fetched when the list
+  loaded would be stale by the time anyone used it, and a permanent unguessable
+  URL to a tax return is a tax return on the open internet. The bucket is
+  created in the migration rather than the dashboard, unlike the two older ones,
+  because its `file_size_limit` and `allowed_mime_types` are the real control and
+  have to be reviewable — the check in `uploadDocument` only produces the error
+  message.
+- **The object path never contains the applicant's filename.** It is
+  `<application_id>/<uuid>.<ext>`; the original is kept in `file_name` for
+  display. The path is keyed on the application and not the uploader so one RLS
+  predicate on `storage.objects` covers the applicant and the admin, and a
+  co-applicant added later would inherit access from the application.
+- **`rental_application_documents` has no applicant UPDATE policy.**
+  `admin_note` and `needs_replacement` are the only mutable columns and both are
+  the admin's. This is the same lesson as the guard trigger next door — RLS is
+  scoped by row, not by column — but here the answer is simply to grant no
+  UPDATE rather than to write another trigger. There IS an applicant INSERT
+  policy, unlike on `rental_applications`: owning an application row is what
+  already required a verified invite, and that is what the predicate checks.
+- **`guard_rental_document_count()` is the anti-abuse control, not a captcha.**
+  Reaching an INSERT requires a confirmed account that claimed an unrevoked,
+  unexpired invite, so this is not a public surface; what it needs is a ceiling
+  on what one account can do — 40 documents per application, 12 per kind, 10 in
+  any rolling ten minutes. It raises `check_violation` with a readable message,
+  which `DocumentsPanel` shows verbatim.
+- **`DocumentsPanel` is mounted outside the `<form>`.** A file input inside it
+  feeds the `form.watch` subscription that drives the 2s autosave, and Enter in
+  the "what is it?" label field would submit the application. That is why
+  `RentalApplicationForm` closes its `<form>` after `ConsentsSection` and opens a
+  second one around the submit button.
+- **`documentUploads` is a separate prop from `readOnly`** for the same reason
+  the tables are separate: `/rentals` shows a submitted application with every
+  answer disabled and uploads still working.
+- **The invite email is sent by the `send` action, which is admin-only and takes
+  an invite id — never an email address.** `resolve` is public and `claim` needs
+  only a session, so the one action that sends mail cannot lean on either; it
+  checks `app_metadata.is_admin` off the JWT-resolved user, the same flag
+  `public.is_admin()` and `AuthContext` read. Taking the id means the function
+  looks the recipient up itself, so it cannot be used to mail an arbitrary
+  person. The link's origin comes from the admin's browser so a preview
+  deployment mails a link to itself, and anything not matching `*.kevinhoang.co`
+  falls back to the canonical site. `sent_at` is stamped after a successful send;
+  a failed stamp is logged and still reports sent, because the mail did go.
+- **Copy link stays next to Send email.** Mail bounces, and a link the admin can
+  paste into a text is the fallback that depends on nothing working.
+- **The invite prefills the applicant's email, so they supply name and phone.**
+  `seedFromInvite` seeds `applicant.email` from the invite only when the field is
+  blank — someone who signed up with a different address keeps theirs. This is
+  why `inviteeEmail` is part of the `offer` the edge function returns; it is the
+  address that person was already mailed at, and it leaves only for a token that
+  resolved.
+- **No document is required to submit.** `submissionSchema` is untouched: a
+  person applying entirely by PDF has no form to submit, and a blocked submit
+  over a missing pay stub is a worse outcome than an application you can ask
+  about.
+
+### Videos (`/videos`)
+
+The Instagram reels, watchable in a modal without leaving the site.
+
+- **The reels are never hosted here.** They stay on Instagram — their
+  bandwidth — and the site holds only a committed 720px poster frame plus our
+  own title and description per video. Supabase Storage is deliberately not
+  involved: video is orders of magnitude heavier than photographs, and hosting
+  it there would repeat at far greater cost the egress mistake `/properties`
+  made with 339 full-resolution PNGs.
+- **Instagram's player loads on CLICK, never on page load.** Radix unmounts
+  closed dialog content, which is a problem for FAQ answers and exactly the
+  behaviour wanted in [VideoLightbox.tsx](src/components/VideoLightbox.tsx):
+  until someone opens a video, `/videos` has made no request to instagram.com at
+  all. That is the whole trade that makes the one third-party embed on an
+  otherwise first-party site affordable — the site links out to Google Maps
+  rather than embedding it for the same reason. Verify it in DevTools after any
+  change here.
+- **Thumbnails cannot be hotlinked.** An Instagram permalink carries no image,
+  and the real thumbnail is a signed `scontent.cdninstagram.com` URL that expires
+  within days. `public/videos/` is generated output built by
+  `scripts/generate-video-posters.mjs` from hand-saved screenshots in
+  `public/videos/_src/` — never hand-edit it, and re-run the script after adding
+  a reel. It is not in `npm run build`, for the same reason `sync-listings.mjs`
+  is not. It reads ids out of `videos.ts` by regex and strips **both** comment
+  styles first: stripping only `//` picked the example id out of that file's own
+  doc block and reported a missing screenshot for a video that does not exist.
+  Posters are 720px WebP and the social card is cropped `position: 'top'` —
+  a centre crop of a 9:16 frame lands on somebody's torso.
+- **`title` and `description` are ours, not the Instagram caption.** A pasted
+  caption is emoji and hashtags — not indexable text, and it reads badly on a
+  light page. This copy is the only prose on the page and the content rules
+  apply to it in full.
+- **The card is a real `<a>` to the reel**, upgraded to the modal by a click
+  handler that leaves modified clicks alone. With JS off, or for a crawler, it
+  is still a working link. Nothing may nest inside it — see the no-nested-`<a>`
+  rule above.
+- **The page emits `person()` as well as `agentIdentity()`**, because
+  `videoObject().creator` references `#kevin`, and an `@id` only resolves
+  against a node declared in the same document.
+- **An empty `videos` array renders an honest empty state**, not placeholder
+  cards, and the poster script refuses to prune when it reads no entries.
 
 ### The Vietnamese tree (`/vi`)
 

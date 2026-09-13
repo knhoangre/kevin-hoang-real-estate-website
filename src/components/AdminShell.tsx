@@ -1,6 +1,14 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ClipboardList, Home, KeyRound, LayoutDashboard, Users, Briefcase } from 'lucide-react';
+import {
+  ClipboardList,
+  FileText,
+  Home,
+  KeyRound,
+  LayoutDashboard,
+  Users,
+  Briefcase,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -52,6 +60,13 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/follow-up',
     icon: ClipboardList,
     blurb: 'Open house and event sign-ins, and messages sent through the site.',
+  },
+  {
+    to: '/admin/applications',
+    label: 'Applications',
+    match: '/admin/applications',
+    icon: FileText,
+    blurb: 'Rental application links, and the applications people send back.',
   },
   {
     to: '/admin/properties',

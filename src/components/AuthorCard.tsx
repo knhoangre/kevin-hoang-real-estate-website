@@ -28,7 +28,7 @@ const AuthorCard = ({ className = '' }: { className?: string }) => (
         alt={`${SITE.agentName}, real estate broker in Needham, Massachusetts`}
         width={160}
         height={160}
-        className="h-20 w-20 shrink-0 rounded-full object-cover ring-1 ring-champagne/40"
+        className="h-20 w-20 shrink-0 rounded-full object-cover object-[50%_6%] ring-1 ring-champagne/40"
         loading="lazy"
         decoding="async"
       />

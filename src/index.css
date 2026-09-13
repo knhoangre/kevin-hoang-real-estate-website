@@ -510,6 +510,15 @@
     font-size: 8pt !important;
   }
 
+  /* The documents section. Upload controls carry print:hidden, so what is left
+     on paper is the list of what is attached — which is the part an owner
+     reading the printed application needs to know exists. */
+  #documents li {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border-width: 0.4pt !important;
+  }
+
   /* Checkboxes lose their tick when the background is stripped, and a consent
      that does not show whether it was given is the one thing on this sheet
      that cannot be ambiguous. */

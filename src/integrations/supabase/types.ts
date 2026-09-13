@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       contact_addresses: {
@@ -691,6 +666,7 @@ export type Database = {
           exterior: string | null
           exterior_features: string | null
           feed: string
+          first_seen_at: string
           flooring: string | null
           full_baths: number | null
           garage_parking: string | null
@@ -716,6 +692,9 @@ export type Database = {
           pets_allowed: string | null
           photo_count: number | null
           pool_description: string | null
+          previous_list_price: number | null
+          price_change_at: string | null
+          price_cut: boolean
           prop_subtype: string | null
           prop_type: string | null
           remarks: string | null
@@ -761,6 +740,7 @@ export type Database = {
           exterior?: string | null
           exterior_features?: string | null
           feed?: string
+          first_seen_at?: string
           flooring?: string | null
           full_baths?: number | null
           garage_parking?: string | null
@@ -786,6 +766,9 @@ export type Database = {
           pets_allowed?: string | null
           photo_count?: number | null
           pool_description?: string | null
+          previous_list_price?: number | null
+          price_change_at?: string | null
+          price_cut?: boolean
           prop_subtype?: string | null
           prop_type?: string | null
           remarks?: string | null
@@ -831,6 +814,7 @@ export type Database = {
           exterior?: string | null
           exterior_features?: string | null
           feed?: string
+          first_seen_at?: string
           flooring?: string | null
           full_baths?: number | null
           garage_parking?: string | null
@@ -856,6 +840,9 @@ export type Database = {
           pets_allowed?: string | null
           photo_count?: number | null
           pool_description?: string | null
+          previous_list_price?: number | null
+          price_change_at?: string | null
+          price_cut?: boolean
           prop_subtype?: string | null
           prop_type?: string | null
           remarks?: string | null
@@ -903,6 +890,38 @@ export type Database = {
           phone?: string | null
         }
         Relationships: []
+      }
+      idx_price_history: {
+        Row: {
+          id: number
+          list_price: number | null
+          mls_number: string
+          previous_list_price: number | null
+          recorded_at: string
+        }
+        Insert: {
+          id?: number
+          list_price?: number | null
+          mls_number: string
+          previous_list_price?: number | null
+          recorded_at?: string
+        }
+        Update: {
+          id?: number
+          list_price?: number | null
+          mls_number?: string
+          previous_list_price?: number | null
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idx_price_history_mls_number_fkey"
+            columns: ["mls_number"]
+            isOneToOne: false
+            referencedRelation: "idx_listings"
+            referencedColumns: ["mls_number"]
+          },
+        ]
       }
       idx_sync_runs: {
         Row: {
@@ -1570,6 +1589,42 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          email_verified: boolean | null
+          first_name: string
+          id: string
+          last_name: string
+          phone_number: string
+          phone_verified: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          email_verified?: boolean | null
+          first_name: string
+          id: string
+          last_name: string
+          phone_number: string
+          phone_verified?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          email_verified?: boolean | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          phone_number?: string
+          phone_verified?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           address: string
@@ -1638,6 +1693,172 @@ export type Database = {
           zip_code?: string
         }
         Relationships: []
+      }
+      rental_application_documents: {
+        Row: {
+          admin_note: string | null
+          application_id: string
+          created_at: string
+          file_name: string
+          id: string
+          kind: string
+          label: string | null
+          mime_type: string
+          needs_replacement: boolean
+          size_bytes: number
+          storage_path: string
+          uploaded_by: string
+        }
+        Insert: {
+          admin_note?: string | null
+          application_id: string
+          created_at?: string
+          file_name: string
+          id?: string
+          kind: string
+          label?: string | null
+          mime_type: string
+          needs_replacement?: boolean
+          size_bytes: number
+          storage_path: string
+          uploaded_by?: string
+        }
+        Update: {
+          admin_note?: string | null
+          application_id?: string
+          created_at?: string
+          file_name?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          mime_type?: string
+          needs_replacement?: boolean
+          size_bytes?: number
+          storage_path?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_application_documents_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "rental_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rental_application_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          invitee_email: string | null
+          label: string | null
+          monthly_rent: number | null
+          property_address: string | null
+          property_state: string | null
+          property_town: string | null
+          property_zip: string | null
+          revoked_at: string | null
+          sent_at: string | null
+          token: string
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          invitee_email?: string | null
+          label?: string | null
+          monthly_rent?: number | null
+          property_address?: string | null
+          property_state?: string | null
+          property_town?: string | null
+          property_zip?: string | null
+          revoked_at?: string | null
+          sent_at?: string | null
+          token?: string
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          invitee_email?: string | null
+          label?: string | null
+          monthly_rent?: number | null
+          property_address?: string | null
+          property_state?: string | null
+          property_town?: string | null
+          property_zip?: string | null
+          revoked_at?: string | null
+          sent_at?: string | null
+          token?: string
+          unit?: string | null
+        }
+        Relationships: []
+      }
+      rental_applications: {
+        Row: {
+          applicant_email: string | null
+          applicant_first_name: string | null
+          applicant_last_name: string | null
+          applicant_phone: string | null
+          applicant_user_id: string
+          certified_at: string | null
+          created_at: string
+          credit_auth_at: string | null
+          data: Json
+          id: string
+          invite_id: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          applicant_email?: string | null
+          applicant_first_name?: string | null
+          applicant_last_name?: string | null
+          applicant_phone?: string | null
+          applicant_user_id?: string
+          certified_at?: string | null
+          created_at?: string
+          credit_auth_at?: string | null
+          data?: Json
+          id?: string
+          invite_id?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applicant_email?: string | null
+          applicant_first_name?: string | null
+          applicant_last_name?: string | null
+          applicant_phone?: string | null
+          applicant_user_id?: string
+          certified_at?: string | null
+          created_at?: string
+          credit_auth_at?: string | null
+          data?: Json
+          id?: string
+          invite_id?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_applications_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "rental_application_invites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1741,12 +1962,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1770,11 +1991,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1795,11 +2016,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1820,11 +2041,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1837,11 +2058,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1851,9 +2072,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       activity_type: [

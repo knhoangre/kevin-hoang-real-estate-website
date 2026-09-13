@@ -118,6 +118,11 @@ export const PRIVATE_PREFIXES = [
   '/crm',
   '/open-house',
   '/events',
+  // The rental application and the applicant's copy of it. Gated, noindex, and
+  // never in the sitemap — /apply additionally cannot be enumerated at all,
+  // since each URL carries a one-time invite token.
+  '/apply',
+  '/rentals',
   // The IDX search. Not "private" in the gated sense — anyone may use it — but
   // it belongs here for the same reason: noindex, never in the sitemap. MLS PIN
   // requires IDX displays be non-indexable.
@@ -158,6 +163,7 @@ export const STATIC_ROUTES = [
   { path: '/calculator', priority: 0.6, changefreq: 'yearly' },
   { path: '/properties', priority: 0.6, changefreq: 'weekly' },
   { path: '/testimonials', priority: 0.5, changefreq: 'monthly' },
+  { path: '/videos', priority: 0.6, changefreq: 'weekly' },
 
   // Vietnamese. Real prerendered documents, paired with their English
   // counterparts by src/lib/viRoutes.ts. Kept in sync with AppRoutes.tsx by

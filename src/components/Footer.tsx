@@ -170,6 +170,7 @@ const Footer = () => {
               { to: '/neighborhoods', label: 'Areas Served' },
               { to: '/blog', label: t('nav.blog') },
               { to: '/testimonials', label: 'Reviews' },
+              { to: '/videos', label: 'Videos' },
             ]}
           />
 

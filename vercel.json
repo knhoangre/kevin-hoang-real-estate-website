@@ -736,6 +736,10 @@
     {
       "source": "/search/:path*",
       "destination": "/search"
+    },
+    {
+      "source": "/apply/:path*",
+      "destination": "/apply"
     }
   ]
 }

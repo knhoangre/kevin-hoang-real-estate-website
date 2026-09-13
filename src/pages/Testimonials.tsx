@@ -59,7 +59,7 @@ const Testimonials = () => {
               {shown.map((item, index) => (
                 <Card
                   key={`${item.firstName}-${index}`}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                  className="overflow-hidden border border-transparent bg-bone shadow-sm transition-all duration-300 hover:border-champagne hover:shadow-md"
                 >
                   <CardContent className="p-6">
                     <div className="flex items-center gap-1 mb-3" aria-hidden>

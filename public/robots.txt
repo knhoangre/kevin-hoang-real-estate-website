@@ -42,6 +42,11 @@ Disallow: /admin
 Disallow: /crm
 Disallow: /open-house
 Disallow: /events
+# The rental application. Each URL carries a one-time invite token, so there is
+# nothing here to crawl even in principle, and /rentals is one applicant's own
+# submitted document.
+Disallow: /apply
+Disallow: /rentals
 # The IDX search. Not gated — anyone may use it — but MLS PIN's rules require an
 # IDX display be non-indexable, and it is syndicated data every other agent site
 # also publishes, so there is nothing to gain by indexing it.

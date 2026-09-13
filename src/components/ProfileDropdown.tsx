@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Briefcase, LayoutDashboard } from "lucide-react";
+import { LogOut, User, Briefcase, LayoutDashboard, FileText } from "lucide-react";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
@@ -47,6 +47,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
   };
 
 
+
+  const handleRentalsClick = () => {
+    navigate("/rentals");
+    onItemClick?.();
+  };
 
   const handleAdminClick = () => {
     navigate("/admin");
@@ -103,6 +108,16 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
         <DropdownMenuItem onClick={handleProfileClick} className={ITEM}>
           <User className="mr-2.5 h-4 w-4" aria-hidden />
           <span>Profile</span>
+        </DropdownMenuItem>
+
+        {/*
+          Every signed-in user, not just admins: an applicant's account exists
+          precisely so they can come back to this. It is how they reach a draft
+          after closing the tab and their submitted copy afterwards.
+        */}
+        <DropdownMenuItem onClick={handleRentalsClick} className={ITEM}>
+          <FileText className="mr-2.5 h-4 w-4" aria-hidden />
+          <span>Rentals</span>
         </DropdownMenuItem>
 
         {isAdmin && (
