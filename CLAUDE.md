@@ -148,6 +148,16 @@ even though in-app navigation to it works. Adding a route means all three of:
 2. [scripts/routes.mjs](scripts/routes.mjs) — the sitemap registry,
 3. confirming the `.html` exists in `dist/` after a build.
 
+**`hasDarkHero()` in [navItems.ts](src/lib/navItems.ts) is a hand-kept list, and it
+drifts silently.** The navbar starts transparent only over a page this function
+claims has a dark hero; a page with one that is not listed shows a white bar over
+a near-black band, which is invisible in review because nothing errors. `/search`,
+`/rentals`, `/videos`, `/apply` and all ten `/properties/<slug>` pages had that
+bug until 2026-09-13. Verify against the BUILT output rather than by eye — compare
+`bg-ink-deep` inside each prerendered page's `<main>` with what the function
+returns, and the mismatches are the list. Sections with detail routes belong in
+`DARK_HERO_PREFIX`, not `DARK_HERO_EXACT`.
+
 ### Freshness signals
 
 - **`lastmod` is emitted only where a real content date exists.** It used to be
@@ -274,6 +284,22 @@ even though in-app navigation to it works. Adding a route means all three of:
   number entirely from the one printed next to it.
 - **`scripts/routes.mjs` reads slugs out of the `src/data/*.ts` modules** rather
   than duplicating them, so the sitemap cannot drift from the corpus.
+
+**`/search` retries a failed read, and that is not defensive padding.**
+`idx_listings` is 170 MB with 71 MB of indexes, and an exact count scans every
+matching row — about 16,000 for the default search. Warm that is 0.3s; cold,
+after a sync or a quiet spell, it exceeds three seconds, which is the `anon`
+role's `statement_timeout`, so the first visitor of the hour got HTTP 500 and an
+empty page. Refreshing appeared to fix it because their own failed attempt had
+warmed the buffer cache. Measured on the live project: two 500s at 3.3s and 3.2s,
+then 0.27s for every call after. `withRetry` in
+[idxSearch.ts](src/lib/idxSearch.ts) retries twice with backoff — the attempt
+that just failed is what warms the cache, so the retry is the fast case almost by
+construction — and skips `PGRST`/`42xxx` codes, which are our own malformed
+queries and will fail identically three times. The server half is
+`ALTER ROLE anon SET statement_timeout = '8s'` (Supabase's own default for
+`authenticated`); the two are deliberately independent, so the client fix keeps
+working if that setting is ever reset.
 
 ### Listings
 
@@ -497,6 +523,14 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `supabase` is what once switched off type checking for every Supabase call in
   the app.
 
+- **`tenancy` keeps the address and the unit apart, so anything showing both
+  joins them through `formatTenancyAddress()`.** Seeding put the whole formatted
+  property — unit included — into `tenancy.propertyAddress` while
+  `tenancy.unit` also held it, so `/rentals` rendered "42 Newman St · Unit 3,
+  Malden, MA 02148 · Unit 3". Seeding now passes `withUnit: false`, and the
+  formatter skips the unit when the address already names it, so rows written
+  before the fix still read correctly. The word-boundary check is why a unit of
+  "3" does not match the 3 in a street number.
 - **The property is five fields, and `formatProperty()` is the only thing that
   turns them into a line.** `property_address` was one free-text field, which made
   it the one part of an invite that could not be reused — "12 Elm St, Needham MA"

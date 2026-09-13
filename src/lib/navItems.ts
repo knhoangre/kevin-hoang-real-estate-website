@@ -68,7 +68,6 @@ const DARK_HERO_EXACT = new Set([
   '/vietnamese-speaking-real-estate-agent',
   '/relocation',
   '/faq',
-  '/properties',
   '/buyer',
   '/seller',
   '/blog',
@@ -77,14 +76,27 @@ const DARK_HERO_EXACT = new Set([
   '/contact',
   '/calculator',
   '/first-time-buyers',
+  // The IDX search, the rental portal and the reels all render a PageShell dark
+  // hero, and none of them was listed — so the bar stayed white over a
+  // near-black band on every one of them. Verified against the BUILT html
+  // rather than by eye: a script compared `bg-ink-deep` in each prerendered
+  // page's <main> with what this function claims, and these were the misses.
+  '/search',
+  '/rentals',
+  '/videos',
 ]);
 
 /**
  * `/vi` and every page under it is a ViPage, and they all have dark heroes.
  * `/admin` and `/crm` render AdminShell, whose header band is the same dark
  * photographic treatment, so the bar starts transparent over those too.
+ *
+ * `/properties` is a PREFIX and not an exact entry because each closing has had
+ * its own page since 2026-08-31 and every one of them has the same dark hero —
+ * listed exactly, all ten detail pages showed a white bar over it. `/apply`
+ * likewise, since the page anyone actually opens is `/apply/<token>`.
  */
-const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm'];
+const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm', '/properties', '/apply'];
 
 /**
  * Prefix-aware, so a detail route lights up its section.

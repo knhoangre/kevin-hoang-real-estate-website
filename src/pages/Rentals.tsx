@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
 import {
+  formatTenancyAddress,
   isApplicantEditable,
   listMyApplications,
   withdrawApplication,
@@ -277,10 +278,7 @@ export default function Rentals() {
                 {/* See the note in RentalApply's OfferCard: addresses go in
                     Inter with lining, tabular figures, not the display serif. */}
                 <p className="numeral text-lg font-semibold text-ink">
-                  {record.data.tenancy.propertyAddress || 'Rental application'}
-                  {record.data.tenancy.unit && (
-                    <span className="text-gray-600"> · Unit {record.data.tenancy.unit}</span>
-                  )}
+                  {formatTenancyAddress(record.data.tenancy) || 'Rental application'}
                 </p>
                 <p className="numeral mt-1 text-sm text-gray-600">
                   {record.status === 'draft'
@@ -306,6 +304,11 @@ export default function Rentals() {
       }}
       crumbs={CRUMBS}
       eyebrow="Rentals"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1600&q=65',
+        alt: 'The interior of a first home, sparsely furnished',
+      }}
       h1="Your rental applications"
       lede="Everything you have started or submitted."
       heroSize="compact"

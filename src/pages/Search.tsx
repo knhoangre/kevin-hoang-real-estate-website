@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search as SearchIcon, X, MapPin } from 'lucide-react';
+import { Search as SearchIcon, X, MapPin, RefreshCw } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
@@ -81,6 +81,15 @@ const Search = () => {
     townsWithListings().then(setTowns).catch(() => setTowns([]));
   }, []);
 
+  /*
+   * `attempt` exists only to be bumped by the Try again button, which re-runs
+   * the effect below. searchListings already retries a failed read twice on its
+   * own — see the note there about the cold-cache statement timeout — so
+   * reaching this button means three attempts have failed and the person should
+   * be given something to press that is not the browser's reload.
+   */
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     setListings(null);
@@ -103,7 +112,7 @@ const Search = () => {
     return () => {
       cancelled = true;
     };
-  }, [filters]);
+  }, [filters, attempt]);
 
   const commit = (next: SearchFilters) => setParams(paramsFromFilters(next));
 
@@ -167,6 +176,15 @@ const Search = () => {
         noindex: true,
       }}
       eyebrow="Listings"
+      // A real <img> in the hero, like every other dark-hero page: the flat
+      // near-black band read as an unfinished page next to them. Reusing a photo
+      // id already in use on this site rather than a new one, so it is known to
+      // resolve at these params.
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=1600&q=65',
+        alt: 'A residential street of brick colonial homes',
+      }}
       h1="Search Massachusetts listings"
       lede="Narrow by town, price, beds and baths — or paste an address or MLS number straight into the box. Search what is for sale, what is under agreement, what just had a price cut, and what has actually closed in the past year."
       heroSize="compact"
@@ -416,9 +434,24 @@ const Search = () => {
         </p>
 
         {error && (
-          <p className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            {error}
-          </p>
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <p className="font-semibold">The listings did not load.</p>
+            <p className="mt-1">
+              This is usually the database waking up rather than anything wrong with your
+              search. Try again — it normally works on the second go.
+            </p>
+            <button
+              type="button"
+              onClick={() => setAttempt((n) => n + 1)}
+              className="mt-3 inline-flex items-center gap-2 rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition-colors hover:border-red-400"
+            >
+              <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+              Try again
+            </button>
+            {/* The underlying message, kept but demoted: it is the thing that
+                makes a bug report useful and nothing a visitor needs to read. */}
+            <p className="mt-2 text-xs text-red-700/80">{error}</p>
+          </div>
         )}
 
         {listings === null ? (

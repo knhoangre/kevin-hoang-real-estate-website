@@ -220,6 +220,71 @@ export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
  * indexed; without it the page could not say "1–24 of 378" and a user could not
  * tell a narrow search from a broken one.
  */
+/* -------------------------------------------------------------------------- */
+/* Retrying a cold query                                                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `idx_listings` is 170 MB with 71 MB of indexes, and an exact count has to
+ * scan every matching row — about 16,000 of them for the default search. Warm,
+ * that answers in 0.3s. COLD, after a sync or a quiet spell, the first query of
+ * the hour reads those pages off disk and takes over three seconds, which is the
+ * `anon` role's `statement_timeout` — so it comes back 500 and the visitor sees
+ * an empty page. Refreshing worked because their own failed attempt had warmed
+ * the cache, which is exactly the behaviour nobody should have to discover.
+ *
+ * Measured against the live project: two 500s at 3.3s and 3.2s, then 0.27s for
+ * every call after.
+ *
+ * So a failed read is retried rather than shown. The retry is not a hopeful
+ * gesture — the attempt that just failed is what warms the buffers, so the
+ * second one is the fast case almost by construction. A migration also raises
+ * the `anon` timeout to 8s, which is Supabase's own default for authenticated
+ * roles; the two fixes are independent, and this one works even if that setting
+ * is ever reset.
+ */
+const RETRY_DELAYS_MS = [600, 1800];
+
+/**
+ * Whether an error is worth a second attempt.
+ *
+ * A timed-out or otherwise broken read is; a query PostgREST refused to parse is
+ * not — that is a bug in our filters and retrying it twice only delays the
+ * message by two seconds. PostgREST's own client errors are the `PGRST` codes.
+ */
+const isWorthRetrying = (err: unknown): boolean => {
+  const code =
+    err && typeof err === 'object' && 'code' in err ? String((err as { code: unknown }).code) : '';
+  if (code.startsWith('PGRST')) return false;
+  // 22P02 and 42xxx are malformed input and bad SQL — our fault, not the
+  // database being slow.
+  if (code.startsWith('42') || code === '22P02') return false;
+  return true;
+};
+
+const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const withRetry = async <T>(run: () => Promise<T>, label: string): Promise<T> => {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      return await run();
+    } catch (err) {
+      lastError = err;
+      if (!isWorthRetrying(err) || attempt === RETRY_DELAYS_MS.length) break;
+      console.warn(
+        `${label} failed (attempt ${attempt + 1}), retrying:`,
+        err instanceof Error ? err.message : err
+      );
+      await sleep(RETRY_DELAYS_MS[attempt]);
+    }
+  }
+  throw lastError;
+};
+
 export const searchListings = async (f: SearchFilters) => {
   const sold = f.listingType === 'sold';
 
@@ -312,10 +377,17 @@ export const searchListings = async (f: SearchFilters) => {
   if (f.baths && Number.isFinite(baths)) query = query.gte('full_baths', baths);
 
   const from = (f.page - 1) * PAGE_SIZE;
-  const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
-  if (error) throw error;
 
-  return { listings: (data ?? []) as IdxListing[], total: count ?? 0 };
+  return withRetry(async () => {
+    // Awaiting the same builder again is a real second request, not a cached
+    // result: PostgrestBuilder.then() calls fetch() every time it is invoked,
+    // and `.range()` only sets a header, so re-awaiting is safe here. Verified in
+    // node_modules/@supabase/postgrest-js — worth stating, because the retry
+    // would be a silent no-op if that were ever not true.
+    const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    return { listings: (data ?? []) as IdxListing[], total: count ?? 0 };
+  }, 'Listing search');
 };
 
 /** What a listing's headline price is, given which list it appears in. */
@@ -407,9 +479,11 @@ export const townsWithListings = async (): Promise<{ town: string; listings: num
   // column for all ~22,000 rows and deduping in the browser is a ~300 KB
   // response to populate one dropdown, on every visit. Postgres answers this
   // from the town index instead. See the migration for the full note.
-  const { data, error } = await supabase.rpc('idx_towns_with_listings');
-  if (error) throw error;
-  return (data ?? []) as { town: string; listings: number }[];
+  return withRetry(async () => {
+    const { data, error } = await supabase.rpc('idx_towns_with_listings');
+    if (error) throw error;
+    return (data ?? []) as { town: string; listings: number }[];
+  }, 'Town list');
 };
 
 /**

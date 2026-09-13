@@ -241,6 +241,11 @@ export default function RentalApply() {
       }}
       crumbs={CRUMBS}
       eyebrow="Rental application"
+      hero={{
+        image:
+          'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=65',
+        alt: 'Keys being handed over on the doorstep of a new home',
+      }}
       h1="Your rental application"
       lede="It takes about ten minutes. Your answers save as you go, so you can stop and come back."
       heroSize="compact"
@@ -282,10 +287,11 @@ const seedFromInvite = (
   },
   tenancy: {
     ...data.tenancy,
-    // The whole line, not just the street: the applicant is confirming which
-    // unit they are applying for, and a bare street line is ambiguous in a town
-    // where the same number exists on a Street and an Avenue.
-    propertyAddress: data.tenancy.propertyAddress || formatProperty(invite) || '',
+    // The whole place — street, town, state, ZIP — but NOT the unit, which has
+    // its own field right beside this one. Including it here is what produced
+    // "42 Newman St · Unit 3, Malden, MA 02148 · Unit 3" wherever the two were
+    // shown together.
+    propertyAddress: data.tenancy.propertyAddress || formatProperty(invite, { withUnit: false }) || '',
     unit: data.tenancy.unit || invite.unit || '',
     baseRent: data.tenancy.baseRent || (invite.monthlyRent != null ? String(invite.monthlyRent) : ''),
   },

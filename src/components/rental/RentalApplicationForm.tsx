@@ -1078,26 +1078,29 @@ export default function RentalApplicationForm({
                 <div className="print:hidden">
                   {/* The submit treatment from /contact, so the application's
                       primary action looks like every other on the site. */}
+                  {/* The design system's primary action: the champagne pill
+                      from CtaBand, which every other closing CTA on the site
+                      uses. This carried /contact's older treatment until
+                      2026-09-13 — a square near-black bar with a sliding label
+                      and a white rule wiping across the bottom — which made the
+                      one button the applicant has to press look like the
+                      homepage of two redesigns ago. `text-ink-deep` on champagne
+                      is 8.31:1; champagne as TEXT on a light surface would fail
+                      WCAG, which is why the pill is filled and not outlined. */}
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="group relative flex w-full items-center justify-center overflow-hidden rounded-md bg-ink py-3 uppercase text-white transition-all duration-300 hover:bg-black/80 disabled:opacity-60"
+                    className="btn-pill group inline-flex w-full items-center justify-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white disabled:opacity-60"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                        Submitting
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                        {alreadySent ? 'Sending' : 'Submitting'}
                       </>
                     ) : (
                       <>
-                        <span className="transition-transform duration-300 group-hover:-translate-x-2">
-                          Submit application
-                        </span>
-                        <ArrowRight
-                          className="ml-2 h-4 w-4 transform opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100"
-                          aria-hidden
-                        />
-                        <span className="absolute bottom-0 left-0 h-1 w-0 bg-white transition-all duration-700 group-hover:w-full" />
+                        {alreadySent ? 'Send updated application' : 'Submit application'}
+                        <ArrowRight className="h-4 w-4" aria-hidden />
                       </>
                     )}
                   </button>

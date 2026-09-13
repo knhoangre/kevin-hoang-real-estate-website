@@ -908,13 +908,32 @@ export interface PropertyParts {
   propertyZip?: string | null;
 }
 
-export const formatProperty = (p: PropertyParts): string => {
-  const street = [p.propertyAddress?.trim(), p.unit?.trim() && `Unit ${p.unit.trim()}`]
+export const formatProperty = (p: PropertyParts, { withUnit = true } = {}): string => {
+  const street = [p.propertyAddress?.trim(), withUnit && p.unit?.trim() && `Unit ${p.unit.trim()}`]
     .filter(Boolean)
     .join(' · ');
   const region = [p.propertyState?.trim(), p.propertyZip?.trim()].filter(Boolean).join(' ');
   const place = [p.propertyTown?.trim(), region].filter(Boolean).join(', ');
   return [street, place].filter(Boolean).join(', ');
+};
+
+/**
+ * The tenancy section's address, for display.
+ *
+ * `tenancy` keeps the address and the unit as SEPARATE fields, so anything
+ * showing both has to join them — and the invite seeding used to put the whole
+ * formatted property (unit included) into `propertyAddress`, which made that
+ * join read "42 Newman St · Unit 3, Malden, MA 02148 · Unit 3". Seeding now
+ * passes `withUnit: false`, and this skips the unit when the address already
+ * names it, so the rows written before that fix still read correctly.
+ */
+export const formatTenancyAddress = (t: { propertyAddress?: string; unit?: string }): string => {
+  const address = (t.propertyAddress ?? '').trim();
+  const unit = (t.unit ?? '').trim();
+  if (!unit) return address;
+  // "unit 3" as a whole word, so "3" does not match the 3 in a street number.
+  const named = new RegExp(`\\bunit\\s*${unit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+  return named.test(address) ? address : [address, `Unit ${unit}`].filter(Boolean).join(' · ');
 };
 
 /**
