@@ -17,6 +17,7 @@ import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, Plus } from 'lucide-react
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
+import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
@@ -478,10 +479,15 @@ export default function AdminApplications() {
               <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
               All applications
             </button>
+            {/* The merged file is the one to send an owner, so it takes the
+                primary treatment and Print steps back to secondary. */}
+            {record && (
+              <DownloadPdfButton record={record} className={adminActionClass('primary')} />
+            )}
             <button
               type="button"
               onClick={() => window.print()}
-              className={adminActionClass('primary')}
+              className={adminActionClass('ghost')}
             >
               Print
             </button>

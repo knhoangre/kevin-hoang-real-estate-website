@@ -17,7 +17,7 @@ type AuthContextType = {
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
   signInWithGoogle: () => Promise<OAuthResponse>;
-  signUp: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, redirectTo?: string) => Promise<AuthResponse>;
   signOut: () => Promise<{ error: AuthError | null }>;
   refreshUser: () => Promise<void>;
   updateAvatarUrl: (url: string) => Promise<void>;
@@ -190,13 +190,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const signUp = async (email: string, password: string) => {
+  /**
+   * `redirectTo` is where the confirmation link in the email lands them.
+   *
+   * It defaulted to the ORIGIN and took no argument, so somebody who signed up
+   * from /apply/<token> confirmed their address and arrived at the homepage with
+   * no idea where the application went — the token was in the URL they had just
+   * left. Anyone starting from a specific page should come back to it, which for
+   * an invite is the whole point of the link.
+   *
+   * The URL has to be in Supabase's redirect allow-list (Authentication → URL
+   * Configuration) or Auth falls back to the Site URL and the homepage problem
+   * comes back silently.
+   */
+  const signUp = async (email: string, password: string, redirectTo?: string) => {
     return supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
-      }
+        emailRedirectTo: redirectTo ?? window.location.origin,
+      },
     });
   };
 

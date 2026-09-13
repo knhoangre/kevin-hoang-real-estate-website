@@ -24,6 +24,7 @@ import PageShell, { ShellSection } from '@/components/PageShell';
 import { useAuth } from '@/contexts/AuthContext';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
+import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
 import {
   formatTenancyAddress,
   isApplicantEditable,
@@ -178,6 +179,7 @@ export default function Rentals() {
             </button>
             <div className="flex items-center gap-3">
               <StatusBadge status={record.status} />
+              <DownloadPdfButton record={record} />
               <button
                 type="button"
                 onClick={() => window.print()}

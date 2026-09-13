@@ -504,12 +504,45 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   matching the typed name) live in `submissionSchema` and run once inside
   `submitApplication`. Validating those on every keystroke puts a half-filled
   form permanently in an error state, and autosave must never refuse to save.
+- **The PDF is a SECOND rendering of an application, and that is a knowing
+  exception.** `window.print()` can save the page as a PDF and still does — but
+  JavaScript cannot reach those bytes, so there is nothing to append the uploaded
+  documents to, and a merged file is the thing an owner actually gets sent. So
+  [applicationPdf.ts](src/lib/applicationPdf.ts) lays the document out again with
+  pdf-lib. The mitigation for the duplication is `PDF_FIELDS` plus a check that
+  walks the blank document's leaves and asserts every one is covered — 75 of them
+  today — so a field added to the schema and forgotten there is caught by a test
+  rather than by an owner reading a PDF with a gap in it. Re-run that check after
+  any change to the schema.
+  - Empty answers are OMITTED and so is a boolean `No`, the same rule the page
+    follows: a PDF of forty "—" rows says nothing.
+  - Uploaded PDFs are merged page-for-page with `copyPages`, not rasterised, so a
+    twelve-page tax return stays readable and selectable. Images are contained,
+    never cropped — a licence with its edges cut off is not a copy of a licence.
+  - **pdf-lib embeds only PNG and JPEG.** WEBP and HEIC go through a canvas
+    first, and Chrome cannot decode HEIC at all, so that path ends in a page
+    naming the file rather than in a silently missing document. Same for a
+    password-protected PDF and a download that fails.
+  - `import('pdf-lib')` is dynamic on purpose. It is ~400 KB, it lands in its own
+    chunk, and no prerendered page references it — verified in `dist/` after a
+    build, which is where to check it again.
 - **One rendering of an application.** `RentalApplicationForm` in `readOnly` mode
   is what the applicant sees after submitting *and* what the admin reads, so the
   admin's copy cannot quietly omit a field the form collects. That is also why
   the print rules in [index.css](src/index.css) style **disabled** inputs: on
   paper the document is a page of them, and left alone they print as grey text in
   grey boxes.
+- **`signUp` takes a `redirectTo`, and `/apply` passes its own URL.** Confirming
+  an email address lands wherever `emailRedirectTo` says, and `AuthContext` hard-
+  coded `window.location.origin` — so somebody who signed up from `/apply/<token>`
+  confirmed their address and arrived at the HOMEPAGE, with the token in the URL
+  they had just left. The client is PKCE with `detectSessionInUrl`, so returning
+  to `/apply/<token>?code=…` exchanges the code and the page's effect claims the
+  invite. **The URL must be in Supabase's redirect allow-list** (Authentication →
+  URL Configuration); anything not matching falls back to the Site URL and the
+  homepage problem returns silently. `src/hooks/useAuth.ts` has its own `signUp`
+  that `/auth` uses and this change does not reach — see the note about the two
+  `useAuth` implementations.
 - **`/apply` does not redirect to `/auth`.** That page navigates to the broken
   `/complete-profile` on signup and would lose the token, landing the applicant
   signed in with nothing to apply for. `InviteSignIn` authenticates in place and

@@ -144,7 +144,12 @@ export default function InviteSignIn() {
     setBusy(true);
     try {
       const { error } =
-        mode === 'in' ? await signIn(email.trim(), password) : await signUp(email.trim(), password);
+        mode === 'in'
+          ? await signIn(email.trim(), password)
+          : // The full /apply/<token> URL, so confirming the email brings them
+            // back to the application they were invited to rather than to the
+            // homepage with the token gone.
+            await signUp(email.trim(), password, window.location.href);
 
       if (error) {
         toast({
@@ -156,12 +161,14 @@ export default function InviteSignIn() {
       }
 
       if (mode === 'up') {
-        // If the project requires email confirmation there is no session yet,
-        // and the page will simply stay here. Saying so is better than leaving
-        // them looking at an unchanged screen.
+        // If the project requires email confirmation there is no session yet and
+        // the page stays as it is, so say what happens next. The link returns
+        // them to THIS url — see the emailRedirectTo passed above — so the copy
+        // can promise that rather than hedging about coming back here.
         toast({
-          title: 'Account created',
-          description: 'If we send you a confirmation email, click the link and come back here.',
+          title: 'Check your email',
+          description:
+            'Click the confirmation link and it will bring you straight back to this application.',
         });
       }
       // No navigate: AuthContext publishes the new session, RentalApply's
