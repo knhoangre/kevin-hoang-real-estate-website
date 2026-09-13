@@ -24,6 +24,7 @@ import {
   APPLICATION_STATUSES,
   createInvite,
   formatProperty,
+  formatTenancyAddress,
   inviteState,
   inviteUrl,
   listApplications,
@@ -615,9 +616,8 @@ export default function AdminApplications() {
                           </span>
                           <span className="block text-xs text-gray-500">{r.applicantEmail}</span>
                         </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {r.data.tenancy.propertyAddress || '—'}
-                          {r.data.tenancy.unit && ` · Unit ${r.data.tenancy.unit}`}
+                        <td className="numeral px-6 py-4 text-gray-700">
+                          {formatTenancyAddress(r.data.tenancy) || '—'}
                         </td>
                         <td className="px-6 py-4 text-gray-700">
                           {r.submittedAt ? shortDate(r.submittedAt) : '—'}
@@ -662,7 +662,10 @@ export default function AdminApplications() {
                           </p>
                         </div>
                         <span
-                          className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATE_TONE[state]}`}
+                          // Matches StatusBadge's px-3 py-1: two pills sitting in
+                          // the same list at different densities looks like a
+                          // mistake even when neither is wrong on its own.
+                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold leading-5 ${STATE_TONE[state]}`}
                         >
                           {STATE_LABEL[state]}
                         </span>

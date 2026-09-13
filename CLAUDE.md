@@ -523,6 +523,33 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `supabase` is what once switched off type checking for every Supabase call in
   the app.
 
+- **An applicant becomes a CRM contact through a trigger, not the client.**
+  `contacts` and its value tables are admin-only under RLS, so the browser that
+  has the applicant's name in it is the one thing that cannot file it;
+  `trg_rental_applications_crm` fires on the denormalised name/email/phone
+  columns, which `saveDraft` already keeps in step. It is tagged `Renter` and the
+  source is `Rental Application & <street, town>`, matching the
+  `Open House & <address>` convention. `contacts_view` already exposes source,
+  birthday and tags, so the CRM needed no change to show any of it.
+- **`crm_upsert_contact()` is the ONE find-or-create for a contact.**
+  `submit-contact`, `submit-open-house-signin` and `submit-event-signin` each
+  carry their own ~250-line hand-rolled copy of that dance; this is deliberately
+  not a fourth, and those three should move onto it. Three behaviours in it are
+  decisions, not details: it refuses a row with no name or no way to reach
+  somebody (an unactionable contact is worse than none); `p_prefer_new` means the
+  person typed this about themselves, so an applicant fixing their own phone moves
+  the contact onto it while a bulk import never overwrites; and `source_id` is
+  never overwritten either way, because it records how somebody FIRST arrived and
+  is what the CRM filters on.
+- **`p_match_email`/`p_match_phone` are why a correction is not a duplicate.**
+  Dedupe keys on current values, so an applicant changing their email AND phone in
+  one save has nothing left that matches and forks into a second contact. The
+  trigger passes the OLD values for matching only. This was caught by running the
+  migration against a real Postgres — the 30 assertions are worth re-running
+  after any change here, since nothing in CI covers SQL.
+- **The CRM sync can never fail an applicant's save.** The trigger is AFTER, and
+  the upsert is wrapped in an exception block that raises a WARNING. Someone
+  filling in a form must not be blocked by a duplicate-key race on our side.
 - **`tenancy` keeps the address and the unit apart, so anything showing both
   joins them through `formatTenancyAddress()`.** Seeding put the whole formatted
   property — unit included — into `tenancy.propertyAddress` while
