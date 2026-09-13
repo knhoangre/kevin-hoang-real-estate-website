@@ -867,6 +867,7 @@ export default function RentalApplicationForm({
   readOnly = false,
   documentUploads,
   adminDocuments = false,
+  alreadySent = false,
   onSubmitted,
 }: {
   applicationId: string;
@@ -882,6 +883,12 @@ export default function RentalApplicationForm({
   documentUploads?: boolean;
   /** Admin view of the documents: per-file notes and replace requests. */
   adminDocuments?: boolean;
+  /**
+   * This application has been sent once already and is being edited inside the
+   * window before review starts. Changes the action from "submit" to "send the
+   * version you want read", which is what the second press actually means.
+   */
+  alreadySent?: boolean;
   onSubmitted?: () => void;
 }) {
   const { toast } = useToast();
@@ -965,8 +972,10 @@ export default function RentalApplicationForm({
     try {
       await submitApplication(applicationId, values);
       toast({
-        title: 'Application submitted',
-        description: 'Kevin has received it. You will hear back about next steps.',
+        title: alreadySent ? 'Changes sent' : 'Application submitted',
+        description: alreadySent
+          ? 'Kevin will read the updated version.'
+          : 'Kevin has received it. You will hear back about next steps.',
       });
       onSubmitted?.();
     } catch (err) {
@@ -1113,8 +1122,9 @@ export default function RentalApplicationForm({
                   </p>
 
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Once submitted, your answers can no longer be edited — but you can still
-                    add documents at any time.
+                    {alreadySent
+                      ? 'Your answers stay editable until Kevin starts reviewing. Documents can be added at any time.'
+                      : 'After you send it you can still make changes, until Kevin starts reviewing it. Documents can be added at any time.'}
                   </p>
                 </div>
               </form>

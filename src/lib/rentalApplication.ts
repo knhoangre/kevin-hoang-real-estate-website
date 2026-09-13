@@ -738,7 +738,10 @@ export const saveDraft = async (id: string, values: RentalApplicationData): Prom
  *
  * The consent timestamps are set HERE rather than from the checkbox, so the
  * record says when the authorization was actually given rather than when a box
- * happened to be ticked and then left sitting in a draft.
+ * happened to be ticked and then left sitting in a draft. Sending again after an
+ * edit re-stamps them, which is correct: they are certifying the version the
+ * admin will now read. `submitted_at` is the exception and is pinned to the FIRST
+ * send by the trigger, so the date the admin sorts by does not move.
  */
 export const submitApplication = async (
   id: string,
@@ -760,6 +763,34 @@ export const submitApplication = async (
       certified_at: now,
       credit_auth_at: now,
     })
+    .eq('id', id);
+  if (error) throw error;
+};
+
+/**
+ * Whether the applicant may still change their own answers.
+ *
+ * The window closes when review starts, not when they submit — everything below
+ * their own details is optional, so the intended flow is to send what you have
+ * and fill the rest in later. Mirrors rule 1 of
+ * `guard_submitted_rental_application`; if the two disagree the applicant sees
+ * enabled fields and a save that the database refuses.
+ */
+export const isApplicantEditable = (status: ApplicationStatus): boolean =>
+  status === 'draft' || status === 'submitted';
+
+/**
+ * The applicant stopping their own application.
+ *
+ * This is how somebody says they are no longer interested. It is deliberately
+ * not a return to draft — the trigger refuses that — because an application that
+ * quietly left the admin's list would leave them waiting on a decision nobody
+ * was going to make.
+ */
+export const withdrawApplication = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('rental_applications')
+    .update({ status: 'withdrawn' })
     .eq('id', id);
   if (error) throw error;
 };

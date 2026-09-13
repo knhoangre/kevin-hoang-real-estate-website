@@ -11,18 +11,26 @@
  * is how this site once returned HTTP 200 soft-404s for every typo. A query
  * param resolves against the prerendered /rentals with no rewrite at all.
  *
- * The document itself renders through RentalApplicationForm in `readOnly` mode,
- * so there is exactly one rendering of an application on this site — the
- * applicant's copy cannot drift from the admin's.
+ * The document itself renders through RentalApplicationForm, so there is exactly
+ * one rendering of an application on this site — the applicant's copy cannot
+ * drift from the admin's. It is editable while the status is draft or submitted
+ * and read-only from the moment review starts; `isApplicantEditable` is the one
+ * place that decides, mirroring the database trigger.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, FileText, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Loader2, XCircle } from 'lucide-react';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import { useAuth } from '@/contexts/AuthContext';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
-import { listMyApplications, type RentalApplicationRecord } from '@/lib/rentalApplication';
+import {
+  isApplicantEditable,
+  listMyApplications,
+  withdrawApplication,
+  type RentalApplicationRecord,
+} from '@/lib/rentalApplication';
+import { useToast } from '@/components/ui/use-toast';
 import { SITE, telHref } from '@/lib/siteConfig';
 
 const CRUMBS = [
@@ -46,6 +54,35 @@ export default function Rentals() {
 
   const [rows, setRows] = useState<RentalApplicationRecord[] | null>(null);
   const [failed, setFailed] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  const { toast } = useToast();
+
+  const withdraw = async (id: string) => {
+    if (withdrawing) return;
+    if (
+      !window.confirm(
+        'Withdraw this application? Kevin will see that you are no longer interested, and you will not be able to edit it afterwards.'
+      )
+    )
+      return;
+    setWithdrawing(true);
+    try {
+      await withdrawApplication(id);
+      setRows((prev) =>
+        (prev ?? []).map((r) => (r.id === id ? { ...r, status: 'withdrawn' as const } : r))
+      );
+      toast({ title: 'Application withdrawn' });
+    } catch (err) {
+      console.error('Could not withdraw the application:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Could not withdraw it',
+        description: 'Please try again in a moment.',
+      });
+    } finally {
+      setWithdrawing(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -147,25 +184,56 @@ export default function Rentals() {
               >
                 Print
               </button>
+              {/* Withdrawing is how somebody stops their own application, and it
+                  is deliberately not a return to draft — an application that
+                  quietly left the admin's list would leave them waiting on a
+                  decision nobody was going to make. */}
+              {isApplicantEditable(record.status) && (
+                <button
+                  type="button"
+                  onClick={() => withdraw(record.id)}
+                  disabled={withdrawing}
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-red-300 hover:text-red-700 disabled:opacity-60"
+                >
+                  {withdrawing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                  ) : (
+                    <XCircle className="h-4 w-4" aria-hidden />
+                  )}
+                  Withdraw
+                </button>
+              )}
             </div>
           </div>
 
-          {record.status !== 'draft' && (
-            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-              Submitted {record.submittedAt ? shortDate(record.submittedAt) : ''}. A submitted
-              application can no longer be edited — call {SITE.phone} if something needs to
-              change.
+          {record.status === 'submitted' && (
+            <div className="numeral mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+              Sent {record.submittedAt ? shortDate(record.submittedAt) : ''}. You can still change
+              your answers and add documents until Kevin starts reviewing it. Send it again after
+              an edit so he reads the version you meant.
             </div>
           )}
 
-          {/* readOnly for the answers, uploads still open: documents live in
-              their own table and are deliberately not frozen at submit, so a
-              missing pay stub can follow the application. */}
+          {!isApplicantEditable(record.status) && record.status !== 'withdrawn' && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              This application is being reviewed, so the answers are now fixed — call{' '}
+              <a href={telHref} className="font-semibold underline">
+                {SITE.phone}
+              </a>{' '}
+              if something needs to change. You can still add documents.
+            </div>
+          )}
+
+          {/* Documents stay uploadable at every status: they live in their own
+              table and are deliberately not frozen, so a missing pay stub can
+              follow the application even after a decision is underway. */}
           <RentalApplicationForm
             applicationId={record.id}
             initial={record.data}
-            readOnly
+            readOnly={!isApplicantEditable(record.status)}
             documentUploads
+            alreadySent={record.status !== 'draft'}
+            onSubmitted={load}
           />
         </div>
       );

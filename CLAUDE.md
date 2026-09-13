@@ -411,8 +411,27 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
 - **RLS is scoped by row, not by column**, so the applicant's UPDATE policy alone
   would let them set their own status to `approved`. The
   `guard_submitted_rental_application` trigger is what actually restricts them to
-  `draft`/`submitted`/`withdrawn`, blocks edits once submitted, and prevents
-  reassignment. It is a trigger rather than an RLS predicate deliberately: as RLS
+  `draft`/`submitted`/`withdrawn` and prevents reassignment.
+- **The applicant's edit window closes when REVIEW starts, not at submit**, and
+  `isApplicantEditable()` mirrors rule 1 of that trigger. If the two ever
+  disagree the applicant sees enabled fields and a save the database refuses.
+  It froze at submit until 2026-09-13, which fitted a form where every section
+  was required; once everything below the applicant's own details became
+  optional the intended flow is to send a PDF and five fields and fill the rest
+  in later, and the old rule forbade exactly that. The same change fixed a branch
+  that could never run — the trigger permitted the applicant to set `withdrawn`,
+  but had already rejected every update where `OLD.status <> 'draft'`, so an
+  application could not be withdrawn from the only state anyone would withdraw
+  from.
+- **`submitted_at` is pinned to the FIRST send, by the trigger.** `submitApplication`
+  sets it on every submit, so without that pin each later edit would move the date
+  the admin's list sorts by. The consent timestamps deliberately DO re-stamp: the
+  applicant is certifying the version that will now be read. A client cannot be
+  the thing that decides what either timestamp means, which is why the pin is in
+  the database.
+- **Withdrawing is not a return to draft**, and the trigger refuses that
+  transition. An application that quietly left the admin's list would leave them
+  waiting on a decision nobody was going to make. It is a trigger rather than an RLS predicate deliberately: as RLS
   the row goes silently invisible to UPDATE and the applicant sees a successful
   save that changed nothing.
 - **The answers live in one `jsonb` column, so
