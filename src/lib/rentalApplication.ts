@@ -243,40 +243,150 @@ export const submissionSchema = rentalApplicationSchema
     }
   );
 
-/** Every field present and empty. The starting point, and the merge target for a draft. */
-export const emptyApplication = (): RentalApplicationData =>
-  rentalApplicationSchema.parse({
-    applicant: { firstName: '', lastName: '', dateOfBirth: '', email: '', phone: '' },
-    currentResidence: { street: '', city: '', state: '', zip: '', movedIn: '' },
-    previousResidence: {},
-    employment: { employer: '', occupation: '', grossMonthlyIncome: '' },
-    previousEmployment: {},
-    personalReference: {},
-    creditReference: {},
-    emergencyContact: {},
-    household: {},
-    vehicle: {},
-    tenancy: { propertyAddress: '', desiredOccupancyDate: '' },
-    consents: {},
-  });
+/**
+ * Every field present and empty. The starting point, and the merge target for a
+ * draft.
+ *
+ * A LITERAL, and never `rentalApplicationSchema.parse({...})`. That is what this
+ * was, and it threw on every call: `req()` is `.min(1)`, so the fifteen required
+ * fields cannot be satisfied by the blank document they are the blank document
+ * OF. It failed inside `hydrateApplication`, so every applicant opening an
+ * invite got "Could not open the application" and no applicant could ever start
+ * one.
+ *
+ * The annotation is what keeps this honest: `RentalApplicationData` is inferred
+ * from the schema, so a field added there and forgotten here fails `tsc`. That
+ * is a stronger guarantee than the parse was pretending to give, and it is
+ * checked at build time rather than in front of the applicant.
+ */
+export const emptyApplication = (): RentalApplicationData => ({
+  applicant: {
+    firstName: '',
+    lastName: '',
+    middleInitial: '',
+    dateOfBirth: '',
+    email: '',
+    phone: '',
+    bestTimeToContact: '',
+  },
+  currentResidence: {
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    movedIn: '',
+    movedOut: '',
+    monthlyRent: '',
+    reasonForLeaving: '',
+    landlordName: '',
+    landlordAddress: '',
+    landlordPhone: '',
+  },
+  hasPreviousResidence: false,
+  previousResidence: {
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
+    movedIn: '',
+    movedOut: '',
+    monthlyRent: '',
+    landlordName: '',
+    landlordAddress: '',
+    landlordPhone: '',
+  },
+  employment: {
+    employer: '',
+    address: '',
+    phone: '',
+    occupation: '',
+    businessType: '',
+    grossMonthlyIncome: '',
+    lengthOfEmployment: '',
+    supervisor: '',
+  },
+  hasPreviousEmployment: false,
+  previousEmployment: {
+    employer: '',
+    address: '',
+    phone: '',
+    occupation: '',
+    lengthOfEmployment: '',
+  },
+  otherIncome: [],
+  personalReference: { name: '', relationship: '', address: '', phone: '' },
+  creditReference: { name: '', address: '', phone: '' },
+  emergencyContact: { name: '', relationship: '', address: '', phone: '' },
+  household: {
+    totalOccupants: '',
+    adults: '',
+    coTenants: [],
+    minorChildren: [],
+    pets: [],
+  },
+  vehicle: { make: '', model: '', year: '', plate: '', plateState: '' },
+  tenancy: {
+    propertyAddress: '',
+    unit: '',
+    desiredOccupancyDate: '',
+    leaseTermMonths: '',
+    baseRent: '',
+    otherMonthlyCharges: '',
+  },
+  consents: {
+    creditAuthorization: false,
+    certification: false,
+    signature: '',
+    signatureDate: '',
+  },
+});
 
 /**
  * Merges a stored draft over the empty document.
  *
- * `safeParse` rather than `parse`: a draft written before a schema change must
- * still open. Anything that no longer fits is dropped in favour of the default
- * rather than throwing the applicant out of their own application.
+ * There is deliberately NO validation pass here. It used to end with
+ * `rentalApplicationSchema.safeParse(merged)` and fall back to the blank
+ * document when that failed — and for a draft it always failed, because the
+ * required fields the applicant has not reached yet are still empty. The effect
+ * was silent and worse than an error: type a name, autosave, reload, and the
+ * form comes back blank with the draft still sitting in the database.
+ *
+ * A draft is a partial document by definition. The rules that decide whether it
+ * is COMPLETE live in `submissionSchema` and run once, at submit. What this
+ * needs instead is a shape guarantee, which is what `deepMerge` gives: keys the
+ * schema no longer has are dropped, and a stored value only survives if its type
+ * matches the blank document's.
  */
 export const hydrateApplication = (stored: unknown): RentalApplicationData => {
   const base = emptyApplication();
   if (!stored || typeof stored !== 'object') return base;
-
-  const merged = deepMerge(base as Record<string, unknown>, stored as Record<string, unknown>);
-  const parsed = rentalApplicationSchema.safeParse(merged);
-  return parsed.success ? parsed.data : base;
+  return deepMerge(base as unknown as Record<string, unknown>, stored as Record<string, unknown>) as unknown as RentalApplicationData;
 };
 
-/** Object-by-object merge. Arrays replace wholesale — they are lists, not records. */
+/**
+ * A list of records, as this schema uses them: every array here holds objects
+ * whose values are all strings. Checked because `deepMerge` replaces arrays
+ * wholesale, so this is the only thing standing between a malformed stored array
+ * and the form's field registration.
+ */
+const isStringRecordArray = (value: unknown): boolean =>
+  Array.isArray(value) &&
+  value.every(
+    (item) =>
+      item !== null &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      Object.values(item as Record<string, unknown>).every((v) => typeof v === 'string')
+  );
+
+/**
+ * Object-by-object merge. Arrays replace wholesale — they are lists, not records.
+ *
+ * A stored value is kept only when its type matches the blank document's. That
+ * is what makes the removed `safeParse` unnecessary rather than merely absent: a
+ * draft written before a field changed type cannot put a number where the form
+ * registers a text input, which is the failure the parse was there to catch.
+ */
 const deepMerge = (
   base: Record<string, unknown>,
   patch: Record<string, unknown>
@@ -284,19 +394,27 @@ const deepMerge = (
   const out: Record<string, unknown> = { ...base };
   for (const [key, value] of Object.entries(patch)) {
     if (!(key in base)) continue; // drop keys the schema no longer has
+    if (value === undefined || value === null) continue;
     const existing = base[key];
+
+    if (Array.isArray(existing)) {
+      if (isStringRecordArray(value)) out[key] = value;
+      continue;
+    }
+
     if (
       value &&
       typeof value === 'object' &&
       !Array.isArray(value) &&
       existing &&
-      typeof existing === 'object' &&
-      !Array.isArray(existing)
+      typeof existing === 'object'
     ) {
       out[key] = deepMerge(existing as Record<string, unknown>, value as Record<string, unknown>);
-    } else if (value !== undefined && value !== null) {
-      out[key] = value;
+      continue;
     }
+
+    // Leaves: same type as the blank document, or it does not come through.
+    if (typeof value === typeof existing) out[key] = value;
   }
   return out;
 };

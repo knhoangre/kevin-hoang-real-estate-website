@@ -421,6 +421,21 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   application goes through it, the way `submitContact.ts` owns both contact
   forms. `hydrateApplication` merges a stored draft over the empty document with
   `safeParse`, so a draft written before a schema change still opens.
+- **Nothing on the draft path may validate against `rentalApplicationSchema`.**
+  Two bugs came from this, and both were live in production on 2026-09-13.
+  `emptyApplication()` was `rentalApplicationSchema.parse({...})` passing `''` for
+  the fifteen `req()` fields — `.min(1)`, so the blank document could never
+  satisfy the schema it is the blank document OF. It threw inside
+  `hydrateApplication`, so every applicant opening an invite got "Could not open
+  the application" and not one could start one. It is now a literal annotated
+  `RentalApplicationData`, which makes `tsc` the drift check — stronger than the
+  parse pretended to be, and checked at build time rather than in front of the
+  applicant. `hydrateApplication` then ended with `safeParse(merged)` falling back
+  to the blank document, which for a draft always failed for the same reason: the
+  effect was silent and worse than an error, since a draft in the database came
+  back as an empty form. It now merges and does not validate — `deepMerge` keeps a
+  stored value only where its type matches the blank document's, which is the
+  shape guarantee that path actually needs.
 - **Draft and submit validate differently on purpose.** The form's resolver uses
   `rentalApplicationSchema`; the submit-only rules (both consents, a signature
   matching the typed name) live in `submissionSchema` and run once inside
