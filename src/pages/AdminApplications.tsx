@@ -580,7 +580,10 @@ export default function AdminApplications() {
         <div className="space-y-8">
           {/* Applications */}
           <section>
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+            {/* `numeral` for the count: Inter's default figures are
+                proportional, so (1) and (7) are different widths and the label
+                shifts as the number changes. See the class in index.css. */}
+            <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
               Applications ({apps.length})
             </h2>
             <AdminCard>
@@ -632,7 +635,7 @@ export default function AdminApplications() {
 
           {/* Invites */}
           <section>
-            <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+            <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
               Links ({invites.length})
             </h2>
             <AdminCard>
@@ -646,10 +649,10 @@ export default function AdminApplications() {
                       <li key={invite.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
                         <Link2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-ink">
+                          <p className="numeral truncate text-sm font-medium text-ink">
                             {invite.label || formatProperty(invite) || 'Application link'}
                           </p>
-                          <p className="mt-0.5 text-xs text-gray-500">
+                          <p className="numeral mt-0.5 text-xs text-gray-500">
                             Created {shortDate(invite.createdAt)}
                             {invite.inviteeEmail && ` · ${invite.inviteeEmail}`}
                             {invite.sentAt

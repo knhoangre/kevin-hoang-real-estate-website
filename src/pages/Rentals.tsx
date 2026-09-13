@@ -206,13 +206,15 @@ export default function Rentals() {
             >
               <FileText className="mt-0.5 h-5 w-5 shrink-0 text-champagne-ink" aria-hidden />
               <div className="min-w-0 flex-1">
-                <p className="font-display text-lg font-semibold text-ink">
+                {/* See the note in RentalApply's OfferCard: addresses go in
+                    Inter with lining, tabular figures, not the display serif. */}
+                <p className="numeral text-lg font-semibold text-ink">
                   {record.data.tenancy.propertyAddress || 'Rental application'}
                   {record.data.tenancy.unit && (
                     <span className="text-gray-600"> · Unit {record.data.tenancy.unit}</span>
                   )}
                 </p>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="numeral mt-1 text-sm text-gray-600">
                   {record.status === 'draft'
                     ? `Started ${shortDate(record.createdAt)}`
                     : `Submitted ${record.submittedAt ? shortDate(record.submittedAt) : ''}`}

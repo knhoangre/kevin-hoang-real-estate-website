@@ -136,7 +136,9 @@ const DocumentRow = ({
         <FileText className="mt-0.5 h-5 w-5 shrink-0 text-champagne-ink" aria-hidden />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-ink">{doc.fileName}</p>
-          <p className="mt-0.5 text-xs text-gray-500">
+          {/* Size and date: `numeral` keeps the figures one width so a column of
+              files does not stagger. */}
+          <p className="numeral mt-0.5 text-xs text-gray-500">
             {formatBytes(doc.sizeBytes)} · added {shortDate(doc.createdAt)}
             {doc.label ? ` · ${doc.label}` : ''}
           </p>

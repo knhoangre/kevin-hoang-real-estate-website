@@ -29,6 +29,7 @@ import PageShell, { ShellSection } from '@/components/PageShell';
 import { useAuth } from '@/contexts/AuthContext';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import InviteSignIn from '@/components/rental/InviteSignIn';
+import SecurityNotice from '@/components/rental/SecurityNotice';
 import {
   getApplication,
   claimInvite,
@@ -92,11 +93,15 @@ const OfferCard = ({ invite }: { invite: ResolvedInvite }) => {
       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-ink">
         Applying for
       </p>
-      {/* The unit is already part of the label and of formatProperty, so it is
-          not appended again here. */}
-      <p className="mt-1.5 font-display text-lg font-semibold text-ink">{heading}</p>
+      {/* `numeral`, not font-display. This is a street address, so it is half
+          digits, and Playfair's old-style figures sit at a different height and
+          weight from its letters — "12 Elm Street · Needham, MA 02492" read as
+          two mismatched halves. Same resolution as the sign-in group titles in
+          components/admin/SignInGroups.tsx. The unit is already part of the
+          label and of formatProperty, so it is not appended again here. */}
+      <p className="numeral mt-1.5 text-lg font-semibold text-ink">{heading}</p>
       {invite.monthlyRent != null && (
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="numeral mt-1 text-sm text-gray-600">
           ${Number(invite.monthlyRent).toLocaleString()} per month
         </p>
       )}
@@ -192,6 +197,11 @@ export default function RentalApply() {
         <>
           {invite && <OfferCard invite={invite} />}
           <InviteSignIn />
+          {/* Also here, BEFORE the account is created. This is the point where
+              somebody decides whether to hand over an ID at all. */}
+          <div className="mt-6">
+            <SecurityNotice />
+          </div>
         </>
       );
     }
@@ -207,6 +217,11 @@ export default function RentalApply() {
     return (
       <>
         {invite && <OfferCard invite={invite} />}
+        {/* Above the form, not buried at the bottom: the question "is this safe"
+            is asked before the first field, not after the last one. */}
+        <div className="mb-6">
+          <SecurityNotice />
+        </div>
         <RentalApplicationForm
           applicationId={invite?.applicationId ?? ''}
           initial={initial}
