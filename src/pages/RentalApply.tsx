@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import PageShell from '@/components/PageShell';
+import PageShell, { ShellSection } from '@/components/PageShell';
 import { useAuth } from '@/contexts/AuthContext';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import InviteSignIn from '@/components/rental/InviteSignIn';
@@ -234,7 +234,15 @@ export default function RentalApply() {
       actions={false}
       cta={false}
     >
-      {body()}
+      {/* Every other page on the site wraps its body in ShellSection; these two
+          passed children straight through, so they rendered full-bleed with no
+          horizontal padding and no width cap — the sticky section index sat
+          against the window, and the body ran past max-w-6xl on a wide screen.
+          Shorter vertical padding than the default because this is a form to
+          work through, not a page to read. */}
+      <ShellSection width="wide" className="pb-20 pt-10 md:pt-12 bg-white">
+        {body()}
+      </ShellSection>
     </PageShell>
   );
 }

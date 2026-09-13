@@ -690,6 +690,23 @@ CTA band alone existed in four places. It also makes the BreadcrumbList rule str
 the shell renders the visible trail and emits `breadcrumbs(crumbs)` from the same array,
 or renders neither — there is no longer a way to ship one without the other.
 
+**A page's body must go through `ShellSection`, not straight into `PageShell`'s
+children.** `PageShell` renders `{children}` raw — it owns the hero, not the
+column — so a page that passes its body directly renders full-bleed: no
+horizontal padding, and no `max-w-*` cap, which is exactly the uncapped ~1368px
+measure the two-widths rule exists to prevent. `/apply` and `/rentals` did that
+until 2026-09-13, and it showed up as the application's sticky section index
+sitting against the window while the same form inside `AdminShell` looked right.
+`ShellSection` takes `width`, `className` and `inner`, so a page with its own
+background or spacing still goes through it rather than hand-rolling
+`container px-4`.
+
+Padding lives in `PageShell` alone: its three containers are
+`px-4 sm:px-6 lg:px-8`. `px-4` on its own is what every page used to carry, and
+it OVERRIDES the container's configured `2rem` (utilities beat components), so
+the configured gutter had never applied anywhere. `/faq` still hand-rolls
+`container px-4` around the same sticky-sidebar layout and so keeps the old 16px.
+
 The navbar is `fixed` at `h-20`. Pages that clear it use `pt-20`; pages whose dark hero
 deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
 
