@@ -212,7 +212,7 @@ const PageShell = ({
           </>
         )}
 
-        <div className="container relative px-4 mx-auto pb-16 pt-32">
+        <div className="container relative px-4 sm:px-6 lg:px-8 mx-auto pb-16 pt-32">
           <div className={`${col} mx-auto`}>
             {crumbs?.length ? <BreadcrumbBar items={crumbs} tone="dark" /> : null}
 
@@ -286,7 +286,7 @@ const PageShell = ({
 
       {stripItems && (
         <div className="border-b border-gray-200 bg-ink-deep text-white">
-          <div className="container px-4 mx-auto">
+          <div className="container px-4 sm:px-6 lg:px-8 mx-auto">
             <dl
               className={`mx-auto grid ${col} grid-cols-2 gap-y-6 py-8 md:grid-cols-4 md:divide-x md:divide-white/10`}
             >
@@ -325,7 +325,13 @@ export const ShellSection = ({
   inner?: string;
 }) => (
   <section className={className}>
-    <div className="container px-4 mx-auto">
+    {/* px-4 alone is what every page used to carry, and it OVERRIDES the
+        container's configured 2rem (utilities beat components), so every page
+        sat 16px off the edge rather than 32. At lg that is the gutter the
+        application's sticky section index lives in, and it read as hugging the
+        window. The three containers in this file step up together so the hero's
+        h1 stays aligned with the body beneath it. */}
+    <div className="container px-4 sm:px-6 lg:px-8 mx-auto">
       <div className={`${WIDTHS[width]} mx-auto ${inner}`}>{children}</div>
     </div>
   </section>

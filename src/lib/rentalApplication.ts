@@ -58,28 +58,45 @@ const optMoney = opt(20).refine(
   (v) => v === '' || /^\$?[\d,]+(\.\d{1,2})?$/.test(v),
   'Enter an amount, e.g. 2,400'
 );
-const reqMoney = z
-  .string()
-  .trim()
-  .min(1, 'Required')
-  .refine((v) => /^\$?[\d,]+(\.\d{1,2})?$/.test(v), 'Enter an amount, e.g. 2,400');
-
 const optDate = opt(10);
 
-const address = (required: boolean) =>
+/**
+ * A postal address, all four parts optional. It used to take a `required` flag
+ * for the current residence; nothing asks for a required address any more now
+ * that only the applicant's own details are mandatory, so the branch went with
+ * the flag rather than sitting here unreachable.
+ */
+const address = () =>
   z.object({
-    street: required ? req('Street address') : opt(),
-    city: required ? req('City') : opt(100),
-    state: required ? req('State', 2) : opt(2),
-    zip: required ? req('ZIP', 10) : opt(10),
+    street: opt(),
+    city: opt(100),
+    state: opt(2),
+    zip: opt(10),
   });
 
 // ---------------------------------------------------------------------------
 // The document
 // ---------------------------------------------------------------------------
 
+/**
+ * FIVE fields are required, and they are all in the first section: first and
+ * last name, date of birth, email and phone. Everything else — residence,
+ * employment, references, household, the unit — is optional.
+ *
+ * That is not laziness about data quality, it is the second path this form has
+ * to support. People routinely arrive having already completed an application
+ * on another agency's paperwork, and the useful thing to do with that is read
+ * their PDF, not make them retype it into a form that refuses to submit without
+ * an employer. So the questions are optional and the Documents section is the
+ * alternative to answering them — but we still have to know who is applying and
+ * how to reach them, which is what these five are.
+ *
+ * The consents are separate: they are required at SUBMIT (see
+ * `submissionSchema`) because a credit authorization is a legal record, not a
+ * field. Nothing here is required while a draft is being typed.
+ */
 export const rentalApplicationSchema = z.object({
-  // 1 — Applicant
+  // 1 — Applicant. The only required section.
   applicant: z.object({
     firstName: req('First name', 100),
     lastName: req('Last name', 100),
@@ -90,10 +107,12 @@ export const rentalApplicationSchema = z.object({
     bestTimeToContact: opt(100),
   }),
 
-  // 2 — Current residence
+  // 2 — Current residence. Optional, like everything below the applicant's own
+  //     details: an applicant who has already completed an application on
+  //     another form uploads it under Documents instead of retyping it here.
   currentResidence: z.object({
-    ...address(true).shape,
-    movedIn: req('Move-in date', 10),
+    ...address().shape,
+    movedIn: optDate,
     movedOut: optDate,
     monthlyRent: optMoney,
     reasonForLeaving: opt(500),
@@ -105,7 +124,7 @@ export const rentalApplicationSchema = z.object({
   // 3 — Previous residence. Optional as a block; see the cross-field rule below.
   hasPreviousResidence: z.boolean().default(false),
   previousResidence: z.object({
-    ...address(false).shape,
+    ...address().shape,
     movedIn: optDate,
     movedOut: optDate,
     monthlyRent: optMoney,
@@ -116,12 +135,12 @@ export const rentalApplicationSchema = z.object({
 
   // 4 — Employment
   employment: z.object({
-    employer: req('Employer', 200),
+    employer: opt(200),
     address: opt(300),
     phone: optPhone,
-    occupation: req('Occupation', 200),
+    occupation: opt(200),
     businessType: opt(200),
-    grossMonthlyIncome: reqMoney,
+    grossMonthlyIncome: optMoney,
     lengthOfEmployment: opt(100),
     supervisor: opt(),
   }),
@@ -187,9 +206,9 @@ export const rentalApplicationSchema = z.object({
 
   // 10 — Desired tenancy. Prefilled from the invite where the admin supplied it.
   tenancy: z.object({
-    propertyAddress: req('Property address', 300),
+    propertyAddress: opt(300),
     unit: opt(30),
-    desiredOccupancyDate: req('Desired move-in date', 10),
+    desiredOccupancyDate: optDate,
     leaseTermMonths: opt(3),
     baseRent: optMoney,
     otherMonthlyCharges: opt(200),
@@ -428,47 +447,81 @@ export interface ApplicationSection {
   title: string;
   /** One line under the heading. Says what the section is for, not what to type. */
   blurb?: string;
-  /** Drives the "required" mark in the section index. */
+  /** Drives the "optional" mark in the section index. */
   required: boolean;
+  /**
+   * Which run of sections this belongs to. The index renders these as headed
+   * groups, in this order, so the shape of the document is legible before any of
+   * it is read: what we need, what you can upload instead, and the long part
+   * that is optional.
+   */
+  group: SectionGroup;
 }
 
+export const SECTION_GROUPS = [
+  { id: 'details', title: 'What we need' },
+  { id: 'documents', title: 'Or upload it' },
+  { id: 'application', title: 'The full application — optional' },
+  { id: 'submit', title: 'Sign and send' },
+] as const;
+
+export type SectionGroup = (typeof SECTION_GROUPS)[number]['id'];
+
 export const APPLICATION_SECTIONS: ApplicationSection[] = [
-  { id: 'applicant', title: 'About you', required: true },
+  {
+    id: 'applicant',
+    title: 'About you',
+    blurb: 'The only part we need: who you are and how to reach you.',
+    required: true,
+    group: 'details',
+  },
+  {
+    id: 'documents',
+    title: 'Documents',
+    blurb:
+      'Upload what you have — including a completed application from another form, if you already filled one in. You can add more at any time, even after you submit.',
+    required: false,
+    group: 'documents',
+  },
   {
     id: 'residence',
     title: 'Where you live now',
     blurb: 'Your current address and the landlord we may contact for a reference.',
-    required: true,
+    required: false,
+    group: 'application',
   },
-  { id: 'previous-residence', title: 'Previous address', required: false },
+  { id: 'previous-residence', title: 'Previous address', required: false, group: 'application' },
   {
     id: 'employment',
     title: 'Employment and income',
     blurb: 'Enough to show the rent is affordable.',
-    required: true,
+    required: false,
+    group: 'application',
   },
   {
     id: 'other-income',
     title: 'Other income',
-    blurb: 'Optional. Include anything you would like considered.',
+    blurb: 'Include anything you would like considered.',
     required: false,
+    group: 'application',
   },
-  { id: 'references', title: 'References', required: false },
-  { id: 'emergency', title: 'Emergency contact', required: false },
+  { id: 'references', title: 'References', required: false, group: 'application' },
+  { id: 'emergency', title: 'Emergency contact', required: false, group: 'application' },
   {
     id: 'household',
     title: 'Household',
     blurb: 'Who else would be living there, including children and pets.',
     required: false,
+    group: 'application',
   },
-  { id: 'vehicle', title: 'Vehicle', required: false },
-  { id: 'tenancy', title: 'The unit you want', required: true },
-  { id: 'consents', title: 'Authorization and signature', required: true },
+  { id: 'vehicle', title: 'Vehicle', required: false, group: 'application' },
+  { id: 'tenancy', title: 'The unit you want', required: false, group: 'application' },
   {
-    id: 'documents',
-    title: 'Documents',
-    blurb: 'Upload what you have. You can add more at any time, including after you submit.',
-    required: false,
+    id: 'consents',
+    title: 'Authorization and signature',
+    blurb: 'Required to send the application, whether you filled it in or uploaded one.',
+    required: true,
+    group: 'submit',
   },
 ];
 

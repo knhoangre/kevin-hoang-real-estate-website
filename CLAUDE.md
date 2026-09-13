@@ -436,6 +436,24 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   back as an empty form. It now merges and does not validate — `deepMerge` keeps a
   stored value only where its type matches the blank document's, which is the
   shape guarantee that path actually needs.
+- **Only five fields are required, and they are all in the first section.**
+  First and last name, date of birth, email, phone — plus the consents at submit.
+  Residence, employment, references, household and the unit were required until
+  2026-09-13 and are now optional, because the second path this form has to
+  support is the applicant who already completed an application on another
+  agency's paperwork: the useful thing to do with that is read their PDF, not
+  refuse their submission for want of an employer. The Documents section is the
+  alternative to answering the questions, which is why it renders SECOND — right
+  after the required part and before the optional run — and why nothing in that
+  run blocks a submit.
+- **`SECTION_GROUPS` is what makes that legible.** The sticky index renders four
+  headed runs in document order — what we need, or upload it, the full
+  application (optional), sign and send — so the shape of the document is
+  readable before any of it is. A section's `group` and the DOM order must agree,
+  or the index describes a page that is not there.
+- **The required section is a `<div>`, not a second `<form>`.** Only the element
+  around the submit button needs to be one; wrapping the applicant's details made
+  Enter in a name field submit a document barely begun.
 - **Draft and submit validate differently on purpose.** The form's resolver uses
   `rentalApplicationSchema`; the submit-only rules (both consents, a signature
   matching the typed name) live in `submissionSchema` and run once inside

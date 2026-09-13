@@ -23,6 +23,7 @@ import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import {
   APPLICATION_SECTIONS,
+  SECTION_GROUPS,
   emptyApplication,
   rentalApplicationSchema,
   saveDraft,
@@ -810,35 +811,43 @@ const ConsentsSection = ({ control, ro }: { control: Ctl; ro: boolean }) => (
 const SectionIndex = ({ activeId }: { activeId: string }) => (
   <nav aria-label="Application sections" className="hidden lg:block print:hidden">
     <div className="sticky top-28">
-      <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-        Sections
-      </p>
-      <ol className="space-y-1.5">
-        {APPLICATION_SECTIONS.map((section, i) => {
-          const current = section.id === activeId;
-          return (
-            <li key={section.id}>
-              <a
-                href={`#${section.id}`}
-                aria-current={current ? 'true' : undefined}
-                className={`flex items-baseline gap-2.5 rounded-md px-2 py-1 text-sm transition-colors ${
-                  current
-                    ? 'font-medium text-champagne-ink underline decoration-champagne decoration-2 underline-offset-4'
-                    : 'text-gray-600 hover:text-ink'
-                }`}
-              >
-                <span className="w-4 shrink-0 text-xs tabular-nums text-gray-400">{i + 1}</span>
-                <span>
-                  {section.title}
-                  {!section.required && (
-                    <span className="ml-1.5 text-xs text-gray-400">optional</span>
-                  )}
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ol>
+      {SECTION_GROUPS.map((group) => {
+        const sections = APPLICATION_SECTIONS.filter((s) => s.group === group.id);
+        if (sections.length === 0) return null;
+        return (
+          <div key={group.id} className="mb-6 last:mb-0">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+              {group.title}
+            </p>
+            <ol className="space-y-1.5">
+              {sections.map((section) => {
+                const current = section.id === activeId;
+                return (
+                  <li key={section.id}>
+                    <a
+                      href={`#${section.id}`}
+                      aria-current={current ? 'true' : undefined}
+                      className={`block rounded-md px-2 py-1 text-sm transition-colors ${
+                        current
+                          ? 'font-medium text-champagne-ink underline decoration-champagne decoration-2 underline-offset-4'
+                          : 'text-gray-600 hover:text-ink'
+                      }`}
+                    >
+                      {section.title}
+                      {/* The group heading already says the whole run is
+                          optional, so repeating it on each line is noise. Only
+                          the one optional section outside that run is marked. */}
+                      {!section.required && section.group !== 'application' && (
+                        <span className="ml-1.5 text-xs text-gray-400">optional</span>
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        );
+      })}
     </div>
   </nav>
 );
@@ -1002,8 +1011,39 @@ export default function RentalApplicationForm({
       <FormProvider {...form}>
         <Form {...form}>
           <div className="space-y-6">
-            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+            {/* A plain div, not a <form>: only the element around the submit
+                button needs to be one, and wrapping the required section made
+                Enter in a name field fire a submit of a document the applicant
+                had barely started. */}
+            <div>
               <ApplicantSection control={control} ro={readOnly} />
+            </div>
+
+            {/* Documents come SECOND, immediately after the part we require and
+                before the long optional run. That order is the offer: tell us who
+                you are, hand us what you already have, and only fill in the rest
+                if you want to. Outside a <form> because a file input feeds the
+                watcher that drives autosave. */}
+            <DocumentsPanel
+              applicationId={applicationId}
+              canUpload={documentUploads ?? !readOnly}
+              admin={adminDocuments}
+            />
+
+            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+              {!readOnly && (
+                <div className="rounded-xl border border-champagne/40 bg-bone p-5 print:hidden">
+                  <h2 className="font-display text-lg font-semibold text-ink">
+                    The rest is optional
+                  </h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-gray-700">
+                    If you have already completed an application on another form, upload it
+                    above and leave this blank — nothing below is required. Filling it in gives
+                    a fuller picture, and you can do as much or as little of it as you like.
+                  </p>
+                </div>
+              )}
+
               <ResidenceSection control={control} ro={readOnly} />
               <PreviousResidenceSection
                 control={control}
@@ -1023,15 +1063,6 @@ export default function RentalApplicationForm({
               <TenancySection control={control} ro={readOnly} />
               <ConsentsSection control={control} ro={readOnly} />
             </form>
-
-            {/* Outside the <form> on purpose: a file input inside it feeds the
-                watcher that drives autosave, and Enter in the label field would
-                submit the application. */}
-            <DocumentsPanel
-              applicationId={applicationId}
-              canUpload={documentUploads ?? !readOnly}
-              admin={adminDocuments}
-            />
 
             {!readOnly && (
               <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
@@ -1082,7 +1113,8 @@ export default function RentalApplicationForm({
                   </p>
 
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Once submitted, this application can no longer be edited.
+                    Once submitted, your answers can no longer be edited — but you can still
+                    add documents at any time.
                   </p>
                 </div>
               </form>
