@@ -892,6 +892,26 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
 
 ## Gotchas
 
+- **Adding an npm dependency means rebuilding the dev container.**
+  [docker-compose.yml](docker-compose.yml) mounts `- /app/node_modules` as an
+  anonymous volume, which deliberately MASKS the host's `node_modules` so a macOS
+  install cannot leak into the Linux container — and therefore installing on the
+  host is invisible inside it. The symptom is Vite's
+  `Failed to resolve import "<pkg>"` from a file that is plainly correct, with a
+  `/app/...` path in the trace. `docker compose up --build` (the Dockerfile runs
+  `npm install` at build time) or `docker compose exec app npm install`.
+- **A migration version must be UNIQUE, or `supabase db push` is permanently
+  blocked.** Two files shared `20240320000000` until 2026-09-13. The remote
+  history records one row per version, so the second file could never pair with
+  one, showed as pending forever, and — its version sorting before the last
+  applied migration — made every push demand `--include-all`. Renaming it to a
+  free version and repairing it fixed it. `ls supabase/migrations | sed 's/_.*//'
+  | sort | uniq -d` should print nothing.
+- **A migration applied by hand in the SQL editor still has to be recorded.**
+  `supabase migration repair --status applied <version>` writes the history row
+  without re-running the file; otherwise the CLI keeps offering to apply it and
+  the same "inserted before the last migration" refusal comes back.
+
 - `npm run build` runs `typecheck` first, and that is load-bearing: the old
   `vite build` skipped `tsc` entirely, which masked a real bug (the CRM contact
   CSV exported a blank "Sources" column because it read `contact.sources` after
@@ -936,13 +956,15 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `as unknown as SupabaseClient<Database>`; keep it that way. Letting either
   regress turns the whole data layer back into `any`, which is how the CRM CSV
   shipped a blank "Sources" column after `contact.sources` became `source`.
-- **`/complete-profile` is broken and the types now say so.**
-  [ProfileCompletion.tsx](src/components/ProfileCompletion.tsx) reads and writes
-  a `profiles` table that does not exist; the schema has `contacts` plus the
-  related `contact_*` tables instead. `Auth.tsx` navigates here after signup, so
-  it is a live path. It compiles only through a deliberately loud
-  `untypedSupabase` escape hatch in that file. Fixing it means deciding where
-  the data belongs, which is a data-model call rather than a typo.
+- **`/complete-profile`: the `profiles` table DOES exist.** This entry used to
+  say it did not, and that was wrong — checked against the live project on
+  2026-09-13, where `public.profiles` exists (empty) with exactly the columns
+  [ProfileCompletion.tsx](src/components/ProfileCompletion.tsx) writes, and the
+  regenerated `types.ts` now describes it. So the `untypedSupabase` escape hatch
+  in that file is removable and the page may simply work; what has never been
+  decided is whether a person belongs in `profiles` or in `contacts` with the
+  `contact_*` tables, which is the data-model call. `Auth.tsx` navigates here
+  after signup, so it is a live path either way.
 - **`@supabase/supabase-js` is pinned to `~2.57.4`, and that ceiling is
   load-bearing.** From roughly 2.11x of `@supabase/realtime-js` onward the `ws`
   fallback was dropped in favour of a native `WebSocket`, which Node 20 does not

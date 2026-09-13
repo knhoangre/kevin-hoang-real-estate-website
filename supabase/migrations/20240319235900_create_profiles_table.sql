@@ -1,3 +1,15 @@
+-- RENAMED from 20240320000000_create_profiles_table.sql on 2026-09-13.
+--
+-- It shared the version 20240320000000 with contact_tables_rls.sql, and the
+-- remote history table records ONE row per version — so this file could never be
+-- paired with a remote row, showed as pending forever, and because its version
+-- sorts before the last applied migration every `supabase db push` refused with
+-- "Found local migration files to be inserted before the last migration on
+-- remote database. Rerun with --include-all". A migration version has to be
+-- unique or the CLI is permanently blocked. The table itself already exists on
+-- the project, so this was marked applied with `supabase migration repair`
+-- rather than re-run.
+
 -- Create profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) PRIMARY KEY,
