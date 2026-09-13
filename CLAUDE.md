@@ -648,6 +648,33 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   over a missing pay stub is a worse outcome than an application you can ask
   about.
 
+### Transactional email
+
+Two senders, and only one of them is ours today.
+
+- **Our own mail goes through Resend** from `Kevin Hoang <contact@kevinhoang.co>`
+  — the four edge functions (`submit-contact`, the two sign-in functions, and
+  `rental-application-invite`'s `send` action). `RESEND_API_KEY` is a project
+  secret; each function no-ops with a readable error without it.
+- **Supabase Auth's own mail** — confirm signup, password reset, email change —
+  does NOT go through Resend by default. It ships from
+  `noreply@mail.app.supabase.io`, a shared domain unrelated to this site, with an
+  unstyled one-line body. It reads as phishing next to the invite email that
+  brought the person here, and that shared sender is rate-limited to a handful of
+  messages an hour, so it is also a signup failure waiting for a busy day.
+- **The templates live in [supabase/templates/](supabase/templates/)** and are
+  wired up in `supabase/config.toml`, so they are reviewable and versioned rather
+  than only existing in a dashboard field — the same argument as creating the
+  `rental-documents` bucket in a migration. `supabase config push` applies them to
+  the linked project. They use Supabase's own `{{ .ConfirmationURL }}` /
+  `{{ .Email }}` / `{{ .NewEmail }}` variables, not ours.
+- **The template is the smaller half.** What makes an email look legitimate is the
+  sender matching the domain the link points at. Custom SMTP pointed at Resend
+  with `contact@kevinhoang.co` is the fix — that address is already verified
+  there, so SPF and DKIM align — and it also lifts the rate limit. It is
+  configured under Authentication → SMTP Settings, host `smtp.resend.com`, user
+  `resend`, password the same API key. Do not put the API key in `config.toml`.
+
 ### Videos (`/videos`)
 
 The Instagram reels, watchable in a modal without leaving the site.

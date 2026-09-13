@@ -1,1 +1,29 @@
 project_id = "zvipgykolpoxukyjgffx"
+
+# Auth emails.
+#
+# The default Supabase templates are one line of unstyled text over a "Confirm
+# your mail" link, sent from noreply@mail.app.supabase.io — a shared domain with
+# no relationship to this site. That reads as phishing, and the shared sender is
+# also rate-limited to a handful of messages an hour.
+#
+# The templates live here rather than only in the dashboard so they are
+# reviewable and versioned, the same argument as the rental-documents bucket
+# being created in a migration. `supabase config push` applies them to the linked
+# project; they also apply to `supabase start` locally.
+#
+# THE TEMPLATE IS THE SMALLER HALF OF THE FIX. Deliverability comes from the
+# sender: point [auth.email.smtp] at Resend with contact@kevinhoang.co, which is
+# the address the site already sends from and is already verified there, so SPF
+# and DKIM align with the domain the link points at. See the note in CLAUDE.md.
+[auth.email.template.confirmation]
+subject = "Confirm your email — Kevin Hoang"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Reset your password — Kevin Hoang"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email address — Kevin Hoang"
+content_path = "./supabase/templates/email_change.html"
