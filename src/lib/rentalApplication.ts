@@ -700,10 +700,26 @@ export const getApplication = async (id: string): Promise<RentalApplicationRecor
 };
 
 /** The signed-in user's own applications. RLS scopes this; no filter needed. */
+/**
+ * The caller's OWN applications.
+ *
+ * The user filter is not redundant with RLS, and leaving it out was a real bug.
+ * The applicant policy is `applicant_user_id = auth.uid()`, but the admin policy
+ * beside it is FOR ALL over every row — so for an admin this returned every
+ * application on the site, and /rentals, the page whose whole subject is "yours",
+ * listed other people's. RLS is a ceiling on what a query MAY read; it is not a
+ * statement of what a query MEANS.
+ */
 export const listMyApplications = async (): Promise<RentalApplicationRecord[]> => {
+  const { data: auth } = await supabase.auth.getUser();
+  const uid = auth.user?.id;
+  // No session, no applications. Returning everything RLS allows would put us
+  // straight back where this started.
+  if (!uid) return [];
   const { data, error } = await supabase
     .from('rental_applications')
     .select('*')
+    .eq('applicant_user_id', uid)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map(toRecord);
@@ -921,11 +937,19 @@ export const formatProperty = (p: PropertyParts, { withUnit = true } = {}): stri
  * The tenancy section's address, for display.
  *
  * `tenancy` keeps the address and the unit as SEPARATE fields, so anything
- * showing both has to join them — and the invite seeding used to put the whole
- * formatted property (unit included) into `propertyAddress`, which made that
- * join read "42 Newman St · Unit 3, Malden, MA 02148 · Unit 3". Seeding now
- * passes `withUnit: false`, and this skips the unit when the address already
- * names it, so the rows written before that fix still read correctly.
+ * showing both has to join them — and the unit belongs against the STREET, not
+ * at the end of the line. Appending it produced two spellings of one address in
+ * the same admin list, because what sits in `propertyAddress` depends on when
+ * the row was seeded: the old seeding wrote the whole formatted property, unit
+ * included, giving "42 Newman St · Unit 3, Malden, MA 02148", while the current
+ * one writes the address without it and the unit was appended after the ZIP —
+ * "42 Newman St, Malden, MA 02148 · Unit 3". Same unit, two renderings, and an
+ * address that renders two ways is an address no list can group.
+ *
+ * So the unit is inserted after the first comma-separated part, which is the
+ * street line in every shape this field has ever held, and skipped entirely when
+ * the address already names it. Rows written before either fix read the same as
+ * rows written today.
  */
 export const formatTenancyAddress = (t: { propertyAddress?: string; unit?: string }): string => {
   const address = (t.propertyAddress ?? '').trim();
@@ -933,7 +957,12 @@ export const formatTenancyAddress = (t: { propertyAddress?: string; unit?: strin
   if (!unit) return address;
   // "unit 3" as a whole word, so "3" does not match the 3 in a street number.
   const named = new RegExp(`\\bunit\\s*${unit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-  return named.test(address) ? address : [address, `Unit ${unit}`].filter(Boolean).join(' · ');
+  if (named.test(address)) return address;
+  if (!address) return `Unit ${unit}`;
+  const [street, ...rest] = address.split(',');
+  return [`${street.trim()} · Unit ${unit}`, ...rest.map((part) => part.trim())]
+    .filter(Boolean)
+    .join(', ');
 };
 
 /**
@@ -997,11 +1026,41 @@ export const inviteState = (
  *
  * `rental_application` is here because people routinely arrive having already
  * filled in a form on somebody else's paperwork, and re-typing it is a worse
- * experience than reading their PDF. `credit_report` is an applicant-supplied
- * free report, which is useful context and is NOT screening — screening is
- * ordered through a bureau, which is also why nothing here asks for an SSN.
+ * experience than reading their PDF.
+ *
+ * `credit_report` is the one REQUIRED kind, and it is the applicant pulling
+ * their OWN report rather than us running a screening: that is why nothing here
+ * asks for a Social Security number. A bureau-ordered screening takes the SSN
+ * directly and is a separate transaction; an applicant-supplied report is free
+ * to them, shows all the same tradelines, and keeps the number off this site
+ * entirely. `steps` carries the click path because "upload your credit report"
+ * is the instruction people come back with questions about.
+ *
+ * The union below mirrors the `kind` CHECK constraint in
+ * 20260912100000_rental_application_documents.sql, which is the real closed set
+ * — an id that is not in both is an insert the database refuses.
  */
-export const DOCUMENT_KINDS = [
+export type DocumentKind =
+  | 'photo_id'
+  | 'pay_stub'
+  | 'tax_return'
+  | 'credit_report'
+  | 'financial'
+  | 'reference_letter'
+  | 'rental_application'
+  | 'other';
+
+export interface DocumentKindDef {
+  id: DocumentKind;
+  title: string;
+  blurb: string;
+  /** Blocks submit while nothing is attached under it. Only `credit_report`. */
+  required?: boolean;
+  /** A click path rendered under the blurb, for a document people ask about. */
+  steps?: { title: string; items: string[] };
+}
+
+export const DOCUMENT_KINDS: DocumentKindDef[] = [
   {
     id: 'photo_id',
     title: 'Photo ID',
@@ -1020,7 +1079,21 @@ export const DOCUMENT_KINDS = [
   {
     id: 'credit_report',
     title: 'Credit report',
-    blurb: 'Optional. A free report from annualcreditreport.com is fine.',
+    required: true,
+    blurb:
+      'Required. Please include all three bureaus — Experian, Equifax and TransUnion — as each one holds different accounts. You are entitled to a free report from all three at annualcreditreport.com, the site authorised under federal law, and pulling your own report does not affect your score.',
+    steps: {
+      title: 'To get the credit report',
+      items: [
+        'Sign into experian.com',
+        'Go to the homepage',
+        'Hover over “Credit” on the top header',
+        'A dropdown should appear — click on “Credit Reports”',
+        'Scroll down until you reach the “Quick Actions” section',
+        'Click on the “Print your report” button',
+        'Print (Ctrl + P, or Command + P on a Mac) and save as PDF',
+      ],
+    },
   },
   {
     id: 'financial',
@@ -1042,9 +1115,12 @@ export const DOCUMENT_KINDS = [
     title: 'Anything else',
     blurb: 'Tell us what it is and attach it.',
   },
-] as const;
+];
 
-export type DocumentKind = (typeof DOCUMENT_KINDS)[number]['id'];
+/** The kinds that block a submit while nothing is attached under them. */
+export const REQUIRED_DOCUMENT_KINDS: DocumentKind[] = DOCUMENT_KINDS.filter(
+  (k) => k.required
+).map((k) => k.id);
 
 /** The kinds where the applicant's own label is worth asking for. */
 export const LABELLED_KINDS: DocumentKind[] = ['other', 'rental_application'];

@@ -15,14 +15,16 @@
  * is exactly one rendering of an application on the site and no chance of the
  * admin's copy quietly omitting a field.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Check, Loader2 } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import {
   APPLICATION_SECTIONS,
+  DOCUMENT_KINDS,
+  REQUIRED_DOCUMENT_KINDS,
   SECTION_GROUPS,
   emptyApplication,
   rentalApplicationSchema,
@@ -30,6 +32,7 @@ import {
   submitApplication,
   submissionSchema,
   type RentalApplicationData,
+  type RentalDocumentRecord,
 } from '@/lib/rentalApplication';
 import {
   AddressFields,
@@ -868,6 +871,7 @@ export default function RentalApplicationForm({
   documentUploads,
   adminDocuments = false,
   alreadySent = false,
+  showSubmit,
   onSubmitted,
 }: {
   applicationId: string;
@@ -883,6 +887,14 @@ export default function RentalApplicationForm({
   documentUploads?: boolean;
   /** Admin view of the documents: per-file notes and replace requests. */
   adminDocuments?: boolean;
+  /**
+   * Whether the submit button is rendered. Separate from `readOnly` because the
+   * admin correcting an application is editing somebody else's document: the
+   * answers autosave, but submitting is the applicant's act — it re-stamps the
+   * consent timestamps, which are the record that a named person authorised a
+   * named version. Defaults to following `readOnly`.
+   */
+  showSubmit?: boolean;
   /**
    * This application has been sent once already and is being edited inside the
    * window before review starts. Changes the action from "submit" to "send the
@@ -906,6 +918,24 @@ export default function RentalApplicationForm({
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
   const [activeSection, setActiveSection] = useState(APPLICATION_SECTIONS[0].id);
+  // Null until DocumentsPanel has loaded. Distinct from an empty array, so a
+  // submit pressed before the list arrives is not refused for a file that is
+  // in fact attached.
+  const [documents, setDocuments] = useState<RentalDocumentRecord[] | null>(null);
+
+  /**
+   * The required kinds with nothing attached. Documents are a separate table
+   * from the answers and deliberately outside `submissionSchema` — a file is not
+   * a form value, and validating it there would put the resolver in an error
+   * state over something no field can fix. So the check runs once, here, at the
+   * same moment the submit-only rules run inside submitApplication.
+   */
+  const missingDocuments = useMemo(() => {
+    if (documents === null) return [];
+    return REQUIRED_DOCUMENT_KINDS.filter(
+      (kind) => !documents.some((doc) => doc.kind === kind)
+    ).map((kind) => DOCUMENT_KINDS.find((k) => k.id === kind)?.title ?? kind);
+  }, [documents]);
 
   // A ref, not state: setState is async, so a fast double click (or click plus
   // Enter) can have both handlers read submitting === false and each fire.
@@ -967,6 +997,23 @@ export default function RentalApplicationForm({
   /* ---- Submit ------------------------------------------------------ */
   const onSubmit = async (values: RentalApplicationData) => {
     if (inFlight.current) return;
+
+    // Checked before anything is sent, so a refusal costs nothing. Sending the
+    // reader to the section rather than just naming it: the panel is above the
+    // whole optional run, which is a long way back up from the submit button.
+    if (missingDocuments.length > 0) {
+      toast({
+        variant: 'destructive',
+        title:
+          missingDocuments.length === 1
+            ? `${missingDocuments[0]} is still needed`
+            : 'Some documents are still needed',
+        description: `Please attach ${missingDocuments.join(' and ')} in the Documents section above. The steps for getting a credit report are there.`,
+      });
+      document.getElementById('documents')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return;
+    }
+
     inFlight.current = true;
     setSubmitting(true);
     try {
@@ -1037,6 +1084,7 @@ export default function RentalApplicationForm({
               applicationId={applicationId}
               canUpload={documentUploads ?? !readOnly}
               admin={adminDocuments}
+              onDocsChange={setDocuments}
             />
 
             <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
@@ -1049,6 +1097,7 @@ export default function RentalApplicationForm({
                     If you have already completed an application on another form, upload it
                     above and leave this blank — nothing below is required. Filling it in gives
                     a fuller picture, and you can do as much or as little of it as you like.
+                    The credit report above is the one document we do need either way.
                   </p>
                 </div>
               )}
@@ -1073,7 +1122,7 @@ export default function RentalApplicationForm({
               <ConsentsSection control={control} ro={readOnly} />
             </form>
 
-            {!readOnly && (
+            {(showSubmit ?? !readOnly) && (
               <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
                 <div className="print:hidden">
                   {/* The submit treatment from /contact, so the application's
@@ -1087,6 +1136,25 @@ export default function RentalApplicationForm({
                       homepage of two redesigns ago. `text-ink-deep` on champagne
                       is 8.31:1; champagne as TEXT on a light surface would fail
                       WCAG, which is why the pill is filled and not outlined. */}
+                  {/* Named above the button rather than only on the refusal:
+                      pressing submit and being sent back up the page is a worse
+                      way to learn this than reading it first. The button stays
+                      enabled — a disabled control with no explanation is the
+                      thing people file a support message about. */}
+                  {missingDocuments.length > 0 && (
+                    <p className="mb-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                      <span>
+                        Still needed before you can send this:{' '}
+                        <strong className="font-semibold">{missingDocuments.join(', ')}</strong>.{' '}
+                        <a href="#documents" className="underline hover:text-amber-950">
+                          Go to Documents
+                        </a>
+                        .
+                      </span>
+                    </p>
+                  )}
+
                   <button
                     type="submit"
                     disabled={submitting}

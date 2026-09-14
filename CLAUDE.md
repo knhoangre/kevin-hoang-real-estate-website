@@ -505,7 +505,7 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `submitApplication`. Validating those on every keystroke puts a half-filled
   form permanently in an error state, and autosave must never refuse to save.
 - **The PDF is a SECOND rendering of an application, and that is a knowing
-  exception.** `window.print()` can save the page as a PDF and still does — but
+  exception.** `window.print()` can save the page as a PDF and Cmd-P still does — but
   JavaScript cannot reach those bytes, so there is nothing to append the uploaded
   documents to, and a merged file is the thing an owner actually gets sent. So
   [applicationPdf.ts](src/lib/applicationPdf.ts) lays the document out again with
@@ -532,6 +532,32 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   the print rules in [index.css](src/index.css) style **disabled** inputs: on
   paper the document is a page of them, and left alone they print as grey text in
   grey boxes.
+  - **The admin can also EDIT it, behind an explicit "Edit answers" toggle**, and
+    it is the same form again rather than an admin-only editor that would have to
+    be kept in step with it. The database always permitted this —
+    `guard_submitted_rental_application` returns early for `public.is_admin()`, so
+    the freeze at submit was never the admin's — but the form opens read-only, so
+    turning it on is a deliberate act and a stray keypress while reading somebody
+    else's submitted application cannot become a silent edit. `showSubmit` is a
+    prop separate from `readOnly` for this: the admin's edits autosave, and there
+    is no submit button, because submitting re-stamps the consent timestamps and
+    those are the record that a named person authorised a named version. Leaving
+    the application re-reads the row, since autosave has already made the copy in
+    state stale.
+- **There is one Download PDF button and no Print button beside it.** The
+  browser's own dialog prints the page on screen, which can never include the
+  attachments, so the two buttons produced two different PDFs of the same
+  application — a choice nobody should have to make. Cmd-P still prints the page,
+  which is why index.css keeps styling the disabled inputs for paper.
+- **`/rentals` is the applicant's own applications and the admin does not have
+  it.** `listMyApplications` filters on `applicant_user_id`, and that filter is
+  NOT redundant with RLS: the applicant policy is scoped to `auth.uid()`, but the
+  admin policy beside it is FOR ALL over every row, so for an admin the unfiltered
+  query returned every application on the site and the page whose subject is
+  "yours" listed other people's. RLS is a ceiling on what a query MAY read, not a
+  statement of what it MEANS. The profile menu hides the entry for an admin and
+  the page redirects them to `/admin/applications`, so the two copies of the same
+  rows cannot be confused — only one of them can correct an application.
 - **`signUp` takes a `redirectTo`, and `/apply` passes its own URL.** Confirming
   an email address lands wherever `emailRedirectTo` says, and `AuthContext` hard-
   coded `window.location.origin` — so somebody who signed up from `/apply/<token>`
@@ -583,14 +609,19 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
 - **The CRM sync can never fail an applicant's save.** The trigger is AFTER, and
   the upsert is wrapped in an exception block that raises a WARNING. Someone
   filling in a form must not be blocked by a duplicate-key race on our side.
-- **`tenancy` keeps the address and the unit apart, so anything showing both
-  joins them through `formatTenancyAddress()`.** Seeding put the whole formatted
-  property — unit included — into `tenancy.propertyAddress` while
-  `tenancy.unit` also held it, so `/rentals` rendered "42 Newman St · Unit 3,
-  Malden, MA 02148 · Unit 3". Seeding now passes `withUnit: false`, and the
-  formatter skips the unit when the address already names it, so rows written
-  before the fix still read correctly. The word-boundary check is why a unit of
-  "3" does not match the 3 in a street number.
+- **`tenancy` keeps the address and the unit apart, and `formatTenancyAddress()`
+  puts the unit against the STREET, not at the end of the line.** Appending it
+  produced two spellings of one address in the same admin list, because what sits
+  in `propertyAddress` depends on when the row was seeded: rows from before the
+  seeding fix hold the whole formatted property and read "42 Newman St · Unit 3,
+  Malden, MA 02148", while rows written since hold the address without the unit
+  and read "42 Newman St, Malden, MA 02148 · Unit 3". Same unit, two renderings,
+  and an address that renders two ways is an address no list can group. The unit
+  now goes after the first comma-separated part — the street line in every shape
+  this field has held — so old and new rows read identically without rewriting
+  any of them. It also skips the unit entirely when the address already names it
+  — seeding passes `withUnit: false` for that reason — and the word-boundary
+  check is why a unit of "3" does not match the 3 in a street number.
 - **The property is five fields, and `formatProperty()` is the only thing that
   turns them into a line.** `property_address` was one free-text field, which made
   it the one part of an invite that could not be reused — "12 Elm St, Needham MA"
@@ -676,10 +707,30 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   why `inviteeEmail` is part of the `offer` the edge function returns; it is the
   address that person was already mailed at, and it leaves only for a token that
   resolved.
-- **No document is required to submit.** `submissionSchema` is untouched: a
-  person applying entirely by PDF has no form to submit, and a blocked submit
-  over a missing pay stub is a worse outcome than an application you can ask
-  about.
+- **The credit report is the ONE required document, and the requirement lives in
+  the component, not in `submissionSchema`.** Everything else stays optional on
+  the original reasoning — a blocked submit over a missing pay stub is a worse
+  outcome than an application you can ask about, and a person applying entirely
+  by PDF has no form to submit at all, so no document requirement can reach
+  them. The credit report is different because it is the one thing no other
+  agency's paperwork carries across. `REQUIRED_DOCUMENT_KINDS` is derived from
+  the `required` flag on `DOCUMENT_KINDS`, `DocumentsPanel` reports its list up
+  through `onDocsChange`, and `RentalApplicationForm` refuses the submit and
+  scrolls to the section. It is deliberately NOT in `submissionSchema`: a file is
+  not a form value, so validating it there would put react-hook-form's resolver
+  in an error state over something no field on the page can clear. The check runs
+  once, at submit, next to where the submit-only consent rules run.
+- **`DOCUMENT_KINDS` carries the credit-report instructions as `steps`.** "Upload
+  your credit report" is the line applicants come back with questions about, so
+  the Experian click path renders open on the page — not behind an accordion,
+  which would hide the answer behind the step somebody is stuck on. The copy
+  names all three bureaus because they hold different accounts, and points at
+  annualcreditreport.com, which is the federally authorised source; it is the
+  applicant pulling their OWN report, which is why this still needs no SSN.
+- **`DOCUMENT_KINDS` is a plain annotated array, not `as const`.** The `id` union
+  is declared beside it and mirrors the `kind` CHECK constraint in the migration,
+  which is the real closed set. Deriving the union from the literal made the
+  optional `required`/`steps` fields unreadable on the union of entry types.
 
 ### Transactional email
 

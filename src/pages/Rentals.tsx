@@ -18,7 +18,7 @@
  * place that decides, mirroring the database trigger.
  */
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, FileText, Loader2, XCircle } from 'lucide-react';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,7 +50,7 @@ const Card = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function Rentals() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const [params, setParams] = useSearchParams();
   const openId = params.get('id');
 
@@ -104,6 +104,17 @@ export default function Rentals() {
   }, [authLoading, user, load]);
 
   const body = () => {
+    /* The admin's copy of this page is /admin/applications, which lists every
+       application and can correct one; this page is the applicant's own. It
+       used to show the admin everyone's rows, because RLS grants them every row
+       and the query had no user filter — see listMyApplications. The filter is
+       the fix; this is so the door the navbar no longer opens is also shut when
+       the URL is typed or bookmarked. Not rendered at build time, where nobody
+       is signed in and isAdmin is false. */
+    if (!authLoading && isAdmin) {
+      return <Navigate to="/admin/applications" replace />;
+    }
+
     if (authLoading) {
       return (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -179,14 +190,11 @@ export default function Rentals() {
             </button>
             <div className="flex items-center gap-3">
               <StatusBadge status={record.status} />
+              {/* No Print button beside it: the browser's dialog prints the
+                  page on screen and so can never include the attachments, and
+                  one application should have one downloadable form. Cmd-P still
+                  works, and index.css still styles the disabled inputs for it. */}
               <DownloadPdfButton record={record} />
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne hover:text-champagne-ink"
-              >
-                Print
-              </button>
               {/* Withdrawing is how somebody stops their own application, and it
                   is deliberately not a return to draft — an application that
                   quietly left the admin's list would leave them waiting on a

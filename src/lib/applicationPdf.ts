@@ -2,7 +2,7 @@
  * One PDF: the application, then everything the applicant uploaded.
  *
  * WHY pdf-lib AND NOT window.print(). The browser's print dialog can save a PDF
- * of the page, and that is still what the Print button does — but JavaScript
+ * of the page, and Cmd-P still does exactly that — but JavaScript
  * cannot get those bytes, so there is nothing to append the attachments to. A
  * merged file needs the document built in code.
  *

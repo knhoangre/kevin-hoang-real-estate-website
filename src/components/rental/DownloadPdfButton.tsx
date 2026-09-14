@@ -1,10 +1,12 @@
 /**
  * One file: the application, then every document the applicant uploaded.
  *
- * Separate from the Print button, which stays. Print is the browser's own dialog
- * over the page that is already on screen — fast, and what you want for a paper
- * copy — but JavaScript cannot reach those bytes, so it can never include the
- * attachments. This is the version to send to an owner.
+ * This is the ONLY button, and it replaced a Print one that sat beside it. The
+ * browser's own dialog prints the page already on screen, and JavaScript cannot
+ * reach those bytes — so that copy could never include the attachments, and two
+ * buttons producing two different PDFs of the same application is a choice
+ * nobody should have to make. Cmd-P still prints the page for anyone who wants
+ * it, which is why index.css still styles the disabled inputs for paper.
  *
  * The documents are loaded here rather than passed in: DocumentsPanel keeps its
  * own list for display, and reading it again costs one query against an index

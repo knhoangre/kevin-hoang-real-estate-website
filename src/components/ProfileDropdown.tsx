@@ -111,14 +111,20 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
         </DropdownMenuItem>
 
         {/*
-          Every signed-in user, not just admins: an applicant's account exists
-          precisely so they can come back to this. It is how they reach a draft
-          after closing the tab and their submitted copy afterwards.
+          Applicants only. /rentals is one person's own applications — the way
+          they reach a draft after closing the tab, and their submitted copy
+          afterwards. The admin has no application of their own to read there,
+          and every application on the site is in /admin/applications, which is
+          where they can also correct one. Two pages listing the same rows with
+          different powers is how an admin ends up editing from the copy that
+          cannot.
         */}
-        <DropdownMenuItem onClick={handleRentalsClick} className={ITEM}>
-          <FileText className="mr-2.5 h-4 w-4" aria-hidden />
-          <span>Rentals</span>
-        </DropdownMenuItem>
+        {!isAdmin && (
+          <DropdownMenuItem onClick={handleRentalsClick} className={ITEM}>
+            <FileText className="mr-2.5 h-4 w-4" aria-hidden />
+            <span>Rentals</span>
+          </DropdownMenuItem>
+        )}
 
         {isAdmin && (
           <>

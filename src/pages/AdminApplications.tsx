@@ -13,7 +13,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, Plus } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, Pencil, Plus } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
@@ -395,6 +395,17 @@ export default function AdminApplications() {
   const [apps, setApps] = useState<RentalApplicationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
+  /**
+   * Whether the open application is editable by the admin.
+   *
+   * Off by default, and that is the point: this is somebody else's document,
+   * and a form that is live the moment it opens turns a stray keypress while
+   * reading into a silent edit of a submitted application. The database already
+   * permits it — `guard_submitted_rental_application` returns early for
+   * `public.is_admin()`, so the freeze at submit was never the admin's — this is
+   * the deliberate act of turning it on.
+   */
+  const [editing, setEditing] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -457,6 +468,16 @@ export default function AdminApplications() {
     }
   };
 
+  /** Back to the list: drop out of edit mode and re-read what was written. */
+  const closeApplication = () => {
+    setEditing(false);
+    setParams({}, { replace: true });
+    // The form autosaves straight to the database, so the row in `apps` is
+    // stale the moment anything was typed. Without this the list — and the next
+    // application opened — would render the copy read before the edit.
+    void load();
+  };
+
   /* ---- One application --------------------------------------------- */
   if (openId) {
     const record = apps.find((r) => r.id === openId);
@@ -473,24 +494,42 @@ export default function AdminApplications() {
           <>
             <button
               type="button"
-              onClick={() => setParams({}, { replace: true })}
+              onClick={closeApplication}
               className={adminActionClass('ghost')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
               All applications
             </button>
-            {/* The merged file is the one to send an owner, so it takes the
-                primary treatment and Print steps back to secondary. */}
+            {record && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (editing) void load();
+                  setEditing((v) => !v);
+                }}
+                className={adminActionClass(editing ? 'primary' : 'ghost')}
+              >
+                {editing ? (
+                  <>
+                    <Check className="mr-2 h-4 w-4" aria-hidden />
+                    Done editing
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="mr-2 h-4 w-4" aria-hidden />
+                    Edit answers
+                  </>
+                )}
+              </button>
+            )}
+            {/* There is no Print button beside this. The browser's own dialog
+                prints the page that is on screen, which can never include the
+                attachments — two buttons producing two different PDFs of the
+                same application is a choice nobody wants to have to make.
+                Cmd-P still works for anyone who wants the page itself. */}
             {record && (
               <DownloadPdfButton record={record} className={adminActionClass('primary')} />
             )}
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className={adminActionClass('ghost')}
-            >
-              Print
-            </button>
           </>
         }
       >
@@ -518,8 +557,14 @@ export default function AdminApplications() {
                       : `Started ${shortDate(record.createdAt)}`}
                   </p>
                 </div>
+                {/* `block` on the label: Radix renders a <label>, which is
+                    inline, and a vertical margin on an inline element does
+                    nothing — so space-y-1.5 could not separate them and the
+                    select sat flush against the word "Status". */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="app-status">Status</Label>
+                  <Label htmlFor="app-status" className="block">
+                    Status
+                  </Label>
                   <select
                     id="app-status"
                     value={record.status}
@@ -536,13 +581,26 @@ export default function AdminApplications() {
               </div>
             </AdminCard>
 
-            {/* The applicant's own form, disabled. One rendering of an
-                application on this site, so the admin copy cannot omit a
-                field the form collects. */}
+            {editing && (
+              <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 print:hidden">
+                <strong className="font-semibold">You are editing this application.</strong>{' '}
+                Changes save automatically, a couple of seconds after you stop typing, and the
+                applicant will see them. There is no submit button here — submitting re-stamps
+                the consent timestamps, and those are the record that a named person authorised
+                a named version, so only they can do it.
+              </div>
+            )}
+
+            {/* The applicant's own form. One rendering of an application on this
+                site, so the admin copy cannot omit a field the form collects —
+                which also means correcting a typo happens in the same document
+                the applicant filled in, not in a second admin-only editor that
+                would have to be kept in step with it. */}
             <RentalApplicationForm
               applicationId={record.id}
               initial={record.data}
-              readOnly
+              readOnly={!editing}
+              showSubmit={false}
               adminDocuments
             />
           </>

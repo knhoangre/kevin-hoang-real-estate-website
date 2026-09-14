@@ -26,6 +26,16 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Section } from '@/components/rental/fields';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -79,6 +89,7 @@ const DocumentRow = ({
 }) => {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [note, setNote] = useState(doc.adminNote ?? '');
 
   const open = async () => {
@@ -97,13 +108,23 @@ const DocumentRow = ({
     }
   };
 
+  /**
+   * Deleting is the one irreversible thing on this panel — the row goes AND the
+   * object goes with it, so a mis-click on a tax return costs the applicant a
+   * trip back to their bureau. This was `window.confirm`, which browsers style
+   * as an OS alert, suppress outright after a couple of dialogs from the same
+   * page, and which cannot say which file it means in the same voice as the
+   * page around it. A real dialog is also focus-trapped, so Escape cancels and
+   * Return does not land on the destructive action by accident.
+   */
   const remove = async () => {
     if (busy) return;
-    if (!window.confirm(`Remove ${doc.fileName}? This cannot be undone.`)) return;
+    setConfirming(false);
     setBusy(true);
     try {
       await deleteDocument(doc);
       onRemoved(doc.id);
+      toast({ title: 'File removed', description: doc.fileName });
     } catch (err) {
       console.error('Could not delete document:', err);
       toast({
@@ -156,7 +177,7 @@ const DocumentRow = ({
           {canRemove && (
             <button
               type="button"
-              onClick={remove}
+              onClick={() => setConfirming(true)}
               disabled={busy}
               aria-label={`Remove ${doc.fileName}`}
               className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-red-300 hover:text-red-700 disabled:opacity-60"
@@ -171,6 +192,31 @@ const DocumentRow = ({
           )}
         </div>
       </div>
+
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this file?</AlertDialogTitle>
+            {/* The filename and the size, because "are you sure?" over a list of
+                similarly named PDFs tells the reader nothing about which one
+                they are about to lose. */}
+            <AlertDialogDescription>
+              <span className="numeral font-semibold text-ink">{doc.fileName}</span> (
+              {formatBytes(doc.sizeBytes)}) will be deleted permanently. This cannot be
+              undone — the file would have to be uploaded again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={remove}
+              className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-600"
+            >
+              Remove file
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Amber, not champagne: this is a signal the applicant has to act on. */}
       {doc.needsReplacement && (
@@ -226,6 +272,8 @@ const KindBlock = ({
   kind,
   title,
   blurb,
+  required = false,
+  steps,
   docs,
   canUpload,
   admin,
@@ -237,6 +285,8 @@ const KindBlock = ({
   kind: DocumentKind;
   title: string;
   blurb: string;
+  required?: boolean;
+  steps?: { title: string; items: string[] };
   docs: RentalDocumentRecord[];
   canUpload: boolean;
   admin: boolean;
@@ -280,10 +330,45 @@ const KindBlock = ({
     }
   };
 
+  const missing = required && docs.length === 0;
+
   return (
     <div className="border-t border-gray-100 pt-5 first:border-0 first:pt-0">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">{title}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">
+        {title}
+        {/* Champagne as a filled MARK, never as text on a light surface: the
+            token is 2.33:1 on white and fails WCAG at every size. The same
+            reason the submit button is a filled pill and not an outlined one. */}
+        {required && (
+          <span className="ml-2 rounded-full bg-champagne px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-deep">
+            Required
+          </span>
+        )}
+      </h3>
       <p className="mt-1 text-sm leading-relaxed text-gray-600">{blurb}</p>
+
+      {/* The click path, open on the page rather than folded away: this is the
+          document people come back with questions about, and an accordion would
+          hide the answer behind exactly the step they are stuck on. */}
+      {steps && (
+        <div className="mt-3 rounded-lg border border-gray-200 bg-bone px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-600">
+            {steps.title}
+          </p>
+          <ol className="numeral mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-gray-700 marker:font-semibold marker:text-champagne-ink">
+            {steps.items.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {missing && canUpload && (
+        <p className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <span>Nothing attached yet. This one is needed before you can send the application.</span>
+        </p>
+      )}
 
       {docs.length > 0 && (
         <ul className="mt-3 space-y-2">
@@ -357,6 +442,7 @@ export default function DocumentsPanel({
   canUpload = true,
   admin = false,
   delay = 0,
+  onDocsChange,
 }: {
   applicationId: string;
   /** False renders the list read-only. Uploads stay open after submit by default. */
@@ -364,9 +450,25 @@ export default function DocumentsPanel({
   /** Admin view: the per-file note and replace-request controls. */
   admin?: boolean;
   delay?: number;
+  /**
+   * The current list, whenever it changes. The form above needs it to know
+   * whether the required kinds are attached — this panel owns the list, and
+   * lifting it into the form would mean every page mounting the panel also
+   * fetching and threading it.
+   */
+  onDocsChange?: (docs: RentalDocumentRecord[]) => void;
 }) {
   const [docs, setDocs] = useState<RentalDocumentRecord[] | null>(null);
   const [failed, setFailed] = useState(false);
+
+  // A ref, not a dependency: an unmemoised callback in the dependency array
+  // would re-run this on every parent render, and the parent re-renders on
+  // every keystroke of the form above.
+  const notify = useRef(onDocsChange);
+  notify.current = onDocsChange;
+  useEffect(() => {
+    if (docs) notify.current?.(docs);
+  }, [docs]);
 
   const load = useCallback(async () => {
     try {
@@ -436,6 +538,8 @@ export default function DocumentsPanel({
               kind={k.id}
               title={k.title}
               blurb={k.blurb}
+              required={k.required}
+              steps={k.steps}
               docs={byKind.get(k.id) ?? []}
               canUpload={canUpload}
               admin={admin}
