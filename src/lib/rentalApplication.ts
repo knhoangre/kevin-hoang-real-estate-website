@@ -781,6 +781,39 @@ export const submitApplication = async (
     })
     .eq('id', id);
   if (error) throw error;
+
+  // Awaited, but never allowed to fail the submit. The application is already
+  // saved at this point: raising here would tell somebody their submission had
+  // failed when it had not, and the worst case of a silent failure is that Kevin
+  // reads it in /admin/applications instead of being told. The function itself
+  // refuses anything that is not a submitted application the caller owns, and
+  // will not send twice inside ten minutes.
+  try {
+    await notifyAdminOfSubmission(id);
+  } catch (err) {
+    console.error('Could not send the submission notice:', err);
+  }
+};
+
+/**
+ * Email the admin that an application has been submitted.
+ *
+ * The recipient is fixed inside the edge function and nothing in this call can
+ * influence it — the only thing sent is the application's id, and every name,
+ * address and figure in the message is read back out of the database there. Same
+ * shape as `sendInvite`, which takes an invite id rather than an address for the
+ * same reason.
+ */
+const notifyAdminOfSubmission = async (applicationId: string): Promise<void> => {
+  const { error } = await supabase.functions.invoke('rental-application-submitted', {
+    body: {
+      applicationId,
+      // So a preview deployment links back to itself. The function checks it
+      // against *.kevinhoang.co and falls back to the canonical site.
+      origin: typeof window === 'undefined' ? undefined : window.location.origin,
+    },
+  });
+  if (error) throw error;
 };
 
 /**
@@ -1054,7 +1087,14 @@ export interface DocumentKindDef {
   id: DocumentKind;
   title: string;
   blurb: string;
-  /** Blocks submit while nothing is attached under it. Only `credit_report`. */
+  /**
+   * Blocks submit while nothing is attached under it. Only `credit_report`.
+   *
+   * Deliberately NOT surfaced as a "Required" badge or an alarm on the empty
+   * section. The page asks plainly and gives the steps; the one place the
+   * requirement is stated is next to the button it actually affects, which is
+   * where somebody is in a position to do something about it.
+   */
   required?: boolean;
   /** A click path rendered under the blurb, for a document people ask about. */
   steps?: { title: string; items: string[] };
@@ -1081,7 +1121,7 @@ export const DOCUMENT_KINDS: DocumentKindDef[] = [
     title: 'Credit report',
     required: true,
     blurb:
-      'Required. Please include all three bureaus — Experian, Equifax and TransUnion — as each one holds different accounts. You are entitled to a free report from all three at annualcreditreport.com, the site authorised under federal law, and pulling your own report does not affect your score.',
+      'A report from any one of the three bureaus — Experian, Equifax or TransUnion. You are entitled to a free report from each of them at annualcreditreport.com, the site authorised under federal law, and pulling your own report does not affect your score.',
     steps: {
       title: 'To get the credit report',
       items: [

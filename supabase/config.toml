@@ -27,3 +27,30 @@ content_path = "./supabase/templates/recovery.html"
 [auth.email.template.email_change]
 subject = "Confirm your new email address — Kevin Hoang"
 content_path = "./supabase/templates/email_change.html"
+
+# Security notifications.
+#
+# A DIFFERENT MECHANISM from the templates above, and it is worth knowing which
+# is which. Those five are transactional: something is pending and the email
+# carries the link that completes it. These are notices — the change has already
+# happened, and the email exists so that the person it happened TO finds out.
+# They are off by default, which means a stolen session could change a password
+# and leave no trace anywhere the account holder would see.
+#
+# So they carry no button. A security notice that asks the reader to click
+# something teaches exactly the habit that makes the next phishing email work;
+# the recovery route is the site address typed by hand, which they already know.
+#
+# Supabase supports the rest of this family too — email_changed,
+# mfa_factor_enrolled, mfa_factor_unenrolled, identity_linked,
+# identity_unlinked. These two are enabled because they are the two that matter
+# on a site where the account exists to reach a rental application.
+[auth.email.notification.password_changed]
+enabled = true
+subject = "Your password was changed — Kevin Hoang"
+content_path = "./supabase/templates/password_changed.html"
+
+[auth.email.notification.phone_changed]
+enabled = true
+subject = "Your phone number was changed — Kevin Hoang"
+content_path = "./supabase/templates/phone_changed.html"

@@ -18,7 +18,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, FormProvider, type UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle, ArrowRight, Check, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -1004,11 +1004,8 @@ export default function RentalApplicationForm({
     if (missingDocuments.length > 0) {
       toast({
         variant: 'destructive',
-        title:
-          missingDocuments.length === 1
-            ? `${missingDocuments[0]} is still needed`
-            : 'Some documents are still needed',
-        description: `Please attach ${missingDocuments.join(' and ')} in the Documents section above. The steps for getting a credit report are there.`,
+        title: 'One thing first',
+        description: `Please attach ${missingDocuments.join(' and ').toLowerCase()} in the Documents section above — the steps for getting one are there.`,
       });
       document.getElementById('documents')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       return;
@@ -1097,7 +1094,7 @@ export default function RentalApplicationForm({
                     If you have already completed an application on another form, upload it
                     above and leave this blank — nothing below is required. Filling it in gives
                     a fuller picture, and you can do as much or as little of it as you like.
-                    The credit report above is the one document we do need either way.
+                    A credit report is the one document to include either way.
                   </p>
                 </div>
               )}
@@ -1136,22 +1133,26 @@ export default function RentalApplicationForm({
                       homepage of two redesigns ago. `text-ink-deep` on champagne
                       is 8.31:1; champagne as TEXT on a light surface would fail
                       WCAG, which is why the pill is filled and not outlined. */}
-                  {/* Named above the button rather than only on the refusal:
-                      pressing submit and being sent back up the page is a worse
-                      way to learn this than reading it first. The button stays
-                      enabled — a disabled control with no explanation is the
-                      thing people file a support message about. */}
+                  {/* The ONE place the credit report is stated as a condition,
+                      and it sits against the button it affects. Named here
+                      rather than only on the refusal, because pressing submit
+                      and being sent back up the page is a worse way to learn it
+                      — and stated calmly rather than in the amber used for a
+                      file Kevin has asked to have replaced, which is a real
+                      problem with something already sent. The button stays
+                      enabled: a disabled control with no explanation is the
+                      thing people write in about. */}
                   {missingDocuments.length > 0 && (
-                    <p className="mb-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-                      <span>
-                        Still needed before you can send this:{' '}
-                        <strong className="font-semibold">{missingDocuments.join(', ')}</strong>.{' '}
-                        <a href="#documents" className="underline hover:text-amber-950">
-                          Go to Documents
-                        </a>
-                        .
-                      </span>
+                    <p className="mb-3 rounded-lg border border-champagne/40 bg-bone px-4 py-3 text-sm leading-relaxed text-gray-700">
+                      Before you send this, please attach{' '}
+                      <strong className="font-semibold text-ink">
+                        {missingDocuments.join(' and ').toLowerCase()}
+                      </strong>{' '}
+                      —{' '}
+                      <a href="#documents" className="font-medium text-champagne-ink underline">
+                        go to Documents
+                      </a>
+                      , where the steps for getting one are.
                     </p>
                   )}
 

@@ -272,7 +272,6 @@ const KindBlock = ({
   kind,
   title,
   blurb,
-  required = false,
   steps,
   docs,
   canUpload,
@@ -285,7 +284,6 @@ const KindBlock = ({
   kind: DocumentKind;
   title: string;
   blurb: string;
-  required?: boolean;
   steps?: { title: string; items: string[] };
   docs: RentalDocumentRecord[];
   canUpload: boolean;
@@ -330,21 +328,15 @@ const KindBlock = ({
     }
   };
 
-  const missing = required && docs.length === 0;
-
   return (
     <div className="border-t border-gray-100 pt-5 first:border-0 first:pt-0">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">
-        {title}
-        {/* Champagne as a filled MARK, never as text on a light surface: the
-            token is 2.33:1 on white and fails WCAG at every size. The same
-            reason the submit button is a filled pill and not an outlined one. */}
-        {required && (
-          <span className="ml-2 rounded-full bg-champagne px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ink-deep">
-            Required
-          </span>
-        )}
-      </h3>
+      {/* No "Required" badge and no alarm over an empty section, even for the
+          kind that blocks a submit. A form that labels its own sections as
+          demands reads as a gate rather than a request, and the applicant is
+          being asked for their financial records by somebody they have not met
+          yet. The blurb asks plainly, the steps say how, and the one place the
+          requirement is stated is next to the button it affects. */}
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">{title}</h3>
       <p className="mt-1 text-sm leading-relaxed text-gray-600">{blurb}</p>
 
       {/* The click path, open on the page rather than folded away: this is the
@@ -361,13 +353,6 @@ const KindBlock = ({
             ))}
           </ol>
         </div>
-      )}
-
-      {missing && canUpload && (
-        <p className="mt-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          <span>Nothing attached yet. This one is needed before you can send the application.</span>
-        </p>
       )}
 
       {docs.length > 0 && (
@@ -538,7 +523,6 @@ export default function DocumentsPanel({
               kind={k.id}
               title={k.title}
               blurb={k.blurb}
-              required={k.required}
               steps={k.steps}
               docs={byKind.get(k.id) ?? []}
               canUpload={canUpload}

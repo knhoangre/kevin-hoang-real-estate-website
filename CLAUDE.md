@@ -701,6 +701,34 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   a failed stamp is logged and still reports sent, because the mail did go.
 - **Copy link stays next to Send email.** Mail bounces, and a link the admin can
   paste into a text is the fallback that depends on nothing working.
+- **The admin is emailed when an application is submitted, by
+  `rental-application-submitted`.** The recipient is hardcoded in the function
+  and nothing in the request can influence it: the caller sends an application id
+  and every name, address and figure in the message is read back out of the
+  database under the service-role key — the same shape as `send` taking an invite
+  id rather than an address. It refuses anything that is not a *submitted*
+  application the caller owns (or an admin's), and it returns one refusal for
+  "does not exist" and "is not yours" so the endpoint cannot be used to find out
+  which ids are real. `replyTo` is the applicant, because replying is almost
+  always the next thing to do.
+  - **`admin_notified_at` is what separates a re-send from a double-submit.** An
+    applicant can edit and re-send until review starts and the updated version IS
+    worth a second email; the same email thirty seconds later is a form submitted
+    twice. Ten minutes is the line.
+  - **It is invoked from `submitApplication` and can never fail the submit.** The
+    row is already written when it runs; raising there would tell somebody their
+    application had failed when it had not. A missed notice costs Kevin nothing
+    but reading `/admin/applications` instead of being told.
+  - **The guard trigger now exempts `service_role`, and that is not cosmetic.** An
+    edge function under the service-role key bypasses RLS but NOT triggers, and
+    `public.is_admin()` resolves `auth.uid()`, which is NULL there — so every rule
+    applied to our own server and rule 6 silently discarded the stamp the notifier
+    had just written. Silently, because a BEFORE trigger assigning to `NEW` is not
+    an error: the UPDATE reports success and changes nothing.
+  - **Rule 6 keeps `admin_notified_at` out of the applicant's hands** for the same
+    reason `status` is not theirs — RLS is scoped by row, not by column.
+    Suppressing the email announcing your own application is a self-defeating
+    thing to want, which is exactly why nobody would notice it happening.
 - **The invite prefills the applicant's email, so they supply name and phone.**
   `seedFromInvite` seeds `applicant.email` from the invite only when the field is
   blank — someone who signed up with a different address keeps theirs. This is
@@ -723,10 +751,19 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
 - **`DOCUMENT_KINDS` carries the credit-report instructions as `steps`.** "Upload
   your credit report" is the line applicants come back with questions about, so
   the Experian click path renders open on the page — not behind an accordion,
-  which would hide the answer behind the step somebody is stuck on. The copy
-  names all three bureaus because they hold different accounts, and points at
+  which would hide the answer behind the step somebody is stuck on. The copy asks
+  for ONE report from any of the three bureaus, not all three, and points at
   annualcreditreport.com, which is the federally authorised source; it is the
   applicant pulling their OWN report, which is why this still needs no SSN.
+- **The requirement is stated in ONE place, next to the button it affects.** No
+  "Required" badge on the section and no alarm over the empty one — a form that
+  labels its own sections as demands reads as a gate rather than a request, and
+  the applicant is being asked for their financial records by somebody they have
+  not met. The section asks plainly and gives the steps; the line above the
+  submit button names what is outstanding, in bone-and-champagne rather than the
+  amber reserved for a file that has actually been rejected. The button stays
+  enabled either way: a disabled control with no explanation is what people write
+  in about.
 - **`DOCUMENT_KINDS` is a plain annotated array, not `as const`.** The `id` union
   is declared beside it and mirrors the `kind` CHECK constraint in the migration,
   which is the real closed set. Deriving the union from the literal made the
@@ -737,8 +774,8 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
 Two senders, and only one of them is ours today.
 
 - **Our own mail goes through Resend** from `Kevin Hoang <contact@kevinhoang.co>`
-  — the four edge functions (`submit-contact`, the two sign-in functions, and
-  `rental-application-invite`'s `send` action). `RESEND_API_KEY` is a project
+  — five edge functions now (`submit-contact`, the two sign-in functions,
+  `rental-application-invite`'s `send` action, and `rental-application-submitted`). `RESEND_API_KEY` is a project
   secret; each function no-ops with a readable error without it.
 - **Supabase Auth's own mail** — confirm signup, password reset, email change —
   does NOT go through Resend by default. It ships from
@@ -752,6 +789,23 @@ Two senders, and only one of them is ours today.
   `rental-documents` bucket in a migration. `supabase config push` applies them to
   the linked project. They use Supabase's own `{{ .ConfirmationURL }}` /
   `{{ .Email }}` / `{{ .NewEmail }}` variables, not ours.
+- **`[auth.email.notification.*]` is a DIFFERENT mechanism from
+  `[auth.email.template.*]`, and the difference is the point.** A template is
+  transactional: something is pending and the mail carries the link that
+  completes it. A notification is a notice — the change has already happened, and
+  the mail exists so the person it happened TO finds out. They are **off by
+  default**, which means a stolen session could change a password and leave no
+  trace anywhere the account holder would see. `password_changed` and
+  `phone_changed` are enabled here; Supabase also supports `email_changed`,
+  `mfa_factor_enrolled`, `mfa_factor_unenrolled`, `identity_linked` and
+  `identity_unlinked`. Variables are `{{ .Email }}`, `{{ .SiteURL }}`,
+  `{{ .Data }}`, plus `{{ .Phone }}` / `{{ .OldPhone }}` on the phone one.
+- **A security notice carries NO button.** Both of these end with the site
+  address to type by hand, not a link to click. A mail that says "your password
+  changed — click here if this wasn't you" teaches precisely the habit the next
+  phishing email depends on, and the reader's safe route is one they already
+  know. The phone notice shows the old number as well as the new, because "your
+  number changed" tells somebody who did not change it nothing they can act on.
 - **The template is the smaller half.** What makes an email look legitimate is the
   sender matching the domain the link points at. Custom SMTP pointed at Resend
   with `contact@kevinhoang.co` is the fix — that address is already verified
@@ -871,6 +925,19 @@ blue `important-notice` panels on `/buyer` and `/seller`, form-error red, and th
 blue/purple `ACCENTS` in [Roadmap.tsx](src/components/Roadmap.tsx) — that pair is the
 only thing telling the buyer and seller guides apart at a glance, which champagne alone
 cannot do. Recolouring a signal to the brand accent deletes the signal.
+
+### Two faces, and the hero does not use the serif
+
+`font-display` is Playfair Display and `font-sans` is Inter; both load from the
+one Google Fonts stylesheet in [index.html](index.html), so choosing between them
+costs no request. The landing-page heroes are set in the serif — but the
+**homepage h1 is `font-sans`**. That line is full caps at `lg:text-7xl` over a
+photograph, and Playfair is a high-contrast transitional serif: at that size its
+hairlines and ball terminals are doing a great deal of work against a moving
+background, where Inter's even weight simply reads. It also takes the LCP element
+off the serif entirely. Related: `.numeral` in [index.css](src/index.css) exists
+because Playfair ships old-style figures, so no number goes in the display face
+either.
 
 ### One chrome
 

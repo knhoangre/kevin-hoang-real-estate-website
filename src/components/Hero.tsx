@@ -37,7 +37,14 @@ const Hero = () => {
             </p>
             <span className="h-px w-10 bg-champagne" aria-hidden />
           </div>
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tight mb-6">
+          {/* Inter, not the Playfair `font-display` face the landing heroes use.
+              The line is set in full caps, and Playfair is a high-contrast
+              transitional serif — at 7xl its hairline strokes and its ball
+              terminals are doing a great deal of work over a photograph, where
+              Inter's even weight simply reads. Both faces are already loaded
+              from the same stylesheet, so this costs no extra request, and it
+              takes the LCP element off the serif entirely. */}
+          <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.08] tracking-tight mb-6">
             {t('hero.title')}
           </h1>
           <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-300">
