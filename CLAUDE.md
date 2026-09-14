@@ -926,18 +926,37 @@ blue/purple `ACCENTS` in [Roadmap.tsx](src/components/Roadmap.tsx) — that pair
 only thing telling the buyer and seller guides apart at a glance, which champagne alone
 cannot do. Recolouring a signal to the brand accent deletes the signal.
 
-### Two faces, and the hero does not use the serif
+### Two faces, and the homepage uses only one of them
 
 `font-display` is Playfair Display and `font-sans` is Inter; both load from the
 one Google Fonts stylesheet in [index.html](index.html), so choosing between them
-costs no request. The landing-page heroes are set in the serif — but the
-**homepage h1 is `font-sans`**. That line is full caps at `lg:text-7xl` over a
-photograph, and Playfair is a high-contrast transitional serif: at that size its
-hairlines and ball terminals are doing a great deal of work against a moving
-background, where Inter's even weight simply reads. It also takes the LCP element
-off the serif entirely. Related: `.numeral` in [index.css](src/index.css) exists
-because Playfair ships old-style figures, so no number goes in the display face
-either.
+costs no request.
+
+The landing-page heroes are set in the serif. **The homepage is not** — as of
+2026-09-13 there is no `font-display` anywhere on it, verified against the built
+`dist/index.html`. The h1 is full caps at `lg:text-7xl` over a photograph, and
+Playfair is a high-contrast transitional serif: at that size its hairlines and
+ball terminals are doing a great deal of work against a moving background, where
+Inter's even weight simply reads. It also takes the LCP element off the serif.
+The four section h2s — About, Stats, Reviews, Contact — went with it, because a
+serif heading between two sans ones reads as a page assembled from two designs,
+which this site genuinely was until 2026-08-27.
+
+**All five are letterspaced, and positive tracking is the point.** Caps are one
+height with flat sidebearings, so a line of them at a text face's default fit
+reads as a wall; the h1 carried `tracking-tight`, which is tuned for mixed-case
+display type and is exactly wrong here. Section h2s take `tracking-widest`
+(0.1em) and the h1 `tracking-wider` (0.05em) — tracking comes DOWN as size goes
+up, and the h1 is twice their size. Both stay well short of the 0.15–0.3em the
+eyebrows use, so the hierarchy between an eyebrow and a heading survives. The
+h1's leading went up alongside it: letterspaced caps need the extra air or the
+block closes back up vertically.
+
+Every one of these strings is already uppercase in `en.json` **and** `vi.json`,
+so the tracking is not applied to mixed-case text in either language.
+
+Related: `.numeral` in [index.css](src/index.css) exists because Playfair ships
+old-style figures, so no number goes in the display face either.
 
 ### One chrome
 

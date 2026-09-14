@@ -43,8 +43,18 @@ const Hero = () => {
               terminals are doing a great deal of work over a photograph, where
               Inter's even weight simply reads. Both faces are already loaded
               from the same stylesheet, so this costs no extra request, and it
-              takes the LCP element off the serif entirely. */}
-          <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.08] tracking-tight mb-6">
+              takes the LCP element off the serif entirely.
+
+              `tracking-wider`, and POSITIVE tracking is the whole point. Caps
+              are all one height with flat sidebearings, so a line of them set at
+              a text face's default fit reads as a wall — the negative
+              `tracking-tight` that was here is tuned for mixed-case display
+              type and is exactly wrong for this. Less than the 0.1em the section
+              headings take, because tracking should come down as size goes up
+              and this is twice their size. Leading goes up with it: letterspaced
+              caps need the extra air between lines or the block closes back up
+              vertically. */}
+          <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.12] tracking-wider mb-6">
             {t('hero.title')}
           </h1>
           <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-300">

@@ -16,7 +16,15 @@ const About = () => {
                 copy. */}
             <div className="space-y-3">
               <span className="mb-5 block h-px w-10 bg-champagne" aria-hidden />
-              <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">
+              {/* Inter with letterspaced caps, matching the hero and the other three
+              homepage sections. Not the Playfair `font-display` face: the
+              homepage is set in one voice, and a serif heading between two sans
+              ones reads as a page assembled from two designs — which this site
+              genuinely was until 2026-08-27. `tracking-widest` is 0.1em, wide
+              enough to be plainly deliberate and still well short of the
+              0.15–0.3em the eyebrows use, so the hierarchy between an eyebrow
+              and a heading survives. */}
+              <h2 className="font-sans text-3xl md:text-4xl font-semibold tracking-widest text-ink">
                 {t('about.title')}
               </h2>
               <p className="text-lg font-medium text-champagne-ink">
