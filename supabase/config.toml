@@ -48,9 +48,9 @@ content_path = "./supabase/templates/email_change.html"
 [auth.email.notification.password_changed]
 enabled = true
 subject = "Your password was changed — Kevin Hoang"
-content_path = "./supabase/templates/password_changed.html"
+content_path = "./templates/password_changed.html"
 
 [auth.email.notification.phone_changed]
 enabled = true
 subject = "Your phone number was changed — Kevin Hoang"
-content_path = "./supabase/templates/phone_changed.html"
+content_path = "./templates/phone_changed.html"
