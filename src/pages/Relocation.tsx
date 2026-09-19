@@ -4,7 +4,8 @@ import { Download, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { submitContactMessage } from '@/lib/submitContact';
+import { EVENTS, track } from '@/lib/analytics';
 import LandingPage from '@/components/LandingPage';
 import type { QA } from '@/lib/schema';
 
@@ -67,8 +68,28 @@ const FAQS: QA[] = [
  * otherwise static page, and <LandingPage> takes its body as children — this
  * can hold its own state without making the page a client-state container.
  */
+/**
+ * Splits a typed name into the first/last pair `submit-contact` requires.
+ *
+ * One field rather than two, because this is a checklist download and every
+ * extra input costs submissions. Split on the LAST space, so a middle name goes
+ * with the first ("Mai Thi Nguyen" -> "Mai Thi" / "Nguyen") rather than the
+ * surname being silently dropped.
+ *
+ * A single word keeps an em dash for the surname. The edge function rejects an
+ * empty one, so something has to go there, and a marker that reads as "not
+ * given" is better than inventing a surname for a real person — the same
+ * instinct as compact() omitting an unverified field rather than placeholding it.
+ */
+const splitName = (value: string): { firstName: string; lastName: string } => {
+  const parts = value.trim().split(/\s+/);
+  if (parts.length < 2) return { firstName: parts[0] ?? '', lastName: '—' };
+  return { firstName: parts.slice(0, -1).join(' '), lastName: parts[parts.length - 1] };
+};
+
 const ChecklistForm = () => {
   const { toast } = useToast();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,22 +98,33 @@ const ChecklistForm = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.functions.invoke('submit-contact', {
-        body: {
-          firstName: 'Relocation',
-          lastName: 'Lead',
-          email: email.trim().toLowerCase(),
-          phone: null,
-          message: `CT to MA Relocation Checklist Request from ${email}`,
-        },
+      /*
+        Through submitContactMessage, like both contact forms. This invoked the
+        edge function directly until 2026-09-19, which made it a third transport
+        outside the module that exists to stop exactly that — so normalisation
+        or an endpoint change reached the other two forms and not this one.
+
+        The name is the applicant's own. It was hardcoded to "Relocation Lead"
+        until the same date, because the form collected only an email and the
+        edge function hard-requires a name — so every download in the CRM
+        collided on one contact and the real person was recoverable only from
+        the email field.
+      */
+      await submitContactMessage({
+        ...splitName(name),
+        email,
+        phone: null,
+        message: `CT to MA Relocation Checklist Request from ${email.trim().toLowerCase()}`,
       });
 
-      if (error) throw error;
+      // After a genuine success only, like the contact forms.
+      track(EVENTS.lead, { form_location: 'relocation_checklist' });
 
       toast({
         title: 'Success!',
         description: 'Check your email for the relocation checklist.',
       });
+      setName('');
       setEmail('');
     } catch (err) {
       console.error('Error submitting email:', err);
@@ -130,11 +162,22 @@ const ChecklistForm = () => {
       <form onSubmit={handleEmailSubmit} className="mt-7">
         <div className="flex flex-col gap-3 sm:flex-row">
           <Input
+            type="text"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoComplete="name"
+            aria-label="Your name"
+            className="h-12 flex-1 rounded-full border-gray-300 bg-white px-5 text-ink"
+          />
+          <Input
             type="email"
-            placeholder="Enter your email address"
+            placeholder="Your email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
             aria-label="Email address"
             className="h-12 flex-1 rounded-full border-gray-300 bg-white px-5 text-ink"
           />

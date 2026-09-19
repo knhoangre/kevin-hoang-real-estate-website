@@ -5,6 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Page not found | Kevin Hoang</title>
     <meta name="robots" content="noindex" />
+
+    <!--
+      Analytics.
+
+      No 404 was recorded anywhere until 2026-09-19. The site returns real HTTP
+      404s by design, which is what makes the set of URLs people actually reach
+      actionable — a broken inbound link, or a retired blog slug missing from
+      scripts/retired-blog-slugs.json.
+
+      This file is static and outside React, so the measurement ID is a literal
+      rather than SITE.ga4Id. Keep the two in step.
+
+      send_page_view is false and page_location is rebuilt from the origin plus a
+      redacted path, for the same reason as src/components/Analytics.tsx: the
+      automatic hit sends the full URL, and both a query string and an
+      /apply/<token> path can carry a credential. vercel.json rewrites /apply/*
+      so a token should never reach this file — the redaction is here so the rule
+      holds for the whole site rather than for one component.
+
+      page_referrer is what names the page carrying the dead link. Like
+      traffic_source, it needs registering as a custom dimension to be reportable.
+    -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZSRC329HZ2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-ZSRC329HZ2', { send_page_view: false });
+
+      (function () {
+        var path = location.pathname.indexOf('/apply/') === 0 ? '/apply/:token' : location.pathname;
+        var where = location.origin + path;
+        gtag('event', 'page_view', { page_location: where, page_title: document.title });
+        gtag('event', 'page_not_found', { page_location: where, page_referrer: document.referrer });
+      })();
+    </script>
+
     <style>
       :root { color-scheme: light; }
       body {

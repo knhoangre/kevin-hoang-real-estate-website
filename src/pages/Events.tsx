@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { EVENTS, track } from '@/lib/analytics';
 import {
   Form,
   FormControl,
@@ -172,6 +173,9 @@ const Events = () => {
       });
 
       if (submitError) throw submitError;
+
+      // After a genuine success only, like the contact forms.
+      track(EVENTS.lead, { form_location: 'event' });
 
       setSuccess(true);
       signInForm.reset();

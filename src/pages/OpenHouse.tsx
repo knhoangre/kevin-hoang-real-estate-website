@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { EVENTS, track } from '@/lib/analytics';
 import {
   Form,
   FormControl,
@@ -267,6 +268,11 @@ const OpenHouse = () => {
       if (submitError) {
         throw submitError;
       }
+
+      // After a genuine success only, like the contact forms. A sign-in is a
+      // lead: GA4 reported zero conversions for the whole of August 2026 while
+      // /admin/follow-up/open-house was the third busiest page on the site.
+      track(EVENTS.lead, { form_location: 'open_house' });
 
       setSuccess(true);
       signInForm.reset();

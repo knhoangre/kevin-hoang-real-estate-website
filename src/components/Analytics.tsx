@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { SITE } from '@/lib/siteConfig';
-import { EVENTS, track } from '@/lib/analytics';
+import { EVENTS, analyticsPath, isInternalPath, track } from '@/lib/analytics';
 
 /**
  * Google Analytics 4 + Search Console verification.
@@ -26,12 +26,40 @@ declare global {
   }
 }
 
+/**
+ * The page_location to report: our origin, plus the redacted path.
+ *
+ * Never window.location.href. That carries the query string, which holds the
+ * PKCE `code` on /auth/callback, and the raw pathname, which holds a rental
+ * invite token on /apply/<token>. See analyticsPath().
+ */
+const pageLocation = (pathname: string) =>
+  `${window.location.origin}${analyticsPath(pathname)}`;
+
 const Analytics = () => {
   const { pathname } = useLocation();
 
+  /*
+    The page_view, deferred by one frame.
+
+    <Seo> sets the title through <Head>, which commits it in an effect of its
+    own. This component is mounted ABOVE <Outlet/> in App.tsx, so without the
+    deferral its effect flushes first and GA4 — which reads document.title at
+    send time — records every client-side navigation under the PREVIOUS page's
+    title. rAF rather than moving the component down the tree: the ordering
+    would silently rebreak the next time App.tsx is rearranged.
+  */
   useEffect(() => {
     if (!GA_ENABLED || typeof window.gtag !== 'function') return;
-    window.gtag('event', 'page_view', { page_path: pathname });
+    if (isInternalPath(pathname)) return;
+
+    const frame = requestAnimationFrame(() => {
+      window.gtag?.('event', 'page_view', {
+        page_location: pageLocation(pathname),
+        page_title: document.title,
+      });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   /*
@@ -61,10 +89,19 @@ const Analytics = () => {
 
       const href = anchor.getAttribute('href') ?? '';
 
-      if (href.startsWith('tel:')) track(EVENTS.call, { page_path: pathname });
-      else if (href.startsWith('sms:')) track(EVENTS.text, { page_path: pathname });
+      /*
+        page_location, not page_path. `page_path` is a Universal Analytics
+        parameter — GA4 has no such built-in, so it landed as an unregistered
+        custom parameter and was dropped from every report, exactly like
+        traffic_source is until registered. The effect was that "which page
+        produced this phone call" could not be answered at all.
+      */
+      const where = { page_location: pageLocation(pathname) };
+
+      if (href.startsWith('tel:')) track(EVENTS.call, where);
+      else if (href.startsWith('sms:')) track(EVENTS.text, where);
       else if (SITE.appointmentUrl && href.startsWith(SITE.appointmentUrl)) {
-        track(EVENTS.appointment, { page_path: pathname });
+        track(EVENTS.appointment, where);
       }
     };
 

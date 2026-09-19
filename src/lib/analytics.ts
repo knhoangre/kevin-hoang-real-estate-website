@@ -48,7 +48,6 @@ const SOURCES: [string, TrafficSource][] = [
   ['copilot.microsoft.com', 'ai_copilot'],
   ['bing.com', 'search_bing'],
   ['gemini.google.com', 'ai_gemini'],
-  ['google.', 'search_google'],
   ['duckduckgo.com', 'search_other'],
   ['ecosia.org', 'search_other'],
   ['search.yahoo.com', 'search_other'],
@@ -61,11 +60,22 @@ const SOURCES: [string, TrafficSource][] = [
 ];
 
 /**
+ * Google search is the one entry that cannot be a literal hostname: the ccTLDs
+ * are open-ended (google.com, google.co.uk, google.de). Tested AFTER the table
+ * so `gemini.google.com` still resolves to the AI surface, which is the more
+ * specific answer — the same precedence `copilot.microsoft.com` has over
+ * `bing.com` by sitting above it there.
+ */
+const GOOGLE_SEARCH = /(^|\.)google\.[a-z]{2,}(\.[a-z]{2,})?$/;
+
+/**
  * Classifies a referrer URL.
  *
- * Order matters: `copilot.microsoft.com` and `gemini.google.com` are tested
- * before the bare `bing.com` / `google.` entries, because both are substrings of
- * their parent search engine and the AI surface is the more specific answer.
+ * Matched on exact host or registrable-domain suffix ONLY. A substring test
+ * lived here until 2026-09-19 and was far too loose — any host merely
+ * CONTAINING `t.co` was booked as social, which caught `blogspot.co.uk`,
+ * `support.corp.com` and every `*t.co*` domain, corrupting the one dimension
+ * this file exists to produce.
  */
 export const classifyReferrer = (referrer: string, currentHost: string): TrafficSource => {
   if (!referrer) return 'direct';
@@ -81,12 +91,52 @@ export const classifyReferrer = (referrer: string, currentHost: string): Traffic
   if (host === currentHost.toLowerCase()) return 'direct';
 
   for (const [needle, source] of SOURCES) {
-    if (host === needle || host.endsWith(`.${needle}`) || host.includes(needle)) {
-      return source;
-    }
+    if (host === needle || host.endsWith(`.${needle}`)) return source;
   }
+  if (GOOGLE_SEARCH.test(host)) return 'search_google';
+
   return 'referral';
 };
+
+/**
+ * The path as GA4 should see it, with one-time secrets removed.
+ *
+ * A rental invite token is a credential — `rental-application-invite` returns one
+ * identical `{valid:false}` for every failure precisely so the endpoint cannot be
+ * used to guess one — and sending the token itself to a third party undoes that
+ * care. Four of them were readable in the GA4 property as full `/apply/<token>`
+ * URLs before this existed.
+ *
+ * The segment is replaced rather than the whole path dropped, because "how many
+ * people opened an invite" is worth measuring and "which invite" is not.
+ *
+ * Callers MUST build `page_location` from the origin plus this, never from
+ * `window.location.href`: GA4's path dimension strips the query string but
+ * `page_location` retains it, and /auth/callback carries the PKCE `code` there.
+ */
+export const analyticsPath = (pathname: string): string =>
+  pathname.startsWith('/apply/') ? '/apply/:token' : pathname;
+
+/**
+ * Routes that are us, not an audience.
+ *
+ * Admin and CRM usage was the single largest block of traffic in the property —
+ * 558 views against the homepage's 335 in the 28 days to 2026-09-18 — so every
+ * property-level average was being set from the inside. The tell was 14.5 views
+ * per active user on the homepage where pages outside people reach sit at 1.0-1.6.
+ *
+ * Suppressed at the source rather than with a GA4 internal-traffic IP filter: an
+ * IP filter misses a phone on cellular and applies only from the day it is made.
+ *
+ * Deliberately NARROWER than PRIVATE_PREFIXES in scripts/routes.mjs, which this
+ * mirrors two entries of. /apply, /rentals, /profile and /auth are gated too, but
+ * they are applicants rather than us and are among the few conversion signals
+ * this property has.
+ */
+const INTERNAL_PREFIXES = ['/admin', '/crm'];
+
+export const isInternalPath = (pathname: string): boolean =>
+  INTERNAL_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
 const STORAGE_KEY = 'kh_traffic_source';
 
@@ -153,8 +203,9 @@ export const track = (name: string, params: Record<string, unknown> = {}): void 
  *
  * Kept as constants rather than free strings: GA4 silently accepts a misspelled
  * event name and creates a second, near-empty event beside the real one, which
- * is not visible until a report looks wrong weeks later. Mark all four as Key
- * Events in the GA4 UI.
+ * is not visible until a report looks wrong weeks later. Mark all five as Key
+ * Events in the GA4 UI — until that is done GA4 collects them but reports zero
+ * conversions, which is what the property showed for the whole of August 2026.
  */
 export const EVENTS = {
   /** Contact form submitted successfully. The primary conversion. */
@@ -165,4 +216,7 @@ export const EVENTS = {
   text: 'contact_text',
   /** The scheduling link was opened. */
   appointment: 'appointment_click',
+  /** A rental application was submitted. Separate from `lead`: it is the end of
+   *  a funnel an invite already started, not the top of a new one. */
+  application: 'rental_application_submitted',
 } as const;
