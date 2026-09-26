@@ -221,6 +221,19 @@ export const TIERS: CompTier[] = [
 export const MIN_COMPS = 5;
 
 /**
+ * How many comps a rung must hold before the ladder STOPS there.
+ *
+ * Higher than MIN_COMPS on purpose. MIN_COMPS is the floor below which there is
+ * no estimate at all; this is the point at which a tighter rung is preferred to
+ * a wider one. With geocodes loaded, stopping at the first rung of five meant
+ * most estimates leaned on five or six sales within a mile, and the backtest got
+ * WORSE for it — nearer evidence, but too little of it to average out one odd
+ * sale. Eight keeps proximity first while asking a rung to be adequately
+ * populated before it is trusted on its own.
+ */
+export const TIER_TARGET = 8;
+
+/**
  * Above this, the comps disagree too much to name a single number.
  *
  * The interquartile spread as a fraction of the midpoint. At 35% the middle
@@ -753,14 +766,15 @@ export const valuate = (
   // be correct on any input rather than only on what that query returns.
   if (area < 300 || area > 15000) return { refusal: 'no-floor-area' };
 
-  // Walk the ladder and stop at the first rung with enough behind it.
+  // Walk the ladder and stop at the first rung with enough behind it. If none
+  // reaches TIER_TARGET, the fullest rung is used, provided it clears MIN_COMPS.
   let tier = TIERS[TIERS.length - 1];
   let selected: Comp[] = [];
   for (const candidate of TIERS) {
     const matched = candidates.filter(
       (c) => c.mls_number !== subject.mls_number && matchesTier(subject, c, candidate, now)
     );
-    if (matched.length >= MIN_COMPS) {
+    if (matched.length >= TIER_TARGET) {
       tier = candidate;
       selected = matched;
       break;
@@ -775,8 +789,37 @@ export const valuate = (
   if (selected.length < MIN_COMPS) return { refusal: 'too-few-comps' };
 
   const monthlyTrend = marketTrend(candidates, now);
-  const { rates, dropped } = deriveRates(selected);
-  const sqft = sqftRate(selected, rates);
+
+  /*
+   * RATES FROM THE MARKET, APPLIED TO THE NEAREST COMPS — which is how an
+   * appraiser separates the two jobs. The comps chosen above are few by design
+   * (the nearest and most alike), and a regression on six or eight sales cannot
+   * support five coefficients: it either fails to fit or fits noise, and the
+   * grid falls back to a crude flat rate. The whole candidate pool — every sale
+   * of this type in the town within the window, typically one to two hundred —
+   * is what actually measures how this market prices a square foot or a bath.
+   * Same reasoning as marketTrend() above, which was always fitted on the pool.
+   *
+   * The pool's prices are brought to today first, or the regression would read
+   * the market's drift over eighteen months as a property of floor area. For a
+   * multi-family it is restricted to the same unit count, since a two-family's
+   * square foot and a four-family's are priced as different things.
+   */
+  const pool = candidates
+    .filter(
+      (c) =>
+        c.mls_number !== subject.mls_number &&
+        c.sale_price &&
+        c.living_area &&
+        (subject.prop_type !== 'MF' || unitClass(c.prop_subtype) === unitClass(subject.prop_subtype))
+    )
+    .map((c) => ({
+      ...c,
+      sale_price: (c.sale_price as number) * (1 + monthlyTrend) ** monthsSince(c.settled_date, now),
+    }));
+  const rateSource = pool.length >= selected.length ? pool : selected;
+  const { rates, dropped } = deriveRates(rateSource);
+  const sqft = sqftRate(rateSource, rates);
 
   const adjusted: AdjustedComp[] = selected.map((comp) => {
     const monthsAgo = monthsSince(comp.settled_date, now);

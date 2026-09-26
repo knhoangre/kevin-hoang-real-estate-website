@@ -34,7 +34,7 @@
  * resolves at tier 3 (town-wide) because tiers 0 to 2 all require a radius.
  */
 import { readFileSync } from 'node:fs';
-import { valuate, TIERS, type Comp, type ValuationSubject } from '../src/lib/valuation.ts';
+import { addressKey, valuate, TIERS, type Comp, type ValuationSubject } from '../src/lib/valuation.ts';
 
 const readEnvFile = (): Record<string, string> => {
   try {
@@ -72,6 +72,7 @@ const arg = (flag: string, fallback: number): number => {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 const PER_TOWN = arg('--per-town', 25);
+const NO_GEO = process.argv.includes('--no-geo');
 
 /**
  * Property types to measure. All three the estimator supports, by default —
@@ -128,6 +129,24 @@ const main = async () => {
     for (const home of holdouts) {
       if (!home.living_area || !home.sale_price || !home.settled_date) continue;
 
+      /*
+       * The home's coordinate, looked up exactly as the page's
+       * subjectCoordinate() does. Without it every holdout is valued with no
+       * distance at all, the half-mile and one-mile rungs can never match, and
+       * the backtest measures a feature the page no longer runs. That was true
+       * of this script until 2026-09-26 — it passed no coordinate and would
+       * have reported the geocoding backfill as worthless.
+       */
+      // --no-geo values every home as though nothing were geocoded, so the two
+      // runs on the same homes show exactly what coordinates buy.
+      const key = addressKey(home.address, home.town, 'MA', home.zip);
+      const geoRes = await fetch(
+        `${URL_}/rest/v1/idx_geocodes?select=lat,lon&address_key=eq.${encodeURIComponent(key)}&lat=not.is.null`,
+        { headers }
+      );
+      const geo =
+        !NO_GEO && geoRes.ok ? ((await geoRes.json()) as { lat: number; lon: number }[])[0] : undefined;
+
       const compRes = await fetch(`${URL_}/rest/v1/rpc/idx_comparable_sales`, {
         method: 'POST',
         headers,
@@ -135,8 +154,8 @@ const main = async () => {
           p_prop_type: type,
           p_town: town,
           p_state: 'MA',
-          p_lat: null,
-          p_lon: null,
+          p_lat: geo?.lat ?? null,
+          p_lon: geo?.lon ?? null,
           p_radius_km: null,
           p_months: widest.months,
           p_min_sqft: Math.round(home.living_area * (1 - widest.sqft)),

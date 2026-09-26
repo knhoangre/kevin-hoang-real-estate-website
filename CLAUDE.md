@@ -542,26 +542,40 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
   withdraws one. Suppression removes the **number**, not the comps or the chart.
   **Not yet checked against MLS PIN Attachment C**, the same open caveat
   [IdxDisclosure.tsx](src/components/IdxDisclosure.tsx) carries about its own wording.
-- **Measured accuracy, 2026-09-20: median absolute error 12.1%, bias +3.1%, 72%
-  within 20%**, over 236 real closings across the 17 towns with `--per-town 15`.
-  `node scripts/valuation-backtest.ts` is the instrument and it holds each home
-  out of its own comp set AND removes every sale that closed after it — without
-  that second rule the model is shown its own subject's future and the error comes
-  back flattering and meaningless. Read the BIAS before the error: 12% noisy is a
-  different thing from 12% consistently high. Re-run after any change to the
-  tiers, the grid or the weighting.
-  - **Until `idx_geocodes` is filled, no valuation reaches tiers 0–2**, which all
-    need a radius. The **same-ZIP rung** (tier 3) is what runs instead, and it was
-    added 2026-09-26 because town-level comps fail in large towns: Boston
-    single-family was 26% off at town level and 12% at ZIP level, bias −11.5% →
-    +1.4%. Geocoding is still the largest gain available; the backtest warns when
-    no valuation used a distance rung.
-  - **By type, measured 2026-09-26 against the live sold feed across towns in and
-    out of the 17:** single-family 9.5% median error, bias +4.3%, 84% within 20%;
-    condo 10.9%, +2.4%, 80%; multi-family 12.1%, +5.7%, 65%.
-  - Somerville is the worst town at −19% and Concord the worst the other way at
-    +11%, both on small samples. A town that stays badly off after geocoding is
-    worth adding to `suppressedMls` rather than explaining away.
+- **Measured accuracy, 2026-09-26, with geocodes loaded: median absolute error
+  10.5%, mean 14.5%, bias +4.8%, 74% within 20%** — 436 real closings across the
+  17 towns, `--per-town 12`. By type: condo 8.5%, multi-family 10.5%,
+  single-family 13.3%. `node scripts/valuation-backtest.ts` is the instrument: it
+  holds each home out of its own comp set, removes every sale that closed after
+  it (without that the model is shown its subject's future and the error comes
+  back flattering and meaningless), and looks the home's coordinate up exactly as
+  the page does — it passed none until 2026-09-26, and would have reported the
+  geocoding as worthless. Read the BIAS before the error. Re-run after any change
+  to the tiers, the grid or the weighting.
+  - **`--no-geo` runs the same homes with no coordinates**, which is how to see
+    what geocoding buys: overall 11.3% → 10.5%, condo 10.8% → 8.5% (a sale in the
+    same building is the best comp there is), single-family roughly a wash. The
+    backfill covers 94.8% of addresses (22,534 of 23,758; rentals excluded, since
+    a rental is never a subject or a comp). Comps in towns outside the 17 are not
+    geocoded and fall through to the ZIP rung.
+  - **The same-ZIP rung is what runs without a coordinate**, and it exists
+    because "same town" fails in big towns: Boston is one MLS town from Back Bay
+    to Mattapan, and single-family there was 26% off at town level, 12% at ZIP
+    level (bias −11.5% → +1.4%). ZIPs track Boston's neighbourhoods closely.
+  - **Rates come from the whole pool; the comps come from the ladder.** Once the
+    tight rungs became reachable, estimates leaned on five or six sales and the
+    regression fitted to those same few either failed or fitted noise.
+    `deriveRates` now runs on every time-adjusted sale of the type in the town,
+    and `TIER_TARGET` (8) is what a rung must hold before the ladder stops there
+    — `MIN_COMPS` (5) is only the refusal floor. Both measured as small,
+    consistent gains; putting the ZIP rung ahead of two miles was measured as
+    noise and not kept.
+  - **Single-family runs ~6% high and that is most likely condition**, which no
+    field carries: a house that needs work sells below comps the model cannot
+    tell it apart from. That is the case for photo condition scoring, not for more
+    tuning of the grid.
+  - A town that stays badly off is worth adding to `suppressedMls` rather than
+    explaining away. Concord (about −10%) is the outlier to watch.
 - **Comps come from every town, not just the 17.** `idx_comparable_sales` reads
   the live sold feed (all towns, twelve months) UNION the archive (seventeen
   towns, growing), deduplicated on the archive's primary key — a sale counted

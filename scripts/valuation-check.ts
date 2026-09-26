@@ -35,6 +35,7 @@ import {
   zip5,
   TIERS,
   MIN_COMPS,
+  TIER_TARGET,
   type Comp,
   type ValuationSubject,
 } from '../src/lib/valuation.ts';
@@ -317,6 +318,46 @@ console.log('\n--- the estimate ---');
       ok(!!line && line.amount > 0, 'a smaller comp is adjusted upward for floor area');
       ok(found.adjustedPrice > found.timeAdjustedPrice, 'and its adjusted price exceeds its time-adjusted price');
     }
+  }
+}
+
+console.log('\n--- how far the ladder goes ---');
+
+ok(TIER_TARGET > MIN_COMPS, 'a rung must hold more than the refusal floor before the ladder stops on it');
+{
+  // Six sales next door and forty two miles off. Six clears the floor but not
+  // the target, so the ladder should widen to where there is enough evidence.
+  const near = Array.from({ length: 6 }, (_, i) =>
+    makeComp(7000 + i, { distance_km: 0.3, settled_date: dateMonthsAgo(2), living_area: 2200, bedrooms: 4 })
+  );
+  const wider = Array.from({ length: 40 }, (_, i) =>
+    makeComp(7100 + i, { distance_km: 2.5, settled_date: dateMonthsAgo(3), bedrooms: 4 })
+  );
+  const r = valuate(SUBJECT, [...near, ...wider], NOW);
+  ok('valuation' in r && r.valuation.tier.radiusKm === 3.2, 'six near sales and forty within two miles resolves at the two-mile rung');
+
+  // The same six with nothing else: the fullest rung is used, because six still
+  // clears MIN_COMPS.
+  const alone = valuate(SUBJECT, near, NOW);
+  ok('valuation' in alone && alone.valuation.comps.length === 6, 'six near sales alone still produce an estimate');
+  if ('valuation' in alone) {
+    ok(alone.valuation.tier.index === 0, 'and are reported at the tightest rung they satisfy');
+  }
+}
+{
+  // Rates are fitted on the whole pool, not on the handful selected. Eight near
+  // comps of identical size and bath count carry NO information about what a
+  // square foot is worth — the rate can only come from the wider market.
+  const identical = Array.from({ length: 8 }, (_, i) =>
+    makeComp(7300 + i, { distance_km: 0.2, settled_date: dateMonthsAgo(1), living_area: 2200, full_baths: 2, half_baths: 1, bedrooms: 4 })
+  );
+  const r = valuate(SUBJECT, [...identical, ...market], NOW);
+  ok('valuation' in r && r.valuation.comps.length >= 8, 'eight identical near sales are selected');
+  if ('valuation' in r) {
+    ok(
+      r.valuation.marginalSqft !== null && Math.abs(r.valuation.marginalSqft - TRUE_SQFT_RATE) < TRUE_SQFT_RATE * 0.2,
+      `the floor-area rate still comes out right, from the market (got ${Math.round(r.valuation.marginalSqft ?? 0)})`
+    );
   }
 }
 
