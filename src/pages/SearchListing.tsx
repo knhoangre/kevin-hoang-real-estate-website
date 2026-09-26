@@ -18,6 +18,8 @@ import IdxDisclosure from '@/components/IdxDisclosure';
 import ListingPayment from '@/components/listing/ListingPayment';
 import ListingEnquiry from '@/components/listing/ListingEnquiry';
 import SimilarListings from '@/components/listing/SimilarListings';
+import ListingValuation from '@/components/listing/ListingValuation';
+import ValuationSummary from '@/components/listing/ValuationSummary';
 import { formatPrice, formatBaths, formatSoldMonth } from '@/lib/listings';
 import { SITE, telHref, smsHrefWith } from '@/lib/siteConfig';
 import {
@@ -397,6 +399,16 @@ const SearchListing = () => {
                     </p>
                   );
                 })()}
+
+                {/*
+                  What nearby sales suggest, stated beside the asking price and
+                  linking down to the working. Without this the estimate lived
+                  only below the mortgage calculator, where almost nobody reaches
+                  it. Active listings only: on a closed sale the sale price IS the
+                  answer, and an estimate beside it would be a model second-
+                  guessing a fact.
+                */}
+                {listing.feed !== 'sold' && <ValuationSummary listing={listing} />}
 
                 {listing.feed === 'sold' && (
                   <p className="numeral mt-2 text-gray-600">
@@ -802,6 +814,24 @@ const SearchListing = () => {
             {listing.feed !== 'sold' && listing.prop_type !== 'RN' && (
               <ListingPayment listing={listing} />
             )}
+
+            {/*
+              What closed sales nearby say this is worth.
+
+              Placed between the payment panel and the similar listings on
+              purpose: the reader has just worked out what it would cost them
+              per month, and the next question is whether the price is
+              defensible. The comps grid below then doubles as the chart's
+              detail view.
+
+              Renders NOTHING unless it has real evidence — too few comparable
+              sales, a property type it cannot speak about (multi-family and
+              rentals), or a failed query all produce silence rather than an
+              apology. It fetches its own data and swallows its own errors, the
+              same contract priceHistory and SimilarListings keep: a listing
+              must never fail to render because a supporting query did.
+            */}
+            {listing.feed !== 'sold' && <ListingValuation listing={listing} />}
 
             <SimilarListings listing={listing} />
           </>

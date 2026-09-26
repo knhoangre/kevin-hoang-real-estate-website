@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import ContactQRCode from "./ContactQRCode";
 import { useTranslation } from "react-i18next";
-import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
+import { SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
 import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
 
@@ -163,19 +163,13 @@ const Contact = () => {
                 </a>
               </div>
 
+              {/* A service area, not an address, and so not a link: there is no
+                  office to map since the move to LPT Realty. See SITE.address. */}
               <div className="flex items-start space-x-4 max-w-full">
-                <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-ink" />
-                <a
-                  href={mapsHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative group"
-                >
-                  <span className="text-ink transition-colors group-hover:text-champagne-ink uppercase relative min-w-0 break-words">
-                    {formattedAddress.toUpperCase()}
-                    <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-champagne-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                  </span>
-                </a>
+                <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-ink" aria-hidden />
+                <span className="text-ink uppercase min-w-0 break-words">
+                  {serviceAreaLine.toUpperCase()}
+                </span>
               </div>
 
               <div className="flex items-start space-x-4 max-w-full">

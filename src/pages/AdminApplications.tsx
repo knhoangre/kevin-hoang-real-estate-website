@@ -11,7 +11,7 @@
  * need its own rewrite in vercel.json, and that file has exactly two scoped
  * rewrites for a reason.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, Pencil, Plus } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
@@ -19,6 +19,8 @@ import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
 import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
 import { Input } from '@/components/ui/input';
+import AddressAutocomplete from '@/components/admin/AddressAutocomplete';
+import type { AddressSuggestion } from '@/lib/massgis';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -88,8 +90,31 @@ const NewInviteForm = ({
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [k]: e.target.value }));
 
+  /*
+   * The building's unit range, when MassGIS knows it ("#1-12"). Shown under the
+   * Unit field as a hint and never written into it: a range says the building
+   * has units, not which one is being let.
+   */
+  const [unitHint, setUnitHint] = useState<string | null>(null);
+  const unitRef = useRef<HTMLInputElement>(null);
+
+  /** A MassGIS suggestion was picked: fill everything it knows. */
+  const applyAddress = (s: AddressSuggestion) => {
+    setForm((p) => ({
+      ...p,
+      propertyAddress: s.street,
+      propertyTown: s.town,
+      propertyState: s.state,
+      propertyZip: s.zip,
+    }));
+    setUnitHint(s.unitHint);
+    // A multi-unit building needs a unit, so that is where the cursor goes next.
+    if (s.unitHint) window.setTimeout(() => unitRef.current?.focus(), 0);
+  };
+
   /** Fills the property fields from one already used, leaving the email alone. */
-  const reuse = (choice: PreviousProperty) =>
+  const reuse = (choice: PreviousProperty) => {
+    setUnitHint(null);
     setForm((p) => ({
       ...p,
       propertyAddress: choice.propertyAddress ?? '',
@@ -101,6 +126,7 @@ const NewInviteForm = ({
       // decision — it is the field most likely to have changed between tenants.
       monthlyRent: p.monthlyRent || (choice.monthlyRent != null ? String(choice.monthlyRent) : ''),
     }));
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,6 +165,7 @@ const NewInviteForm = ({
       }
 
       onCreated(sent ? { ...invite, sentAt: new Date().toISOString() } : invite);
+      setUnitHint(null);
       setForm({
         propertyAddress: '',
         unit: '',
@@ -172,9 +199,12 @@ const NewInviteForm = ({
 
   return (
     <form onSubmit={submit} className="grid gap-4 p-6 sm:grid-cols-2">
-      {/* Reuse, not autocomplete: re-letting the same unit is the common case,
-          and retyping the address is how "12 Elm St" and "12 Elm Street" become
-          two properties that no list can group. */}
+      {/* Reuse first: re-letting the same unit is the common case, and it
+          brings the rent with it. For a property not let before, the street
+          field below suggests from MassGIS — which serves the same purpose this
+          picker was built for, since both hand back one canonical spelling
+          rather than letting "12 Elm St" and "12 Elm Street" become two
+          properties no list can group. */}
       {previous.length > 0 && (
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="inv-reuse">Reuse a property</Label>
@@ -203,18 +233,36 @@ const NewInviteForm = ({
 
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="inv-address">Street address</Label>
-        <Input
+        <AddressAutocomplete
           id="inv-address"
           required
-          autoComplete="off"
-          placeholder="12 Elm Street"
+          placeholder="Start typing — 151 wash…"
           value={form.propertyAddress}
-          onChange={set('propertyAddress')}
+          onChange={(v) => {
+            setUnitHint(null);
+            setForm((p) => ({ ...p, propertyAddress: v }));
+          }}
+          onSelect={applyAddress}
         />
+        <p className="text-xs text-gray-500">
+          Pick a suggestion to fill in the town and ZIP as well.
+        </p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="inv-unit">Unit</Label>
-        <Input id="inv-unit" autoComplete="off" value={form.unit} onChange={set('unit')} />
+        <Input
+          ref={unitRef}
+          id="inv-unit"
+          autoComplete="off"
+          value={form.unit}
+          onChange={set('unit')}
+          aria-describedby={unitHint ? 'inv-unit-hint' : undefined}
+        />
+        {unitHint && (
+          <p id="inv-unit-hint" className="numeral text-xs text-gray-500">
+            This building has units {unitHint}.
+          </p>
+        )}
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="inv-town">Town</Label>

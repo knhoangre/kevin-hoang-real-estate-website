@@ -36,6 +36,25 @@ export interface IdxListing {
   status: string | null;
   propType: string | null;
   address: string | null;
+  /**
+   * The parts `address` is composed FROM, kept alongside it rather than instead
+   * of it.
+   *
+   * Two things need them and neither can get them back out of the joined
+   * string: the Census geocoder takes a street line separate from the town, and
+   * "another sale on the same street" — the strongest comparable there is — is
+   * an equality test on `streetName` but a leading-wildcard LIKE on `address`.
+   * See the migration 20260920100000 header.
+   */
+  streetNo: string | null;
+  streetName: string | null;
+  unitNo: string | null;
+  /**
+   * MLS PIN's numeric town code, kept because the resolved NAME is not unique.
+   * The town table is TOWN_NUM|LONG|COUNTY|STATE and generate-idx-towns.mjs
+   * keeps only the first two, so Dover MA and Dover NH resolve identically.
+   */
+  townNum: string | null;
   town: string | null;
   state: string | null;
   zip: string | null;
@@ -410,6 +429,12 @@ export function rowParser(headerLine: string): (line: string) => IdxListing | nu
       status: at('status'),
       propType: at('propType'),
       address: buildAddress(at('streetNo'), at('streetName'), at('unitNo')),
+      // The same three fields unjoined. buildAddress stays the only thing that
+      // decides how an address READS; these are for querying and geocoding.
+      streetNo: at('streetNo'),
+      streetName: at('streetName'),
+      unitNo: at('unitNo'),
+      townNum,
       // Resolved here rather than at render time: the feed carries only a
       // numeric code, and a listing that reaches the page as "MA 02494" is
       // useless on a site whose search is organised by town.

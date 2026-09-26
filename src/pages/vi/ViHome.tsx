@@ -23,7 +23,7 @@ const ViHome = () => (
     }}
     eyebrow="Tiếng Việt"
     h1="Môi giới bất động sản nói tiếng Việt tại Greater Boston"
-    lede="Kevin Hoang là môi giới có giấy phép broker của Massachusetts, làm việc tại Needham cùng Keller Williams Realty. Anh đại diện cho người mua và người bán trên 17 thị trấn quanh Boston, và làm việc bằng cả tiếng Việt lẫn tiếng Anh — từ lần gặp đầu tiên cho đến khi ký giấy tờ cuối cùng."
+    lede={`Kevin Hoang là môi giới có giấy phép broker của Massachusetts, làm việc tại Needham cùng ${SITE.brokerage}. Anh đại diện cho người mua và người bán trên 17 thị trấn quanh Boston, và làm việc bằng cả tiếng Việt lẫn tiếng Anh — từ lần gặp đầu tiên cho đến khi ký giấy tờ cuối cùng.`}
     crumbs={[
       { name: 'Trang chủ', path: '/' },
       { name: 'Tiếng Việt', path: '/vi' },

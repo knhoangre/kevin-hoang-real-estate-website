@@ -267,7 +267,13 @@ const sleep = (ms: number) =>
     setTimeout(resolve, ms);
   });
 
-const withRetry = async <T>(run: () => Promise<T>, label: string): Promise<T> => {
+/**
+ * Exported for the comparable-sales fetch in idxComps.ts, which hits the same
+ * cold-cache timeout for the same reason — measured 2026-09-26: the first
+ * idx_comparable_sales call after a quiet spell returned 57014 at the 8s
+ * ceiling, and the next one answered in 0.2s.
+ */
+export const withRetry = async <T>(run: () => Promise<T>, label: string): Promise<T> => {
   let lastError: unknown;
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
     try {

@@ -105,6 +105,8 @@ serve(async (req) => {
 
   let upserted = 0;
   let deleted = 0;
+  /** Sold rows copied into idx_sold_archive this run. */
+  let archived = 0;
 
   try {
     const cookie = await login();
@@ -126,6 +128,10 @@ serve(async (req) => {
         status: l.status,
         prop_type: l.propType ?? propType,
         address: l.address,
+        street_no: l.streetNo,
+        street_name: l.streetName,
+        unit_no: l.unitNo,
+        town_num: l.townNum,
         town: l.town,
         state: l.state,
         zip: l.zip,
@@ -241,6 +247,32 @@ serve(async (req) => {
       }
 
       /*
+       * ARCHIVE BEFORE DELETING. This is the whole reason the ordering here
+       * matters.
+       *
+       * MLS PIN's sold feed is a rolling one-year window and the sweep below
+       * models that by deleting what has aged out — so without this call, a day
+       * of closings leaves the database every night and nothing keeps a copy.
+       * Measured on 2026-09-20 the window is exactly twelve months, and a
+       * comparable-sales estimate in a thin town (Dover: 76 single-family
+       * closings in the whole window) needs two or three years. Depth can only
+       * be accumulated forward, so the copy runs on EVERY sold slice rather than
+       * only alongside the prune: a slice that fails for three days in a row
+       * would otherwise take its rows with it.
+       *
+       * The copy is idempotent and scoped inside the function to the seventeen
+       * served towns, MA only, sales only — see the migration header. It is
+       * allowed to fail the run: losing a day of closings permanently is worse
+       * than a red sync, and unlike a display failure it cannot be fixed by
+       * re-running tomorrow.
+       */
+      if (feed === 'sold') {
+        const { data: copied, error: archiveError } = await supabase.rpc('idx_archive_sold');
+        if (archiveError) throw new Error(`${propType}/sold archive: ${archiveError.message}`);
+        archived += Number(copied ?? 0);
+      }
+
+      /*
        * DELETION DIFFERS BY FEED, because the two feeds behave differently.
        *
        * ACTIVE is diffed against the whole file: a listing that leaves it has
@@ -310,7 +342,7 @@ serve(async (req) => {
       })
       .eq('id', run?.id);
 
-    return json({ ok: true, feed, propTypes, offset, upserted, deleted });
+    return json({ ok: true, feed, propTypes, offset, upserted, deleted, archived });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
 
@@ -329,6 +361,6 @@ serve(async (req) => {
     // messages in mlspin-auth deliberately name the env var rather than echo
     // its value.
     console.error('idx-sync failed:', message);
-    return json({ ok: false, error: message, upserted, deleted }, 500);
+    return json({ ok: false, error: message, upserted, deleted, archived }, 500);
   }
 });

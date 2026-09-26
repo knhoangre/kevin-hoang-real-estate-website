@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { submitContactMessage } from '@/lib/submitContact';
 import { EVENTS, track } from '@/lib/analytics';
 import { errorMessage } from '@/lib/utils';
-import { SITE, smsHref, telHref } from '@/lib/siteConfig';
+import { SITE, smsHref, telHref, locality } from '@/lib/siteConfig';
 
 /**
  * /vi/lien-he — the counterpart of /contact.
@@ -218,14 +218,15 @@ const ViContact = () => {
         .
       </p>
 
-      <h2>Văn phòng</h2>
+      {/* "Công ty môi giới và khu vực phục vụ" — brokerage and service area —
+          replaced "Văn phòng" (office) on 2026-09-26. There is no office since
+          the move to LPT Realty; see SITE.address. The brokerage name stays,
+          because 254 CMR 3.09 requires it on all advertising in any language. */}
+      <h2>Công ty môi giới và khu vực phục vụ</h2>
       <p>
         {SITE.brokerage}
         <br />
-        {SITE.address.streetAddress}
-        <br />
-        {SITE.address.addressLocality}, {SITE.address.addressRegion}{' '}
-        {SITE.address.postalCode}
+        Làm việc tại {locality} · phục vụ Greater Boston và MetroWest
       </p>
     </ViPage>
   );

@@ -59,6 +59,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SITE } from "@/lib/siteConfig";
 
 type Deal = {
   id: number;
@@ -282,7 +283,7 @@ const INITIAL_CONSULTATION_TEMPLATE = `--- INITIAL CONSULTATION ---
 
 [INTRO — please revise to make it sound natural for you]
 
-Hi, I'm Kevin with Keller Williams. I've been in real estate for over five years, and I bring a practical edge to the process—I'm also knowledgeable about home inspections, so I can help you spot what to look for when we walk through properties. My partner is on the line as well—she's a real estate agent with even more experience than me—so between the two of us, we have a lot of knowledge and value we can offer. We focus on Newton and the surrounding areas. I'd love to hear a bit about you and what's brought you to look for a place right now.
+Hi, I'm Kevin with ${SITE.brokerage}. I've been in real estate for over five years, and I bring a practical edge to the process—I'm also knowledgeable about home inspections, so I can help you spot what to look for when we walk through properties. My partner is on the line as well—she's a real estate agent with even more experience than me—so between the two of us, we have a lot of knowledge and value we can offer. We focus on Newton and the surrounding areas. I'd love to hear a bit about you and what's brought you to look for a place right now.
 
 ---
 

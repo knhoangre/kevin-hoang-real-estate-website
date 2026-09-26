@@ -90,7 +90,7 @@ const ViAbout = () => (
 
     <h2>Giấy phép và công ty</h2>
     <p>
-      Kevin hành nghề tại {SITE.brokerage}. Địa chỉ văn phòng và số điện thoại ở cuối
+      Kevin hành nghề tại {SITE.brokerage}. Tên công ty và số điện thoại ở cuối
       trang này giống hệt ở mọi trang khác trên website và trên mọi hồ sơ nghề nghiệp —
       đó là cách bạn kiểm tra một chuyên viên địa ốc có thật hay không.
     </p>

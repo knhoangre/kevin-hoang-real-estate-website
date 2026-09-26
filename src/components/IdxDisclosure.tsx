@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { lastSyncedAt } from '@/lib/idxSearch';
+import { SITE } from '@/lib/siteConfig';
 
 /**
  * The attribution and freshness block every IDX display has to carry.
@@ -54,7 +55,7 @@ const IdxDisclosure = ({ className = '' }: { className?: string }) => {
         Listing data is provided by MLS Property Information Network, Inc.
         (MLS PIN) through its Internet Data Exchange programme, and is provided
         for consumers&rsquo; personal, non-commercial use. Listings held by
-        brokerage firms other than Kevin Hoang / Keller Williams Realty are
+        brokerage firms other than Kevin Hoang / {SITE.brokerage} are
         marked with the name of the listing office.
       </p>
       <p className="mt-2">

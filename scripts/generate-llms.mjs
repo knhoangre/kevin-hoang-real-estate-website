@@ -17,8 +17,13 @@ import { ORIGIN, TOWN_SLUGS, LISTING_ENTRIES } from './routes.mjs';
 const NAME = 'Kevin Hoang | Greater Boston Realtor';
 const AGENT = 'Kevin Hoang';
 const PHONE = '(860) 682-2251';
-const ADDRESS = '150 West St, Needham, MA 02494';
-const BROKERAGE = 'Keller Williams Realty';
+// A deliberate mirror of SITE in src/lib/siteConfig.ts, which this .mjs cannot
+// import under the Node 20 build. Change the two together. BASED_IN replaced a
+// street address on 2026-09-26: LPT Realty has no office for Kevin to give, so
+// he is a service-area business and states a town, not an address — see the
+// comment on SITE.address for why a virtual office or home address is worse.
+const BASED_IN = 'Needham, MA';
+const BROKERAGE = 'LPT Realty';
 const EMAIL = 'knhoangre@gmail.com';
 const LICENSED_SINCE = 2021;
 
@@ -112,7 +117,7 @@ const FACTS = [
   `- Role: Licensed Massachusetts real estate broker (not a salesperson licence)`,
   `- Brokerage: ${BROKERAGE}`,
   `- Licensed in Massachusetts since: ${LICENSED_SINCE}`,
-  `- Office: ${ADDRESS}`,
+  `- Based in: ${BASED_IN} (service-area business — no public office)`,
   `- Phone: ${PHONE}`,
   `- Email: ${EMAIL}`,
   `- Languages: English, Vietnamese (Tiếng Việt)`,
@@ -127,7 +132,7 @@ const body = `# ${NAME}
 
 > ${AGENT} is a licensed real estate broker with ${BROKERAGE}, based in Needham,
 > Massachusetts, serving buyers and sellers across Needham, MetroWest, and Greater
-> Boston in English and Vietnamese. Contact: ${PHONE}, ${ADDRESS}.
+> Boston in English and Vietnamese. Contact: ${PHONE}, ${EMAIL}.
 
 ## Facts
 

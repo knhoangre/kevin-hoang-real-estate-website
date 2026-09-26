@@ -33,8 +33,20 @@ export const SITE = {
     'Needham, MA licensed real estate broker helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
   locale: 'en_US',
 
-  /** Current brokerage. Confirmed 2026-08-26. */
-  brokerage: 'Keller Williams Realty',
+  /**
+   * Current brokerage. Changed from Keller Williams Realty to LPT Realty on
+   * 2026-09-26, per Kevin.
+   *
+   * NOT DECORATION — A LEGAL REQUIREMENT. 254 CMR 3.09 requires that ALL real
+   * estate advertising include the name of the broker, conspicuously; a site
+   * showing only an agent's own name is the textbook violation. That is why it
+   * is in the footer, which puts it on every page, and not only in the hero.
+   *
+   * !! The exact licensed form of the name has not been checked. If LPT's
+   * Massachusetts licence is held as, say, "LPT Realty, LLC", the regulation
+   * wants that form, and LPT's compliance team will say which. Change it here.
+   */
+  brokerage: 'LPT Realty',
 
   /**
    * Languages clients are served in, for schema.org knowsLanguage. Vietnamese
@@ -49,11 +61,32 @@ export const SITE = {
   phoneE164: '+1-860-682-2251',
   email: 'knhoangre@gmail.com',
 
+  /**
+   * Where Kevin is based — a TOWN, deliberately not a street address.
+   *
+   * Until 2026-09-26 this was 150 West St, the Keller Williams office. LPT
+   * Realty is a cloud brokerage with no office for him to give, and every
+   * option for filling the gap is worse than leaving it:
+   *
+   *   * The old office is someone else's address now, and would put his NAP
+   *     citation on a building he does not work from.
+   *   * A virtual office or PO box violates Google Business Profile's guidelines
+   *     outright and is a documented cause of suspension.
+   *   * A home address publishes where he lives.
+   *
+   * So he is a SERVICE-AREA BUSINESS, which is the category Google designed for
+   * exactly this: the profile hides its address and lists the areas served
+   * instead. schema.org's PostalAddress needs no street to be valid, and a
+   * locality-only address is the honest statement of "based in Needham".
+   *
+   * streetAddress and postalCode are REMOVED rather than blanked, so that any
+   * code still printing them fails to compile rather than rendering an empty
+   * line. A ZIP was dropped along with the street: Needham has two, and
+   * choosing one would be inventing a location.
+   */
   address: {
-    streetAddress: '150 West St',
     addressLocality: 'Needham',
     addressRegion: 'MA',
-    postalCode: '02494',
     addressCountry: 'US',
   },
 
@@ -61,19 +94,17 @@ export const SITE = {
   appointmentUrl: 'https://calendar.app.google/P297MnAu7ei6turA6',
 
   /**
-   * Latitude/longitude for the Keller Williams office at 150 West St.
+   * Latitude/longitude of the place of business. NULL, and it must stay null
+   * until there is a real one.
    *
-   * Geocoded from the postal address via OpenStreetMap/Nominatim 2026-08-26 and
-   * sanity-checked to fall in Needham Heights, between the town centre
-   * (~42.279, -71.233) and the northern town line — consistent with West St.
-   *
-   * If this is ever wrong, set it back to null rather than guessing: the schema
-   * builder omits `geo` entirely when it is null, and an absent coordinate is
-   * correct while one pointing at the wrong town is actively harmful.
+   * This held the Keller Williams office at 150 West St until 2026-09-26. A
+   * service-area business has no point to give, and CLAUDE.md is explicit: an
+   * absent coordinate is correct while one pointing at the wrong place is
+   * actively harmful. The schema builder omits `geo` entirely when it is null.
+   * Needham's town centre is NOT a substitute — it is a coordinate for a
+   * business that is not there.
    */
-  geo: { latitude: 42.2929724, longitude: -71.2366817 } as
-    | { latitude: number; longitude: number }
-    | null,
+  geo: null as { latitude: number; longitude: number } | null,
 
   /**
    * The profiles that identify the same real-world person as this site.
@@ -90,7 +121,12 @@ export const SITE = {
    */
   profiles: [
     { name: 'Google Business Profile', url: 'https://share.google/dBpe3OLBDeYHfZq28' },
-    { name: 'Keller Williams', url: 'https://kevinhoang.kw.com/' },
+    // The Keller Williams agent page was removed 2026-09-26 with the move to LPT
+    // Realty: sameAs is a claim that a URL describes this same person TODAY,
+    // and a former brokerage's page — likely soon a 404 — does not. Add the LPT
+    // agent profile here once it exists, and make sure it links back to this
+    // site: a visible link out plus one back is what merges the two into one
+    // entity for search and answer engines.
     { name: 'Zillow', url: 'https://www.zillow.com/profile/knhoangre' },
     {
       name: 'Realtor.com',
@@ -172,9 +208,50 @@ export const SITE = {
   assumedPmiRate: 0.5 as number,
 
   /**
+   * The comparable-sales estimate on /search/<mls>.
+   *
+   * TWO SWITCHES, AND THEY EXIST FOR A RULE RATHER THAN FOR CONVENIENCE.
+   *
+   * NAR's IDX policy authorises automated valuations on an IDX display, and
+   * separately permits MLS content to be used for "supporting appraisals and
+   * evaluations, or developing market statistics". But a display showing an
+   * automated estimate of value IN IMMEDIATE CONJUNCTION WITH A LISTING must be
+   * disabled for that listing at the seller's request, communicated through the
+   * MLS — and MLS PIN's feed carries no field telling us which sellers have
+   * asked. So compliance depends entirely on a switch on this side, and a
+   * switch that has to be written before it can be thrown is one that does not
+   * exist when the request arrives.
+   *
+   * `enabled: false` withdraws the estimate sitewide in one deploy, for a rules
+   * change or a bad backtest. `suppressedMls` withdraws it for one listing.
+   * Committed rather than stored in a table on purpose: this has to work on a
+   * day the database does not, and a compliance decision should be visible in a
+   * diff with a date beside it.
+   *
+   * SUPPRESSION REMOVES THE NUMBER, NOT THE EVIDENCE. The comps, the range and
+   * the chart stay — those are the market-statistics use the policy names
+   * separately, and they are the part a reader actually learns from.
+   *
+   * !! NOT YET CHECKED against MLS PIN Rules & Regulations Attachment C, which
+   * is behind the h3o login — the same caveat IdxDisclosure.tsx carries about
+   * its own wording. Read Attachment C before this ships publicly; if it
+   * prescribes a form of words or forbids the display outright, `enabled` is
+   * how that is honoured the same afternoon.
+   */
+  valuation: {
+    enabled: true,
+    /** MLS numbers a seller has asked be excluded. Date each addition. */
+    suppressedMls: [] as string[],
+  },
+
+  /**
    * Towns served, used for schema `areaServed`, the sitemap, and the nearby-
    * towns cross-links. Slugs match the keys in src/data/neighborhoodData.ts
    * and the /neighborhoods/:slug route.
+   *
+   * ALSO MIRRORED IN SQL, in idx_archive_sold() — the archive is scoped to
+   * these towns, so a town added here and not there is a town whose sales are
+   * never archived, silently and unrecoverably a year later.
    */
   areaServed: [
     { name: 'Needham', slug: 'needham-ma' },
@@ -241,11 +318,14 @@ export const smsHref = `sms:${SITE.phoneE164}`;
 export const smsHrefWith = (body: string) =>
   `sms:${SITE.phoneE164}?&body=${encodeURIComponent(body)}`;
 
-/** Single-line postal address, matching the Google Business Profile listing. */
-export const formattedAddress =
-  `${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ` +
-  `${SITE.address.addressRegion} ${SITE.address.postalCode}`;
+/**
+ * "Needham, MA" — where Kevin is based.
+ *
+ * Replaced `formattedAddress` and `mapsHref` on 2026-09-26. There is no office
+ * to print or to map any more (see SITE.address), and a map pin dropped on the
+ * middle of Needham would imply a place of business that does not exist.
+ */
+export const locality = `${SITE.address.addressLocality}, ${SITE.address.addressRegion}`;
 
-/** Google Maps link for the office. */
-export const mapsHref =
-  `https://maps.google.com/?q=${encodeURIComponent(formattedAddress)}`;
+/** The service-area line shown wherever an office address used to be. */
+export const serviceAreaLine = `Based in ${locality} · serving Greater Boston and MetroWest`;

@@ -5,23 +5,51 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 ## Commands
 
 ```bash
-npm run dev        # Vite dev server on :8080
+npm run dev        # Vite dev server on :8080 (host), but see the Docker note below
 npm run typecheck  # tsc -b --noEmit
 npm run build      # typecheck, prerender every route, write sitemap.xml + llms.txt
 npm run build:spa  # plain vite build — NOT what ships; skips prerendering
 npm run preview    # serve the built bundle
 npm run lint       # eslint
 
-docker compose up app   # same dev server in a container
+docker compose up app   # same dev server in a container — but on :5173, NOT :8080
 
 node scripts/generate-icons.mjs          # regenerate favicons + og-image.jpg + og-about.jpg
 node scripts/generate-blog-redirects.mjs # rewrite the blog 301s in vercel.json
 node scripts/sync-listings.mjs           # refresh src/data/soldListings.ts from Supabase
 node scripts/generate-video-posters.mjs   # build public/videos/ posters from public/videos/_src/
+node scripts/geocode-listings.ts         # backfill idx_geocodes from the US Census geocoder
 ```
 
-There is no Node toolchain required on the host if you use Docker:
+Two things here are checks rather than generators, and both exit non-zero on failure:
+
+```bash
+node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, no network)
+node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
+sh supabase/tests/run.sh          # assertions for the IDX comp migrations (needs Docker)
+```
+
+`.ts` rather than `.mjs` for the three newest: Node runs TypeScript directly
+(type stripping, stable since Node 23), so they import from `src/lib` instead of
+re-implementing it. `geocode-listings.ts` importing `addressKey()` is the point —
+it removes a mirror rather than documenting one.
+
+**The two dev servers listen on different ports, and the config does not say so.**
+`vite.config.ts` sets `server.port: 8080`, which is what a host `npm run dev` uses —
+but the container overrides it and `docker-compose.yml` publishes `5173:5173`, so
+the Docker path is **http://localhost:5173**. Curling :8080 against a running
+container gets nothing and looks like a broken app.
+
+**On a Mac the Docker path is usually the only one that works.** `node_modules` is
+mounted as an anonymous volume so the install inside the container is a *Linux*
+one; a host `npm run dev` or `npm run build` then fails on a missing platform
+binary (`Cannot find module '@rollup/rollup-darwin-arm64'`). Build through Docker
+instead — no Node toolchain needed on the host:
 `docker run --rm -v "$PWD":/app -w /app node:20-alpine npm run build`.
+
+The `.ts` check scripts are the exception: they run on the HOST with plain `node`,
+because they import nothing from `node_modules`. They do need Node 23+ for type
+stripping, which is why they are not part of the Node 20 build.
 
 There is no test framework configured. The closest thing to one is the SEO auditor from the
 `seo-web` skill, which checks the *built* output and exits non-zero on failure:
@@ -222,9 +250,10 @@ returns, and the mismatches are the list. Sections with detail routes belong in
   the homepage and every blog post.
 - **Unverified fields stay absent.** `compact()` drops any empty field from the
   schema, so a value that is not known yet is simply omitted rather than
-  placeheld — wrong coordinates or invented hours are worse than none. `geo`,
-  `hours` and the profile list have since been filled in and each carries the
-  date it was confirmed; `CLIENTS_SERVED` in
+  placeheld — wrong coordinates or invented hours are worse than none. `hours`
+  and the profile list have since been filled in and each carries the date it
+  was confirmed (`geo` was too, and is null again since the office went — see
+  the service-area note below); `CLIENTS_SERVED` in
   [Stats.tsx](src/components/Stats.tsx) and `LICENCE_NUMBER` in
   [About.tsx](src/pages/About.tsx) are the two still gated at zero/empty, and
   both render an alternative rather than a placeholder. Fill values in
@@ -276,12 +305,36 @@ returns, and the mismatches are the list. Sections with detail routes belong in
   - `/vi/*` — **language**, and unlike the four above these are *documents in
     Vietnamese*, not English pages about Vietnamese service. They pair with an
     English counterpart rather than competing with one.
-- **NAP consistency**: name, address, and phone must be identical
-  character-for-character everywhere, and all of it comes from
-  [siteConfig.ts](src/lib/siteConfig.ts) — display phone `(860) 682-2251`,
-  E.164 `+1-860-682-2251` for `tel:`/`sms:`/schema. Inconsistent NAP actively
-  suppresses local ranking. The footer's call link used to dial a different
-  number entirely from the one printed next to it.
+- **NAP consistency**: name and phone must be identical character-for-character
+  everywhere, and all of it comes from [siteConfig.ts](src/lib/siteConfig.ts) —
+  display phone `(860) 682-2251`, E.164 `+1-860-682-2251` for `tel:`/`sms:`/schema.
+  Inconsistent NAP actively suppresses local ranking. The footer's call link used
+  to dial a different number entirely from the one printed next to it.
+- **There is NO street address, and that is deliberate.** Kevin moved from Keller
+  Williams (150 West St, Needham) to **LPT Realty** on 2026-09-26. LPT is a cloud
+  brokerage with no local office, so he is a **service-area business**: the Google
+  Business Profile hides its address and lists service areas, `SITE.address` is
+  locality-only (Needham, MA, US — no street, no ZIP, since Needham has two and
+  choosing one invents a location), and `SITE.geo` is null. `streetAddress` and
+  `postalCode` were **removed** from the type rather than blanked, so anything that
+  tries to print them fails to compile. Do not "fix" the gap with a virtual office
+  or PO box — both violate Google's guidelines and are a documented suspension
+  cause — or with Needham's town-centre coordinates, which describe a business that
+  is not there. `locality` and `serviceAreaLine` replaced `formattedAddress` and
+  `mapsHref`.
+- **The brokerage name must be on every page — it is in the footer for that
+  reason.** 254 CMR 3.09 requires all real estate advertising to include the
+  broker's name conspicuously. Until 2026-09-26 it appeared only in the homepage
+  hero and a few landing pages. Every place that names it reads `SITE.brokerage`;
+  four literal "Keller Williams Realty" strings were what went stale on the move.
+  The social cards carry it too (`generate-icons.mjs`), and they must be
+  regenerated on a Debian image with fonts — Alpine silently renders every glyph
+  as a box.
+- **A past closing is never attributed to the current brokerage.**
+  `PropertyDetail` used to describe each closing as "represented by Kevin Hoang,
+  ${SITE.brokerage}", which on the move would have relabelled Keller Williams sales
+  as LPT Realty sales. It now names Kevin alone. The closings have no `soldDate`,
+  so which brokerage each closed under cannot be derived.
 - **`scripts/routes.mjs` reads slugs out of the `src/data/*.ts` modules** rather
   than duplicating them, so the sitemap cannot drift from the corpus.
 
@@ -401,6 +454,134 @@ working if that setting is ever reset.
   templated filler this corpus was cleaned of once. Its `<h2>` interpolates the
   town name so the six instances stay distinct under the topical-distinctness
   rule.
+
+### The price estimate (`/search/<mls>`)
+
+Comparable-sales valuation on the IDX listing pages. Two modules: everything
+numeric is in [valuation.ts](src/lib/valuation.ts), which is **pure — no network,
+no DOM** so it can be run against a synthetic market whose true answer is known;
+[idxComps.ts](src/lib/idxComps.ts) does the fetching and holds no judgement.
+`node scripts/valuation-check.ts` is the check, and it is the real one: it
+generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
++0.5%/month) and asserts the estimator recovers them.
+
+- **The sold feed is DELETED as it ages, so `idx_sold_archive` is the comp source
+  of truth — never `idx_listings`.** MLS PIN's sold feed is a rolling twelve-month
+  window (measured 2026-09-20: 2025-09-17 to 2026-09-18, to the day), and
+  `idx-sync`'s retention sweep removes what falls out of it. `idx_archive_sold()`
+  runs on **every** sold slice, before the sweep, not just alongside the prune — a
+  slice that fails three days running would otherwise take its rows with it. The
+  archive is scoped to the 17 served towns, MA only, sales only, modelled columns
+  only: 7,495 rows a year against a 500 MB free tier. **The town list in that
+  function is a deliberate mirror of `SITE.areaServed`**, and forgetting to add a
+  town there means that town's sales are never archived — silently, and
+  unrecoverably a year later.
+- **Town names are NOT unique, and every comp query filters `state`.** MLS PIN's
+  town table is `TOWN_NUM|LONG|COUNTY|STATE` and `generate-idx-towns.mjs` keeps
+  only the first two, so Dover MA and Dover NH resolve to the same string. Measured
+  on the live feed: Dover is 127 MA rows and **19 NH**, Concord 336 and 5, Belmont
+  521 and 7, Winchester 479 and 2, Newton 997 and 3, Brookline 998 and 2. This is a
+  pre-existing defect in `/search` itself — `?town=Dover` shows New Hampshire
+  listings today — and `searchListings()` should get the same filter.
+- **An unknown distance is not a near one.** A row with no geocode is included when
+  no radius is asked for and excluded when one is. The inverse lets a sale from the
+  far side of town be presented as half a mile away, and until the geocode backfill
+  finishes that is most rows.
+- **Price per square foot is not an adjustment rate.** The grid adjusts at the
+  *marginal* rate from a regression on the comp set — typically 40–60% of average
+  $/sqft, measured at $277 against a true $300 in the synthetic check. Adjusting at
+  full average $/sqft overshoots by half the difference, which is the error
+  [how-to-read-a-comp-massachusetts](src/data/blogData.ts) is written about.
+  **Bedrooms are a selection axis, never a dollar line** — they are collinear with
+  floor area and adjusting for both counts the same square feet twice.
+- **Every adjustment is derived or dropped.** `deriveRates()` offers each feature
+  to one multivariate OLS and keeps a coefficient only if it clears significance
+  *and* has the sign the world has. A regression on nine houses will report a
+  bathroom worth minus $200,000 often enough that not checking is not an option,
+  and a wrong-signed adjustment is worse than none — it moves the estimate
+  confidently the wrong way. Dropped features are named in "what this could not
+  look at" rather than quietly omitted.
+- **The time adjustment is Fannie Mae's, and zero is a real answer.** Mandatory
+  for appraisals dated on or after 2025-03-01, where omitting it is named an
+  unacceptable practice. `marketTrend()` returns exactly 0 when the slope fails
+  significance or the sample is under twelve sales: the requirement is that the
+  adjustment be *market-derived*, so inventing a drift the data does not support is
+  the very fabrication it exists to prevent.
+- **Below 5 comps it refuses; above 35% dispersion it withholds only the number.**
+  `medianAskingRent` sets three for a median of asking rents in an editable field;
+  this is a claim about one house next to someone else's asking price, so it needs
+  more. When the comps disagree too much the range, the chart and the comp table
+  still render — that disagreement is itself worth knowing.
+- **Rentals are not valued; multi-family is, but only against its own unit
+  count.** A sale estimate on a unit for rent answers nothing. Multi-family was
+  refused until 2026-09-26 on the grounds that MF `bedrooms` is a total across
+  units — true and irrelevant, since comps are always the same property type.
+  What must match is the unit count, which `unitClass()` reads from MF_TYPE
+  (A/D/F/G/H two-family, B/I/J/K three, C/L/M/N four, E/O/P/Q five-plus; 100%
+  filled). Style is ignored on MF, where the column has no codebook. MF is the
+  weakest type because it trades on rents the feed does not carry, and the panel
+  says so.
+- **`style` is a comma-separated SET and the codes collide across property types.**
+  "A,D" is a real value; "A" is Colonial on a single-family and Detached on a condo.
+  Compare with `styleSet()` overlap, always within one `prop_type`. An **unknown**
+  style is not a mismatch — treating it as one empties the tight tiers for every
+  listing whose agent left the field blank.
+- **The chart is hand-rolled SVG and plots RAW sale prices.** recharts is a
+  dependency but is imported only by the admin-only lazy `CRMDashboard`, so using it
+  here would drop the library into a public chunk, and `ResponsiveContainer`
+  measures DOM width so it renders empty at first paint and on paper. Plotting
+  *adjusted* prices would draw a tighter cloud corresponding to no transaction and
+  fold the model's assumptions into the evidence offered for them; the adjustment
+  is shown per-comp in the table instead. Champagne is a non-text mark here, which
+  is the only thing it may be on white.
+- **`SITE.valuation` is the compliance switch, and it exists before it is needed.**
+  NAR's IDX policy authorises AVMs and permits MLS content for "developing market
+  statistics", but an estimate shown *in immediate conjunction with a listing* must
+  be disabled at an individual seller's request — and the feed carries no flag
+  saying who has asked. `enabled: false` withdraws it sitewide; `suppressedMls`
+  withdraws one. Suppression removes the **number**, not the comps or the chart.
+  **Not yet checked against MLS PIN Attachment C**, the same open caveat
+  [IdxDisclosure.tsx](src/components/IdxDisclosure.tsx) carries about its own wording.
+- **Measured accuracy, 2026-09-20: median absolute error 12.1%, bias +3.1%, 72%
+  within 20%**, over 236 real closings across the 17 towns with `--per-town 15`.
+  `node scripts/valuation-backtest.ts` is the instrument and it holds each home
+  out of its own comp set AND removes every sale that closed after it — without
+  that second rule the model is shown its own subject's future and the error comes
+  back flattering and meaningless. Read the BIAS before the error: 12% noisy is a
+  different thing from 12% consistently high. Re-run after any change to the
+  tiers, the grid or the weighting.
+  - **Until `idx_geocodes` is filled, no valuation reaches tiers 0–2**, which all
+    need a radius. The **same-ZIP rung** (tier 3) is what runs instead, and it was
+    added 2026-09-26 because town-level comps fail in large towns: Boston
+    single-family was 26% off at town level and 12% at ZIP level, bias −11.5% →
+    +1.4%. Geocoding is still the largest gain available; the backtest warns when
+    no valuation used a distance rung.
+  - **By type, measured 2026-09-26 against the live sold feed across towns in and
+    out of the 17:** single-family 9.5% median error, bias +4.3%, 84% within 20%;
+    condo 10.9%, +2.4%, 80%; multi-family 12.1%, +5.7%, 65%.
+  - Somerville is the worst town at −19% and Concord the worst the other way at
+    +11%, both on small samples. A town that stays badly off after geocoding is
+    worth adding to `suppressedMls` rather than explaining away.
+- **Comps come from every town, not just the 17.** `idx_comparable_sales` reads
+  the live sold feed (all towns, twelve months) UNION the archive (seventeen
+  towns, growing), deduplicated on the archive's primary key — a sale counted
+  twice would carry double weight in the median. Before 2026-09-26 it read only
+  the archive, so ~88% of listings on `/search` could never show an estimate.
+- **The estimate is stated beside the asking price, not only in the panel.**
+  `ValuationSummary` is one line under the price that links down to the working.
+  The panel alone sat below the mortgage calculator, where it was on the page and
+  effectively invisible. Both read `useListingValuation`, which react-query keys
+  on the MLS number, so they make one request. Active listings only: on a sold
+  one the sale price is the fact.
+- **The panel must not contradict [/home-valuation](src/pages/HomeValuation.tsx)**,
+  which is an indexed money page arguing that automated estimates cannot see
+  condition. It agrees with that page in its own words and links to it, rather than
+  overselling. Its `<h2>` interpolates the address, like every heading on that page.
+- **`idxComps.ts` carries a scoped `CompsSchema` cast, and it is temporary.**
+  `types.ts` cannot describe `idx_geocodes` or `idx_comparable_sales` until the
+  migrations are pushed and it is regenerated. Unlike the deleted `db` escape hatch
+  this asserts a *precise* schema that the compiler still checks, in one module —
+  but delete it and switch to `supabase` directly after regenerating.
 
 ### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
 
@@ -636,6 +817,18 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   the email disagreeing with the address on the page is the failure this prevents.
   Same arrangement as the town/ZIP normalisation shared between
   `sync-listings.mjs` and `fromRow`.
+- **The invite's street field suggests addresses from MassGIS**
+  ([massgis.ts](src/lib/massgis.ts), [AddressAutocomplete](src/components/admin/AddressAutocomplete.tsx)).
+  "151 wash" offers "151 Washington St, Cambridge, MA 02139" and picking it fills
+  town, state and ZIP. MassGIS because it is the Commonwealth's own address
+  points, free, keyless and CORS-open to kevinhoang.co — Google Places needs a
+  billed key, Nominatim's policy forbids autocomplete, the Census geocoder has no
+  suggest. The locator ignores both its `location` bias and a town typed after the
+  street, so it runs twice: once boxed to Greater Boston/MetroWest, once statewide,
+  local first. Suffixes are normalised to USPS abbreviations, which is what makes
+  it serve the same purpose as the reuse picker — one canonical spelling per
+  address. A building's unit range ("#1-12") is shown as a hint under Unit and
+  never written into it. Failure is silent: the field stays plain text.
 - **The ZIP field is not `inputMode="numeric"`.** A leading zero is exactly what a
   numeric field eats, and 8 of 10 ZIPs on this site start with one — that is the
   same import bug that once rendered "Newton, MA 2459".

@@ -17,7 +17,7 @@ import ContactQRCode from '@/components/ContactQRCode';
 import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import PageShell, { ShellSection } from "@/components/PageShell";
-import { SITE, formattedAddress, mapsHref, smsHref, telHref } from "@/lib/siteConfig";
+import { SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
 import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
 import { agentIdentity, contactPage } from "@/lib/schema";
@@ -241,19 +241,12 @@ const Contact = () => {
                       <MapPin className="w-5 h-5 text-ink" />
                     </div>
                     <div>
+                      {/* "Service area" rather than "Office": there has been no
+                          office to visit since the move to LPT Realty, and a
+                          button that opened a map of one was a claim that
+                          there was. See SITE.address. */}
                       <h3 className="font-medium text-ink uppercase">{t('contact.office')}</h3>
-                      <div className="relative">
-                        <button
-                          onClick={() => window.open(mapsHref, "_blank")}
-                          className="text-gray-600 hover:text-ink no-underline group"
-                          style={{ borderBottom: "none", textDecoration: "none", position: "relative" }}
-                        >
-                          <span className="relative select-all">
-                            {formattedAddress.toUpperCase()}
-                            <span className="absolute bottom-[-4px] left-1/2 w-0 h-0.5 bg-ink group-hover:w-full transition-all duration-300 -translate-x-1/2" />
-                          </span>
-                        </button>
-                      </div>
+                      <p className="text-gray-600">{serviceAreaLine}</p>
                     </div>
                   </div>
 

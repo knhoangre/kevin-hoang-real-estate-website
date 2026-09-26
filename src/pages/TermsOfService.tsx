@@ -1,5 +1,5 @@
 import Seo from "@/components/Seo";
-import { SITE, formattedAddress } from "@/lib/siteConfig";
+import { SITE, locality } from "@/lib/siteConfig";
 import BreadcrumbBar from "@/components/BreadcrumbBar";
 import { breadcrumbs } from "@/lib/schema";
 
@@ -342,7 +342,8 @@ const TermsOfService = () => {
                     <p className="text-gray-700 mb-2"><strong>Kevin Hoang</strong></p>
                     <p className="text-gray-700 mb-2">Email: {SITE.email.toUpperCase()}</p>
                     <p className="text-gray-700 mb-2">Phone: {SITE.phone}</p>
-                    <p className="text-gray-700">Address: {formattedAddress.toUpperCase()}</p>
+                    <p className="text-gray-700 mb-2">Brokerage: {SITE.brokerage}</p>
+                    <p className="text-gray-700">Based in: {locality.toUpperCase()}</p>
                   </div>
                 </section>
 

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Calendar, ChevronDown, Mail, MapPin, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { VI_ROUTES } from "@/lib/viRoutes";
-import { SITE, telHref } from "@/lib/siteConfig";
+import { SITE, serviceAreaLine, telHref } from "@/lib/siteConfig";
 
 /**
  * One definition for the footer link treatment. Every link here used to repeat
@@ -118,17 +118,11 @@ const Footer = () => {
                   <span className={UNDERLINE} />
                 </a>
               </li>
-              <li className="flex items-start gap-3">
+              {/* A service area, not an office address, and so not a map link.
+                  See SITE.address for why there is no street here any more. */}
+              <li className="flex items-start gap-3 text-gray-300">
                 <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden />
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={CONTACT_LINK}
-                >
-                  {`${SITE.address.streetAddress}, ${SITE.address.addressLocality}, ${SITE.address.addressRegion} ${SITE.address.postalCode}`}
-                  <span className={UNDERLINE} />
-                </a>
+                <span>{serviceAreaLine}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Calendar className="mt-1 h-4 w-4 shrink-0" aria-hidden />
@@ -213,8 +207,18 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+          {/*
+            THE BROKERAGE, ON EVERY PAGE. 254 CMR 3.09 requires all real estate
+            advertising to include the name of the broker, conspicuously. Before
+            2026-09-26 it appeared only in the homepage hero and on a few landing
+            pages, so every blog post, town guide and listing page was an
+            advertisement that omitted it. The footer is the one element every
+            route renders — including the prerendered HTML — so it lives here.
+          */}
           <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            &copy; {currentYear} Kevin Hoang. All rights reserved.
+            &copy; {currentYear} Kevin Hoang. All rights reserved. Licensed
+            Massachusetts real estate broker with{' '}
+            <span className="font-semibold text-gray-300">{SITE.brokerage}</span>.
           </p>
           <p className="text-gray-400 text-sm">
             Created by <span className="font-semibold">Kevin Hoang</span>

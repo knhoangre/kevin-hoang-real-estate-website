@@ -129,7 +129,16 @@ const PropertyDetail = () => {
           listing.bedrooms !== null ? `${listing.bedrooms} bedrooms` : null,
           listing.livingArea !== null ? `${listing.livingArea.toLocaleString()} sq ft` : null,
           isSold && soldMonth ? `sold ${soldMonth}` : isSold ? 'sold' : null,
-          `represented by Kevin Hoang, ${SITE.brokerage}.`,
+          /*
+            NO BROKERAGE HERE, on purpose. This names SITE.brokerage — the
+            CURRENT one — beside a PAST closing, so on 2026-09-26 every one of
+            these pages would have started claiming a Keller Williams sale as an
+            LPT Realty sale: a false statement about a real transaction. The
+            closings carry no date (soldDate is null on all ten), so which
+            brokerage each one closed under cannot even be derived. Kevin
+            represented the client; that part is true regardless.
+          */
+          'represented by Kevin Hoang.',
         ]
           .filter(Boolean)
           .join(' · '),
