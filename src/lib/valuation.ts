@@ -133,8 +133,14 @@ export interface DerivedRate {
 }
 
 export interface Valuation {
-  /** The point estimate, or null when the comps disagree too much to support one. */
+  /** The point estimate, or null when it is withheld — see `withheld`. */
   estimate: number | null;
+  /**
+   * Why the point estimate is null, so the page can say so in the right words.
+   * Null when there IS an estimate. The range, the chart and the comps are
+   * shown in every case.
+   */
+  withheld: 'dispersion' | 'larger-than-comps' | 'smaller-than-comps' | 'lot-beyond-comps' | null;
   /** Weighted 25th and 75th percentile of adjusted prices. Always present. */
   low: number;
   high: number;
@@ -243,6 +249,9 @@ export const TIER_TARGET = 8;
  * percentOfAsking() returning null rather than assuming two prices were equal.
  */
 const MAX_DISPERSION = 0.35;
+
+/** How far past the largest comp's lot a subject's may go. See the bracketing note in valuate(). */
+const LOT_BRACKET_SLACK = 1.5;
 
 /** Property types this can speak about at all. See `supports()`. */
 const SUPPORTED_PROP_TYPES = ['SF', 'CC', 'MF'];
@@ -904,11 +913,55 @@ export const valuate = (
     ...dropped.filter((d) => d !== 'Floor area').map((d) => `${d} (the sales here did not support a rate)`),
   ];
 
+  /*
+   * BRACKETING. An appraiser's comps must bracket the subject: at least one
+   * larger and one smaller, so the estimate is interpolated between real sales
+   * rather than projected past them. A house bigger than every comp is being
+   * valued by extending a line beyond the last point on it — which is exactly
+   * where the marginal rate is least trustworthy and where, measured on the live
+   * listings on 2026-09-26, the estimates were furthest off: a $2.7M Hanover
+   * house resolved against ten smaller sales and came out 48% under its ask.
+   * The range and the comps are still shown; only the single number is not.
+   */
+  const areas = selected.map((c) => c.living_area as number);
+
+  /*
+   * The same test on LOT size, on the large side only and with slack. Measured
+   * on a live Mansfield listing on 2026-09-26: a 2,500 sq ft ranch on ten acres,
+   * marketed as a three-lot development parcel, was valued as a ranch — the
+   * house comps all sat on ordinary lots, and "asking is 57% above" was a
+   * statement about land the model never priced. Past a certain size a lot is
+   * valued as land, and no house comp says anything about that.
+   *
+   * Large side only: a small lot is what the lot adjustment is for, and is not
+   * where the price turns into something else. 1.5x of slack because a lot
+   * slightly bigger than the biggest comp's is still the same kind of property.
+   * Single-family and multi-family only — a condo's `acres` is the complex's,
+   * or absent.
+   */
+  const subjectAcres = subject.acres ?? 0;
+  const compAcres = selected.map((c) => c.acres ?? 0).filter((a) => a > 0);
+  const lotBeyond =
+    subject.prop_type !== 'CC' &&
+    subjectAcres > 0 &&
+    compAcres.length > 0 &&
+    subjectAcres > Math.max(...compAcres) * LOT_BRACKET_SLACK;
+
+  const withheld: Valuation['withheld'] =
+    area > Math.max(...areas)
+      ? 'larger-than-comps'
+      : area < Math.min(...areas)
+        ? 'smaller-than-comps'
+        : lotBeyond
+          ? 'lot-beyond-comps'
+          : dispersion > MAX_DISPERSION
+            ? 'dispersion'
+            : null;
+
   return {
     valuation: {
-      // The one place the point estimate is withheld while everything else is
-      // still shown. See MAX_DISPERSION.
-      estimate: dispersion <= MAX_DISPERSION ? Math.round(mid / 1000) * 1000 : null,
+      estimate: withheld === null ? Math.round(mid / 1000) * 1000 : null,
+      withheld,
       low: Math.round(low / 1000) * 1000,
       high: Math.round(high / 1000) * 1000,
       comps: normalised.sort((a, b) => b.weight - a.weight),
@@ -922,6 +975,20 @@ export const valuate = (
     },
   };
 };
+
+/**
+ * The asking price, if it is one — or null if it is a placeholder.
+ *
+ * MLS listings are sometimes entered at $1 (auctions, "price on request",
+ * a listing awaiting its real figure). Comparing that to an estimate printed
+ * "asking is 100% below what these sales suggest" on a live Chicopee listing
+ * (2026-09-26), and the same $1 would have stretched the chart's price axis
+ * down to zero. No house in Massachusetts is genuinely offered for sale under
+ * $10,000, so below that the figure is treated as absent: no comparison, no
+ * mark on the chart. Everything else about the estimate still shows.
+ */
+export const comparableAsking = (asking: number | null): number | null =>
+  asking !== null && Number.isFinite(asking) && asking >= 10_000 ? asking : null;
 
 /** Kilometres to miles, for display. The query measures in km; readers do not. */
 export const toMiles = (km: number): number => km * 0.621371;

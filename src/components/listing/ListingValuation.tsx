@@ -37,7 +37,7 @@ import { LineChart } from 'lucide-react';
 import { formatPrice } from '@/lib/listings';
 import { headlinePrice, type IdxListing } from '@/lib/idxSearch';
 import { estimateSuppressed } from '@/lib/idxComps';
-import { toMiles } from '@/lib/valuation';
+import { comparableAsking, toMiles } from '@/lib/valuation';
 import { useListingValuation } from '@/hooks/useListingValuation';
 import CompsScatter from '@/components/listing/CompsScatter';
 import { VALUATION_ANCHOR } from '@/components/listing/ValuationSummary';
@@ -70,7 +70,8 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
 
   const suppressed = estimateSuppressed(listing.mls_number);
   const estimate = suppressed ? null : valuation.estimate;
-  const asking = headlinePrice(listing);
+  // Null for a placeholder list price, so no gap line and no mark on the chart.
+  const asking = comparableAsking(headlinePrice(listing));
   const label = listing.address ?? `MLS ${listing.mls_number}`;
   const distance = formatDistance(valuation.medianDistanceKm);
 
@@ -131,9 +132,18 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
               {formatPrice(valuation.low)} – {formatPrice(valuation.high)}
             </p>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-600">
+              {/* The reason is stated, because "no number" alone reads as the
+                  feature failing — and each reason tells the reader something
+                  true about this house or this market. */}
               {suppressed
                 ? 'A single estimate is not shown for this listing. The comparable sales behind it are below.'
-                : 'These sales disagree too much to name one number. That is worth knowing in itself — it usually means the houses nearby are less alike than their specifications suggest.'}
+                : valuation.withheld === 'larger-than-comps'
+                  ? `${label} is larger than every comparable sale nearby, so one number would be a projection past the evidence rather than a reading of it. The range is what these sales show.`
+                  : valuation.withheld === 'smaller-than-comps'
+                    ? `${label} is smaller than every comparable sale nearby, so one number would be a projection past the evidence rather than a reading of it. The range is what these sales show.`
+                    : valuation.withheld === 'lot-beyond-comps'
+                      ? `${label} sits on far more land than any comparable sale nearby. Past a point a lot is priced as land, not as the garden of a house, and these sales say nothing about that. The range is what they show for the house alone.`
+                      : 'These sales disagree too much to name one number. That is worth knowing in itself — it usually means the houses nearby are less alike than their specifications suggest.'}
             </p>
           </>
         )}

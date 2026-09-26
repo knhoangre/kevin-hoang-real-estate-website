@@ -33,6 +33,7 @@ import {
   supports,
   unitClass,
   zip5,
+  comparableAsking,
   TIERS,
   MIN_COMPS,
   TIER_TARGET,
@@ -361,6 +362,43 @@ ok(TIER_TARGET > MIN_COMPS, 'a rung must hold more than the refusal floor before
   }
 }
 
+console.log('\n--- bracketing and placeholder prices ---');
+{
+  // The market's houses run 1,600-3,000 sq ft. A 3,100 sq ft subject is bigger
+  // than every one of them: its value would be a projection, not a reading.
+  const big = valuate({ ...SUBJECT, living_area: 3100 }, market, NOW);
+  ok('valuation' in big, 'a subject bigger than every comp still gets the panel');
+  if ('valuation' in big) {
+    ok(big.valuation.estimate === null, 'but no single number — it would be extrapolated past the evidence');
+    ok(big.valuation.withheld === 'larger-than-comps', 'and the page is told why: larger than every comp');
+    ok(big.valuation.high > big.valuation.low, 'the range is still reported');
+  }
+  const small = valuate({ ...SUBJECT, living_area: 1500 }, market, NOW);
+  ok('valuation' in small && small.valuation.withheld === 'smaller-than-comps', 'a subject smaller than every comp is withheld the same way');
+
+  const normal = valuate(SUBJECT, market, NOW);
+  ok('valuation' in normal && normal.valuation.withheld === null && normal.valuation.estimate !== null,
+    'a bracketed subject gets its number, and withheld is null');
+}
+{
+  // The market's lots are all a quarter-acre. Ten acres is land, not a garden.
+  const tenAcres = valuate({ ...SUBJECT, acres: 10 }, market, NOW);
+  ok('valuation' in tenAcres && tenAcres.valuation.withheld === 'lot-beyond-comps',
+    'a house on ten acres among quarter-acre comps is withheld: the lot is priced as land');
+  const slightlyBigger = valuate({ ...SUBJECT, acres: 0.3 }, market, NOW);
+  ok('valuation' in slightlyBigger && slightlyBigger.valuation.withheld === null,
+    'a lot a little past the biggest comp is still the same kind of property');
+  const tinyLot = valuate({ ...SUBJECT, acres: 0.05 }, market, NOW);
+  ok('valuation' in tinyLot && tinyLot.valuation.withheld === null,
+    'a small lot is left to the lot adjustment, not withheld');
+  const condo = valuate({ ...SUBJECT, prop_type: 'CC', acres: 10 }, market.map((c) => ({ ...c, prop_type: 'CC' })), NOW);
+  ok('valuation' in condo && condo.valuation.withheld !== 'lot-beyond-comps', 'a condo is never withheld on acreage');
+}
+ok(comparableAsking(1) === null, 'a $1 list price is a placeholder, not a price to compare with');
+ok(comparableAsking(9_999) === null, 'nor is anything under $10,000');
+ok(comparableAsking(10_000) === 10_000 && comparableAsking(849_000) === 849_000, 'real prices pass through unchanged');
+ok(comparableAsking(null) === null, 'no price is no price');
+
 console.log('\n--- refusals ---');
 
 ok(!supports({ prop_type: 'RN', prop_subtype: null }), 'rentals are unsupported');
@@ -427,6 +465,7 @@ ok(unitClass('DF') === null, 'a malformed two-letter code is not read as a two-f
   ok('valuation' in r, 'a chaotic market still returns comps and a range');
   if ('valuation' in r) {
     ok(r.valuation.estimate === null, 'but the point estimate is withheld when the comps disagree too much');
+    ok(r.valuation.withheld === 'dispersion', 'and the reason given is dispersion, not size');
     ok(r.valuation.high > r.valuation.low, 'and the range is still reported');
     ok(r.valuation.comps.length > 0, 'and the comps are still listed');
   }

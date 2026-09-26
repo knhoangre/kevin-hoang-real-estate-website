@@ -22,6 +22,7 @@ import { ArrowDown } from 'lucide-react';
 import { formatPrice } from '@/lib/listings';
 import { headlinePrice, type IdxListing } from '@/lib/idxSearch';
 import { estimateSuppressed } from '@/lib/idxComps';
+import { comparableAsking } from '@/lib/valuation';
 import { useListingValuation } from '@/hooks/useListingValuation';
 
 export const VALUATION_ANCHOR = 'what-nearby-sales-say';
@@ -32,7 +33,8 @@ const ValuationSummary = ({ listing }: { listing: IdxListing }) => {
 
   const suppressed = estimateSuppressed(listing.mls_number);
   const estimate = suppressed ? null : valuation.estimate;
-  const asking = headlinePrice(listing);
+  // A $1 placeholder is not a price to compare against. See comparableAsking.
+  const asking = comparableAsking(headlinePrice(listing));
   const gap =
     estimate !== null && asking !== null && asking > 0
       ? (asking - estimate) / estimate

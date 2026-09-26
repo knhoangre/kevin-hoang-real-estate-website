@@ -543,9 +543,10 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
   **Not yet checked against MLS PIN Attachment C**, the same open caveat
   [IdxDisclosure.tsx](src/components/IdxDisclosure.tsx) carries about its own wording.
 - **Measured accuracy, 2026-09-26, with geocodes loaded: median absolute error
-  10.5%, mean 14.5%, bias +4.8%, 74% within 20%** — 436 real closings across the
-  17 towns, `--per-town 12`. By type: condo 8.5%, multi-family 10.5%,
-  single-family 13.3%. `node scripts/valuation-backtest.ts` is the instrument: it
+  10.2%, mean 14.3%, bias +4.5%, 74% within 20%** — 413 real closings across the
+  17 towns, `--per-town 12`. By type: condo 8.5%, multi-family 9.1%,
+  single-family 13.3%. On a sample of 90 live active listings statewide, the
+  panel appears on 80. `node scripts/valuation-backtest.ts` is the instrument: it
   holds each home out of its own comp set, removes every sale that closed after
   it (without that the model is shown its subject's future and the error comes
   back flattering and meaningless), and looks the home's coordinate up exactly as
@@ -576,6 +577,22 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
     tuning of the grid.
   - A town that stays badly off is worth adding to `suppressedMls` rather than
     explaining away. Concord (about −10%) is the outlier to watch.
+- **The number is withheld — the range and comps still shown — whenever it would
+  be a projection rather than a reading.** Appraisal practice requires comps to
+  BRACKET the subject, and the live listings showed why. A subject larger or
+  smaller in floor area than every comp gets no single number (a $2.7M Hanover
+  house resolved against ten smaller sales came out 48% under its ask). So does a
+  single-family or multi-family whose lot is more than 1.5x the largest comp's:
+  a ten-acre Mansfield development parcel was valued as the ranch on it, "57%
+  above". Lots are checked on the large side only, where price turns into land
+  value; condos never, since their `acres` is the complex's. `withheld` carries
+  the reason so the panel can say it in plain words. Measured cost: about 5% more
+  homes show a range instead of a number, and the numbers shown got better.
+- **A list price under $10,000 is a placeholder, not a price.** Listings are
+  entered at $1 for auctions and "price on request"; compared with an estimate it
+  printed "asking is 100% below" on a live Chicopee listing, and would have
+  stretched the chart's axis to zero. `comparableAsking()` returns null for it, so
+  there is no comparison and no mark on the chart — the estimate itself still shows.
 - **Comps come from every town, not just the 17.** `idx_comparable_sales` reads
   the live sold feed (all towns, twelve months) UNION the archive (seventeen
   towns, growing), deduplicated on the archive's primary key — a sale counted
