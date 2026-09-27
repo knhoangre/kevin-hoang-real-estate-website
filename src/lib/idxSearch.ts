@@ -212,14 +212,6 @@ export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
   return p;
 };
 
-/**
- * Run one search. Returns the page of rows plus the total match count, which is
- * what drives the pager.
- *
- * `count: 'exact'` on 22,000 rows is cheap because every filtered column is
- * indexed; without it the page could not say "1–24 of 378" and a user could not
- * tell a narrow search from a broken one.
- */
 /* -------------------------------------------------------------------------- */
 /* Retrying a cold query                                                       */
 /* -------------------------------------------------------------------------- */
@@ -291,10 +283,19 @@ export const withRetry = async <T>(run: () => Promise<T>, label: string): Promis
   throw lastError;
 };
 
-export const searchListings = async (f: SearchFilters) => {
+/**
+ * The rows a search matches, with every filter applied and no ordering or
+ * paging — the part a page of results and its total have in common.
+ *
+ * `head` makes it a count: a HEAD request with no body, answered from the
+ * covering index idx_listings_active_count where the visibility map allows.
+ */
+const matching = (f: SearchFilters, head: boolean) => {
   const sold = f.listingType === 'sold';
 
-  let query = supabase.from('idx_listings').select('*', { count: 'exact' });
+  let query = supabase
+    .from('idx_listings')
+    .select('*', head ? { count: 'exact', head: true } : undefined);
 
   /*
    * Rentals live in the same table as sales and are priced per month, so mixing
@@ -337,13 +338,6 @@ export const searchListings = async (f: SearchFilters) => {
     }
   }
 
-  // Sold listings are ordered by WHEN they closed. By price, last week's sales
-  // would sit behind a mansion that closed eleven months ago — useless for
-  // anyone judging what a street is doing now.
-  query = sold
-    ? query.order('settled_date', { ascending: false, nullsFirst: false })
-    : query.order('list_price', { ascending: false, nullsFirst: false });
-
   /*
    * Free text across address, town AND MLS number, so someone can paste
    * "73524017" or type "Wiswall" without deciding which field it belongs to.
@@ -382,6 +376,34 @@ export const searchListings = async (f: SearchFilters) => {
   const baths = Number(f.baths);
   if (f.baths && Number.isFinite(baths)) query = query.gte('full_baths', baths);
 
+  return query;
+};
+
+/**
+ * One page of results — and ONLY the page. The total is `countListings`.
+ *
+ * THEY WERE ONE REQUEST UNTIL 2026-09-27, and that is what made /search slow to
+ * show anything. `count: 'exact'` makes PostgREST count every match in the same
+ * statement, so the 24 cards could not arrive before all 15,526 rows behind the
+ * default search had been counted — cold, that was most of an 8-second timeout,
+ * spent on a number printed in small grey type above the grid. Split, the page
+ * renders the cards the moment they come back and fills in "of 15,526" when it
+ * arrives; the ordered read is a 26-buffer walk down idx_listings_sale_price.
+ * See 20260927100000_idx_search_speed.sql for the measurements.
+ */
+export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> => {
+  // Sold listings are ordered by WHEN they closed. By price, last week's sales
+  // would sit behind a mansion that closed eleven months ago — useless for
+  // anyone judging what a street is doing now.
+  //
+  // NULLS LAST on both, and it must stay that way: the indexes the page reads
+  // are declared DESC NULLS LAST, and a query asking for NULLS FIRST cannot use
+  // them and falls back to sorting every match.
+  const query =
+    f.listingType === 'sold'
+      ? matching(f, false).order('settled_date', { ascending: false, nullsFirst: false })
+      : matching(f, false).order('list_price', { ascending: false, nullsFirst: false });
+
   const from = (f.page - 1) * PAGE_SIZE;
 
   return withRetry(async () => {
@@ -390,11 +412,26 @@ export const searchListings = async (f: SearchFilters) => {
     // and `.range()` only sets a header, so re-awaiting is safe here. Verified in
     // node_modules/@supabase/postgrest-js — worth stating, because the retry
     // would be a silent no-op if that were ever not true.
-    const { data, error, count } = await query.range(from, from + PAGE_SIZE - 1);
+    const { data, error } = await query.range(from, from + PAGE_SIZE - 1);
     if (error) throw error;
-    return { listings: (data ?? []) as IdxListing[], total: count ?? 0 };
+    return (data ?? []) as IdxListing[];
   }, 'Listing search');
 };
+
+/**
+ * How many listings a search matches in total, for "of 15,526" and the pager.
+ *
+ * Without it the page could not say "1–24 of 378", and a reader could not tell
+ * a narrow search from a broken one — but it is the one part of a search no
+ * index order can shortcut, so it is fetched beside the rows rather than
+ * blocking them. A failure here costs the total and nothing else.
+ */
+export const countListings = async (f: SearchFilters): Promise<number> =>
+  withRetry(async () => {
+    const { count, error } = await matching(f, true);
+    if (error) throw error;
+    return count ?? 0;
+  }, 'Listing count');
 
 /** What a listing's headline price is, given which list it appears in. */
 export const headlinePrice = (listing: IdxListing) =>
@@ -479,12 +516,18 @@ export const decodeCodes = (
   return labels.length ? [...new Set(labels)].join(', ') : null;
 };
 
-/** The towns that actually have listings, with a count each, for the filter. */
+/**
+ * The towns that have listings, each with how many homes are for sale there
+ * today, for the filter. `listings` is 0 for a town with only sales or
+ * under-agreement homes, which stays in the list for those tabs.
+ */
 export const townsWithListings = async (): Promise<{ town: string; listings: number }[]> => {
   // Through an RPC because PostgREST exposes no DISTINCT: reading the town
-  // column for all ~22,000 rows and deduping in the browser is a ~300 KB
-  // response to populate one dropdown, on every visit. Postgres answers this
-  // from the town index instead. See the migration for the full note.
+  // column for every row and deduping in the browser is a ~300 KB response to
+  // populate one dropdown, on every visit. Since 2026-09-27 the function reads
+  // a 463-row view refreshed after each sync, rather than grouping all 125,000
+  // rows per visit — that was 6.5 seconds cold. See
+  // 20260927100000_idx_search_speed.sql.
   return withRetry(async () => {
     const { data, error } = await supabase.rpc('idx_towns_with_listings');
     if (error) throw error;

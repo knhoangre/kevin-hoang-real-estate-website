@@ -24,7 +24,7 @@ const ViTestimonials = () => (
     seo={{
       title: 'Khách Hàng Nói Gì Về Kevin Hoang',
       description:
-        'Đánh giá thật từ khách hàng của Kevin Hoang, chuyên viên địa ốc tại Needham, Massachusetts — nguyên văn từ Google Business Profile.',
+        'Đánh giá thật từ khách hàng của Kevin Hoang, chuyên viên địa ốc tại Newton, Massachusetts — nguyên văn từ Google Business Profile.',
     }}
     eyebrow="Đánh giá"
     h1="Khách hàng nói gì"

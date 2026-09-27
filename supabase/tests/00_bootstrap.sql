@@ -3,6 +3,14 @@ CREATE ROLE anon NOLOGIN;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE service_role NOLOGIN;
 
+-- Supabase's default privileges, which are what make "REVOKE ... FROM PUBLIC"
+-- insufficient: every new function in `public` is granted to anon and
+-- authenticated BY NAME. Without these lines a missing revoke passes here and
+-- ships as a function anyone with the anon key can call, which is exactly what
+-- happened to idx_archive_sold() until 2026-09-27.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+
 CREATE TABLE idx_listings (
   mls_number TEXT PRIMARY KEY,
   status TEXT, prop_type TEXT, prop_subtype TEXT, style TEXT,

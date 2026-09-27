@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { X, Phone, MessageSquare } from "lucide-react";
@@ -11,7 +11,57 @@ import LanguageSwitcher from "./LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, SECONDARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
 import { SITE, smsHref, telHref } from "@/lib/siteConfig";
-import { VI_ROUTES } from "@/lib/viRoutes";
+import { VI_ROUTES, type ViRoute } from "@/lib/viRoutes";
+
+/**
+ * The menu panel as PAIRS: an English page on the left, its Vietnamese
+ * counterpart on the same line on the right.
+ *
+ * It used to be the eight English links, a "Tiếng Việt" heading, then the
+ * eleven Vietnamese links beneath them — twenty rows, taller than a laptop
+ * screen, with each Vietnamese page ten rows away from the English page it is a
+ * translation of. Paired, it is thirteen rows, and the pairing itself tells the
+ * reader what the second column is.
+ *
+ * DERIVED FROM VI_ROUTES, never listed here, so a Vietnamese route added there
+ * arrives in the menu beside its English page without anyone remembering to.
+ * The rows are: Home, then SECONDARY_NAV in its own order, then any Vietnamese
+ * page whose English counterpart is not in SECONDARY_NAV — /faq, /about and
+ * /contact are in the bar already, and appear here again so their Vietnamese
+ * versions have something to sit beside. An English page with no translation
+ * (the blog, the Vietnamese-services page) gets an empty right-hand cell.
+ */
+interface PanelRow {
+  en?: NavItem;
+  vi?: ViRoute;
+}
+
+/** English labels for the two paired pages that are in neither nav list. */
+const EXTRA_EN: NavItem[] = [
+  { to: "/", labelKey: "nav.home" },
+  { to: "/home-valuation", labelKey: "nav.homeValuation" },
+];
+
+const englishFor = (path: string): NavItem | undefined =>
+  [...SECONDARY_NAV, ...PRIMARY_NAV, ...EXTRA_EN].find((item) => item.to === path);
+
+const viFor = (path: string) => VI_ROUTES.find((route) => route.en === path);
+
+/**
+ * isActivePath, except that `/vi` — the Vietnamese HOME — matches exactly, the
+ * way `/` does. By prefix it matched every page in the Vietnamese tree, so
+ * "Trang chủ" was marked current alongside whichever page was actually open.
+ */
+const isCurrent = (pathname: string, to: string) =>
+  to === "/vi" ? pathname === "/vi" : isActivePath(pathname, to);
+
+const PANEL_ROWS: PanelRow[] = [
+  { en: englishFor("/"), vi: viFor("/") },
+  ...SECONDARY_NAV.map((en) => ({ en, vi: viFor(en.to) })),
+  ...VI_ROUTES.filter(
+    (route) => route.en !== "/" && !SECONDARY_NAV.some((item) => item.to === route.en),
+  ).map((vi) => ({ en: englishFor(vi.en), vi })),
+];
 
 /**
  * A dropdown panel that opens on hover AND on click, focus and keyboard.
@@ -82,12 +132,13 @@ const Navbar = () => {
     [t],
   );
 
-  /** One dropdown row. Real anchors, and the champagne accent on the current one. */
-  const PanelLink = ({ item }: { item: NavItem }) => {
-    const active = isActivePath(pathname, item.to);
+  /** One dropdown cell. Real anchors, and the champagne accent on the current one. */
+  const PanelLink = ({ to, label, lang }: { to: string; label: string; lang?: string }) => {
+    const active = isCurrent(pathname, to);
     return (
       <Link
-        to={item.to}
+        to={to}
+        lang={lang}
         onClick={() => menu.setOpen(false)}
         aria-current={active ? "page" : undefined}
         className={cn(
@@ -97,7 +148,7 @@ const Navbar = () => {
             : "text-ink hover:bg-bone hover:text-champagne-ink",
         )}
       >
-        {labelFor(item)}
+        {label}
       </Link>
     );
   };
@@ -229,40 +280,47 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className={PANEL}
+                  // Wide enough for "Chuyển đến Massachusetts" on one line; the
+                  // max-w keeps it on screen just above the 1140px breakpoint.
+                  className={cn(PANEL, "w-[32rem] max-w-[calc(100vw-2rem)]")}
                 >
-                  <div className={PANEL_INNER}>
-                    {SECONDARY_NAV.map((item) => (
-                      <PanelLink key={item.to} item={item} />
-                    ))}
+                  {/*
+                    English left, Vietnamese right, one page per line — see
+                    PANEL_ROWS. The hairline between the columns is drawn once
+                    on the grid rather than per cell, so it stays unbroken
+                    through a row whose right-hand cell is empty.
 
-                    {/*
-                      The Vietnamese tree. It was reachable only from the
-                      footer, which meant scrolling the whole page to find it.
-                      Labels come straight from VI_ROUTES and are literal
-                      Vietnamese — never t(), which is pinned to 'en' during
-                      static generation.
-                    */}
-                    <div className="my-1.5 h-px bg-gray-200" />
-                    <p className="px-3 pb-1 pt-1 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
-                      Tiếng Việt
-                    </p>
-                    {VI_ROUTES.map((route) => (
-                      <Link
-                        key={route.vi}
-                        to={route.vi}
-                        onClick={() => menu.setOpen(false)}
-                        aria-current={isActivePath(pathname, route.vi) ? "page" : undefined}
-                        className={cn(
-                          "flex w-full items-center rounded-lg px-3 py-2 text-sm uppercase tracking-wide transition-colors",
-                          isActivePath(pathname, route.vi)
-                            ? "bg-bone text-champagne-ink"
-                            : "text-ink hover:bg-bone hover:text-champagne-ink",
-                        )}
+                    Vietnamese labels come straight from VI_ROUTES and are
+                    literal Vietnamese, never t(), which is pinned to 'en'
+                    during static generation. Each carries lang="vi" so a
+                    screen reader switches voice for it.
+                  */}
+                  <div className={PANEL_INNER}>
+                    <div className="grid grid-cols-2 gap-x-3 pb-1 pt-1">
+                      <span aria-hidden />
+                      <p
+                        lang="vi"
+                        className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"
                       >
-                        {route.label}
-                      </Link>
-                    ))}
+                        Tiếng Việt
+                      </p>
+                    </div>
+                    <div className="relative grid grid-cols-2 gap-x-3 before:absolute before:inset-y-1 before:left-1/2 before:w-px before:bg-gray-200">
+                      {PANEL_ROWS.map((row) => (
+                        <Fragment key={row.en?.to ?? row.vi?.vi}>
+                          {row.en ? (
+                            <PanelLink to={row.en.to} label={labelFor(row.en)} />
+                          ) : (
+                            <span aria-hidden />
+                          )}
+                          {row.vi ? (
+                            <PanelLink to={row.vi.vi} label={row.vi.label} lang="vi" />
+                          ) : (
+                            <span aria-hidden />
+                          )}
+                        </Fragment>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -385,10 +443,10 @@ const Navbar = () => {
                     key={route.vi}
                     to={route.vi}
                     onClick={() => setMobileMenuOpen(false)}
-                    aria-current={isActivePath(pathname, route.vi) ? "page" : undefined}
+                    aria-current={isCurrent(pathname, route.vi) ? "page" : undefined}
                     className={cn(
                       "inline-block text-center text-sm uppercase tracking-wide transition-colors",
-                      isActivePath(pathname, route.vi)
+                      isCurrent(pathname, route.vi)
                         ? "text-champagne-ink"
                         : "text-ink hover:text-champagne-ink",
                     )}

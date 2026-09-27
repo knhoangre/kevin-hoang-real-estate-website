@@ -53,6 +53,26 @@ SELECT ok(public.idx_archive_sold() = 6, 'archive copies exactly the 6 in-scope 
 SELECT ok((SELECT count(*) FROM idx_sold_archive) = 6, 'archive holds 6 rows (A1,A2,A3,C1,C2,D1)');
 SELECT ok(NOT EXISTS(SELECT 1 FROM idx_sold_archive WHERE mls_number IN ('B1','B2','B3','B4','B5','B6')), 'no out-of-scope row archived');
 
+-- The batch form idx-sync actually calls: only the MLS numbers it is handed,
+-- and the scope rules still apply inside the batch. An unknown number is not an
+-- error — a batch can race a deletion.
+TRUNCATE idx_sold_archive;
+SELECT ok(public.idx_archive_sold(ARRAY['A1','B2','B3','NOPE']) = 1,
+  'batch: of A1, a rental, an unserved town and an unknown number, only A1 is copied');
+SELECT ok((SELECT count(*) FROM idx_sold_archive) = 1, 'batch: nothing outside the batch was touched');
+SELECT ok(public.idx_archive_sold(ARRAY[]::TEXT[]) = 0, 'batch: an empty batch copies nothing');
+SELECT ok(public.idx_archive_sold() = 6, 'the no-argument form still copies all six in-scope rows');
+
+-- Only the sync may run the copy. With Supabase's default privileges in the
+-- bootstrap, a REVOKE FROM PUBLIC alone would leave both of these true.
+SELECT ok(NOT has_function_privilege('anon', 'public.idx_archive_sold(text[])', 'execute')
+      AND NOT has_function_privilege('anon', 'public.idx_archive_sold()', 'execute')
+      AND NOT has_function_privilege('authenticated', 'public.idx_archive_sold(text[])', 'execute')
+      AND NOT has_function_privilege('authenticated', 'public.idx_archive_sold()', 'execute'),
+  'neither archive function is callable with the anon key or a user session');
+SELECT ok(has_function_privilege('service_role', 'public.idx_archive_sold(text[])', 'execute'),
+  'the service role can call the batch form');
+
 -- Idempotency + first_archived_at preservation + correction propagation.
 UPDATE idx_sold_archive SET first_archived_at = NOW() - INTERVAL '10 days';
 UPDATE idx_listings SET sale_price = 1234567 WHERE mls_number = 'A1';

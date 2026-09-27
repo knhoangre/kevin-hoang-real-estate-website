@@ -53,7 +53,7 @@ const NeedhamAgent = () => (
       title: 'Needham MA Real Estate Agent | Kevin Hoang',
       // Brokerage and phone both from SITE: this line named Keller Williams and
       // spelled the number out by hand, and either could drift from the footer.
-      description: `Buying or selling in Needham, MA? Kevin Hoang is a Needham-based licensed broker with ${SITE.brokerage} serving MetroWest and Greater Boston. Call ${SITE.phone}.`,
+      description: `Buying or selling in Needham, MA? Kevin Hoang is a licensed broker with ${SITE.brokerage}, based next door in Newton and serving MetroWest and Greater Boston. Call ${SITE.phone}.`,
       keywords:
         'Needham MA real estate agent, Needham realtor, sell my house Needham MA, Needham buyers agent, MetroWest real estate agent, Greater Boston realtor',
     }}
@@ -67,7 +67,7 @@ const NeedhamAgent = () => (
       alt: 'A single-family home on a tree-lined street in Needham, Massachusetts',
     }}
     h1="Needham, MA Real Estate Agent"
-    lede={`Kevin Hoang is a Needham-based licensed real estate broker with ${SITE.brokerage}, working with buyers and sellers across Needham, MetroWest, and Greater Boston — in English and Vietnamese.`}
+    lede={`Kevin Hoang is a licensed real estate broker with ${SITE.brokerage}, based next door in Newton and working with buyers and sellers across Needham, MetroWest, and Greater Boston — in English and Vietnamese.`}
     faqHeading="Needham real estate questions"
     faqs={FAQS}
     cta={{
@@ -116,7 +116,7 @@ const NeedhamAgent = () => (
 
     <h2>Where else does Kevin work?</h2>
     <p>
-      Needham is home base, but the practice covers MetroWest and Greater Boston more broadly.
+      The practice is based next door in Newton and covers MetroWest and Greater Boston well beyond Needham.
       There is a written guide for each town — schools, transit, housing stock, and what the market
       there is actually like:
     </p>

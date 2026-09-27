@@ -23,7 +23,7 @@ const ViHome = () => (
     }}
     eyebrow="Tiếng Việt"
     h1="Môi giới bất động sản nói tiếng Việt tại Greater Boston"
-    lede={`Kevin Hoang là môi giới có giấy phép broker của Massachusetts, làm việc tại Needham cùng ${SITE.brokerage}. Anh đại diện cho người mua và người bán trên 17 thị trấn quanh Boston, và làm việc bằng cả tiếng Việt lẫn tiếng Anh — từ lần gặp đầu tiên cho đến khi ký giấy tờ cuối cùng.`}
+    lede={`Kevin Hoang là môi giới có giấy phép broker của Massachusetts, có trụ sở tại Newton, làm việc cùng ${SITE.brokerage}. Anh đại diện cho người mua và người bán trên 17 thị trấn quanh Boston, và làm việc bằng cả tiếng Việt lẫn tiếng Anh — từ lần gặp đầu tiên cho đến khi ký giấy tờ cuối cùng.`}
     crumbs={[
       { name: 'Trang chủ', path: '/' },
       { name: 'Tiếng Việt', path: '/vi' },
@@ -100,8 +100,8 @@ const ViHome = () => (
 
     <h2>Kevin làm việc ở đâu?</h2>
     <p>
-      {SITE.areaServed.length} thị trấn ở MetroWest, Greater Boston và South Shore,
-      với văn phòng tại Needham. Mỗi thị trấn có một trang hướng dẫn riêng — tên ga
+      {SITE.areaServed.length} thị trấn ở MetroWest, Greater Boston và South Shore;
+      Kevin có trụ sở tại Newton. Mỗi thị trấn có một trang hướng dẫn riêng — tên ga
       tàu, tên trường học, đường cao tốc, và điều cụ thể mà người mua nên kiểm tra ở
       nơi đó. Xem <Link to="/vi/khu-vuc">các khu vực phục vụ</Link>.
     </p>

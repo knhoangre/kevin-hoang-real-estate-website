@@ -60,7 +60,7 @@ const ViContact = () => {
       seo={{
         title: 'Liên Hệ Kevin Hoang — Chuyên Viên Địa Ốc Nói Tiếng Việt',
         description:
-          'Liên hệ Kevin Hoang, chuyên viên địa ốc tại Needham, Massachusetts. Gọi điện, nhắn tin, gửi email hoặc đặt lịch hẹn — bằng tiếng Việt hoặc tiếng Anh.',
+          'Liên hệ Kevin Hoang, chuyên viên địa ốc tại Newton, Massachusetts. Gọi điện, nhắn tin, gửi email hoặc đặt lịch hẹn — bằng tiếng Việt hoặc tiếng Anh.',
       }}
       eyebrow="Liên hệ"
       h1="Liên hệ Kevin"

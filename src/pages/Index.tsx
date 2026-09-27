@@ -39,9 +39,9 @@ const Index = () => {
       */}
       <Seo
         alternates={alternatesFor("/")}
-        title="Needham & Greater Boston Real Estate Agent | Kevin Hoang"
-        description={`Kevin Hoang is a licensed Massachusetts real estate broker in Needham with ${SITE.brokerage}, helping buyers and sellers across MetroWest and Greater Boston in English and Vietnamese.`}
-        keywords="Needham MA real estate agent, Greater Boston realtor, MetroWest homes for sale, Kevin Hoang real estate, Vietnamese speaking realtor Boston"
+        title="Newton & Greater Boston Real Estate Agent | Kevin Hoang"
+        description={`Kevin Hoang is a licensed Massachusetts real estate broker based in Newton with ${SITE.brokerage}, helping buyers and sellers across MetroWest and Greater Boston in English and Vietnamese.`}
+        keywords="Newton MA real estate agent, Needham MA real estate agent, Greater Boston realtor, MetroWest homes for sale, Kevin Hoang real estate, Vietnamese speaking realtor Boston"
         // The hero is a CSS background, so the preload scanner cannot discover
         // it until the stylesheet parses — hence an explicit preload. It is
         // declared here rather than in index.html because that file is the

@@ -150,7 +150,7 @@ const VI: LandingCopy = {
 
       <h2>Những thị trấn nào được phục vụ?</h2>
       <p>
-        Cùng các thị trấn như phần còn lại của công việc: Needham và các cộng đồng lân cận thuộc
+        Cùng các thị trấn như phần còn lại của công việc: Newton, Needham và các cộng đồng lân cận thuộc
         MetroWest và Greater Boston, mỗi nơi đều có{' '}
         <Link to="/neighborhoods">bài giới thiệu khu vực riêng</Link>. Nếu bạn chuyển đến từ tiểu
         bang khác, <Link to="/relocation">trang chuyển nhà</Link> nói về cách sắp xếp thời gian khi
@@ -247,7 +247,7 @@ const VietnameseAgent = () => (
 
     <h2>Which towns does this cover?</h2>
     <p>
-      The same towns as the rest of the practice: Needham and the surrounding MetroWest and Greater
+      The same towns as the rest of the practice: Newton, Needham and the surrounding MetroWest and Greater
       Boston communities, each with its own{' '}
       <Link to="/neighborhoods">written area guide</Link>. If you are arriving from out of state,
       the <Link to="/relocation">relocation page</Link> covers timing a move between two markets.

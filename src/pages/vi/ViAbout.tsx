@@ -20,11 +20,11 @@ const ViAbout = () => (
     seo={{
       title: 'Kevin Hoang — Chuyên Viên Địa Ốc Nói Tiếng Việt Tại Massachusetts',
       description:
-        'Kevin Hoang là chuyên viên địa ốc tại Needham, Massachusetts, phục vụ khách hàng bằng tiếng Việt và tiếng Anh trên khắp vùng Greater Boston.',
+        'Kevin Hoang là chuyên viên địa ốc tại Newton, Massachusetts, phục vụ khách hàng bằng tiếng Việt và tiếng Anh trên khắp vùng Greater Boston.',
     }}
     eyebrow="Về Kevin"
     h1="Kevin Hoang là ai"
-    lede="Kevin Hoang là chuyên viên địa ốc có giấy phép tại Massachusetts, sống và làm việc ở Needham. Anh phục vụ khách hàng bằng cả tiếng Việt và tiếng Anh, và làm việc với người mua lẫn người bán trên khắp vùng Greater Boston."
+    lede="Kevin Hoang là chuyên viên địa ốc có giấy phép tại Massachusetts, có trụ sở tại Newton. Anh phục vụ khách hàng bằng cả tiếng Việt và tiếng Anh, và làm việc với người mua lẫn người bán trên khắp vùng Greater Boston."
     crumbs={[
       { name: 'Trang chủ', path: '/' },
       { name: 'Tiếng Việt', path: '/vi' },
@@ -44,7 +44,7 @@ const ViAbout = () => (
       },
       {
         question: 'Kevin phục vụ những khu vực nào?',
-        answer: `Needham và các thị trấn lân cận trong vùng Greater Boston — hiện là ${SITE.areaServed.length} thị trấn. Nếu bạn đang tìm ở một nơi không nằm trong danh sách, hãy hỏi; nếu đó không phải thị trường Kevin nắm rõ, anh sẽ nói thẳng và giới thiệu người phù hợp hơn.`,
+        answer: `Newton, Needham và các thị trấn lân cận trong vùng Greater Boston — hiện là ${SITE.areaServed.length} thị trấn. Nếu bạn đang tìm ở một nơi không nằm trong danh sách, hãy hỏi; nếu đó không phải thị trường Kevin nắm rõ, anh sẽ nói thẳng và giới thiệu người phù hợp hơn.`,
       },
       {
         question: 'Kevin làm việc với người mua hay người bán?',
@@ -64,10 +64,10 @@ const ViAbout = () => (
     }}
     enLabel="About Kevin Hoang"
   >
-    <h2>Làm việc ở Needham và vùng Greater Boston</h2>
+    <h2>Làm việc ở Newton và vùng Greater Boston</h2>
     <p>
-      Kevin sống ở Needham và làm việc chủ yếu ở Needham cùng các thị trấn quanh đó. Đây
-      là một thị trường có đặc thù riêng: phần lớn nhà xây trước năm 1940, giá thay đổi
+      Kevin có trụ sở tại Newton và làm việc chủ yếu ở Newton, Needham cùng các thị trấn
+      quanh đó. Đây là một thị trường có đặc thù riêng: nhiều căn nhà được xây từ trước năm 1940, giá thay đổi
       đáng kể chỉ trong vài dãy phố, và khu học chánh ảnh hưởng trực tiếp đến giá.
     </p>
     <p>

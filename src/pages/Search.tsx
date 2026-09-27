@@ -10,6 +10,7 @@ import {
   LISTING_TYPES,
   PAGE_SIZE,
   PROP_TYPES,
+  countListings,
   filtersFromParams,
   paramsFromFilters,
   searchListings,
@@ -73,7 +74,8 @@ const Search = () => {
   useEffect(() => setDraft(filters), [filters]);
 
   const [listings, setListings] = useState<IdxListing[] | null>(null);
-  const [total, setTotal] = useState(0);
+  /** Null until the count arrives — or for good, if it fails. See below. */
+  const [total, setTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [towns, setTowns] = useState<{ town: string; listings: number }[]>([]);
 
@@ -90,16 +92,27 @@ const Search = () => {
    */
   const [attempt, setAttempt] = useState(0);
 
+  /*
+   * THE CARDS AND THE TOTAL ARE TWO REQUESTS, and the cards never wait for the
+   * total. They used to be one, and the 24 cards on screen could not arrive
+   * until every one of ~15,500 matches had been counted — which, on a cold
+   * database, was most of eight seconds spent on the small grey number above
+   * the grid. Now the grid renders when its rows land; "of 15,526" and the last
+   * page number fill in when the count does.
+   *
+   * A failed count is SILENT. The listings are the page; the total is a caption
+   * on it. Losing it costs "of N" and the last-page number, and the pager falls
+   * back to whether this page came back full.
+   */
   useEffect(() => {
     let cancelled = false;
     setListings(null);
+    setTotal(null);
     setError(null);
 
     searchListings(filters)
-      .then(({ listings: rows, total: count }) => {
-        if (cancelled) return;
-        setListings(rows);
-        setTotal(count);
+      .then((rows) => {
+        if (!cancelled) setListings(rows);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -107,6 +120,14 @@ const Search = () => {
         // query failed" look identical to a user and mean opposite things.
         setError(err instanceof Error ? err.message : 'Could not load listings');
         setListings([]);
+      });
+
+    countListings(filters)
+      .then((count) => {
+        if (!cancelled) setTotal(count);
+      })
+      .catch(() => {
+        // Deliberately nothing — see above.
       });
 
     return () => {
@@ -163,9 +184,20 @@ const Search = () => {
     filters.baths && { key: 'baths', label: `${filters.baths}+ baths`, clear: { baths: '' } },
   ].filter(Boolean) as { key: string; label: string; clear: Partial<SearchFilters> }[];
 
-  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const firstShown = total === 0 ? 0 : (filters.page - 1) * PAGE_SIZE + 1;
-  const lastShown = Math.min(filters.page * PAGE_SIZE, total);
+  const shown = listings?.length ?? 0;
+  const firstShown = shown === 0 ? 0 : (filters.page - 1) * PAGE_SIZE + 1;
+  const lastShown = (filters.page - 1) * PAGE_SIZE + shown;
+  /*
+   * Until the total is known, a full page is the evidence that another one
+   * exists. It is wrong only when the matches are an exact multiple of 24, and
+   * then only for the moment before the count lands and corrects it.
+   */
+  const lastPage =
+    total !== null
+      ? Math.max(1, Math.ceil(total / PAGE_SIZE))
+      : shown === PAGE_SIZE
+        ? filters.page + 1
+        : filters.page;
 
   return (
     <PageShell
@@ -293,9 +325,20 @@ const Search = () => {
                 onChange={(e) => setDraft({ ...draft, town: e.target.value })}
               >
                 <option value="">Anywhere in Massachusetts</option>
+                {/*
+                  The town from the URL, before the list has loaded. Without it
+                  a shared ?town=Newton link renders "Anywhere in Massachusetts"
+                  above a page of Newton results for however long the list takes.
+                */}
+                {draft.town && !towns.some((t) => t.town === draft.town) && (
+                  <option value={draft.town}>{draft.town}</option>
+                )}
                 {towns.map((t) => (
                   <option key={t.town} value={t.town}>
-                    {t.town} ({t.listings})
+                    {/* The number is homes for sale today — what the default
+                        tab will find. A town with none is still listed, for the
+                        sold and under-agreement tabs, just without a "(0)". */}
+                    {t.listings > 0 ? `${t.town} (${t.listings.toLocaleString()})` : t.town}
                   </option>
                 ))}
               </select>
@@ -428,9 +471,13 @@ const Search = () => {
         >
           {listings === null
             ? 'Searching…'
-            : total === 0
-              ? 'No listings match those filters.'
-              : `Showing ${firstShown.toLocaleString()}–${lastShown.toLocaleString()} of ${total.toLocaleString()} listings`}
+            : shown === 0
+              ? error
+                ? ''
+                : 'No listings match those filters.'
+              : total === null
+                ? `Showing ${firstShown.toLocaleString()}–${lastShown.toLocaleString()}`
+                : `Showing ${firstShown.toLocaleString()}–${lastShown.toLocaleString()} of ${total.toLocaleString()} listings`}
         </p>
 
         {error && (
@@ -475,7 +522,8 @@ const Search = () => {
               Previous
             </button>
             <span className="numeral text-sm text-gray-600">
-              Page {filters.page.toLocaleString()} of {lastPage.toLocaleString()}
+              Page {filters.page.toLocaleString()}
+              {total !== null && <> of {lastPage.toLocaleString()}</>}
             </span>
             <button
               type="button"

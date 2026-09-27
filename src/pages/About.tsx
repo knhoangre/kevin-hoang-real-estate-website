@@ -71,11 +71,11 @@ const About = () => {
       path="/about"
       crumbs={crumbs}
       seo={{
-        title: 'About Kevin Hoang | Real Estate Broker in Needham, MA',
+        title: `About Kevin Hoang | Real Estate Broker in ${locality}`,
         // Brokerage interpolated from SITE, not written out: it was a literal
         // "Keller Williams Realty" here, which is how it would have gone stale
         // on the move to LPT Realty while SITE.brokerage was updated.
-        description: `Kevin Hoang is a licensed Massachusetts real estate broker with ${SITE.brokerage}, based in Needham and working across ${SITE.areaServed.length} towns in MetroWest and Greater Boston in English and Vietnamese.`,
+        description: `Kevin Hoang is a licensed Massachusetts real estate broker with ${SITE.brokerage}, based in ${SITE.address.addressLocality} and working across ${SITE.areaServed.length} towns in MetroWest and Greater Boston in English and Vietnamese.`,
         keywords: `Kevin Hoang, Needham real estate broker, ${SITE.brokerage} Needham, Vietnamese speaking realtor Boston`,
         // A real 1200x630 card, not the raw portrait. kevin_hoang.jpg is
         // 750x1125, and declaring a portrait image as a landscape card is why
@@ -132,7 +132,7 @@ const About = () => {
             <source srcSet="/kevin_hoang.webp" type="image/webp" />
             <img
               src="/kevin_hoang.jpg"
-              alt="Kevin Hoang, real estate broker in Needham, Massachusetts"
+              alt={`Kevin Hoang, real estate broker in ${SITE.address.addressLocality}, Massachusetts`}
               width={440}
               height={440}
               className="h-full w-full origin-top scale-150 object-cover object-top"

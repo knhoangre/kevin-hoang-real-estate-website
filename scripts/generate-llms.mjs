@@ -22,7 +22,7 @@ const PHONE = '(860) 682-2251';
 // street address on 2026-09-26: LPT Realty has no office for Kevin to give, so
 // he is a service-area business and states a town, not an address — see the
 // comment on SITE.address for why a virtual office or home address is worse.
-const BASED_IN = 'Needham, MA';
+const BASED_IN = 'Newton, MA';
 const BROKERAGE = 'LPT Realty';
 const EMAIL = 'knhoangre@gmail.com';
 const LICENSED_SINCE = 2021;
@@ -130,9 +130,9 @@ const FACTS = [
 
 const body = `# ${NAME}
 
-> ${AGENT} is a licensed real estate broker with ${BROKERAGE}, based in Needham,
-> Massachusetts, serving buyers and sellers across Needham, MetroWest, and Greater
-> Boston in English and Vietnamese. Contact: ${PHONE}, ${EMAIL}.
+> ${AGENT} is a licensed real estate broker with ${BROKERAGE}, based in Newton,
+> Massachusetts, serving buyers and sellers across Newton, Needham, MetroWest, and
+> Greater Boston in English and Vietnamese. Contact: ${PHONE}, ${EMAIL}.
 
 ## Facts
 

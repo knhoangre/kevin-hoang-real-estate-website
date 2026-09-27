@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Phone, ArrowRight } from 'lucide-react';
-import { SITE, telHref } from '@/lib/siteConfig';
+import { SITE, locality, telHref } from '@/lib/siteConfig';
 
 /**
  * The byline block that closes every article and town guide.
@@ -25,7 +25,7 @@ const AuthorCard = ({ className = '' }: { className?: string }) => (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
       <img
         src="/kevin_hoang.jpg"
-        alt={`${SITE.agentName}, real estate broker in Needham, Massachusetts`}
+        alt={`${SITE.agentName}, real estate broker in ${locality}`}
         width={160}
         height={160}
         className="h-20 w-20 shrink-0 rounded-full object-cover object-[50%_6%] ring-1 ring-champagne/40"
@@ -46,7 +46,7 @@ const AuthorCard = ({ className = '' }: { className?: string }) => (
         </p>
         <p className="mt-3 text-base leading-relaxed text-gray-700">
           Licensed Massachusetts real estate broker with {SITE.brokerage}, based in
-          Needham. He represents buyers and sellers across{' '}
+          {SITE.address.addressLocality}. He represents buyers and sellers across{' '}
           {SITE.areaServed.length} towns in MetroWest and Greater Boston, and works
           in English and Vietnamese.
         </p>

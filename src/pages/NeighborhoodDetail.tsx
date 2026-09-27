@@ -2543,7 +2543,7 @@ const NeighborhoodDetail = () => {
       */}
       <Seo
         title={neighborhood.title}
-        description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Needham-based broker covering Greater Boston.`}
+        description={`${neighborhood.name} area guide: neighborhoods, schools, transit, and what the local housing market is actually like — from a Newton-based broker covering Greater Boston.`}
         keywords={`${neighborhood.name} real estate, living in ${neighborhood.name}, ${neighborhood.name} neighborhood guide, homes for sale ${neighborhood.name}`}
         ogImage={ogVariant(neighborhood.image)}
         jsonLd={faqs.length ? [breadcrumbs(crumbs), faqPage(faqs)] : breadcrumbs(crumbs)}
@@ -2760,8 +2760,8 @@ const NeighborhoodDetail = () => {
                   buyer&rsquo;s guide
                 </Link>{" "}
                 if you are buying. Kevin Hoang is a{" "}
-                <Link to="/needham-real-estate-agent" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
-                  Needham-based agent
+                <Link to="/about" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
+                  Newton-based agent
                 </Link>{" "}
                 covering this town and the rest of Greater Boston.
               </p>

@@ -30,7 +30,7 @@ export const SITE = {
   /** The individual agent, for Person/employee schema. */
   agentName: 'Kevin Hoang',
   description:
-    'Needham, MA licensed real estate broker helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
+    'Newton, MA licensed real estate broker helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
   locale: 'en_US',
 
   /**
@@ -77,15 +77,22 @@ export const SITE = {
    * So he is a SERVICE-AREA BUSINESS, which is the category Google designed for
    * exactly this: the profile hides its address and lists the areas served
    * instead. schema.org's PostalAddress needs no street to be valid, and a
-   * locality-only address is the honest statement of "based in Needham".
+   * locality-only address is the honest statement of "based in Newton".
+   *
+   * NEWTON, NOT NEEDHAM, since 2026-09-27, per Kevin. Needham was where the
+   * Keller Williams office was, not where he works from; with the office gone
+   * the base is where he actually is. Needham stays a town he serves — it keeps
+   * its landing page and its guide — and is no longer described as home base.
+   * The hidden address on the Google Business Profile has to be in Newton too,
+   * or the profile and the site disagree about where the business is.
    *
    * streetAddress and postalCode are REMOVED rather than blanked, so that any
    * code still printing them fails to compile rather than rendering an empty
-   * line. A ZIP was dropped along with the street: Needham has two, and
-   * choosing one would be inventing a location.
+   * line. A ZIP was dropped along with the street: Newton has one per village,
+   * about ten, and choosing one would be inventing a location.
    */
   address: {
-    addressLocality: 'Needham',
+    addressLocality: 'Newton',
     addressRegion: 'MA',
     addressCountry: 'US',
   },
@@ -101,7 +108,7 @@ export const SITE = {
    * service-area business has no point to give, and CLAUDE.md is explicit: an
    * absent coordinate is correct while one pointing at the wrong place is
    * actively harmful. The schema builder omits `geo` entirely when it is null.
-   * Needham's town centre is NOT a substitute — it is a coordinate for a
+   * Newton's city centre is NOT a substitute — it is a coordinate for a
    * business that is not there.
    */
   geo: null as { latitude: number; longitude: number } | null,
@@ -319,11 +326,11 @@ export const smsHrefWith = (body: string) =>
   `sms:${SITE.phoneE164}?&body=${encodeURIComponent(body)}`;
 
 /**
- * "Needham, MA" — where Kevin is based.
+ * "Newton, MA" — where Kevin is based.
  *
  * Replaced `formattedAddress` and `mapsHref` on 2026-09-26. There is no office
  * to print or to map any more (see SITE.address), and a map pin dropped on the
- * middle of Needham would imply a place of business that does not exist.
+ * middle of Newton would imply a place of business that does not exist.
  */
 export const locality = `${SITE.address.addressLocality}, ${SITE.address.addressRegion}`;
 

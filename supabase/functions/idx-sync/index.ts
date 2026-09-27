@@ -205,6 +205,42 @@ serve(async (req) => {
           .upsert(batch, { onConflict: 'mls_number' });
         if (error) throw new Error(`${propType}/${feed} upsert: ${error.message}`);
         upserted += batch.length;
+
+        /*
+         * ARCHIVE BEFORE DELETING — and archive THIS BATCH, not the archive.
+         *
+         * MLS PIN's sold feed is a rolling one-year window and the sweep below
+         * models that by deleting what has aged out, so without this call a day
+         * of closings leaves the database every night and nothing keeps a copy.
+         * A comparable-sales estimate in a thin town (Dover: 76 single-family
+         * closings in the whole window) needs two or three years, and depth can
+         * only be accumulated forward.
+         *
+         * Per batch, by MLS number, because the version that copied every
+         * in-scope row on every slice timed out on fifteen of sixteen runs on
+         * 2026-09-27 — see 20260927090000_idx_archive_by_batch.sql. This way the
+         * work per call is bounded by BATCH rather than by the size of the
+         * archive, the rows are still in cache from the upsert a moment ago, and
+         * a slice that dies halfway has still archived every batch before the
+         * one that failed. Every sold row passes through here every night it is
+         * in the feed, so nothing is offered to the archive less often than it
+         * was.
+         *
+         * Rentals are skipped here as well as in the function: the archive never
+         * takes one, and asking about seven thousand of them was pure cost.
+         *
+         * Allowed to fail the run: losing a day of closings permanently is worse
+         * than a red sync, and unlike a display failure it cannot be fixed by
+         * re-running tomorrow.
+         */
+        if (feed === 'sold' && propType !== 'RN') {
+          const { data: copied, error: archiveError } = await supabase.rpc('idx_archive_sold', {
+            p_mls: batch.map((row) => row.mls_number),
+          });
+          if (archiveError) throw new Error(`${propType}/sold archive: ${archiveError.message}`);
+          archived += Number(copied ?? 0);
+        }
+
         batch = [];
       };
 
@@ -246,31 +282,8 @@ serve(async (req) => {
         throw new Error(`${propType}/${feed}: parsed to zero listings — refusing to delete`);
       }
 
-      /*
-       * ARCHIVE BEFORE DELETING. This is the whole reason the ordering here
-       * matters.
-       *
-       * MLS PIN's sold feed is a rolling one-year window and the sweep below
-       * models that by deleting what has aged out — so without this call, a day
-       * of closings leaves the database every night and nothing keeps a copy.
-       * Measured on 2026-09-20 the window is exactly twelve months, and a
-       * comparable-sales estimate in a thin town (Dover: 76 single-family
-       * closings in the whole window) needs two or three years. Depth can only
-       * be accumulated forward, so the copy runs on EVERY sold slice rather than
-       * only alongside the prune: a slice that fails for three days in a row
-       * would otherwise take its rows with it.
-       *
-       * The copy is idempotent and scoped inside the function to the seventeen
-       * served towns, MA only, sales only — see the migration header. It is
-       * allowed to fail the run: losing a day of closings permanently is worse
-       * than a red sync, and unlike a display failure it cannot be fixed by
-       * re-running tomorrow.
-       */
-      if (feed === 'sold') {
-        const { data: copied, error: archiveError } = await supabase.rpc('idx_archive_sold');
-        if (archiveError) throw new Error(`${propType}/sold archive: ${archiveError.message}`);
-        archived += Number(copied ?? 0);
-      }
+      // Every sold batch was archived inside flush(), before this point — so
+      // the sweep below can never delete a row the archive has not been offered.
 
       /*
        * DELETION DIFFERS BY FEED, because the two feeds behave differently.

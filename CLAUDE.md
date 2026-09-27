@@ -314,14 +314,23 @@ returns, and the mismatches are the list. Sections with detail routes belong in
   Williams (150 West St, Needham) to **LPT Realty** on 2026-09-26. LPT is a cloud
   brokerage with no local office, so he is a **service-area business**: the Google
   Business Profile hides its address and lists service areas, `SITE.address` is
-  locality-only (Needham, MA, US — no street, no ZIP, since Needham has two and
-  choosing one invents a location), and `SITE.geo` is null. `streetAddress` and
-  `postalCode` were **removed** from the type rather than blanked, so anything that
-  tries to print them fails to compile. Do not "fix" the gap with a virtual office
-  or PO box — both violate Google's guidelines and are a documented suspension
-  cause — or with Needham's town-centre coordinates, which describe a business that
-  is not there. `locality` and `serviceAreaLine` replaced `formattedAddress` and
-  `mapsHref`.
+  locality-only (Newton, MA, US — no street, no ZIP, since Newton has one per
+  village and choosing one invents a location), and `SITE.geo` is null.
+  `streetAddress` and `postalCode` were **removed** from the type rather than
+  blanked, so anything that tries to print them fails to compile. Do not "fix" the
+  gap with a virtual office or PO box — both violate Google's guidelines and are a
+  documented suspension cause — or with a town-centre coordinate, which describes a
+  business that is not there. `locality` and `serviceAreaLine` replaced
+  `formattedAddress` and `mapsHref`.
+- **Based in NEWTON, since 2026-09-27; Needham is a town served, not the base.**
+  Needham was only ever where the Keller Williams office was. Every "based in"
+  claim reads `SITE.address.addressLocality` or says Newton — the homepage title,
+  the byline on every post (`AuthorCard`), `/about`, the town-guide aside, llms.txt
+  and both social cards. `/needham-real-estate-agent` is **kept**: it is the page
+  for people hiring an agent *in* Needham, which is still true, and it now says the
+  practice is based next door in Newton. The Google Business Profile's hidden
+  address has to be in Newton as well, or the profile and the site disagree about
+  where the business is.
 - **The brokerage name must be on every page — it is in the footer for that
   reason.** 254 CMR 3.09 requires all real estate advertising to include the
   broker's name conspicuously. Until 2026-09-26 it appeared only in the homepage
@@ -353,6 +362,34 @@ queries and will fail identically three times. The server half is
 `ALTER ROLE anon SET statement_timeout = '8s'` (Supabase's own default for
 `authenticated`); the two are deliberately independent, so the client fix keeps
 working if that setting is ever reset.
+
+**…but the real cause was reading the whole table, and that is fixed in the
+database.** Until 2026-09-27 the default search fetched all 15,526 matches,
+sorted them and kept 24 — 20,193 buffers, ~160 MB, because `idx_listings_price`
+is ascending and the query asks for `DESC NULLS LAST`, which a backward scan of
+it cannot produce. Cold that took 7-8 seconds. Migration
+`20260927100000_idx_search_speed` added partial indexes in the exact order the
+page asks for — sale, rent and per-town — and the same search reads 26 buffers in
+2.6 ms. **The `nullsFirst: false` on both `.order()` calls is load-bearing**: ask
+for NULLS FIRST and none of those indexes apply. Rentals have their own index
+because every rent sorts below every house, so a shared one walked 17,000 sale
+rows to find 24 rentals.
+- **The cards and the total are two requests.** `count: 'exact'` makes PostgREST
+  count in the same statement, so the 24 cards used to wait on a count of every
+  match. `searchListings` returns rows only and `countListings` the total; the
+  page renders the cards when they land and fills in "of N" later, and a failed
+  count is silent. Until the count arrives, a full page implies a next one.
+- **`idx_listings` vacuums at 2% dead, not 20%.** One active sync rewrites
+  ~24,000 of 125,000 rows, which sat just under the default trigger, so the
+  visibility map went stale (45% of pages all-visible, measured) and the count's
+  index-only scan fell back to the table for 11,645 of 15,526 rows.
+- **The town dropdown reads `idx_town_counts`**, a materialized view refreshed by
+  pg_cron after the syncs (`55 0,6,12,18` and `45 5`). It used to group all
+  125,000 rows on every visit — 6.5 s cold — and had silently been counting a
+  year of closings since the sold feed was added, offering "Newton (1,257)" above
+  a search that found 259. It now counts what the default tab shows; its status
+  list mirrors `AVAILABLE_STATUSES`. **If the sync schedule moves, move the two
+  refresh jobs with it.**
 
 ### Listings
 
@@ -468,9 +505,16 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
 - **The sold feed is DELETED as it ages, so `idx_sold_archive` is the comp source
   of truth — never `idx_listings`.** MLS PIN's sold feed is a rolling twelve-month
   window (measured 2026-09-20: 2025-09-17 to 2026-09-18, to the day), and
-  `idx-sync`'s retention sweep removes what falls out of it. `idx_archive_sold()`
-  runs on **every** sold slice, before the sweep, not just alongside the prune — a
-  slice that fails three days running would otherwise take its rows with it. The
+  `idx-sync`'s retention sweep removes what falls out of it. `idx_archive_sold(p_mls)`
+  runs on **every upsert batch** of the sold feed, with that batch's MLS numbers,
+  before the sweep. It copied the whole archive on every slice until 2026-09-27,
+  when fifteen of sixteen nightly runs timed out doing it; per batch, the work is
+  bounded by 500 rows rather than by the size of the archive. The zero-argument
+  form still exists for a manual backfill and must never go back on a schedule.
+  It is callable by `service_role` only — Supabase's default privileges grant every
+  new function to `anon` and `authenticated` BY NAME, so `REVOKE ... FROM PUBLIC`
+  alone left it open to the anon key; revoke from those roles explicitly, and the
+  test bootstrap now reproduces those defaults so a missing revoke fails. The
   archive is scoped to the 17 served towns, MA only, sales only, modelled columns
   only: 7,495 rows a year against a 500 MB free tier. **The town list in that
   function is a deliberate mirror of `SITE.areaServed`**, and forgetting to add a
@@ -1100,6 +1144,13 @@ The Instagram reels, watchable in a modal without leaving the site.
   page keeps its own self-referencing canonical.
 - **NAP is not translated.** Phone, email and address come from `SITE` on the
   Vietnamese pages exactly as everywhere else.
+- **The desktop menu pairs each English page with its Vietnamese one, on the same
+  line** (`PANEL_ROWS` in [Navbar.tsx](src/components/Navbar.tsx)). It was the
+  English links, then all eleven Vietnamese ones beneath — twenty rows, taller
+  than a laptop screen. The rows are derived from `VI_ROUTES`, so a new
+  Vietnamese route arrives beside its English page without being listed twice.
+  The left column has no "English" heading because the language toggle translates
+  those labels too.
 - **The town guides are deliberately NOT translated.** Seventeen near-identical
   translations is the scaled-content shape this corpus was cleaned of once.
   `/vi/khu-vuc` describes them and links out to the English guides instead.

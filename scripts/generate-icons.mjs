@@ -103,7 +103,7 @@ await card('public/og-image.jpg', {
   name: 'KEVIN HOANG',
   // The brokerage is on the card because the card IS advertising: every link to
   // the site unfurls it, and 254 CMR 3.09 wants the broker named on all of it.
-  lines: ['Real Estate Agent', 'Needham &amp; Greater Boston, MA', 'LPT Realty'],
+  lines: ['Real Estate Agent', 'Newton &amp; Greater Boston, MA', 'LPT Realty'],
 });
 
 // /about. Same treatment, copy pitched at the person rather than the service —
@@ -113,7 +113,7 @@ await card('public/og-about.jpg', {
   lines: [
     'Licensed MA Broker since 2021',
     'English &amp; Ti&#7871;ng Vi&#7879;t',
-    'LPT Realty · Needham, MA',
+    'LPT Realty · Newton, MA',
   ],
 });
 
