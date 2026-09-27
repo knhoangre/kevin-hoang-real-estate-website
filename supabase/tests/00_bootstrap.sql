@@ -11,6 +11,23 @@ CREATE ROLE service_role NOLOGIN;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
 
+-- A stand-in for pg_cron, which Supabase provides and a plain Postgres does not,
+-- so migrations that schedule their own refresh apply here as written. It
+-- records the schedule and never runs it; tests call the refresh directly.
+CREATE SCHEMA cron;
+CREATE TABLE cron.job (jobid BIGSERIAL PRIMARY KEY, jobname TEXT UNIQUE, schedule TEXT, command TEXT);
+CREATE FUNCTION cron.schedule(p_name TEXT, p_schedule TEXT, p_command TEXT) RETURNS BIGINT
+LANGUAGE sql AS $$
+  INSERT INTO cron.job (jobname, schedule, command) VALUES (p_name, p_schedule, p_command)
+  ON CONFLICT (jobname) DO UPDATE SET schedule = EXCLUDED.schedule, command = EXCLUDED.command
+  RETURNING jobid;
+$$;
+CREATE FUNCTION cron.unschedule(p_name TEXT) RETURNS BOOLEAN
+LANGUAGE sql AS $$
+  WITH gone AS (DELETE FROM cron.job WHERE jobname = p_name RETURNING 1)
+  SELECT EXISTS (SELECT 1 FROM gone);
+$$;
+
 CREATE TABLE idx_listings (
   mls_number TEXT PRIMARY KEY,
   status TEXT, prop_type TEXT, prop_subtype TEXT, style TEXT,

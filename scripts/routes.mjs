@@ -180,6 +180,8 @@ export const STATIC_ROUTES = [
   { path: '/vi/danh-gia', priority: 0.6, changefreq: 'monthly' },
   { path: '/vi/cong-cu-tinh-toan', priority: 0.6, changefreq: 'monthly' },
   { path: '/vi/lien-he', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/bai-viet', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/dich-vu-tieng-viet', priority: 0.7, changefreq: 'monthly' },
 
   // Legal. Real pages, low priority — they exist for users and for trust
   // signals, not to rank.

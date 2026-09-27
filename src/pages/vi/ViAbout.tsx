@@ -24,7 +24,7 @@ const ViAbout = () => (
     }}
     eyebrow="Về Kevin"
     h1="Kevin Hoang là ai"
-    lede="Kevin Hoang là chuyên viên địa ốc có giấy phép tại Massachusetts, có trụ sở tại Newton. Anh phục vụ khách hàng bằng cả tiếng Việt và tiếng Anh, và làm việc với người mua lẫn người bán trên khắp vùng Greater Boston."
+    lede="Kevin Hoang là chuyên viên địa ốc có giấy phép tại Massachusetts, sống và làm việc ở Newton. Anh phục vụ khách hàng bằng cả tiếng Việt và tiếng Anh, và làm việc với người mua lẫn người bán trên khắp vùng Greater Boston."
     crumbs={[
       { name: 'Trang chủ', path: '/' },
       { name: 'Tiếng Việt', path: '/vi' },
@@ -66,7 +66,7 @@ const ViAbout = () => (
   >
     <h2>Làm việc ở Newton và vùng Greater Boston</h2>
     <p>
-      Kevin có trụ sở tại Newton và làm việc chủ yếu ở Newton, Needham cùng các thị trấn
+      Kevin sống ở Newton và làm việc chủ yếu ở Newton, Needham cùng các thị trấn
       quanh đó. Đây là một thị trường có đặc thù riêng: nhiều căn nhà được xây từ trước năm 1940, giá thay đổi
       đáng kể chỉ trong vài dãy phố, và khu học chánh ảnh hưởng trực tiếp đến giá.
     </p>

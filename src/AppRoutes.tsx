@@ -179,6 +179,12 @@ export const routes: RouteRecord[] = [
         'src/pages/vi/ViCalculator.tsx'
       ),
       page('vi/lien-he', () => import('./pages/vi/ViContact'), 'src/pages/vi/ViContact.tsx'),
+      page('vi/bai-viet', () => import('./pages/vi/ViBlog'), 'src/pages/vi/ViBlog.tsx'),
+      page(
+        'vi/dich-vu-tieng-viet',
+        () => import('./pages/vi/ViServices'),
+        'src/pages/vi/ViServices.tsx'
+      ),
 
       // --- IDX search ------------------------------------------------------
       // NOT prerendered with content and NOT indexed. These are the only routes

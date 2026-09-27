@@ -1,30 +1,46 @@
 import { Link } from 'react-router-dom';
 import ViPage from '@/components/ViPage';
+import ProseBody from '@/components/ProseBody';
+import HomeCalculator, { type CalculatorSeed } from '@/components/calculator/HomeCalculator';
 
 /**
- * /vi/cong-cu-tinh-toan — the counterpart of /calculator.
+ * /vi/cong-cu-tinh-toan — the counterpart of /calculator, with the calculator
+ * itself on the page, in Vietnamese.
  *
- * The interactive calculators are NOT embedded here, and that is a deliberate
- * call rather than an omission. RealEstateCalculators assembles ~147 strings
- * through useTranslation(), and i18n is pinned to `lng: 'en'` during static
- * generation — so embedding it would prerender a Vietnamese URL containing an
- * entirely English tool, which is the exact failure the /vi tree exists to fix.
+ * Until 2026-09-27 this page linked out to the English tool instead, and said
+ * so. That was forced: RealEstateCalculators assembled its ~147 strings through
+ * useTranslation(), which is pinned to English during static generation, so
+ * embedding it would have prerendered a Vietnamese URL containing an English
+ * tool. HomeCalculator takes its language as a prop and carries literal
+ * Vietnamese copy, so the tool renders in Vietnamese in the prerendered HTML.
  *
- * What a Vietnamese reader actually needs from that page is the meaning of the
- * numbers: which costs are one-off, which are monthly, and which are the ones
- * people forget. That is written here, with the tool one link away.
+ * The calculator comes FIRST and the explanations after it, which is the order
+ * the page is used in: people arrive to calculate, and read about escrow or PMI
+ * when a number surprises them.
  */
+const SEED: CalculatorSeed = {
+  price: 800_000,
+  annualTaxes: 9_000,
+  taxSource: { from: 'example' },
+  monthlyHoa: 0,
+  hoaSource: 'example',
+  propType: 'SF',
+  rentLookup: null,
+  exampleRent: 3_500,
+  views: ['live', 'invest', 'sell'],
+};
+
 const ViCalculator = () => (
   <ViPage
     path="/vi/cong-cu-tinh-toan"
     seo={{
-      title: 'Tính Tiền Mua Nhà Ở Massachusetts — Giải Thích Bằng Tiếng Việt',
+      title: 'Máy Tính Mua Nhà, Cho Thuê Và Bán Nhà Ở Massachusetts',
       description:
-        'Hiểu các con số khi mua nhà ở Massachusetts: khoản trả hàng tháng gồm những gì, chi phí đóng giao dịch, escrow, PMI, và số tiền mặt thật sự cần có.',
+        'Tính khoản trả hàng tháng, dòng tiền khi cho thuê, và số tiền thực nhận khi bán nhà ở Massachusetts — bằng tiếng Việt, gồm cả thuế chuyển nhượng và PMI.',
     }}
     eyebrow="Công cụ tính toán"
-    h1="Hiểu các con số trước khi bấm máy tính"
-    lede="Một máy tính tiền vay chỉ trả lời đúng khi bạn nhập đúng. Trang này giải thích từng con số trong một giao dịch mua nhà ở Massachusetts — cái nào trả một lần, cái nào trả hằng tháng, và cái nào người mua lần đầu hay bỏ sót."
+    h1="Máy tính mua nhà, cho thuê và bán nhà"
+    lede="Tính chi phí hàng tháng của một căn nhà, số tiền nó mang lại khi cho thuê, và số tiền bạn thật sự nhận về khi bán — với các khoản riêng của Massachusetts mà máy tính thông thường bỏ qua. Bên dưới máy tính là phần giải thích từng con số."
     crumbs={[
       { name: 'Trang chủ', path: '/' },
       { name: 'Tiếng Việt', path: '/vi' },
@@ -68,52 +84,68 @@ const ViCalculator = () => (
       body: 'Gửi cho Kevin mức giá bạn đang nhắm và thị trấn bạn quan tâm. Anh sẽ tính cho bạn khoản trả hàng tháng gồm cả thuế của chính thị trấn đó.',
       button: 'Liên hệ Kevin',
     }}
-    enLabel="The mortgage and closing-cost calculators"
-  >
-    <h2>Máy tính</h2>
-    <p>
-      Các công cụ tính toán — tiền vay hàng tháng, chi phí đóng giao dịch, và so sánh thuê
-      với mua — nằm ở <Link to="/calculator">trang công cụ tính toán</Link>. Giao diện của
-      công cụ hiện bằng tiếng Anh; phần giải thích ý nghĩa từng con số ở ngay bên dưới đây.
-    </p>
+    enLabel="The mortgage, rental and seller proceeds calculator"
+    width="wide"
+    sections={
+      <>
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
+          Tính thử với con số của bạn
+        </h2>
+        <div className="mt-5">
+          <HomeCalculator lang="vi" context="general" seed={SEED} />
+        </div>
 
-    <h2>Bốn phần của khoản trả hàng tháng</h2>
-    <p>
-      <strong>Gốc và lãi.</strong> Đây là phần duy nhất cố định nếu bạn vay lãi suất cố
-      định. Mọi máy tính đều hiện phần này.
-    </p>
-    <p>
-      <strong>Thuế bất động sản.</strong> Do thị trấn ấn định và thay đổi hằng năm. Ở vùng
-      Greater Boston, đây thường là khoản lớn thứ hai sau tiền lãi.
-    </p>
-    <p>
-      <strong>Bảo hiểm nhà.</strong> Ngân hàng bắt buộc. Nhà gần bờ biển hoặc trong vùng
-      ngập lụt có thể cần thêm bảo hiểm lũ, và khoản này không nhỏ.
-    </p>
-    <p>
-      <strong>PMI, nếu trả trước dưới 20%.</strong> Bảo hiểm này bảo vệ ngân hàng chứ không
-      bảo vệ bạn.
-    </p>
+        <ProseBody className="mt-8">
+          <h2>Bốn phần của khoản trả hàng tháng</h2>
+          <p>
+            <strong>Gốc và lãi.</strong> Đây là phần duy nhất cố định nếu bạn vay lãi suất cố
+            định. Mọi máy tính đều hiện phần này.
+          </p>
+          <p>
+            <strong>Thuế bất động sản.</strong> Do thị trấn ấn định và thay đổi hằng năm. Ở vùng
+            Greater Boston, đây thường là khoản lớn thứ hai sau tiền lãi.
+          </p>
+          <p>
+            <strong>Bảo hiểm nhà.</strong> Ngân hàng bắt buộc. Nhà gần bờ biển hoặc trong vùng
+            ngập lụt có thể cần thêm bảo hiểm lũ, và khoản này không nhỏ.
+          </p>
+          <p>
+            <strong>PMI, nếu trả trước dưới 20%.</strong> Bảo hiểm này bảo vệ ngân hàng chứ không
+            bảo vệ bạn.
+          </p>
 
-    <h2>Những khoản người mua lần đầu hay quên</h2>
-    <ul>
-      <li>Phí luật sư — ở Massachusetts đây là khoản gần như bắt buộc, không phải tùy chọn.</li>
-      <li>Phí kiểm tra nhà, và các kiểm tra chuyên biệt như radon hoặc bồn dầu ngầm.</li>
-      <li>Tiền nạp ban đầu vào escrow, thường vài tháng thuế và bảo hiểm trả trước.</li>
-      <li>Phí đăng bộ tại Registry of Deeds.</li>
-      <li>Phí HOA nếu mua condo — và khoản đóng góp đặc biệt khi tòa nhà cần sửa lớn.</li>
-      <li>Tiền dự phòng sau ngày đóng. Nhà xây trước 1940 luôn có việc trong năm đầu.</li>
-    </ul>
+          <h2>Những khoản người mua lần đầu hay quên</h2>
+          <ul>
+            <li>Phí luật sư — ở Massachusetts đây là khoản gần như bắt buộc, không phải tùy chọn.</li>
+            <li>Phí kiểm tra nhà, và các kiểm tra chuyên biệt như radon hoặc bồn dầu ngầm.</li>
+            <li>Tiền nạp ban đầu vào escrow, thường vài tháng thuế và bảo hiểm trả trước.</li>
+            <li>Phí đăng bộ tại Registry of Deeds.</li>
+            <li>Phí HOA nếu mua condo — và khoản đóng góp đặc biệt khi tòa nhà cần sửa lớn.</li>
+            <li>Tiền dự phòng sau ngày đóng. Nhà xây trước 1940 luôn có việc trong năm đầu.</li>
+          </ul>
 
-    <h2>Con số nào nên hỏi trước khi nộp offer</h2>
-    <p>
-      Hỏi ba con số cụ thể cho chính căn nhà đó: thuế bất động sản của năm hiện tại, phí
-      HOA hằng tháng nếu có, và chi phí sưởi ước tính trong một mùa đông. Ba con số này
-      không nằm trong máy tính nào cả, nhưng chúng quyết định căn nhà có nằm trong khả
-      năng của bạn hay không. Quy trình đầy đủ nằm trong{' '}
-      <Link to="/vi/mua-nha">hướng dẫn mua nhà</Link>.
-    </p>
-  </ViPage>
+          <h2>Con số nào nên hỏi trước khi nộp offer</h2>
+          <p>
+            Hỏi ba con số cụ thể cho chính căn nhà đó: thuế bất động sản của năm hiện tại, phí
+            HOA hằng tháng nếu có, và chi phí sưởi ước tính trong một mùa đông. Ba con số này
+            không nằm trong máy tính nào cả, nhưng chúng quyết định căn nhà có nằm trong khả
+            năng của bạn hay không. Quy trình đầy đủ nằm trong{' '}
+            <Link to="/vi/mua-nha">hướng dẫn mua nhà</Link>.
+          </p>
+
+          <h2>Khi bán nhà, bạn thật sự nhận về bao nhiêu?</h2>
+          <p>
+            Giá bán và số tiền bạn nhận về là hai con số khác nhau. Từ giá bán, trừ đi hoa hồng
+            môi giới, thuế chuyển nhượng của Massachusetts ($2.28 cho mỗi $500 giá bán, do người
+            bán trả), phí luật sư và các chi phí đóng giao dịch khác, khoản sửa chữa hoặc tiền giảm
+            cho người mua sau kiểm định — rồi mới đến số nợ vay còn lại. Con số cuối cùng mới là
+            con số nên dùng để tính cho căn nhà kế tiếp. Nếu bạn muốn biết giá bán nên là bao
+            nhiêu, hãy bắt đầu với <Link to="/vi/dinh-gia-nha">bản định giá nhà</Link>.
+          </p>
+        </ProseBody>
+      </>
+    }
+  />
 );
 
 export default ViCalculator;

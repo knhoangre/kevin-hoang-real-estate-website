@@ -19,6 +19,8 @@
 
 \set ON_ERROR_STOP on
 TRUNCATE idx_listings, idx_sold_archive, idx_geocodes;
+-- idx_comparable_sales reads idx_comp_pool, a materialized view rebuilt nightly,
+-- so every block below that changes the data refreshes it before asserting.
 CREATE OR REPLACE FUNCTION ok(cond BOOLEAN, label TEXT) RETURNS VOID LANGUAGE plpgsql AS $$
 BEGIN
   IF cond THEN RAISE NOTICE 'ok   %', label;
@@ -90,6 +92,7 @@ INSERT INTO idx_geocodes (address_key, lat, lon, precision) VALUES
   (public.idx_address_key('12 Elm St','Needham','MA','02492'), 42.289888, -71.237800, 'rooftop'),     -- 1.000 km N
   (public.idx_address_key('400 Far Rd','Needham','MA','02492'), 42.370780, -71.237800, 'interpolated'); -- 10.0 km N
 -- D1, C1, C2 deliberately left ungeocoded.
+SELECT public.idx_refresh_comp_pool();
 
 SELECT ok(round(public.idx_distance_km(42.2809,-71.2378, 42.289888,-71.2378)::numeric, 3) BETWEEN 0.995 AND 1.005, 'haversine: 1 km north measures 1 km');
 
@@ -121,6 +124,7 @@ VALUES ('NH1','sold','SF','NH','Dover','5 Main St','03820', 500000, 500000, CURR
 INSERT INTO idx_listings (mls_number, feed, prop_type, state, town, address, zip, sale_price, list_price, settled_date, living_area, bedrooms, full_baths, style)
 VALUES ('MA1','sold','SF','MA','Dover','5 Main St','02030', 2000000, 2000000, CURRENT_DATE - 10, 2000, 3, 2, 'A');
 SELECT public.idx_archive_sold();
+SELECT public.idx_refresh_comp_pool();
 SELECT ok((SELECT count(*) FROM idx_sold_archive WHERE town='Dover') = 1, 'Dover NH is not archived; Dover MA is');
 SELECT ok((SELECT count(*) FROM public.idx_comparable_sales('SF','Dover','MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250)) = 1,
   'a Dover comp query cannot return New Hampshire');
@@ -162,6 +166,7 @@ INSERT INTO idx_listings (mls_number, feed, prop_type, prop_subtype, state, town
   sale_price, list_price, settled_date, living_area, bedrooms, full_baths, style)
 VALUES ('FR1','sold','SF',NULL,'MA','Framingham','9 Pond St','01701', 650000, 660000, CURRENT_DATE - 20, 1900, 3, 2, 'A');
 SELECT public.idx_archive_sold();
+SELECT public.idx_refresh_comp_pool();
 SELECT ok(NOT EXISTS(SELECT 1 FROM idx_sold_archive WHERE mls_number = 'FR1'),
   'an unserved town is still not archived');
 SELECT ok((SELECT count(*) FROM public.idx_comparable_sales('SF','Framingham','MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250)) = 1,
@@ -178,6 +183,7 @@ SELECT ok((SELECT count(*) FROM public.idx_comparable_sales('SF','Needham','MA',
 -- The archive still supplies what the feed has lost. Delete A3 from the live
 -- feed, as the retention sweep would once it ages out: it must still be a comp.
 DELETE FROM idx_listings WHERE mls_number = 'A3';
+SELECT public.idx_refresh_comp_pool();
 SELECT ok(EXISTS(SELECT 1 FROM public.idx_comparable_sales('SF','Needham','MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250) WHERE mls_number = 'A3'),
   'a sale pruned from the feed survives as a comp through the archive');
 
@@ -185,6 +191,7 @@ SELECT ok(EXISTS(SELECT 1 FROM public.idx_comparable_sales('SF','Needham','MA',N
 INSERT INTO idx_listings (mls_number, feed, prop_type, prop_subtype, state, town, address, zip,
   sale_price, list_price, settled_date, living_area, bedrooms, full_baths, style)
 VALUES ('MF1','sold','MF','G','MA','Framingham','3 Two Fam Rd','01701', 800000, 810000, CURRENT_DATE - 40, 2400, 5, 2, NULL);
+SELECT public.idx_refresh_comp_pool();
 SELECT ok((SELECT prop_subtype FROM public.idx_comparable_sales('MF','Framingham','MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250) WHERE mls_number = 'MF1') = 'G',
   'prop_subtype is returned, so a two-family can be matched to two-families');
 
@@ -192,5 +199,35 @@ SELECT ok((SELECT prop_subtype FROM public.idx_comparable_sales('MF','Framingham
 INSERT INTO idx_listings (mls_number, feed, prop_type, state, town, address, zip,
   sale_price, list_price, settled_date, living_area, bedrooms, full_baths, style)
 VALUES ('NH2','sold','SF','NH','Framingham','1 Wrong State Rd','03000', 300000, 300000, CURRENT_DATE - 5, 1900, 3, 2, 'A');
+SELECT public.idx_refresh_comp_pool();
 SELECT ok(NOT EXISTS(SELECT 1 FROM public.idx_comparable_sales('SF','Framingham','MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250) WHERE mls_number = 'NH2'),
   'the live-feed branch cannot cross a state line either');
+
+-- --- 20260927110000: the comp pool -------------------------------------------
+
+-- The town is required. A NULL town used to mean "every town", and the
+-- `(p_town IS NULL OR town = p_town)` that allowed it is exactly what stopped the
+-- generic plan using the index — 45,764 buffers and 7.4 s per call, measured.
+SELECT ok((SELECT count(*) FROM public.idx_comparable_sales('SF',NULL,'MA',NULL,NULL,NULL,18,NULL,NULL,NULL,250)) = 0,
+  'a NULL town returns nothing rather than scanning the state');
+
+-- Rentals never reach the pool, so they can never be a comp.
+INSERT INTO idx_listings (mls_number, feed, prop_type, state, town, address, zip,
+  sale_price, list_price, settled_date, living_area, bedrooms, full_baths, style)
+VALUES ('RN9','sold','RN','MA','Framingham','4 Lease Ln','01701', 2800, 2800, CURRENT_DATE - 5, 900, 2, 1, NULL);
+SELECT public.idx_refresh_comp_pool();
+SELECT ok(NOT EXISTS(SELECT 1 FROM idx_comp_pool WHERE mls_number = 'RN9'), 'a rental is not in the comp pool');
+
+-- The pool carries the coordinate, so a lookup needs no join and no regex.
+SELECT ok((SELECT lat FROM idx_comp_pool WHERE mls_number = 'A2') = 42.289888, 'the pool carries each sale''s geocode');
+
+-- Only the sync's role and the owner may rebuild it, and nobody reads it directly.
+SELECT ok(NOT has_function_privilege('anon', 'public.idx_refresh_comp_pool()', 'execute')
+      AND NOT has_function_privilege('authenticated', 'public.idx_refresh_comp_pool()', 'execute'),
+  'the pool cannot be rebuilt with the anon key or a user session');
+SELECT ok(NOT has_table_privilege('anon', 'public.idx_comp_pool', 'select'),
+  'the pool is not readable directly; only through idx_comparable_sales');
+SELECT ok(has_function_privilege('anon', 'public.idx_comparable_sales(text,text,text,double precision,double precision,double precision,integer,integer,integer,text,integer)', 'execute'),
+  'the estimate''s lookup is still callable by the page');
+SELECT ok(EXISTS(SELECT 1 FROM cron.job WHERE jobname = 'idx-comp-pool'), 'the nightly rebuild is scheduled');
+

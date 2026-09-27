@@ -46,6 +46,10 @@ export const VI_ROUTES: ViRoute[] = [
   { vi: '/vi/danh-gia', en: '/testimonials', label: 'Khách hàng nói gì' },
   { vi: '/vi/cong-cu-tinh-toan', en: '/calculator', label: 'Công cụ tính toán' },
   { vi: '/vi/lien-he', en: '/contact', label: 'Liên hệ' },
+  // Added 2026-09-27, filling the two rows of the paired menu that had nothing
+  // on the Vietnamese side.
+  { vi: '/vi/bai-viet', en: '/blog', label: 'Bài viết' },
+  { vi: '/vi/dich-vu-tieng-viet', en: '/vietnamese-speaking-real-estate-agent', label: 'Dịch vụ tiếng Việt' },
 ];
 
 /** `{ en, vi }` for a path on either side of a pair, or undefined if unpaired. */

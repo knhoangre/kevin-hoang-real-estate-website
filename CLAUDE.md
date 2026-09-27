@@ -323,7 +323,9 @@ returns, and the mismatches are the list. Sections with detail routes belong in
   business that is not there. `locality` and `serviceAreaLine` replaced
   `formattedAddress` and `mapsHref`.
 - **Based in NEWTON, since 2026-09-27; Needham is a town served, not the base.**
-  Needham was only ever where the Keller Williams office was. Every "based in"
+  Needham was only ever where the Keller Williams office was; Kevin lives in
+  Newton (confirmed 2026-09-27), which is why `/vi/gioi-thieu` may say he lives
+  and works there — do not "correct" that to the looser "based in". Every "based in"
   claim reads `SITE.address.addressLocality` or says Newton — the homepage title,
   the byline on every post (`AuthorCard`), `/about`, the town-guide aside, llms.txt
   and both social cards. `/needham-real-estate-agent` is **kept**: it is the page
@@ -642,6 +644,30 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
   towns, growing), deduplicated on the archive's primary key — a sale counted
   twice would carry double weight in the median. Before 2026-09-26 it read only
   the archive, so ~88% of listings on `/search` could never show an estimate.
+- **…and it reads them from `idx_comp_pool`, a materialized view, because the
+  function was too slow to answer.** Kevin could not find the estimate on
+  2026-09-27 because on many listings it never arrived: called as a function,
+  `idx_comparable_sales` read **45,764 buffers in 7.4 s with everything in
+  cache**, against 1,620 buffers and 23 ms for the same SQL with literals, and
+  under load it hit the 8-second timeout. Two causes, both worth knowing for any
+  future SQL function here: a `LANGUAGE sql` function with a `SET` clause is
+  **never inlined**, so its body gets a generic plan with the parameters as
+  unknowns; and in a generic plan **`(p_x IS NULL OR col = p_x)` cannot be an
+  index condition**, so it walked every sale of the type in the state and ran
+  `idx_address_key()`'s regexes on each one to join geocodes. The pool is
+  archive ∪ live sold feed, deduplicated, sanity-banded, with lat/lon joined on,
+  written in `(prop_type, state, town, settled_date DESC)` order and rebuilt
+  NON-concurrently by pg_cron at 05:55 UTC after the sold feed (a concurrent
+  refresh would let that physical order decay). The function now does plain
+  equalities on that index and answers in 13 ms. `p_town` is required — NULL
+  returns nothing. Staleness is at most a day, the sold feed's own cadence. The
+  SQL tests refresh the pool after every block that changes data, and the test
+  bootstrap stubs `cron`.
+- **`ValuationSummary` renders nothing while it waits**, so a slow lookup is
+  indistinguishable from "no estimate". Check a live listing in a real browser
+  when the estimate "is missing" — `docker run mcr.microsoft.com/playwright/python`
+  with a short script logging the `idx_comparable_sales` response is how the
+  timeout above was found.
 - **The estimate is stated beside the asking price, not only in the panel.**
   `ValuationSummary` is one line under the price that links down to the working.
   The panel alone sat below the mortgage calculator, where it was on the page and
@@ -1126,12 +1152,13 @@ The Instagram reels, watchable in a modal without leaving the site.
 
 ### The Vietnamese tree (`/vi`)
 
-- **Six real prerendered routes**, listed in
+- **Real prerendered routes, one per entry** in
   [src/lib/viRoutes.ts](src/lib/viRoutes.ts) with the English page each one
-  pairs with. They exist because the language toggle swaps copy *after*
-  hydration — so before this, not one word of Vietnamese appeared in any
-  prerendered document and no crawler had ever seen any of it. The toggle
-  still works everywhere else; `/vi` supersedes it only for these six.
+  pairs with — thirteen since 2026-09-27. They exist because the language
+  toggle swaps copy *after* hydration — so before this, not one word of
+  Vietnamese appeared in any prerendered document and no crawler had ever seen
+  any of it. The toggle still works everywhere else; `/vi` supersedes it only
+  for the paired pages.
 - **Content is literal Vietnamese JSX, never `t()`.** i18n is pinned to
   `lng: 'en'` during generation, so anything assembled through
   `useTranslation()` prerenders in English regardless of what the reader has
@@ -1149,11 +1176,48 @@ The Instagram reels, watchable in a modal without leaving the site.
   English links, then all eleven Vietnamese ones beneath — twenty rows, taller
   than a laptop screen. The rows are derived from `VI_ROUTES`, so a new
   Vietnamese route arrives beside its English page without being listed twice.
-  The left column has no "English" heading because the language toggle translates
-  those labels too.
+  Both columns carry a heading ("English", "Tiếng Việt"); a heading over one
+  column only read as a layout mistake. Since `/vi/bai-viet` and
+  `/vi/dich-vu-tieng-viet` were added every English row has a partner.
+- **`/vi/dich-vu-tieng-viet` shares its copy with the English page's toggle**
+  through [src/data/viServices.tsx](src/data/viServices.tsx); only the links
+  differ. It has its OWN h1 and title because the toggle copy's h1 is the `/vi`
+  homepage's h1 word for word, and it leaves out the two FAQ questions `/vi` and
+  `/vi/cau-hoi-thuong-gap` already answer.
+- **`/vi/bai-viet` does not translate the blog.** Like `/vi/khu-vuc`, it
+  describes the English posts by topic in Vietnamese and links to them. Topics
+  are assigned by slug in `ViBlog.tsx`; titles are read from `blogData`, and a
+  post assigned to no topic falls into a last "Bài viết khác" group rather than
+  disappearing. `BlogPost` has `titleVi`/`excerptVi`/`contentVi` for posts
+  translated properly, one at a time.
 - **The town guides are deliberately NOT translated.** Seventeen near-identical
   translations is the scaled-content shape this corpus was cleaned of once.
   `/vi/khu-vuc` describes them and links out to the English guides instead.
+
+## The calculator (`HomeCalculator`)
+
+- **One calculator in three places**: every listing page (`ListingPayment`),
+  `/calculator`, and `/vi/cong-cu-tinh-toan`. Three views — living in it, renting
+  it out, selling it. Until 2026-09-27 `/calculator` ran a separate
+  `RealEstateCalculators` (sliders in cards, own arithmetic, 147 i18n keys, no
+  PMI or cap rate) and listings had no seller view; it was deleted. The
+  arithmetic is in [@/lib/mortgage](src/lib/mortgage.ts) and
+  [@/lib/sellerProceeds](src/lib/sellerProceeds.ts); the component owns only UI.
+- **Its words are literal strings in
+  [copy.tsx](src/components/calculator/copy.tsx), never `t()`**, with the
+  language passed as a prop — that is what lets `/vi/cong-cu-tinh-toan`
+  prerender a working Vietnamese calculator instead of linking to an English
+  one. One `CalculatorCopy` interface types both languages, so a label added to
+  one and forgotten in the other fails the build. `/calculator` follows the
+  toggle after mount; a listing page is always English, like the rest of it.
+- **The seed says where each number came from** (listing, missing, or example),
+  and the hints follow it. On `/calculator` every opening figure is an example
+  and the intro says so before any number does.
+- **The Massachusetts deed excise is $2.28 per $500 of price** (c.64D §1 plus
+  the 14% surtax; DOR Directive 95-4, checked 2026-09-27), customarily the
+  seller's. Barnstable County's rate is NOT modelled — official sources disagree
+  on it — and the UI sends Cape sellers to their attorney. Commission opens at
+  `SITE.assumedSellerCommissionRate`, dated and labelled as an assumption.
 
 ## Design system
 

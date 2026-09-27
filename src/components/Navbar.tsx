@@ -280,9 +280,9 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  // Wide enough for "Chuyển đến Massachusetts" on one line; the
+                  // Wide enough for "Chuyển đến Massachusetts" on one line (32rem wrapped it); the
                   // max-w keeps it on screen just above the 1140px breakpoint.
-                  className={cn(PANEL, "w-[32rem] max-w-[calc(100vw-2rem)]")}
+                  className={cn(PANEL, "w-[35rem] max-w-[calc(100vw-2rem)]")}
                 >
                   {/*
                     English left, Vietnamese right, one page per line — see
@@ -296,8 +296,18 @@ const Navbar = () => {
                     screen reader switches voice for it.
                   */}
                   <div className={PANEL_INNER}>
+                    {/* A heading over EACH column. The left one used to be
+                        blank, on the grounds that the language toggle
+                        translates those labels too — but the column is the
+                        English pages whatever their labels say, and a heading
+                        over one column only read as a layout mistake. */}
                     <div className="grid grid-cols-2 gap-x-3 pb-1 pt-1">
-                      <span aria-hidden />
+                      <p
+                        lang="en"
+                        className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"
+                      >
+                        English
+                      </p>
                       <p
                         lang="vi"
                         className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"

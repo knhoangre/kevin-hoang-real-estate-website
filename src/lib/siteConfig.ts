@@ -79,8 +79,8 @@ export const SITE = {
    * instead. schema.org's PostalAddress needs no street to be valid, and a
    * locality-only address is the honest statement of "based in Newton".
    *
-   * NEWTON, NOT NEEDHAM, since 2026-09-27, per Kevin. Needham was where the
-   * Keller Williams office was, not where he works from; with the office gone
+   * NEWTON, NOT NEEDHAM, since 2026-09-27, per Kevin, who lives there. Needham
+   * was where the Keller Williams office was, not where he works from; with the office gone
    * the base is where he actually is. Needham stays a town he serves — it keeps
    * its landing page and its guide — and is no longer described as home base.
    * The hidden address on the Google Business Profile has to be in Newton too,
@@ -213,6 +213,20 @@ export const SITE = {
    * is statutory and lives in @/lib/mortgage, not here.
    */
   assumedPmiRate: 0.5 as number,
+
+  /**
+   * The total commission the seller-proceeds view STARTS at, as a percentage of
+   * the sale price.
+   *
+   * An assumption to be replaced, not a rate this site quotes or a claim about
+   * what is typical. Since the 2024 NAR settlement, what a seller pays — and
+   * whether any of it goes to the buyer's agent — is negotiated in the listing
+   * agreement, and the input's hint says exactly that. It exists because a
+   * proceeds figure that opens at 0% commission overstates what a seller keeps
+   * by tens of thousands of dollars, which is the one error this calculator
+   * must not make. The old /calculator opened at 6%.
+   */
+  assumedSellerCommissionRate: 5 as number,
 
   /**
    * The comparable-sales estimate on /search/<mls>.

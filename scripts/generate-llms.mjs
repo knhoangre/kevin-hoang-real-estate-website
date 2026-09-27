@@ -45,7 +45,7 @@ const KEY_PAGES = [
   line('/first-time-buyers', 'First-time home buyer guide for Massachusetts: pre-approval, offers, inspection, closing'),
   line('/buyer', "Home buyer's guide and roadmap for Greater Boston"),
   line('/seller', "Home seller's guide: preparation, pricing, marketing, negotiation"),
-  line('/calculator', 'Mortgage, affordability, and closing-cost calculators for Massachusetts buyers'),
+  line('/calculator', 'Monthly cost, rental cash flow and seller net proceeds (with the Massachusetts deed tax) in one calculator'),
   line('/neighborhoods', 'Town-by-town area guides across MetroWest and Greater Boston'),
   line('/properties', 'Current and recent listings'),
   line('/faq', 'Answers to common Massachusetts real estate questions'),
@@ -75,9 +75,14 @@ const VI_PAGES = [
   line('/vi/danh-gia', 'Tiếng Việt — client reviews, quoted verbatim from the Google profile'),
   line(
     '/vi/cong-cu-tinh-toan',
-    'Tiếng Việt — what each number in a Massachusetts purchase means: PITI, escrow, PMI, closing costs'
+    'Tiếng Việt — a working calculator in Vietnamese: monthly cost, rental cash flow and seller net proceeds, with what each number means'
   ),
   line('/vi/lien-he', 'Tiếng Việt — contact Kevin: phone, text, email, and a Vietnamese contact form'),
+  line(
+    '/vi/dich-vu-tieng-viet',
+    'Tiếng Việt — what working in Vietnamese covers: which documents are explained, and where language matters most'
+  ),
+  line('/vi/bai-viet', 'Tiếng Việt — the English articles, grouped by topic with Vietnamese introductions'),
 ];
 
 /*

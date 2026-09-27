@@ -37,6 +37,7 @@ MIGRATIONS="
 20260920130000_idx_comparable_sales
 20260926100000_idx_comps_all_towns
 20260927090000_idx_archive_by_batch
+20260927110000_idx_comp_pool
 "
 
 cleanup() { docker rm -f "$CONTAINER" >/dev/null 2>&1 || true; }
