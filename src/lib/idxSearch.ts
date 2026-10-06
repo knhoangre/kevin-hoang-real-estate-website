@@ -9,6 +9,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { soldByMls, soldCount, soldOnCockroach, soldSearch, soldSimilar } from '@/lib/soldApi';
 import { IDX_CODES, type IdxPropType } from '@/lib/idx-codes';
 
 /**
@@ -392,6 +393,12 @@ const matching = (f: SearchFilters, head: boolean) => {
  * See 20260927100000_idx_search_speed.sql for the measurements.
  */
 export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> => {
+  // Sold listings live in a second database once SITE.soldData says so. Same
+  // filters, same order, same row shape — see soldApi.ts.
+  if (f.listingType === 'sold' && soldOnCockroach()) {
+    return withRetry(() => soldSearch(f), 'Sold search');
+  }
+
   // Sold listings are ordered by WHEN they closed. By price, last week's sales
   // would sit behind a mansion that closed eleven months ago — useless for
   // anyone judging what a street is doing now.
@@ -426,12 +433,16 @@ export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> =>
  * index order can shortcut, so it is fetched beside the rows rather than
  * blocking them. A failure here costs the total and nothing else.
  */
-export const countListings = async (f: SearchFilters): Promise<number> =>
-  withRetry(async () => {
+export const countListings = async (f: SearchFilters): Promise<number> => {
+  if (f.listingType === 'sold' && soldOnCockroach()) {
+    return withRetry(() => soldCount(f), 'Sold count');
+  }
+  return withRetry(async () => {
     const { count, error } = await matching(f, true);
     if (error) throw error;
     return count ?? 0;
   }, 'Listing count');
+};
 
 /** What a listing's headline price is, given which list it appears in. */
 export const headlinePrice = (listing: IdxListing) =>
@@ -445,7 +456,26 @@ export const listingByMls = async (mls: string) => {
     .eq('mls_number', mls)
     .maybeSingle();
   if (error) throw error;
-  return (data as IdxListing | null) ?? null;
+  if (data) return data as IdxListing;
+
+  /*
+   * Not on the market — so ask whether it SOLD. Once sold listings have moved
+   * they are no longer in idx_listings at all, and without this every link to a
+   * closed sale would land on "this listing is no longer available".
+   *
+   * Asked second, and only on a miss, because nearly every lookup is for an
+   * active listing and should not pay for a second database. A failure here is
+   * a null, not a throw: "not found" is the honest reading of a number neither
+   * side can produce, and the page already says what that usually means.
+   */
+  if (!soldOnCockroach()) return null;
+  try {
+    const [sold] = await soldByMls([mls]);
+    return sold ?? null;
+  } catch (err) {
+    console.warn('Sold lookup failed:', err instanceof Error ? err.message : err);
+    return null;
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -758,6 +788,15 @@ export const similarListings = async (
 ): Promise<IdxListing[]> => {
   const price = headlinePrice(listing);
   if (!listing.town || !listing.prop_type || price === null || price <= 0) return [];
+
+  // A sold listing's alternatives are other sales, and those have moved.
+  if (listing.feed === 'sold' && soldOnCockroach()) {
+    try {
+      return await soldSimilar(listing, limit);
+    } catch {
+      return [];
+    }
+  }
 
   // Sold rows are compared on what they SOLD for, matching how searchListings
   // filters them — a sold comp banded by its asking price answers a different

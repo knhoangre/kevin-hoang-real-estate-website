@@ -16,6 +16,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { AVAILABLE_STATUSES, type IdxListing } from '@/lib/idxSearch';
+import { soldByMls, soldOnCockroach } from '@/lib/soldApi';
 import {
   FAVORITE_WEIGHT,
   rankCandidates,
@@ -122,6 +123,19 @@ export const listingsByMls = async (mls: string[]): Promise<Map<string, IdxListi
     for (const row of (data ?? []) as IdxListing[]) out.set(row.mls_number, row);
   } catch (err) {
     console.warn('Could not refresh saved listings:', err);
+  }
+
+  // Whatever is not on the market may have SOLD, and sold listings live in a
+  // second database once the reads have moved. Asked only about the misses.
+  if (soldOnCockroach()) {
+    const missing = unique.filter((m) => !out.has(m));
+    if (missing.length > 0) {
+      try {
+        for (const row of await soldByMls(missing)) out.set(row.mls_number, row);
+      } catch (err) {
+        console.warn('Could not look up sold listings:', err);
+      }
+    }
   }
   return out;
 };

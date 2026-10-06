@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { SITE } from '@/lib/siteConfig';
 import { withRetry } from '@/lib/idxSearch';
+import { soldComps, soldOnCockroach } from '@/lib/soldApi';
 import {
   addressKey,
   TIERS,
@@ -192,6 +193,23 @@ export const comparableCandidates = async (
   );
 
   try {
+    const bounds = {
+      p_prop_type: subject.prop_type,
+      p_town: subject.town,
+      // Not optional. Town names are not unique across MLS PIN's coverage —
+      // "Dover" is 127 Massachusetts rows and 19 New Hampshire ones on the live
+      // feed — so a comp set banded on town alone silently spans two markets.
+      p_state: subject.state ?? 'MA',
+      p_lat: coordinate?.lat ?? null,
+      p_lon: coordinate?.lon ?? null,
+      p_radius_km: null,
+      p_months: widest.months,
+      p_min_sqft: Math.round(area * (1 - widest.sqftTolerance)),
+      p_max_sqft: Math.round(area * (1 + widest.sqftTolerance)),
+      p_exclude_mls: subject.mls_number,
+      p_limit: 250,
+    };
+
     /*
      * RETRIED, like every /search read. The first call after a quiet spell — or
      * right after a sync rewrote the pages — reads the index off disk and can
@@ -200,23 +218,15 @@ export const comparableCandidates = async (
      * failed to appear for whichever visitor happened to be first, and since
      * this fetch swallows its errors, nobody would ever have known why.
      */
+    // The same question, of the database that keeps every sale, once
+    // SITE.soldData says the reads have moved. One `bounds` object feeds both
+    // paths, so they cannot drift on what a bound means.
+    if (soldOnCockroach()) {
+      return await withRetry(() => soldComps<Comp>(bounds), 'Comparable sales');
+    }
+
     const { data, error } = await withRetry(async () => {
-      const res = await compsDb.rpc('idx_comparable_sales', {
-        p_prop_type: subject.prop_type,
-        p_town: subject.town,
-        // Not optional. Town names are not unique across MLS PIN's coverage —
-        // "Dover" is 127 Massachusetts rows and 19 New Hampshire ones on the live
-        // feed — so a comp set banded on town alone silently spans two markets.
-        p_state: subject.state ?? 'MA',
-        p_lat: coordinate?.lat ?? null,
-        p_lon: coordinate?.lon ?? null,
-        p_radius_km: null,
-        p_months: widest.months,
-        p_min_sqft: Math.round(area * (1 - widest.sqftTolerance)),
-        p_max_sqft: Math.round(area * (1 + widest.sqftTolerance)),
-        p_exclude_mls: subject.mls_number,
-        p_limit: 250,
-      });
+      const res = await compsDb.rpc('idx_comparable_sales', bounds);
       // withRetry retries on a THROW, and a PostgREST error arrives as a value,
       // so it is rethrown here — otherwise a timeout would never be retried.
       if (res.error) throw res.error;

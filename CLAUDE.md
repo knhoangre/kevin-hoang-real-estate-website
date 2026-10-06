@@ -28,6 +28,7 @@ node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, 
 node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
 node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
 sh supabase/tests/run.sh          # the IDX comp migrations AND the saved-homes RLS (needs Docker)
+sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
 `.ts` rather than `.mjs` for the three newest: Node runs TypeScript directly
@@ -684,6 +685,100 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
   migrations are pushed and it is regenerated. Unlike the deleted `db` escape hatch
   this asserts a *precise* schema that the compiler still checks, in one module —
   but delete it and switch to `supabase` directly after regenerating.
+
+### Sold data in CockroachDB — BUILT AND TESTED, NOT YET SWITCHED ON
+
+**State on 2026-10-06: every piece below is deployed and inert.** No CockroachDB
+cluster exists yet; `SOLD_DB_URL_RW` / `SOLD_DB_URL_RO` are unset, so the sync
+writes nowhere new and `SITE.soldData.backend` is `'supabase'`, so the site reads
+sold listings exactly as it always has. Everything in "The price estimate" above
+describes what is LIVE. This section is what replaces the sold half of it.
+
+- **Why a second database.** Supabase's free tier is 500 MB shared with the CRM,
+  so sold listings were deleted when they aged out of MLS PIN's twelve-month
+  window and the archive that outlives it was cut to seventeen towns and a third
+  of the columns — 7,106 rows against 98,921 in the feed. CockroachDB's free
+  allowance is 10 GiB; a year of sales statewide with every column is about
+  0.2 GiB. `idx_sold` there is the whole feed, every town, every field, rentals
+  included, and NOTHING IS EVER DELETED FROM IT. The writer's login has no DELETE.
+- **Only sold data moves. Active listings stay in Supabase**, read directly by
+  the browser as now. `/search` for homes on the market is the part that must
+  never break and it does not depend on this at all.
+- **Azure SQL's free offer and Cosmos DB were both considered and ruled out**
+  (Kevin asked, 2026-10-06). Azure SQL free is 100,000 vCore-seconds a month —
+  about 55 awake hours at the smallest size, which the sync alone spends — after
+  which the database is paused until the next month, and each wake takes about a
+  minute. Cosmos DB is a document database: no joins, no SQL functions, so the
+  estimator and search would be rewritten from scratch.
+- **REQUEST UNITS ARE THE CONSTRAINT, NOT STORAGE.** The free allowance is 50
+  million a month and a cluster that spends it is DISABLED until the next.
+  Rewriting 99,000 rows nightly, the way the Supabase sync upserts every row to
+  stamp `synced_at`, would cost roughly twice that. So `writeSoldBatch`
+  ([soldDb.ts](supabase/functions/_shared/soldDb.ts)) hashes each feed row, reads
+  the stored hashes for the batch from a narrow covering index, and writes only
+  rows that are new or changed. There is no `synced_at` over there, no retention
+  sweep, and a night on which nothing changed writes nothing. **Do not add a
+  "touched at" column to `idx_sold`** — it turns every row into a write.
+- **One table replaces three things:** the sold half of `idx_listings`,
+  `idx_sold_archive`, and the `idx_comp_pool` materialized view that existed to
+  union them. With one table there is nothing to union and no nightly rebuild.
+  Coordinates are copied onto each row when it is written (and pushed later for
+  addresses geocoded after the fact — the `soldGeocodes` body), so the comp query
+  filters on distance without a second database. `idx_geocodes` itself stays in
+  Supabase, where the geocode script writes it.
+- **[sold-api](supabase/functions/_shared/soldRead.ts) is a fixed set of
+  questions, not a query interface** — `search`, `count`, `byMls`, `similar`,
+  `comps`. Every statement is written there and every value bound as a
+  parameter; it connects with a login that can only SELECT. It is public (the
+  anon key is in every browser), which is also why totals are cached for ten
+  minutes: a count is the one answer no index shortcuts.
+- **Rows come back shaped like `idx_listings` rows**, so no page changed.
+  [soldApi.ts](src/lib/soldApi.ts) is the only caller, and `idxSearch.ts`,
+  `idxComps.ts` and `favorites.ts` route their sold branches through it when
+  `SITE.soldData.backend` says so. `listingByMls` asks Supabase first and the
+  sold database only on a miss.
+- **What is KEPT is not what is SHOWN.** `comps` reads every sale ever stored;
+  the ops that display a listing are limited to `DISPLAY_MONTHS` (12, the window
+  MLS PIN's own feed shows). Whether older sold listings may be displayed is a
+  question for MLS PIN's rules — the same open caveat `SITE.valuation` carries —
+  and when it is answered it is that one constant.
+- **Three CockroachDB differences that each cost a failed run, so they are
+  written down:** a bare `6371.0088` is a DECIMAL and will not multiply by the
+  FLOAT `asin()` returns (cast it); a `VALUES` list of bare placeholders is
+  refused with "could not determine data type of placeholder" (use `unnest` of
+  cast arrays); and postgres.js returns INT8/DECIMAL as strings and DATE as a
+  `Date` unless told otherwise — `openSoldDb` installs three type parsers, and
+  without them a sale date serialises as midnight UTC, the evening before.
+- **`sh cockroach/tests/run.sh` is the check** — 86 assertions against a real
+  single-node cluster in Docker, run in Deno because the code under test is an
+  edge function's. The comp assertions restate `idx_comps_test.sql`: a comp query
+  cannot cross a state line, and an unknown distance is not a near one. On
+  2026-10-06 the real archive was imported into a local cluster and `comps`
+  returned row-for-row what `idx_comparable_sales()` returns live, distances to
+  six decimals, in every case the local data covered.
+- **While both databases are written, a CockroachDB failure does not fail the
+  sync.** It is recorded in `idx_sold_runs` over there and returned in the
+  function's response, and tomorrow's run offers the same rows again. That has to
+  be REVERSED at the last step, when Supabase stops holding sold rows: from then
+  a failed write is a lost day and must be a red run.
+- **`importArchive` and `soldGeocodes` refuse anything but the service role.**
+  The feed sync itself still accepts any valid key, as it always has — worth
+  tightening once the role of the vault's `idx_sync_service_key` is confirmed.
+
+**The cutover, in order — only step 5 changes what a visitor sees:**
+
+1. Kevin creates the cluster and sets the two secrets (steps in the 2026-10-06
+   handover; no AWS account is involved — CockroachDB hosts it).
+2. `cockroach/schema/001_idx_sold.sql`, then `002_roles.sql` after the two SQL
+   users exist.
+3. `{"importArchive":true,"offset":N,"limit":1000}` until `more` is false, then
+   let one full night of the sold sync run. Add the `soldGeocodes` cron.
+4. Row counts match; `node scripts/valuation-backtest.ts` gives the same answer
+   against the new database (it needs a mode for that — not yet written).
+5. `SITE.soldData.backend = 'cockroach'`.
+6. A week later: the sync stops writing sold rows to Supabase and starts failing
+   on a CockroachDB error; then the Supabase-side sold rows, `idx_sold_archive`,
+   `idx_comp_pool` and its cron are removed. Kevin runs that deletion himself.
 
 ### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
 

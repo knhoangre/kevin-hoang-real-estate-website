@@ -28,11 +28,41 @@
  * WALL-CLOCK TIME. The four active feeds are ~28 MB of text and 23,400 rows
  * together. One property type per invocation keeps each run well inside the
  * Edge Function limit, and a failure then costs one type rather than all four.
+ *
+ * THE SOLD FEED IS ALSO KEPT, IN A SECOND DATABASE. When SOLD_DB_URL_RW is set,
+ * every sold batch is offered to CockroachDB as well (see _shared/soldDb.ts and
+ * cockroach/schema). Supabase deletes a sale when it ages out of MLS PIN's
+ * twelve-month window, because 500 MB will not hold more; that table never
+ * deletes and holds every town and every column. Without the secret none of
+ * that code runs and this function behaves exactly as it did before.
+ *
+ * Two extra bodies exist for it, both SERVICE ROLE ONLY and both leaving
+ * idx_sync_runs alone — they are not feed syncs, and a row marked ok there is
+ * what the site reads as "listing data last updated":
+ *
+ *   { "importArchive": true, "offset": 0, "limit": 1000 }
+ *       One-time copy of Supabase's idx_sold_archive into the new table. Adds
+ *       only what is missing; never replaces a full feed row with a thin one.
+ *
+ *   { "soldGeocodes": true }
+ *       Pushes coordinates found since the last push onto sales that were
+ *       ingested before their address had been geocoded.
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 import { rowParser, type IdxListing } from '../_shared/idx.ts';
 import { fetchFeedLines, feedUrl, isConfigured, login, baseUrl } from '../_shared/mlspin-auth.ts';
+import {
+  applyGeocodes,
+  insertMissingSold,
+  openSoldDb,
+  recordSoldRun,
+  soldDbConfigured,
+  writeSoldBatch,
+  type Geocode,
+  type GeocodeLookup,
+  type SoldSql,
+} from '../_shared/soldDb.ts';
 
 const DEFAULT_PROP_TYPES = ['SF', 'CC', 'MF', 'RN'];
 // Rows per upsert. Large enough that 8,500 single-family listings is a handful
@@ -49,6 +79,36 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
+
+/**
+ * The `role` claim of the caller's key.
+ *
+ * The gateway has already verified the signature — functions deploy with JWT
+ * verification on — so this only reads which key it was. The anon key is in
+ * every visitor's browser; the service role key is not.
+ */
+const callerRole = (req: Request): string | null => {
+  try {
+    const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const claims = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof claims.role === 'string' ? claims.role : null;
+  } catch {
+    return null;
+  }
+};
+
+/** A located row of idx_geocodes. */
+interface GeocodeRow {
+  address_key: string;
+  lat: number;
+  lon: number;
+  precision: string | null;
+}
+
+/** PostgREST puts an `in` list in the URL, so a long one is asked for in pieces. */
+const KEYS_PER_REQUEST = 100;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -84,8 +144,13 @@ serve(async (req) => {
   let limit = Number.POSITIVE_INFINITY;
   /** Run the sold retention sweep. See the note where it is used. */
   let prune = false;
+  /** The two CockroachDB-only modes. See the header. */
+  let importArchive = false;
+  let soldGeocodes = false;
   try {
     const body = await req.json();
+    importArchive = Boolean(body?.importArchive);
+    soldGeocodes = Boolean(body?.soldGeocodes);
     if (Array.isArray(body?.propTypes) && body.propTypes.length) propTypes = body.propTypes;
     syncOffices = Boolean(body?.offices);
     if (body?.feed === 'sold') feed = 'sold';
@@ -95,6 +160,143 @@ serve(async (req) => {
   } catch {
     // No body is fine — the defaults above stand.
   }
+
+  /**
+   * Coordinates for a set of address keys, from idx_geocodes on this side.
+   * Only located addresses come back: a row the geocoder tried and failed on is
+   * not a coordinate.
+   */
+  const lookupGeocodes: GeocodeLookup = async (keys) => {
+    const found = new Map<string, Geocode>();
+    for (let i = 0; i < keys.length; i += KEYS_PER_REQUEST) {
+      const { data, error } = await supabase
+        .from('idx_geocodes')
+        .select('address_key, lat, lon, precision')
+        .in('address_key', keys.slice(i, i + KEYS_PER_REQUEST))
+        .not('lat', 'is', null)
+        .not('lon', 'is', null);
+      if (error) throw new Error(`geocode lookup: ${error.message}`);
+      for (const g of (data ?? []) as GeocodeRow[]) {
+        found.set(g.address_key, { lat: Number(g.lat), lon: Number(g.lon), precision: g.precision });
+      }
+    }
+    return found;
+  };
+
+  // ---- The CockroachDB-only modes ------------------------------------------
+  if (importArchive || soldGeocodes) {
+    // These read and write the kept sold data and nothing else calls them, so
+    // unlike the feed sync they refuse the anon key outright.
+    if (callerRole(req) !== 'service_role') return json({ error: 'Not allowed' }, 403);
+    if (!soldDbConfigured('rw')) {
+      return json({ error: 'The sold database is not configured (SOLD_DB_URL_RW)' }, 500);
+    }
+
+    const sold = openSoldDb('rw');
+    const source = importArchive ? `archive-import ${offset}+${limit}` : 'geocodes';
+    try {
+      if (importArchive) {
+        // PostgREST returns at most 1,000 rows however many are asked for, so a
+        // larger window would come back short and look like the end of the
+        // table. Ordered by the primary key so consecutive windows tile it.
+        const size = Math.min(Number.isFinite(limit) ? limit : 1000, 1000);
+        const { data, error } = await supabase
+          .from('idx_sold_archive')
+          .select('*')
+          .order('mls_number', { ascending: true })
+          .range(offset, offset + size - 1);
+        if (error) throw new Error(`archive read: ${error.message}`);
+
+        let seen = 0;
+        let written = 0;
+        const rows = data ?? [];
+        for (let i = 0; i < rows.length; i += BATCH) {
+          const result = await insertMissingSold(sold, rows.slice(i, i + BATCH), lookupGeocodes);
+          seen += result.seen;
+          written += result.written;
+        }
+        await recordSoldRun(sold, { source, seen, written, ok: true });
+        // `more` is how the caller knows to ask for the next window.
+        return json({ ok: true, mode: 'importArchive', offset, seen, written, more: rows.length === size });
+      }
+
+      // Everything geocoded since the last push that succeeded.
+      const [last] = await sold<{ at: string | null }[]>`
+        SELECT max(ran_at)::STRING AS at FROM idx_sold_runs WHERE source = 'geocodes' AND ok
+      `;
+      const since = last?.at ?? '1970-01-01T00:00:00Z';
+      let seen = 0;
+      let written = 0;
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await supabase
+          .from('idx_geocodes')
+          .select('address_key, lat, lon, precision')
+          .gt('geocoded_at', since)
+          .not('lat', 'is', null)
+          .not('lon', 'is', null)
+          .order('address_key', { ascending: true })
+          .range(from, from + 999);
+        if (error) throw new Error(`geocode read: ${error.message}`);
+        const page = ((data ?? []) as GeocodeRow[]).map((g) => ({
+          address_key: g.address_key,
+          lat: Number(g.lat),
+          lon: Number(g.lon),
+          precision: g.precision ?? null,
+        }));
+        seen += page.length;
+        for (let i = 0; i < page.length; i += BATCH) {
+          written += await applyGeocodes(sold, page.slice(i, i + BATCH));
+        }
+        if (page.length < 1000) break;
+      }
+      await recordSoldRun(sold, { source, seen, written, ok: true });
+      return json({ ok: true, mode: 'soldGeocodes', since, seen, written });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`idx-sync ${source} failed:`, message);
+      await recordSoldRun(sold, { source, seen: 0, written: 0, ok: false, error: message });
+      return json({ ok: false, error: message }, 500);
+    } finally {
+      await sold.end({ timeout: 5 });
+    }
+  }
+
+  /*
+   * The second home of the sold feed, when it has been set up.
+   *
+   * Opened only for a sold run and only with the secret present. While BOTH
+   * databases are written — until the site's reads have moved — a failure here
+   * is recorded and reported but does NOT fail the run: the Supabase copy is
+   * what every page still reads, and it must not go stale because the new
+   * database was unreachable for a night. Tomorrow's run offers the same rows
+   * again, and the diff writes whatever was missed.
+   */
+  let sold: SoldSql | null = null;
+  let soldSeen = 0;
+  let soldWritten = 0;
+  let soldError: string | null = null;
+  if (feed === 'sold' && soldDbConfigured('rw')) {
+    try {
+      sold = openSoldDb('rw');
+    } catch (err) {
+      soldError = err instanceof Error ? err.message : String(err);
+      console.error('Could not open the sold database:', soldError);
+    }
+  }
+
+  /** Close out the sold database's part of this run. Safe to call when there is none. */
+  const finishSold = async () => {
+    if (!sold) return null;
+    await recordSoldRun(sold, {
+      source: `sold-feed ${propTypes.join(',')} ${offset}+${Number.isFinite(limit) ? limit : 'all'}`,
+      seen: soldSeen,
+      written: soldWritten,
+      ok: soldError === null,
+      error: soldError,
+    });
+    await sold.end({ timeout: 5 }).catch(() => {});
+    return { seen: soldSeen, written: soldWritten, error: soldError };
+  };
 
   const startedAt = new Date().toISOString();
   const { data: run } = await supabase
@@ -241,6 +443,27 @@ serve(async (req) => {
           archived += Number(copied ?? 0);
         }
 
+        /*
+         * And the same batch to the database that keeps everything: every
+         * town, every column, rentals included, never deleted. Only rows that
+         * are new or changed are written — see writeSoldBatch — so on an
+         * ordinary night this is one small read per batch.
+         *
+         * After the first failure the rest of the run stops offering: a
+         * database that refused one batch will refuse the next two hundred, and
+         * each attempt is a ten-second connect timeout this run cannot afford.
+         */
+        if (sold && soldError === null) {
+          try {
+            const result = await writeSoldBatch(sold, batch, lookupGeocodes);
+            soldSeen += result.seen;
+            soldWritten += result.written;
+          } catch (err) {
+            soldError = err instanceof Error ? err.message : String(err);
+            console.error(`${propType}/sold: the sold database refused a batch:`, soldError);
+          }
+        }
+
         batch = [];
       };
 
@@ -355,9 +578,11 @@ serve(async (req) => {
       })
       .eq('id', run?.id);
 
-    return json({ ok: true, feed, propTypes, offset, upserted, deleted, archived });
+    const soldDb = await finishSold();
+    return json({ ok: true, feed, propTypes, offset, upserted, deleted, archived, soldDb });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    const soldDb = await finishSold();
 
     await supabase
       .from('idx_sync_runs')
@@ -374,6 +599,6 @@ serve(async (req) => {
     // messages in mlspin-auth deliberately name the env var rather than echo
     // its value.
     console.error('idx-sync failed:', message);
-    return json({ ok: false, error: message, upserted, deleted, archived }, 500);
+    return json({ ok: false, error: message, upserted, deleted, archived, soldDb }, 500);
   }
 });

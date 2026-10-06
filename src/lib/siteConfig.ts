@@ -266,6 +266,33 @@ export const SITE = {
   },
 
   /**
+   * Where the site READS sold listings from.
+   *
+   * 'supabase'   idx_listings (the rolling twelve months) and the seventeen-town
+   *              archive. How it has always worked, and the state until the
+   *              step below is taken.
+   * 'cockroach'  the `sold-api` edge function over CockroachDB's idx_sold,
+   *              which keeps every sale in every town. See soldApi.ts.
+   *
+   * THIS IS THE LAST STEP OF THE MOVE, NOT THE FIRST, and flipping it is the
+   * only one that changes what a visitor sees:
+   *
+   *   1. The cluster exists and SOLD_DB_URL_RW / SOLD_DB_URL_RO are set.
+   *   2. cockroach/schema has been applied.
+   *   3. The archive has been imported and a full night of the sold sync has
+   *      run, so the new table holds what the old ones do.
+   *   4. Row counts match and `node scripts/valuation-backtest.ts` gives the
+   *      same answer against it.
+   *   5. This becomes 'cockroach'.
+   *   6. A week later, the Supabase-side sold rows are removed.
+   *
+   * Flipping it back is safe at any time up to step 6.
+   */
+  soldData: {
+    backend: 'supabase' as 'supabase' | 'cockroach',
+  },
+
+  /**
    * Towns served, used for schema `areaServed`, the sitemap, and the nearby-
    * towns cross-links. Slugs match the keys in src/data/neighborhoodData.ts
    * and the /neighborhoods/:slug route.
