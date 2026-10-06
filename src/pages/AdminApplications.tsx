@@ -1,8 +1,9 @@
 /**
  * /admin/applications — invites and submitted applications.
  *
- * Two panels: the links Kevin has handed out, and the applications people have
- * filled in. `?id=<uuid>` opens one application read-only, using the SAME
+ * One card per PROPERTY, each holding the applications for it and the links
+ * handed out for it (see groupByProperty). `?id=<uuid>` opens one application
+ * read-only, using the SAME
  * RentalApplicationForm the applicant filled in — so the admin's copy cannot
  * quietly omit a field the form collects.
  *
@@ -13,7 +14,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, Pencil, Plus } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, MapPin, Pencil, Plus } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
@@ -28,6 +29,7 @@ import {
   createInvite,
   formatProperty,
   formatTenancyAddress,
+  groupByProperty,
   inviteState,
   inviteUrl,
   listApplications,
@@ -485,6 +487,9 @@ export default function AdminApplications() {
   /** The properties already invited on, newest first, for the reuse picker. */
   const previous = useMemo(() => previousProperties(invites), [invites]);
 
+  /** The list view: one group per property. See groupByProperty. */
+  const groups = useMemo(() => groupByProperty(apps, invites), [apps, invites]);
+
   const changeStatus = async (id: string, status: ApplicationStatus) => {
     // Optimistic: the select should not sit on the old value while a round trip
     // completes. Reverted from the server copy if the write fails.
@@ -537,7 +542,7 @@ export default function AdminApplications() {
               'Application'
             : 'Application'
         }
-        description={record?.data.tenancy.propertyAddress || undefined}
+        description={record ? formatTenancyAddress(record.data.tenancy) || undefined : undefined}
         actions={
           <>
             <button
@@ -689,119 +694,137 @@ export default function AdminApplications() {
         <div className="flex min-h-[30vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-champagne-ink" aria-hidden />
         </div>
+      ) : groups.length === 0 ? (
+        <AdminCard>
+          <p className="p-6 text-sm text-gray-600">
+            Nothing yet. Create a link above and send it to an applicant.
+          </p>
+        </AdminCard>
       ) : (
-        <div className="space-y-8">
-          {/* Applications */}
-          <section>
-            {/* `numeral` for the count: Inter's default figures are
-                proportional, so (1) and (7) are different widths and the label
-                shifts as the number changes. See the class in index.css. */}
-            <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-              Applications ({apps.length})
-            </h2>
-            <AdminCard>
-              {apps.length === 0 ? (
-                <p className="p-6 text-sm text-gray-600">
-                  Nothing yet. Create a link above and send it to an applicant.
-                </p>
-              ) : (
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                    <tr>
-                      <th className="px-6 py-3 font-semibold">Applicant</th>
-                      <th className="px-6 py-3 font-semibold">Property</th>
-                      <th className="px-6 py-3 font-semibold">Received</th>
-                      <th className="px-6 py-3 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {apps.map((r) => (
-                      <tr
-                        key={r.id}
-                        onClick={() => setParams({ id: r.id })}
-                        className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
-                      >
-                        <td className="px-6 py-4">
-                          <span className="font-medium text-ink">
-                            {`${r.applicantFirstName ?? ''} ${r.applicantLastName ?? ''}`.trim() ||
-                              '—'}
-                          </span>
-                          <span className="block text-xs text-gray-500">{r.applicantEmail}</span>
-                        </td>
-                        <td className="numeral px-6 py-4 text-gray-700">
-                          {formatTenancyAddress(r.data.tenancy) || '—'}
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {r.submittedAt ? shortDate(r.submittedAt) : '—'}
-                        </td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={r.status} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </AdminCard>
-          </section>
+        <>
+          {/* `numeral` for the counts: Inter's default figures are
+              proportional, so (1) and (7) are different widths and the label
+              shifts as the number changes. See the class in index.css. */}
+          <p className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+            {groups.length} {groups.length === 1 ? 'property' : 'properties'} · {apps.length}{' '}
+            {apps.length === 1 ? 'application' : 'applications'} · {invites.length}{' '}
+            {invites.length === 1 ? 'link' : 'links'}
+          </p>
 
-          {/* Invites */}
-          <section>
-            <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-              Links ({invites.length})
-            </h2>
-            <AdminCard>
-              {invites.length === 0 ? (
-                <p className="p-6 text-sm text-gray-600">No links yet.</p>
-              ) : (
-                <ul className="divide-y divide-gray-100">
-                  {invites.map((invite) => {
-                    const state = inviteState(invite, claimedInvites.has(invite.id));
-                    return (
-                      <li key={invite.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
-                        <Link2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-                        <div className="min-w-0 flex-1">
-                          <p className="numeral truncate text-sm font-medium text-ink">
-                            {invite.label || formatProperty(invite) || 'Application link'}
-                          </p>
-                          <p className="numeral mt-0.5 text-xs text-gray-500">
-                            Created {shortDate(invite.createdAt)}
-                            {invite.inviteeEmail && ` · ${invite.inviteeEmail}`}
-                            {invite.sentAt
-                              ? ` · emailed ${shortDate(invite.sentAt)}`
-                              : invite.inviteeEmail && ' · not emailed yet'}
-                            {invite.expiresAt && ` · expires ${shortDate(invite.expiresAt)}`}
-                          </p>
-                        </div>
-                        <span
-                          // Matches StatusBadge's px-3 py-1: two pills sitting in
-                          // the same list at different densities looks like a
-                          // mistake even when neither is wrong on its own.
-                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold leading-5 ${STATE_TONE[state]}`}
+          {/* ONE CARD PER PROPERTY, newest activity first. It was two flat
+              lists — every application, then every link — which made "who has
+              applied for this unit" a matter of reading the Property column of
+              every row. The address is the heading now, so it is not repeated
+              on each line beneath it. */}
+          <div className="space-y-8">
+            {groups.map((g) => (
+              <AdminCard key={g.key}>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-gray-200 bg-gray-50 px-6 py-4">
+                  <MapPin className="h-4 w-4 shrink-0 text-champagne-ink" aria-hidden />
+                  <h2 className="numeral min-w-0 flex-1 text-base font-semibold text-ink">
+                    {g.label || 'No property recorded'}
+                  </h2>
+                  <p className="numeral text-xs text-gray-500">
+                    {g.applications.length}{' '}
+                    {g.applications.length === 1 ? 'application' : 'applications'} ·{' '}
+                    {g.invites.length} {g.invites.length === 1 ? 'link' : 'links'}
+                  </p>
+                </div>
+
+                {g.applications.length === 0 ? (
+                  <p className="px-6 py-4 text-sm text-gray-600">No application yet.</p>
+                ) : (
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-500">
+                      <tr>
+                        <th className="px-6 py-3 font-semibold">Applicant</th>
+                        <th className="px-6 py-3 font-semibold">Received</th>
+                        <th className="px-6 py-3 font-semibold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {g.applications.map((r) => (
+                        <tr
+                          key={r.id}
+                          onClick={() => setParams({ id: r.id })}
+                          className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
                         >
-                          {STATE_LABEL[state]}
-                        </span>
-                        {state !== 'revoked' && <CopyLink token={invite.token} />}
-                        {state !== 'revoked' && state !== 'expired' && invite.inviteeEmail && (
-                          <ResendButton invite={invite} onSent={markSent} />
-                        )}
-                        {state === 'live' && (
-                          <button
-                            type="button"
-                            onClick={() => revoke(invite.id)}
-                            className="text-xs font-medium text-red-700 hover:underline"
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </AdminCard>
-          </section>
-        </div>
+                          <td className="px-6 py-4">
+                            <span className="font-medium text-ink">
+                              {`${r.applicantFirstName ?? ''} ${r.applicantLastName ?? ''}`.trim() ||
+                                '—'}
+                            </span>
+                            <span className="block text-xs text-gray-500">{r.applicantEmail}</span>
+                          </td>
+                          <td className="numeral px-6 py-4 text-gray-700">
+                            {r.submittedAt ? shortDate(r.submittedAt) : '—'}
+                          </td>
+                          <td className="px-6 py-4">
+                            <StatusBadge status={r.status} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+
+                {g.invites.length > 0 && (
+                  <div className="border-t border-gray-200">
+                    <p className="px-6 pt-4 text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+                      Links
+                    </p>
+                    <ul className="divide-y divide-gray-100">
+                      {g.invites.map((invite) => {
+                        const state = inviteState(invite, claimedInvites.has(invite.id));
+                        return (
+                          <li key={invite.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
+                            <Link2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
+                            <div className="min-w-0 flex-1">
+                              {/* The recipient, not the address: every link in
+                                  this card is for the property in its heading,
+                                  so what tells them apart is who each went to. */}
+                              <p className="truncate text-sm font-medium text-ink">
+                                {invite.inviteeEmail || 'No recipient recorded'}
+                              </p>
+                              <p className="numeral mt-0.5 text-xs text-gray-500">
+                                Created {shortDate(invite.createdAt)}
+                                {invite.sentAt
+                                  ? ` · emailed ${shortDate(invite.sentAt)}`
+                                  : invite.inviteeEmail && ' · not emailed yet'}
+                                {invite.expiresAt && ` · expires ${shortDate(invite.expiresAt)}`}
+                              </p>
+                            </div>
+                            <span
+                              // Matches StatusBadge's px-3 py-1: two pills sitting in
+                              // the same list at different densities looks like a
+                              // mistake even when neither is wrong on its own.
+                              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold leading-5 ${STATE_TONE[state]}`}
+                            >
+                              {STATE_LABEL[state]}
+                            </span>
+                            {state !== 'revoked' && <CopyLink token={invite.token} />}
+                            {state !== 'revoked' && state !== 'expired' && invite.inviteeEmail && (
+                              <ResendButton invite={invite} onSent={markSent} />
+                            )}
+                            {state === 'live' && (
+                              <button
+                                type="button"
+                                onClick={() => revoke(invite.id)}
+                                className="text-xs font-medium text-red-700 hover:underline"
+                              >
+                                Revoke
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </AdminCard>
+            ))}
+          </div>
+        </>
       )}
     </AdminShell>
   );

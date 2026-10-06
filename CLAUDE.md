@@ -946,6 +946,18 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   never written into it. Failure is silent: the field stays plain text.
 - **The ZIP field is not `inputMode="numeric"`.** A leading zero is exactly what a
   numeric field eats, and 8 of 10 ZIPs on this site start with one — that is the
+- **`/admin/applications` is one card per property, and an application takes
+  its property from its INVITE.** `groupByProperty()` keys on `propertyKey()` —
+  the same street + unit + town key the reuse picker uses — read from the invite
+  the application was claimed through, never from `tenancy.propertyAddress`.
+  That field is editable on the applicant's own form, so two people applying for
+  one unit can spell it two ways and would split into two cards; the invite is
+  the admin's structured record of what the link was for. The typed address is
+  the fallback only for an application whose invite no longer exists. Groups
+  sort by their newest application or link. A link created before the address
+  became its own field groups by its label, so it will not merge with a newer
+  structured link for the same unit — rewriting those rows is a separate
+  decision.
   same import bug that once rendered "Newton, MA 2459".
 - **`previousProperties()` keys on street + unit + town, not on the formatted
   line.** An invite recorded before the zip existed still matches the same unit

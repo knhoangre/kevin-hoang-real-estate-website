@@ -1007,13 +1007,22 @@ export interface PreviousProperty extends PropertyParts {
   label: string;
 }
 
+/**
+ * What makes two records the same property: street + unit + town, case and
+ * edge whitespace aside. State and ZIP are deliberately left out — see
+ * `previousProperties` — and so is the formatted line, which changes shape with
+ * whatever parts happen to be present.
+ */
+export const propertyKey = (p: PropertyParts): string =>
+  [p.propertyAddress ?? '', p.unit ?? '', p.propertyTown ?? '']
+    .map((part) => part.trim().toLowerCase())
+    .join('|');
+
 export const previousProperties = (invites: RentalInviteRecord[]): PreviousProperty[] => {
   const seen = new Map<string, PreviousProperty>();
   for (const invite of invites) {
     if (!invite.propertyAddress) continue;
-    const key = [invite.propertyAddress, invite.unit ?? '', invite.propertyTown ?? '']
-      .map((part) => part.trim().toLowerCase())
-      .join('|');
+    const key = propertyKey(invite);
     // First wins: listInvites() is newest-first, so the most recent entry for a
     // property is the one whose rent and spelling are offered back.
     if (seen.has(key)) continue;
@@ -1029,6 +1038,89 @@ export const previousProperties = (invites: RentalInviteRecord[]): PreviousPrope
     });
   }
   return [...seen.values()];
+};
+
+/**
+ * Everything on /admin/applications, organised by the property it is about.
+ *
+ * The page used to be two flat lists — every application, then every link —
+ * which is the order things arrived in and not the order anyone thinks in: the
+ * question at a desk is "who has applied for Newman Street", and answering it
+ * meant reading the Property column of every row.
+ *
+ * AN APPLICATION TAKES ITS PROPERTY FROM ITS INVITE, not from what the
+ * applicant typed. `tenancy.propertyAddress` is an editable field on their
+ * form, so two people applying for the same unit can spell it two ways and
+ * would land in two groups; the invite is the admin's own record of what the
+ * link was for, and it is structured. The typed address is the fallback only
+ * for an application whose invite is gone.
+ *
+ * Groups are ordered by the newest thing that happened in each, so the property
+ * with this morning's application is at the top whichever list it would have
+ * been in.
+ */
+export interface PropertyGroup {
+  key: string;
+  /** One line, from `formatProperty`. Empty for the "no property" group. */
+  label: string;
+  applications: RentalApplicationRecord[];
+  invites: RentalInviteRecord[];
+  /** ISO timestamp of the most recent application or link here. */
+  latest: string;
+}
+
+const receivedAt = (r: RentalApplicationRecord) => r.submittedAt ?? r.createdAt;
+
+export const groupByProperty = (
+  applications: RentalApplicationRecord[],
+  invites: RentalInviteRecord[]
+): PropertyGroup[] => {
+  const groups = new Map<string, PropertyGroup>();
+  const group = (key: string, label: string): PropertyGroup => {
+    let g = groups.get(key);
+    if (!g) {
+      g = { key, label, applications: [], invites: [], latest: '' };
+      groups.set(key, g);
+    }
+    return g;
+  };
+  const touch = (g: PropertyGroup, at: string) => {
+    if (at > g.latest) g.latest = at;
+  };
+
+  const inviteGroup = (invite: RentalInviteRecord) =>
+    invite.propertyAddress?.trim()
+      ? group(propertyKey(invite), formatProperty(invite))
+      : // A link made before the address was its own field has only a label.
+        group(`label:${(invite.label ?? '').trim().toLowerCase()}`, invite.label?.trim() ?? '');
+
+  const byId = new Map(invites.map((invite) => [invite.id, invite]));
+
+  for (const invite of invites) {
+    const g = inviteGroup(invite);
+    g.invites.push(invite);
+    touch(g, invite.createdAt);
+  }
+
+  for (const application of applications) {
+    const invite = application.inviteId ? byId.get(application.inviteId) : undefined;
+    let g: PropertyGroup;
+    if (invite) {
+      g = inviteGroup(invite);
+    } else {
+      const typed = formatTenancyAddress(application.data.tenancy);
+      g = group(`typed:${typed.toLowerCase().replace(/\s+/g, ' ')}`, typed);
+    }
+    g.applications.push(application);
+    touch(g, receivedAt(application));
+  }
+
+  for (const g of groups.values()) {
+    g.applications.sort((a, b) => receivedAt(b).localeCompare(receivedAt(a)));
+    g.invites.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  return [...groups.values()].sort((a, b) => b.latest.localeCompare(a.latest));
 };
 
 /** Live / expired / revoked / used, for the admin list. */
