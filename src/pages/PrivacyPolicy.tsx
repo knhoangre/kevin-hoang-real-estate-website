@@ -83,6 +83,22 @@ const PrivacyPolicy = () => {
                     <li>Device information (mobile device ID, screen resolution)</li>
                     <li>Cookies and similar tracking technologies</li>
                   </ul>
+
+                  <h3 className="text-xl font-semibold text-ink mb-3">Saved Homes and Viewing History</h3>
+                  <p className="text-gray-700 mb-4">
+                    When you are signed in to an account on this site, we keep a record of the
+                    listings you save and the listings you open, including how many times and when
+                    you opened them. Kevin Hoang can see this record. It is used to suggest similar
+                    homes on your Saved homes page and to follow up with you about homes you have
+                    shown interest in. It is not sold, and it is not shared with other brokerages
+                    or advertisers.
+                  </p>
+                  <p className="text-gray-700 mb-6">
+                    Browsing while signed out is not recorded in this way. You can remove a saved
+                    home at any time from the listing or from your Saved homes page, and you can ask
+                    us to delete your viewing history or your account using the contact details
+                    below.
+                  </p>
                 </section>
 
                 <section className="mb-8">

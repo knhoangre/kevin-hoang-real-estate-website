@@ -1841,6 +1841,105 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_favorites: {
+        Row: {
+          address: string | null
+          bedrooms: number | null
+          created_at: string
+          full_baths: number | null
+          half_baths: number | null
+          list_price: number | null
+          living_area: number | null
+          mls_number: string
+          photo_count: number | null
+          prop_type: string | null
+          state: string | null
+          town: string | null
+          user_id: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          bedrooms?: number | null
+          created_at?: string
+          full_baths?: number | null
+          half_baths?: number | null
+          list_price?: number | null
+          living_area?: number | null
+          mls_number: string
+          photo_count?: number | null
+          prop_type?: string | null
+          state?: string | null
+          town?: string | null
+          user_id?: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          bedrooms?: number | null
+          created_at?: string
+          full_baths?: number | null
+          half_baths?: number | null
+          list_price?: number | null
+          living_area?: number | null
+          mls_number?: string
+          photo_count?: number | null
+          prop_type?: string | null
+          state?: string | null
+          town?: string | null
+          user_id?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      listing_views: {
+        Row: {
+          address: string | null
+          bedrooms: number | null
+          first_viewed_at: string
+          last_viewed_at: string
+          list_price: number | null
+          mls_number: string
+          photo_count: number | null
+          prop_type: string | null
+          state: string | null
+          town: string | null
+          user_id: string
+          view_count: number
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          bedrooms?: number | null
+          first_viewed_at?: string
+          last_viewed_at?: string
+          list_price?: number | null
+          mls_number: string
+          photo_count?: number | null
+          prop_type?: string | null
+          state?: string | null
+          town?: string | null
+          user_id: string
+          view_count?: number
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          bedrooms?: number | null
+          first_viewed_at?: string
+          last_viewed_at?: string
+          list_price?: number | null
+          mls_number?: string
+          photo_count?: number | null
+          prop_type?: string | null
+          state?: string | null
+          town?: string | null
+          user_id?: string
+          view_count?: number
+          zip?: string | null
+        }
+        Relationships: []
+      }
       lockboxes: {
         Row: {
           code: string | null
@@ -2986,6 +3085,17 @@ export type Database = {
       }
     }
     Functions: {
+      admin_client_activity: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          last_active: string
+          saved_count: number
+          user_id: string
+          viewed_count: number
+        }[]
+      }
       crm_upsert_contact: {
         Args: {
           p_birthday?: string
@@ -3080,6 +3190,7 @@ export type Database = {
       is_admin:
         | { Args: never; Returns: boolean }
         | { Args: { user_id: string }; Returns: boolean }
+      record_listing_view: { Args: { p_mls: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       trigger_idx_sync: { Args: { body: Json }; Returns: number }

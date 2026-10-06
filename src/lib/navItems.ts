@@ -83,6 +83,7 @@ const DARK_HERO_EXACT = new Set([
   // page's <main> with what this function claims, and these were the misses.
   '/search',
   '/rentals',
+  '/saved',
   '/videos',
 ]);
 

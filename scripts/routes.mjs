@@ -123,6 +123,8 @@ export const PRIVATE_PREFIXES = [
   // since each URL carries a one-time invite token.
   '/apply',
   '/rentals',
+  // One signed-in visitor's saved homes. Their own list, of IDX listings.
+  '/saved',
   // The IDX search. Not "private" in the gated sense — anyone may use it — but
   // it belongs here for the same reason: noindex, never in the sitemap. MLS PIN
   // requires IDX displays be non-indexable.

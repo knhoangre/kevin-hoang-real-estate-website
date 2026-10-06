@@ -47,6 +47,8 @@ Disallow: /events
 # submitted document.
 Disallow: /apply
 Disallow: /rentals
+# One signed-in visitor's saved homes: their own list, and IDX listings besides.
+Disallow: /saved
 # The IDX search. Not gated — anyone may use it — but MLS PIN's rules require an
 # IDX display be non-indexable, and it is syndicated data every other agent site
 # also publishes, so there is nothing to gain by indexing it.

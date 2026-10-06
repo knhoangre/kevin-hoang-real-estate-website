@@ -1,4 +1,4 @@
-import { Children, isValidElement, useEffect, useState } from 'react';
+import { Children, isValidElement, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft,
@@ -20,6 +20,9 @@ import ListingEnquiry from '@/components/listing/ListingEnquiry';
 import SimilarListings from '@/components/listing/SimilarListings';
 import ListingValuation from '@/components/listing/ListingValuation';
 import ValuationSummary from '@/components/listing/ValuationSummary';
+import SaveButton from '@/components/listing/SaveButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { recordView } from '@/lib/favorites';
 import { formatPrice, formatBaths, formatSoldMonth } from '@/lib/listings';
 import { SITE, telHref, smsHrefWith } from '@/lib/siteConfig';
 import {
@@ -172,6 +175,26 @@ const SearchListing = () => {
       cancelled = true;
     };
   }, [mls]);
+
+  /*
+   * Note the visit, for a signed-in visitor. It is what "Recommended for you"
+   * on /saved is built from, and what Kevin sees a client has been looking at —
+   * both disclosed on that page and in the privacy policy.
+   *
+   * Once per listing per mount, by the ref: the effect re-runs when the session
+   * resolves and when the listing arrives, and each of those would otherwise be
+   * counted as another look. NEVER for the admin — Kevin opens listings all day
+   * for other people, and his own history would be a profile of his clients'
+   * tastes averaged together. Fire-and-forget; see recordView.
+   */
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const viewLogged = useRef<string | null>(null);
+  useEffect(() => {
+    if (state !== 'ready' || !listing || authLoading || !user || isAdmin) return;
+    if (viewLogged.current === listing.mls_number) return;
+    viewLogged.current = listing.mls_number;
+    recordView(listing.mls_number);
+  }, [state, listing, authLoading, user, isAdmin]);
 
   const address = listing
     ? [listing.address, listing.town, listing.state, listing.zip].filter(Boolean).join(', ')
@@ -348,6 +371,13 @@ const SearchListing = () => {
                 <p className="mt-2 text-gray-600">
                   {[listing.town, listing.state, listing.zip].filter(Boolean).join(', ')}
                 </p>
+                {/* Not on a sold listing — there is nothing left to go and see —
+                    and not on paper, where a button is a grey lozenge. */}
+                {listing.feed !== 'sold' && (
+                  <div className="mt-4 print:hidden">
+                    <SaveButton mls={listing.mls_number} address={listing.address} variant="page" />
+                  </div>
+                )}
                 {/*
                   The dark status pill that used to sit here is gone. It said
                   "Sold" directly beneath a line that already reads "Single

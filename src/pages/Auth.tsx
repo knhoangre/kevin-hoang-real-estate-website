@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { takeReturnPath } from "@/lib/authReturn";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -49,8 +50,9 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.user) {
-        // Navigate to home after successful sign in
-        navigate("/");
+        // Back to the listing whose heart sent them here, if one did; home
+        // otherwise. See authReturn — the path is ours, never a URL parameter.
+        navigate(takeReturnPath() ?? "/");
       }
 
       toast({

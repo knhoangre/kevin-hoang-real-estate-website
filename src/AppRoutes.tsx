@@ -258,6 +258,10 @@ export const routes: RouteRecord[] = [
       // The applicant's own applications. The detail view is `?id=` on this
       // route rather than /rentals/:id, so it needs no rewrite of its own.
       privatePage('rentals', 'Your Rentals', () => import('./pages/Rentals'), 'src/pages/Rentals.tsx'),
+      // A signed-in visitor's saved homes and recommendations. Prerendered as a
+      // shell and noindex: it is one person's own list, and the listings on it
+      // are IDX content.
+      privatePage('saved', 'Your Saved Homes', () => import('./pages/Saved'), 'src/pages/Saved.tsx'),
 
       privatePage('admin', 'Admin', () => import('./pages/AdminHome'), 'src/pages/AdminHome.tsx'),
       privatePage('admin/follow-up', 'Follow Up', () => import('./pages/FollowUp'), 'src/pages/FollowUp.tsx'),
@@ -296,6 +300,12 @@ export const routes: RouteRecord[] = [
         'Showings',
         () => import('./pages/AdminShowings'),
         'src/pages/AdminShowings.tsx'
+      ),
+      privatePage(
+        'admin/activity',
+        'Client Activity',
+        () => import('./pages/AdminActivity'),
+        'src/pages/AdminActivity.tsx'
       ),
       privatePage(
         'admin/lockboxes',

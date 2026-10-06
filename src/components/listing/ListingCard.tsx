@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Bed, Bath, Square, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatPrice, formatBathsShort, formatSoldMonth } from '@/lib/listings';
+import SaveButton from '@/components/listing/SaveButton';
 import {
   headlinePrice,
   photoUrl,
@@ -30,9 +31,18 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
   const hasPhoto = (listing.photo_count ?? 0) > 0;
 
   return (
+    /*
+      A wrapper, so the heart can sit over the photograph as a SIBLING of the
+      link rather than inside it. A <button> inside an <a> is invalid nesting —
+      interactive content in interactive content — and this site has already
+      learned what the parser does with that from the nested-<a> hydration
+      failures. `group` moved up here with it, so hovering the heart still
+      zooms the photo underneath.
+    */
+    <div className="group relative h-full">
     <Link
       to={`/search/${listing.mls_number}`}
-      className="group block overflow-hidden rounded-xl border border-gray-200 transition-colors hover:border-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink"
+      className="block h-full overflow-hidden rounded-xl border border-gray-200 transition-colors hover:border-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
         {hasPhoto ? (
@@ -156,6 +166,21 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
         </div>
       </div>
     </Link>
+      {/* The same 4:3 box as the photograph, laid over it and transparent to
+          the pointer, so the heart can be placed against the photo's bottom
+          edge without knowing the card's width. Top-left is the type badge and
+          top-right the status; this corner was free. Sold listings get no
+          heart: there is nothing to go and see. */}
+      {listing.feed !== 'sold' && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/3]">
+          <SaveButton
+            mls={listing.mls_number}
+            address={listing.address}
+            className="pointer-events-auto absolute bottom-3 right-3"
+          />
+        </div>
+      )}
+    </div>
   );
 };
 

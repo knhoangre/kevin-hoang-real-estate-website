@@ -26,7 +26,8 @@ Two things here are checks rather than generators, and both exit non-zero on fai
 ```bash
 node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, no network)
 node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
-sh supabase/tests/run.sh          # assertions for the IDX comp migrations (needs Docker)
+node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
+sh supabase/tests/run.sh          # the IDX comp migrations AND the saved-homes RLS (needs Docker)
 ```
 
 `.ts` rather than `.mjs` for the three newest: Node runs TypeScript directly
@@ -57,13 +58,13 @@ There is no test framework configured. The closest thing to one is the SEO audit
 ```bash
 docker run --rm -v "$PWD":/app -v "$HOME/.claude/skills/seo-web/scripts":/skill:ro -w /app \
   node:20-alpine node /skill/seo-audit.mjs ./dist --origin https://kevinhoang.co \
-  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,search
+  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,saved,search
 ```
 
 The `--private` list must match `PRIVATE_PREFIXES` in [scripts/routes.mjs](scripts/routes.mjs).
-`/apply`, `/rentals` and `/search` are `noindex` and out of the sitemap by design, so an
-auditor that has not been told they are private reports all three as public pages that are
-noindexed and orphaned.
+`/apply`, `/rentals`, `/saved` and `/search` are `noindex` and out of the sitemap by design,
+so an auditor that has not been told they are private reports all four as public pages that
+are noindexed and orphaned.
 
 Run it after any change that touches routes, head tags, schema, or navigation. It has already
 caught a defect that passed source review here (82 pages referencing a JSON-LD `@id` that was
@@ -1122,6 +1123,69 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `ListingLookup` (IDX) are thin wrappers that supply a source and a row. Its
   `worth`/`suggest`/`valueOf`/`keyOf` props are read in an effect, so pass
   module-level functions — an inline arrow restarts the request every render.
+
+### Saved homes and recommendations (`/saved`, `/admin/activity`)
+
+A signed-in visitor can press the heart on any listing; `/saved` lists what they
+saved, what to look at next, and what they opened recently. Kevin reads the same
+data per client at `/admin/activity`.
+
+- **The admin can see every client's saved and viewed homes, and the site says
+  so** — one paragraph at the foot of `/saved` and a section in the privacy
+  policy. That visibility is half the point of the feature; the disclosure is
+  what makes it one Kevin can use. Do not remove either without the other.
+- **Every row carries a snapshot, and the DATABASE writes it.** `idx_listings` is
+  a cache: a home leaves it the day it goes under agreement, which is exactly
+  when a saved home becomes interesting. So `listing_favorites` and
+  `listing_views` keep address, town and price — copied from `idx_listings` by a
+  BEFORE INSERT trigger and by `record_listing_view()`, never accepted from the
+  browser. A client that wrote its own snapshot could put any address and price
+  into the list Kevin reads as "what this client is looking at". `saveListing()`
+  sends an MLS number and nothing else.
+- **There is no write policy on `listing_views`.** A view is recorded only by
+  `record_listing_view()` (SECURITY DEFINER), because an increment cannot be
+  expressed through PostgREST's upsert and a write policy would let a browser set
+  its own count. There is no UPDATE on `listing_favorites` at all — RLS is scoped
+  by row, not by column, so granting none is how the snapshot stays honest.
+- **Both functions are revoked from `anon` and `authenticated` BY NAME** and
+  granted back deliberately; `admin_client_activity()` reaches `auth.users`, so
+  its admin check is its first statement. `sh supabase/tests/run.sh` asserts all
+  of this — 31 assertions, mostly about what one account must not be able to do
+  to another's. Re-run it after any change to that migration.
+- **`listFavorites` and `listViews` filter by user even though RLS already
+  scopes a visitor to their own rows.** The admin's policy is every row, so
+  without the filter Kevin's own `/saved` would list what every client saved —
+  the mistake `/rentals` made with applications.
+- **The admin's own browsing is never recorded.** `SearchListing` skips
+  `recordView` for `isAdmin`: Kevin opens listings all day for other people, and
+  his history would be his clients' tastes averaged together.
+- **[recommendations.ts](src/lib/recommendations.ts) is pure**, like
+  `valuation.ts`, and `node scripts/recommendations-check.ts` runs it against
+  histories whose right answer is known. A profile is four readable statements —
+  up to three towns, a property type, a price band, a bedroom count — not a
+  similarity score. Three decisions in it are measured rather than tasted:
+  rentals and sales are separate markets and the band is computed inside one; the
+  band is the 20th–80th percentile BY WEIGHT, so one dream house does not move
+  it; and repeat views weigh by square root, so a home reopened 25 times counts
+  as five, not as the whole history. A saved home counts as four views.
+- **A null profile is a real answer.** With nothing priced and located in the
+  history the page says so and recommends nothing, rather than falling back to
+  "popular listings" — the site's taste presented as the visitor's.
+- **Recommendations run one query per town**, each an equality on town + state +
+  type with a price range and `ORDER BY list_price DESC NULLS LAST` — the shape
+  the per-town partial indexes serve. `town IN (…)` would sort every match. State
+  is filtered because town names are not unique in the feed.
+- **The heart is a SIBLING of the card's link, never inside it.** A `<button>`
+  in an `<a>` is the same invalid nesting as the nested-`<a>` hydration failures.
+  `ListingCard` is a wrapper holding the link and an overlay the size of the
+  photograph; `group` moved to the wrapper with it. Sold listings get no heart.
+- **Signing in returns to the listing through `sessionStorage`, not `?next=`**
+  ([authReturn.ts](src/lib/authReturn.ts)). A URL parameter is something a
+  stranger can put in a link, which makes the sign-in page an open redirect; this
+  value is written only by our own code from the browser's own `location`. It is
+  validated on the way out regardless.
+- **A saved home that has left the feed is drawn from its snapshot and says so.**
+  It is not a link — there is no page behind it — and it keeps "Remove".
 
 ### Showing tours (`/admin/showings`)
 

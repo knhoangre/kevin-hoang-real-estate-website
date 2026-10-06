@@ -69,5 +69,17 @@ done
 
 echo
 psql_file "$TESTS/idx_comps_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+
+# Saved homes and viewing history. Per-user data, so these need the stand-ins
+# for Supabase Auth; they are applied here, after the comps tests, which run as
+# the owner and want none of it.
+echo
+psql_file "$TESTS/01_auth_bootstrap.sql" -q
+echo "Applying 20261006120000_listing_favorites_and_views"
+psql_file "$REPO/supabase/migrations/20261006120000_listing_favorites_and_views.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+psql_file "$TESTS/favorites_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+
 echo
 echo "All assertions passed."

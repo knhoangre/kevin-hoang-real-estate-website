@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Briefcase, LayoutDashboard, FileText } from "lucide-react";
+import { LogOut, User, Briefcase, LayoutDashboard, FileText, Heart } from "lucide-react";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
@@ -50,6 +50,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
 
   const handleRentalsClick = () => {
     navigate("/rentals");
+    onItemClick?.();
+  };
+
+  const handleSavedClick = () => {
+    navigate("/saved");
     onItemClick?.();
   };
 
@@ -108,6 +113,12 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
         <DropdownMenuItem onClick={handleProfileClick} className={ITEM}>
           <User className="mr-2.5 h-4 w-4" aria-hidden />
           <span>Profile</span>
+        </DropdownMenuItem>
+
+        {/* For everyone, the admin included: it is each person's own list. */}
+        <DropdownMenuItem onClick={handleSavedClick} className={ITEM}>
+          <Heart className="mr-2.5 h-4 w-4" aria-hidden />
+          <span>Saved homes</span>
         </DropdownMenuItem>
 
         {/*

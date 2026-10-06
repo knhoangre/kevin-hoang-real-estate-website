@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { takeReturnPath } from '@/lib/authReturn';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -59,8 +60,9 @@ const AuthCallback = () => {
         }
 
         if (session) {
-          // Navigate back to the original path or homepage
-          navigate(returnTo === '/auth' ? '/' : returnTo);
+          // The listing whose heart sent them to sign in wins over the generic
+          // return path, which for a Google sign-in started on /auth is just "/".
+          navigate(takeReturnPath() ?? (returnTo === '/auth' ? '/' : returnTo));
         } else {
           // If no session, try to get it from the URL hash/query
           const code = searchParams.get('code');
