@@ -2754,6 +2754,95 @@ export type Database = {
           },
         ]
       }
+      showing_tour_stops: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          kind: string
+          list_price: number | null
+          mls_number: string | null
+          note: string | null
+          starts_at: string
+          state: string | null
+          tour_id: string
+          town: string | null
+          zip: string | null
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          kind?: string
+          list_price?: number | null
+          mls_number?: string | null
+          note?: string | null
+          starts_at: string
+          state?: string | null
+          tour_id: string
+          town?: string | null
+          zip?: string | null
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          list_price?: number | null
+          mls_number?: string | null
+          note?: string | null
+          starts_at?: string
+          state?: string | null
+          tour_id?: string
+          town?: string | null
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showing_tour_stops_tour_id_fkey"
+            columns: ["tour_id"]
+            isOneToOne: false
+            referencedRelation: "showing_tours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showing_tours: {
+        Row: {
+          client_email: string | null
+          client_name: string
+          client_phone: string | null
+          created_at: string
+          id: string
+          note: string | null
+          sent_at: string | null
+          tour_date: string
+          updated_at: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_name: string
+          client_phone?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          tour_date: string
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          tour_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       videos: {
         Row: {
           body: string | null

@@ -340,6 +340,22 @@ export const smsHrefWith = (body: string) =>
   `sms:${SITE.phoneE164}?&body=${encodeURIComponent(body)}`;
 
 /**
+ * A text to somebody ELSE, with the body already written — the showing
+ * schedule's "Open in Messages", which opens Kevin's own phone or Mac with the
+ * client and the itinerary filled in and leaves the sending to him.
+ *
+ * Same `?&body=` separator as `smsHrefWith`, for the same iOS/Android reason.
+ * A ten-digit number gets +1; anything else is passed through as digits, which
+ * is the most a handler can be asked to make sense of.
+ */
+export const smsHrefTo = (phone: string, body: string) => {
+  const digits = phone.replace(/\D/g, '');
+  const to =
+    digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits[0] === '1' ? `+${digits}` : digits;
+  return `sms:${to}?&body=${encodeURIComponent(body)}`;
+};
+
+/**
  * "Newton, MA" — where Kevin is based.
  *
  * Replaced `formattedAddress` and `mapsHref` on 2026-09-26. There is no office

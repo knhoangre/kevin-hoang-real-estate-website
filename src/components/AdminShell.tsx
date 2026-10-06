@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
+  CalendarClock,
   ClipboardList,
   FileText,
   Home,
@@ -67,6 +68,13 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/applications',
     icon: FileText,
     blurb: 'Rental application links, and the applications people send back.',
+  },
+  {
+    to: '/admin/showings',
+    label: 'Showings',
+    match: '/admin/showings',
+    icon: CalendarClock,
+    blurb: 'Put a day of showings in order and send the client one schedule, by email or text.',
   },
   {
     to: '/admin/properties',

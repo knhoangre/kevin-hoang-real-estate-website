@@ -292,6 +292,12 @@ export const routes: RouteRecord[] = [
         'src/pages/AdminApplications.tsx'
       ),
       privatePage(
+        'admin/showings',
+        'Showings',
+        () => import('./pages/AdminShowings'),
+        'src/pages/AdminShowings.tsx'
+      ),
+      privatePage(
         'admin/lockboxes',
         'Lockboxes',
         () => import('./pages/Lockboxes'),

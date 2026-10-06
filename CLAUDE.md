@@ -1123,6 +1123,45 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `worth`/`suggest`/`valueOf`/`keyOf` props are read in an effect, so pass
   module-level functions — an inline arrow restarts the request every render.
 
+### Showing tours (`/admin/showings`)
+
+Admin only. Kevin types each MLS number (or address) and the time he booked;
+the page puts the stops in order and turns them into one schedule for the
+client, with a link to each home on this site.
+
+- **Nothing is looked up but the listing.** MLS PIN's IDX download carries no
+  open-house schedule and no showing availability, so every time on a tour is
+  one Kevin typed. Do not build anything that claims to find them.
+- **Two ways out, and neither needs the other.** `showing-schedule` has two
+  actions: `send` emails the client (calendar file attached, Kevin on cc) and
+  stamps `sent_at`; `preview` returns the same schedule as a text message and
+  as the email's HTML and SENDS NOTHING. "Text message" calls `preview` — Kevin
+  copies the text or opens it in Messages (`smsHrefTo`) and sends it from his own
+  phone. A tour needs a name and an email OR a phone; the table enforces that.
+- **One renderer, on the server.** The text and the email are built from the
+  same resolved stops in one call. A second renderer in the browser for the text
+  is how a client gets an email that says 10:00 and a text that says 10:30.
+- **The function takes a tour ID and nothing else**, the same shape as the
+  rental invite's `send`: the recipient and every word are read from the
+  database, so it cannot be used to mail an arbitrary person. It checks
+  `app_metadata.is_admin` itself; the tables are `public.is_admin()` FOR ALL and
+  revoked from `anon`.
+- **Dates and times are wall-clock values**, `DATE` and `TIME`, never an
+  instant. `new Date('2026-10-10')` is midnight UTC — the evening of the 9th
+  here — so both the page (`formatTourDate`) and the function (`longDate`) build
+  the date in UTC and format it in UTC. The calendar file carries
+  `TZID=America/New_York` with the zone defined in the file, and `METHOD:PUBLISH`
+  rather than `REQUEST`, which would make mail clients show accept/decline.
+- **Listings are re-read from the feed when the schedule is built**, so a price
+  cut between booking and sending is the price in the message. The snapshot on
+  each stop is what prints when a listing has left the feed. A home that was
+  never in it is still a valid stop; it just has no link.
+- **The text has no driving-route link; the email does.** A Maps URL through
+  three addresses is about three hundred characters, all of it visible in a text.
+- **A preview is thrown away when the tour changes**, and the details form says
+  when it has unsaved edits. The worst outcome on this page is texting a schedule
+  that describes the tour as it was two edits ago.
+
 ### Transactional email
 
 Two senders, and only one of them is ours today.
