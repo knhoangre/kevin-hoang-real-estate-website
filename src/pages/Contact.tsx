@@ -246,7 +246,7 @@ const Contact = () => {
                           button that opened a map of one was a claim that
                           there was. See SITE.address. */}
                       <h3 className="font-medium text-ink uppercase">{t('contact.office')}</h3>
-                      <p className="text-gray-600">{serviceAreaLine}</p>
+                      <p className="uppercase text-gray-600">{serviceAreaLine}</p>
                     </div>
                   </div>
 

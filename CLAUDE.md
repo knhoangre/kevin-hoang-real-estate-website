@@ -775,9 +775,23 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   run blocks a submit.
 - **`SECTION_GROUPS` is what makes that legible.** The sticky index renders four
   headed runs in document order — what we need, or upload it, the full
-  application (optional), sign and send — so the shape of the document is
-  readable before any of it is. A section's `group` and the DOM order must agree,
-  or the index describes a page that is not there.
+  application, sign and send — so the shape of the document is readable before
+  any of it is. A section's `group` and the DOM order must agree, or the index
+  describes a page that is not there. Nothing in the index or the form says
+  "optional" any more (removed 2026-10-06 at Kevin's request, along with the
+  "The rest is optional" box); the sections are still optional in the schema,
+  which is what actually decides whether a submit goes through.
+- **The index's current line comes from `useActiveSection`, not an
+  IntersectionObserver.** An observer's callback receives the sections whose
+  state just CHANGED, not the ones on screen, so "pick the topmost entry" gave a
+  different answer scrolling down than up: on a tall window a short section was
+  lit while mid-screen and had handed over to the next by the time it was being
+  read, and a jump link lit the PREVIOUS section, whose bottom edge lands exactly
+  on the observer's margin (112px scroll-margin minus the 24px gap is 88px).
+  The hook asks one question with one answer — the last section whose top has
+  reached a line under the navbar — and `jumpTo` holds a clicked section until
+  the reader scrolls. [Roadmap.tsx](src/components/Roadmap.tsx) still has the
+  old pattern; its steps are tall enough that it has not shown.
 - **The required section is a `<div>`, not a second `<form>`.** Only the element
   around the submit button needs to be one; wrapping the applicant's details made
   Enter in a name field submit a document barely begun.

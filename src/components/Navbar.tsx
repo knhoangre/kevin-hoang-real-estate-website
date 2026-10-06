@@ -132,9 +132,17 @@ const Navbar = () => {
     [t],
   );
 
-  /** One dropdown cell. Real anchors, and the champagne accent on the current one. */
+  /**
+   * One dropdown cell. Real anchors, and the champagne accent on the current one.
+   *
+   * Except the two HOME rows, which are never accented. The homepage is where
+   * this menu is opened from most, so its first row sat filled in bone every
+   * time — which reads as a hover that got stuck, not as "you are here". The
+   * row still carries aria-current; only the fill is withheld.
+   */
   const PanelLink = ({ to, label, lang }: { to: string; label: string; lang?: string }) => {
     const active = isCurrent(pathname, to);
+    const accented = active && to !== "/" && to !== "/vi";
     return (
       <Link
         to={to}
@@ -143,7 +151,7 @@ const Navbar = () => {
         aria-current={active ? "page" : undefined}
         className={cn(
           "flex w-full items-center rounded-lg px-3 py-2 text-sm uppercase tracking-wide transition-colors",
-          active
+          accented
             ? "bg-bone text-champagne-ink"
             : "text-ink hover:bg-bone hover:text-champagne-ink",
         )}

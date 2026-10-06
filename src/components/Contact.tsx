@@ -168,7 +168,7 @@ const Contact = () => {
               <div className="flex items-start space-x-4 max-w-full">
                 <MapPin className="h-5 w-5 mt-0.5 shrink-0 text-ink" aria-hidden />
                 <span className="text-ink uppercase min-w-0 break-words">
-                  {serviceAreaLine.toUpperCase()}
+                  {serviceAreaLine}
                 </span>
               </div>
 

@@ -48,6 +48,7 @@ import {
   useArrayField,
 } from './fields';
 import DocumentsPanel from '@/components/rental/DocumentsPanel';
+import { useActiveSection } from '@/hooks/useActiveSection';
 
 type Ctl = UseFormReturn<RentalApplicationData>['control'];
 
@@ -811,7 +812,14 @@ const ConsentsSection = ({ control, ro }: { control: Ctl; ro: boolean }) => (
  *
  * `print:hidden` — on paper the jump links are eleven dead words at the top.
  */
-const SectionIndex = ({ activeId }: { activeId: string }) => (
+const SectionIndex = ({
+  activeId,
+  onJump,
+}: {
+  activeId: string;
+  /** Lights the clicked line at once; see useActiveSection. */
+  onJump: (id: string) => void;
+}) => (
   <nav aria-label="Application sections" className="hidden lg:block print:hidden">
     <div className="sticky top-28">
       {SECTION_GROUPS.map((group) => {
@@ -829,6 +837,9 @@ const SectionIndex = ({ activeId }: { activeId: string }) => (
                   <li key={section.id}>
                     <a
                       href={`#${section.id}`}
+                      // The href still does the scrolling, so the URL carries
+                      // the section and scroll-mt applies. This only marks it.
+                      onClick={() => onJump(section.id)}
                       aria-current={current ? 'true' : undefined}
                       className={`block rounded-md px-2 py-1 text-sm transition-colors ${
                         current
@@ -837,12 +848,6 @@ const SectionIndex = ({ activeId }: { activeId: string }) => (
                       }`}
                     >
                       {section.title}
-                      {/* The group heading already says the whole run is
-                          optional, so repeating it on each line is noise. Only
-                          the one optional section outside that run is marked. */}
-                      {!section.required && section.group !== 'application' && (
-                        <span className="ml-1.5 text-xs text-gray-400">optional</span>
-                      )}
                     </a>
                   </li>
                 );
@@ -860,6 +865,9 @@ const SectionIndex = ({ activeId }: { activeId: string }) => (
 /* =================================================================== */
 
 const AUTOSAVE_MS = 2000;
+
+/** Module scope so the array is stable: useActiveSection re-subscribes on a new one. */
+const SECTION_IDS = APPLICATION_SECTIONS.map((section) => section.id);
 
 const savedAt = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
@@ -917,7 +925,7 @@ export default function RentalApplicationForm({
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
-  const [activeSection, setActiveSection] = useState(APPLICATION_SECTIONS[0].id);
+  const [activeSection, jumpToSection] = useActiveSection(SECTION_IDS);
   // Null until DocumentsPanel has loaded. Distinct from an empty array, so a
   // submit pressed before the list arrives is not refused for a file that is
   // in fact attached.
@@ -970,29 +978,6 @@ export default function RentalApplicationForm({
       subscription.unsubscribe();
     };
   }, [form, applicationId, readOnly]);
-
-  /* ---- Which section is on screen ---------------------------------- */
-  useEffect(() => {
-    const sections = APPLICATION_SECTIONS.map((s) => document.getElementById(s.id)).filter(
-      (el): el is HTMLElement => el !== null
-    );
-    if (sections.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setActiveSection(visible.target.id);
-      },
-      // The band just under the navbar. Without the negative top the section
-      // scrolling off the screen stays "current" all the way out.
-      { rootMargin: '-88px 0px -55% 0px', threshold: 0 }
-    );
-
-    sections.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
 
   /* ---- Submit ------------------------------------------------------ */
   const onSubmit = async (values: RentalApplicationData) => {
@@ -1059,7 +1044,7 @@ export default function RentalApplicationForm({
 
   return (
     <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <SectionIndex activeId={activeSection} />
+      <SectionIndex activeId={activeSection} onJump={jumpToSection} />
 
       <FormProvider {...form}>
         <Form {...form}>
@@ -1085,20 +1070,6 @@ export default function RentalApplicationForm({
             />
 
             <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
-              {!readOnly && (
-                <div className="rounded-xl border border-champagne/40 bg-bone p-5 print:hidden">
-                  <h2 className="font-display text-lg font-semibold text-ink">
-                    The rest is optional
-                  </h2>
-                  <p className="mt-1.5 text-sm leading-relaxed text-gray-700">
-                    If you have already completed an application on another form, upload it
-                    above and leave this blank — nothing below is required. Filling it in gives
-                    a fuller picture, and you can do as much or as little of it as you like.
-                    A credit report is the one document to include either way.
-                  </p>
-                </div>
-              )}
-
               <ResidenceSection control={control} ro={readOnly} />
               <PreviousResidenceSection
                 control={control}

@@ -122,7 +122,7 @@ const Footer = () => {
                   See SITE.address for why there is no street here any more. */}
               <li className="flex items-start gap-3 text-gray-300">
                 <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden />
-                <span>{serviceAreaLine}</span>
+                <span className="uppercase">{serviceAreaLine}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Calendar className="mt-1 h-4 w-4 shrink-0" aria-hidden />

@@ -95,7 +95,7 @@ const About = () => {
       lede={
         <>
           Licensed Massachusetts real estate broker with {SITE.brokerage}, based
-          in Needham. He represents buyers and sellers
+          in {SITE.address.addressLocality}. He represents buyers and sellers
           across {SITE.areaServed.length} towns in MetroWest and Greater Boston,
           and works in English and Vietnamese.
         </>
@@ -274,8 +274,14 @@ const About = () => {
               17 towns take six rows instead of a paragraph. Same treatment as
               the profile links further down, so the page has one card style
               rather than two.
+
+              `not-prose` is what removes the underline. ProseBody's
+              `prose-a:underline` is a variant, so it is emitted after the plain
+              utilities and beats `no-underline` on the link at equal
+              specificity — every town was underlined in champagne, which the
+              profile links (outside ProseBody) never were.
             */}
-            <ul className="mt-6 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3">
+            <ul className="not-prose mt-6 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3">
               {SITE.areaServed.map((town) => (
                 <li key={town.slug} className="m-0">
                   <Link

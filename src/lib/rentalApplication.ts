@@ -447,13 +447,15 @@ export interface ApplicationSection {
   title: string;
   /** One line under the heading. Says what the section is for, not what to type. */
   blurb?: string;
-  /** Drives the "optional" mark in the section index. */
-  required: boolean;
   /**
    * Which run of sections this belongs to. The index renders these as headed
    * groups, in this order, so the shape of the document is legible before any of
-   * it is read: what we need, what you can upload instead, and the long part
-   * that is optional.
+   * it is read: what we need, what you can upload instead, and the full
+   * application.
+   *
+   * Nothing in the index is labelled "optional" any more (2026-10-06, at
+   * Kevin's request). The sections below the applicant's details still do not
+   * block a submit — that is the schema's doing, not a label's.
    */
   group: SectionGroup;
 }
@@ -461,7 +463,7 @@ export interface ApplicationSection {
 export const SECTION_GROUPS = [
   { id: 'details', title: 'What we need' },
   { id: 'documents', title: 'Or upload it' },
-  { id: 'application', title: 'The full application — optional' },
+  { id: 'application', title: 'The full application' },
   { id: 'submit', title: 'Sign and send' },
 ] as const;
 
@@ -472,7 +474,6 @@ export const APPLICATION_SECTIONS: ApplicationSection[] = [
     id: 'applicant',
     title: 'About you',
     blurb: 'The only part we need: who you are and how to reach you.',
-    required: true,
     group: 'details',
   },
   {
@@ -480,47 +481,41 @@ export const APPLICATION_SECTIONS: ApplicationSection[] = [
     title: 'Documents',
     blurb:
       'Upload what you have — including a completed application from another form, if you already filled one in. You can add more at any time, even after you submit.',
-    required: false,
     group: 'documents',
   },
   {
     id: 'residence',
     title: 'Where you live now',
     blurb: 'Your current address and the landlord we may contact for a reference.',
-    required: false,
     group: 'application',
   },
-  { id: 'previous-residence', title: 'Previous address', required: false, group: 'application' },
+  { id: 'previous-residence', title: 'Previous address', group: 'application' },
   {
     id: 'employment',
     title: 'Employment and income',
     blurb: 'Enough to show the rent is affordable.',
-    required: false,
     group: 'application',
   },
   {
     id: 'other-income',
     title: 'Other income',
     blurb: 'Include anything you would like considered.',
-    required: false,
     group: 'application',
   },
-  { id: 'references', title: 'References', required: false, group: 'application' },
-  { id: 'emergency', title: 'Emergency contact', required: false, group: 'application' },
+  { id: 'references', title: 'References', group: 'application' },
+  { id: 'emergency', title: 'Emergency contact', group: 'application' },
   {
     id: 'household',
     title: 'Household',
     blurb: 'Who else would be living there, including children and pets.',
-    required: false,
     group: 'application',
   },
-  { id: 'vehicle', title: 'Vehicle', required: false, group: 'application' },
-  { id: 'tenancy', title: 'The unit you want', required: false, group: 'application' },
+  { id: 'vehicle', title: 'Vehicle', group: 'application' },
+  { id: 'tenancy', title: 'The unit you want', group: 'application' },
   {
     id: 'consents',
     title: 'Authorization and signature',
     blurb: 'Required to send the application, whether you filled it in or uploaded one.',
-    required: true,
     group: 'submit',
   },
 ];

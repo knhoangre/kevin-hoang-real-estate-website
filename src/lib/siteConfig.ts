@@ -348,5 +348,12 @@ export const smsHrefWith = (body: string) =>
  */
 export const locality = `${SITE.address.addressLocality}, ${SITE.address.addressRegion}`;
 
-/** The service-area line shown wherever an office address used to be. */
-export const serviceAreaLine = `Based in ${locality} · serving Greater Boston and MetroWest`;
+/**
+ * The service-area line shown wherever an office address used to be.
+ *
+ * Rendered in capitals at every site that prints it (footer, /contact, the
+ * homepage contact block) — by the `uppercase` class, not by upper-casing the
+ * string, so a screen reader and a crawler still get "Newton, MA" as words
+ * rather than a run of letters to spell out.
+ */
+export const serviceAreaLine = `Based in ${locality} · Serving Greater Boston and MetroWest`;
