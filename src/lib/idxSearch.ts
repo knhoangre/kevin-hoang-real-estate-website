@@ -448,6 +448,90 @@ export const listingByMls = async (mls: string) => {
   return (data as IdxListing | null) ?? null;
 };
 
+/* -------------------------------------------------------------------------- */
+/* Looking a listing up by what somebody types                                 */
+/* -------------------------------------------------------------------------- */
+
+/** The columns a suggestion row shows. Not `*` — this fires on every pause in typing. */
+export type ListingSuggestion = Pick<
+  IdxListing,
+  | 'mls_number'
+  | 'address'
+  | 'town'
+  | 'state'
+  | 'zip'
+  | 'status'
+  | 'list_price'
+  | 'prop_type'
+  | 'photo_count'
+>;
+
+const SUGGESTION_COLUMNS =
+  'mls_number,address,town,state,zip,status,list_price,prop_type,photo_count';
+
+/** PostgREST's own delimiters and LIKE's wildcards, none of which may come from a keyboard. */
+const cleanTerm = (text: string) => text.replace(/[(),%*\\]/g, ' ').replace(/\s+/g, ' ').trim();
+
+/** Three characters is the least a trigram index can use. */
+export const isWorthLookingUp = (text: string): boolean => cleanTerm(text).length >= 3;
+
+/**
+ * Active listings matching a typed address or MLS number, best guess first.
+ *
+ * For the two admin surfaces that start from a listing — the open-house sheet
+ * and the showing tour builder — so what is typed at a door becomes a link to
+ * that home on this site rather than a line of text.
+ *
+ *   - Six or more digits and nothing else is an MLS number, and hits the
+ *     primary key exactly.
+ *   - Anything else is an address. Words are matched IN ORDER with anything
+ *     between them, so "12 elm" finds "12 Elm Street" and "12 Elm St" alike.
+ *     Text after a comma is the town: "12 elm, newton".
+ *
+ * ACTIVE FEED ONLY, but every status in it. An open house is held on a home
+ * that is for sale, which is the active feed — and that includes one already
+ * under agreement and taking backup offers, so the status is shown in the row
+ * rather than used to hide it.
+ *
+ * The address query runs on the GIN trigram index. It fetches more rows than it
+ * returns because a trigram match has no useful order of its own: "12 elm" also
+ * matches "112 Elmwood", and the ranking below is what puts the address that
+ * STARTS with what was typed, in a town this site serves, at the top.
+ */
+export const suggestListings = async (
+  text: string,
+  signal?: AbortSignal,
+  preferTowns: readonly string[] = []
+): Promise<ListingSuggestion[]> => {
+  const [streetPart = '', townPart = ''] = text.split(',');
+  const street = cleanTerm(streetPart);
+  const town = cleanTerm(townPart);
+  if (street.length < 3) return [];
+
+  let query = supabase.from('idx_listings').select(SUGGESTION_COLUMNS).eq('feed', 'active');
+
+  if (/^\d{6,}$/.test(street)) {
+    query = query.eq('mls_number', street);
+  } else {
+    query = query.ilike('address', `%${street.split(' ').join('%')}%`);
+    if (town) query = query.ilike('town', `${town}%`);
+  }
+
+  if (signal) query = query.abortSignal(signal);
+  const { data, error } = await query.limit(40);
+  if (error) throw error;
+
+  const typed = street.toLowerCase();
+  const preferred = new Set(preferTowns.map((t) => t.toLowerCase()));
+  const rank = (l: ListingSuggestion) =>
+    ((l.address ?? '').toLowerCase().startsWith(typed) ? 0 : 2) +
+    (preferred.has((l.town ?? '').toLowerCase()) ? 0 : 1);
+
+  return ((data ?? []) as ListingSuggestion[])
+    .sort((a, b) => rank(a) - rank(b) || (a.address ?? '').localeCompare(b.address ?? ''))
+    .slice(0, 8);
+};
+
 /** The listing office, for the attribution line MLS PIN requires. */
 export const officeName = async (officeId: string | null) => {
   if (!officeId) return null;

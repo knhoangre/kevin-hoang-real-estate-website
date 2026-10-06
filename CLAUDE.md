@@ -946,6 +946,7 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   never written into it. Failure is silent: the field stays plain text.
 - **The ZIP field is not `inputMode="numeric"`.** A leading zero is exactly what a
   numeric field eats, and 8 of 10 ZIPs on this site start with one — that is the
+  same import bug that once rendered "Newton, MA 2459".
 - **`/admin/applications` is one card per property, and an application takes
   its property from its INVITE.** `groupByProperty()` keys on `propertyKey()` —
   the same street + unit + town key the reuse picker uses — read from the invite
@@ -958,7 +959,6 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   became its own field groups by its label, so it will not merge with a newer
   structured link for the same unit — rewriting those rows is a separate
   decision.
-  same import bug that once rendered "Newton, MA 2459".
 - **`previousProperties()` keys on street + unit + town, not on the formatted
   line.** An invite recorded before the zip existed still matches the same unit
   entered later with one; the picker exists to stop the admin retyping an address,
@@ -1088,6 +1088,40 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   is declared beside it and mirrors the `kind` CHECK constraint in the migration,
   which is the real closed set. Deriving the union from the literal made the
   optional `required`/`steps` fields unreadable on the union of entry types.
+
+### Open house sign-in (`/open-house`)
+
+- **The address field finds the listing, and the guest's email links to it.**
+  [ListingLookup](src/components/admin/ListingLookup.tsx) suggests active
+  listings for a typed address or a pasted MLS number (`suggestListings()` in
+  [idxSearch.ts](src/lib/idxSearch.ts)); choosing one stores the MLS number on
+  the sign-in and puts a card for that home — photo, price, a button to
+  `/search/<mls>` — in the confirmation email. Before 2026-10-06 the email named
+  an address and linked to nothing, so the guest looked the house up on Zillow.
+  A house not in the feed is still typed by hand and simply carries no link.
+- **`open_house_sign_ins.mls_number` is nullable and has NO foreign key.**
+  `idx_listings` is a cache: idx-sync deletes a row the moment MLS PIN stops
+  sending it. A foreign key would either block that delete, which is a
+  compliance problem, or cascade it into the sign-in and erase a lead because a
+  house sold.
+- **The listing in an email is read on the server, by MLS number, never taken
+  from the request.** `submit-open-house-signin` is callable with the anon key,
+  so a card built from the request body would let anyone send mail under this
+  name with any photo and any link. A number that is not in the feed is neither
+  stored nor linked. The same function used to interpolate visitor-typed fields
+  raw into Kevin's notification email; they are escaped now.
+- **[listingEmail.ts](supabase/functions/_shared/listingEmail.ts) is the one
+  listing card for email**, shared with the showing schedule. It names the
+  listing office, because an email showing the photo and price is an IDX display
+  like any other. Its `formatPrice`, `formatBaths`, photo URL and status labels
+  are deliberate mirrors of the app's — an edge function cannot import from the
+  bundle. Links use `www.`, which skips the apex's redirect, and carry
+  `utm_source=open-house` so GA4 can say how many guests came back.
+- **[SuggestInput](src/components/admin/SuggestInput.tsx) is the one
+  suggest-as-you-type field.** `AddressAutocomplete` (MassGIS) and
+  `ListingLookup` (IDX) are thin wrappers that supply a source and a row. Its
+  `worth`/`suggest`/`valueOf`/`keyOf` props are read in an effect, so pass
+  module-level functions — an inline arrow restarts the request every render.
 
 ### Transactional email
 
@@ -1409,6 +1443,13 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   applied migration — made every push demand `--include-all`. Renaming it to a
   free version and repairing it fixed it. `ls supabase/migrations | sed 's/_.*//'
   | sort | uniq -d` should print nothing.
+- **`supabase db push` answering `unexpected login role status 401` means a
+  stale token, not a missing password.** The CLI loads the repo's `.env`, and
+  the `SUPABASE_ACCESS_TOKEN` there (expired as of 2026-10-06) overrides the
+  CLI's own stored login for the `db` and `migration` commands. Prefix them with
+  an empty value — `SUPABASE_ACCESS_TOKEN= npx supabase db push` — and the stored
+  login is used instead. `functions deploy` and `gen types` need the same prefix
+  once that variable is exported into the shell.
 - **A migration applied by hand in the SQL editor still has to be recorded.**
   `supabase migration repair --status applied <version>` writes the history row
   without re-running the file; otherwise the CLI keeps offering to apply it and

@@ -46,9 +46,6 @@ const LOCAL_EXTENT = {
   spatialReference: { wkid: 4326 },
 };
 
-/** Long enough that a keystroke-per-request never happens; short enough to feel live. */
-export const SUGGEST_DEBOUNCE_MS = 250;
-
 /** A suggestion, parsed into the fields an address form actually has. */
 export interface AddressSuggestion {
   /** "151 Washington St" — number and street, no unit. */

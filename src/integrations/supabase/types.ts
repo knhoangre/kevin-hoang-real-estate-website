@@ -648,6 +648,756 @@ export type Database = {
           },
         ]
       }
+      handyman_allowed_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      handyman_clients: {
+        Row: {
+          address_line1: string
+          address_line2: string
+          created_at: string
+          deleted_at: string | null
+          email: string
+          id: string
+          name: string
+          notes: string
+          owner_email: string
+          phone: string
+          server_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string
+          address_line2?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string
+          id: string
+          name?: string
+          notes?: string
+          owner_email: string
+          phone?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string
+          created_at?: string
+          deleted_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          notes?: string
+          owner_email?: string
+          phone?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_contractors: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          email: string
+          id: string
+          is_default: boolean
+          name: string
+          owner_email: string
+          phone: string
+          server_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          email?: string
+          id: string
+          is_default?: boolean
+          name?: string
+          owner_email: string
+          phone?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          email?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          owner_email?: string
+          phone?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_counters: {
+        Row: {
+          kind: string
+          next_seq: number
+          owner_email: string
+          server_updated_at: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          kind: string
+          next_seq?: number
+          owner_email: string
+          server_updated_at?: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          kind?: string
+          next_seq?: number
+          owner_email?: string
+          server_updated_at?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      handyman_estimates: {
+        Row: {
+          business: Json
+          client: Json
+          client_id: string
+          contractor_id: string | null
+          converted_invoice_id: string | null
+          created_at: string
+          deleted_at: string | null
+          discount_cents: number
+          id: string
+          issue_date: string
+          job_id: string | null
+          line_items: Json
+          number: string
+          owner_email: string
+          server_updated_at: string
+          status: string
+          tax_label: string
+          tax_rate_pct: number
+          terms: string
+          updated_at: string
+          valid_until: string | null
+          work_summary: string
+        }
+        Insert: {
+          business?: Json
+          client?: Json
+          client_id: string
+          contractor_id?: string | null
+          converted_invoice_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          discount_cents?: number
+          id: string
+          issue_date: string
+          job_id?: string | null
+          line_items?: Json
+          number?: string
+          owner_email: string
+          server_updated_at?: string
+          status?: string
+          tax_label?: string
+          tax_rate_pct?: number
+          terms?: string
+          updated_at?: string
+          valid_until?: string | null
+          work_summary?: string
+        }
+        Update: {
+          business?: Json
+          client?: Json
+          client_id?: string
+          contractor_id?: string | null
+          converted_invoice_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          discount_cents?: number
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          line_items?: Json
+          number?: string
+          owner_email?: string
+          server_updated_at?: string
+          status?: string
+          tax_label?: string
+          tax_rate_pct?: number
+          terms?: string
+          updated_at?: string
+          valid_until?: string | null
+          work_summary?: string
+        }
+        Relationships: []
+      }
+      handyman_expenses: {
+        Row: {
+          attach_to_invoice: boolean
+          billable: boolean
+          category: string
+          created_at: string
+          date: string
+          deleted_at: string | null
+          id: string
+          job_id: string | null
+          markup_pct: number
+          notes: string
+          owner_email: string
+          payment_method: string
+          rebilled_invoice_id: string | null
+          server_updated_at: string
+          storage_path: string | null
+          tax_cents: number
+          total_cents: number
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          attach_to_invoice?: boolean
+          billable?: boolean
+          category?: string
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          id: string
+          job_id?: string | null
+          markup_pct?: number
+          notes?: string
+          owner_email: string
+          payment_method?: string
+          rebilled_invoice_id?: string | null
+          server_updated_at?: string
+          storage_path?: string | null
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+          vendor?: string
+        }
+        Update: {
+          attach_to_invoice?: boolean
+          billable?: boolean
+          category?: string
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          id?: string
+          job_id?: string | null
+          markup_pct?: number
+          notes?: string
+          owner_email?: string
+          payment_method?: string
+          rebilled_invoice_id?: string | null
+          server_updated_at?: string
+          storage_path?: string | null
+          tax_cents?: number
+          total_cents?: number
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
+      handyman_files: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          file_name: string
+          format: string
+          id: string
+          kind: string
+          number: string
+          owner_email: string
+          ref_id: string
+          server_updated_at: string
+          size_bytes: number
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          file_name?: string
+          format?: string
+          id: string
+          kind: string
+          number?: string
+          owner_email: string
+          ref_id: string
+          server_updated_at?: string
+          size_bytes?: number
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          file_name?: string
+          format?: string
+          id?: string
+          kind?: string
+          number?: string
+          owner_email?: string
+          ref_id?: string
+          server_updated_at?: string
+          size_bytes?: number
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_invoices: {
+        Row: {
+          business: Json
+          client: Json
+          client_id: string
+          contractor_id: string | null
+          created_at: string
+          deleted_at: string | null
+          discount_cents: number
+          due_date: string | null
+          estimate_id: string | null
+          id: string
+          issue_date: string
+          job_id: string | null
+          line_items: Json
+          number: string | null
+          owner_email: string
+          server_updated_at: string
+          status: string
+          tax_label: string
+          tax_rate_pct: number
+          terms: string
+          updated_at: string
+          work_period_note: string
+          work_summary: string
+        }
+        Insert: {
+          business?: Json
+          client?: Json
+          client_id: string
+          contractor_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          discount_cents?: number
+          due_date?: string | null
+          estimate_id?: string | null
+          id: string
+          issue_date: string
+          job_id?: string | null
+          line_items?: Json
+          number?: string | null
+          owner_email: string
+          server_updated_at?: string
+          status?: string
+          tax_label?: string
+          tax_rate_pct?: number
+          terms?: string
+          updated_at?: string
+          work_period_note?: string
+          work_summary?: string
+        }
+        Update: {
+          business?: Json
+          client?: Json
+          client_id?: string
+          contractor_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          discount_cents?: number
+          due_date?: string | null
+          estimate_id?: string | null
+          id?: string
+          issue_date?: string
+          job_id?: string | null
+          line_items?: Json
+          number?: string | null
+          owner_email?: string
+          server_updated_at?: string
+          status?: string
+          tax_label?: string
+          tax_rate_pct?: number
+          terms?: string
+          updated_at?: string
+          work_period_note?: string
+          work_summary?: string
+        }
+        Relationships: []
+      }
+      handyman_jobs: {
+        Row: {
+          client_id: string
+          completed_on: string | null
+          contractor_id: string | null
+          created_at: string
+          deleted_at: string | null
+          description: string
+          hours_logged: number
+          id: string
+          notes: string
+          number: string
+          owner_email: string
+          property_id: string | null
+          scheduled_for: string | null
+          server_updated_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          completed_on?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          hours_logged?: number
+          id: string
+          notes?: string
+          number?: string
+          owner_email: string
+          property_id?: string | null
+          scheduled_for?: string | null
+          server_updated_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          completed_on?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          description?: string
+          hours_logged?: number
+          id?: string
+          notes?: string
+          number?: string
+          owner_email?: string
+          property_id?: string | null
+          scheduled_for?: string | null
+          server_updated_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_mileage: {
+        Row: {
+          created_at: string
+          date: string
+          deleted_at: string | null
+          id: string
+          job_id: string | null
+          miles: number
+          owner_email: string
+          purpose: string
+          rate_per_mile_cents: number
+          server_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          id: string
+          job_id?: string | null
+          miles?: number
+          owner_email: string
+          purpose?: string
+          rate_per_mile_cents?: number
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          id?: string
+          job_id?: string | null
+          miles?: number
+          owner_email?: string
+          purpose?: string
+          rate_per_mile_cents?: number
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_payments: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          date: string
+          deleted_at: string | null
+          id: string
+          invoice_id: string
+          is_deposit: boolean
+          method: string
+          note: string
+          owner_email: string
+          receipt_number: string | null
+          reference: string
+          server_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          date: string
+          deleted_at?: string | null
+          id: string
+          invoice_id: string
+          is_deposit?: boolean
+          method?: string
+          note?: string
+          owner_email: string
+          receipt_number?: string | null
+          reference?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          date?: string
+          deleted_at?: string | null
+          id?: string
+          invoice_id?: string
+          is_deposit?: boolean
+          method?: string
+          note?: string
+          owner_email?: string
+          receipt_number?: string | null
+          reference?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          job_id: string
+          owner_email: string
+          phase: string
+          server_updated_at: string
+          storage_path: string
+          taken_at: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          job_id: string
+          owner_email: string
+          phase?: string
+          server_updated_at?: string
+          storage_path: string
+          taken_at?: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          job_id?: string
+          owner_email?: string
+          phase?: string
+          server_updated_at?: string
+          storage_path?: string
+          taken_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_properties: {
+        Row: {
+          access_notes: string
+          address_line1: string
+          address_line2: string
+          client_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          label: string
+          owner_email: string
+          server_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          access_notes?: string
+          address_line1?: string
+          address_line2?: string
+          client_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          label?: string
+          owner_email: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          access_notes?: string
+          address_line1?: string
+          address_line2?: string
+          client_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          label?: string
+          owner_email?: string
+          server_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      handyman_settings: {
+        Row: {
+          accent_color: string
+          address_line1: string
+          address_line2: string
+          business_name: string
+          change_order_text: string
+          created_at: string
+          default_hourly_rate_cents: number
+          default_markup_pct: number
+          default_term_days: number
+          default_terms: string
+          deleted_at: string | null
+          email: string
+          estimate_terms: string
+          footer_note: string
+          id: string
+          last_backup_at: string | null
+          logo_path: string | null
+          mileage_rate_cents: number
+          owner_email: string
+          payment_instructions: string
+          phone: string
+          server_updated_at: string
+          tagline: string
+          tax_label: string
+          tax_labor_by_default: boolean
+          tax_materials_by_default: boolean
+          tax_rate_pct: number
+          updated_at: string
+          warranty_text: string
+        }
+        Insert: {
+          accent_color?: string
+          address_line1?: string
+          address_line2?: string
+          business_name?: string
+          change_order_text?: string
+          created_at?: string
+          default_hourly_rate_cents?: number
+          default_markup_pct?: number
+          default_term_days?: number
+          default_terms?: string
+          deleted_at?: string | null
+          email?: string
+          estimate_terms?: string
+          footer_note?: string
+          id: string
+          last_backup_at?: string | null
+          logo_path?: string | null
+          mileage_rate_cents?: number
+          owner_email: string
+          payment_instructions?: string
+          phone?: string
+          server_updated_at?: string
+          tagline?: string
+          tax_label?: string
+          tax_labor_by_default?: boolean
+          tax_materials_by_default?: boolean
+          tax_rate_pct?: number
+          updated_at?: string
+          warranty_text?: string
+        }
+        Update: {
+          accent_color?: string
+          address_line1?: string
+          address_line2?: string
+          business_name?: string
+          change_order_text?: string
+          created_at?: string
+          default_hourly_rate_cents?: number
+          default_markup_pct?: number
+          default_term_days?: number
+          default_terms?: string
+          deleted_at?: string | null
+          email?: string
+          estimate_terms?: string
+          footer_note?: string
+          id?: string
+          last_backup_at?: string | null
+          logo_path?: string | null
+          mileage_rate_cents?: number
+          owner_email?: string
+          payment_instructions?: string
+          phone?: string
+          server_updated_at?: string
+          tagline?: string
+          tax_label?: string
+          tax_labor_by_default?: boolean
+          tax_materials_by_default?: boolean
+          tax_rate_pct?: number
+          updated_at?: string
+          warranty_text?: string
+        }
+        Relationships: []
+      }
+      idx_geocodes: {
+        Row: {
+          address_key: string
+          geocoded_at: string
+          lat: number | null
+          lon: number | null
+          precision: string
+        }
+        Insert: {
+          address_key: string
+          geocoded_at?: string
+          lat?: number | null
+          lon?: number | null
+          precision?: string
+        }
+        Update: {
+          address_key?: string
+          geocoded_at?: string
+          lat?: number | null
+          lon?: number | null
+          precision?: string
+        }
+        Relationships: []
+      }
       idx_listings: {
         Row: {
           acres: number | null
@@ -707,13 +1457,17 @@ export type Database = {
           sqft_below_grade: number | null
           state: string | null
           status: string | null
+          street_name: string | null
+          street_no: string | null
           style: string | null
           synced_at: string
           tax_year: number | null
           taxes: number | null
           total_rooms: number | null
           town: string | null
+          town_num: string | null
           unit_level: number | null
+          unit_no: string | null
           unit_placement: string | null
           water: string | null
           waterfront: boolean | null
@@ -781,13 +1535,17 @@ export type Database = {
           sqft_below_grade?: number | null
           state?: string | null
           status?: string | null
+          street_name?: string | null
+          street_no?: string | null
           style?: string | null
           synced_at?: string
           tax_year?: number | null
           taxes?: number | null
           total_rooms?: number | null
           town?: string | null
+          town_num?: string | null
           unit_level?: number | null
+          unit_no?: string | null
           unit_placement?: string | null
           water?: string | null
           waterfront?: boolean | null
@@ -855,13 +1613,17 @@ export type Database = {
           sqft_below_grade?: number | null
           state?: string | null
           status?: string | null
+          street_name?: string | null
+          street_no?: string | null
           style?: string | null
           synced_at?: string
           tax_year?: number | null
           taxes?: number | null
           total_rooms?: number | null
           town?: string | null
+          town_num?: string | null
           unit_level?: number | null
+          unit_no?: string | null
           unit_placement?: string | null
           water?: string | null
           waterfront?: boolean | null
@@ -922,6 +1684,132 @@ export type Database = {
             referencedColumns: ["mls_number"]
           },
         ]
+      }
+      idx_sold_archive: {
+        Row: {
+          acres: number | null
+          address: string | null
+          address_key: string | null
+          basement: boolean | null
+          bedrooms: number | null
+          first_archived_at: string
+          full_baths: number | null
+          garage_spaces: number | null
+          half_baths: number | null
+          hoa: boolean | null
+          hoa_fee: number | null
+          last_seen_at: string
+          list_price: number | null
+          living_area: number | null
+          lot_size: number | null
+          mls_number: string
+          neighborhood: string | null
+          parking_spaces: number | null
+          photo_count: number | null
+          prop_subtype: string | null
+          prop_type: string | null
+          sale_price: number | null
+          settled_date: string | null
+          sqft_above_grade: number | null
+          sqft_below_grade: number | null
+          state: string | null
+          status: string | null
+          street_name: string | null
+          street_no: string | null
+          style: string | null
+          tax_year: number | null
+          taxes: number | null
+          total_rooms: number | null
+          town: string | null
+          town_num: string | null
+          unit_no: string | null
+          waterfront: boolean | null
+          year_built: number | null
+          zip: string | null
+        }
+        Insert: {
+          acres?: number | null
+          address?: string | null
+          address_key?: string | null
+          basement?: boolean | null
+          bedrooms?: number | null
+          first_archived_at?: string
+          full_baths?: number | null
+          garage_spaces?: number | null
+          half_baths?: number | null
+          hoa?: boolean | null
+          hoa_fee?: number | null
+          last_seen_at?: string
+          list_price?: number | null
+          living_area?: number | null
+          lot_size?: number | null
+          mls_number: string
+          neighborhood?: string | null
+          parking_spaces?: number | null
+          photo_count?: number | null
+          prop_subtype?: string | null
+          prop_type?: string | null
+          sale_price?: number | null
+          settled_date?: string | null
+          sqft_above_grade?: number | null
+          sqft_below_grade?: number | null
+          state?: string | null
+          status?: string | null
+          street_name?: string | null
+          street_no?: string | null
+          style?: string | null
+          tax_year?: number | null
+          taxes?: number | null
+          total_rooms?: number | null
+          town?: string | null
+          town_num?: string | null
+          unit_no?: string | null
+          waterfront?: boolean | null
+          year_built?: number | null
+          zip?: string | null
+        }
+        Update: {
+          acres?: number | null
+          address?: string | null
+          address_key?: string | null
+          basement?: boolean | null
+          bedrooms?: number | null
+          first_archived_at?: string
+          full_baths?: number | null
+          garage_spaces?: number | null
+          half_baths?: number | null
+          hoa?: boolean | null
+          hoa_fee?: number | null
+          last_seen_at?: string
+          list_price?: number | null
+          living_area?: number | null
+          lot_size?: number | null
+          mls_number?: string
+          neighborhood?: string | null
+          parking_spaces?: number | null
+          photo_count?: number | null
+          prop_subtype?: string | null
+          prop_type?: string | null
+          sale_price?: number | null
+          settled_date?: string | null
+          sqft_above_grade?: number | null
+          sqft_below_grade?: number | null
+          state?: string | null
+          status?: string | null
+          street_name?: string | null
+          street_no?: string | null
+          style?: string | null
+          tax_year?: number | null
+          taxes?: number | null
+          total_rooms?: number | null
+          town?: string | null
+          town_num?: string | null
+          unit_no?: string | null
+          waterfront?: boolean | null
+          year_built?: number | null
+          zip?: string | null
+        }
+        Relationships: []
       }
       idx_sync_runs: {
         Row: {
@@ -999,6 +1887,7 @@ export type Database = {
           is_active: boolean | null
           is_read: boolean | null
           last_name_id: number | null
+          mls_number: string | null
           phone_id: number | null
           read_at: string | null
           realtor_company: string | null
@@ -1016,6 +1905,7 @@ export type Database = {
           is_active?: boolean | null
           is_read?: boolean | null
           last_name_id?: number | null
+          mls_number?: string | null
           phone_id?: number | null
           read_at?: string | null
           realtor_company?: string | null
@@ -1033,6 +1923,7 @@ export type Database = {
           is_active?: boolean | null
           is_read?: boolean | null
           last_name_id?: number | null
+          mls_number?: string | null
           phone_id?: number | null
           read_at?: string | null
           realtor_company?: string | null
@@ -1803,6 +2694,7 @@ export type Database = {
       }
       rental_applications: {
         Row: {
+          admin_notified_at: string | null
           applicant_email: string | null
           applicant_first_name: string | null
           applicant_last_name: string | null
@@ -1819,6 +2711,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notified_at?: string | null
           applicant_email?: string | null
           applicant_first_name?: string | null
           applicant_last_name?: string | null
@@ -1835,6 +2728,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notified_at?: string | null
           applicant_email?: string | null
           applicant_first_name?: string | null
           applicant_last_name?: string | null
@@ -1859,6 +2753,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      videos: {
+        Row: {
+          body: string | null
+          created_at: string
+          description: string
+          featured: boolean
+          id: number
+          instagram_id: string
+          is_published: boolean
+          kind: string
+          posted_date: string
+          poster_url: string | null
+          slug: string
+          title: string
+          town: string | null
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          description: string
+          featured?: boolean
+          id?: number
+          instagram_id: string
+          is_published?: boolean
+          kind?: string
+          posted_date: string
+          poster_url?: string | null
+          slug: string
+          title: string
+          town?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          description?: string
+          featured?: boolean
+          id?: number
+          instagram_id?: string
+          is_published?: boolean
+          kind?: string
+          posted_date?: string
+          poster_url?: string | null
+          slug?: string
+          title?: string
+          town?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -1913,8 +2858,129 @@ export type Database = {
         }
         Relationships: []
       }
+      idx_comp_pool: {
+        Row: {
+          acres: number | null
+          address: string | null
+          basement: boolean | null
+          bedrooms: number | null
+          full_baths: number | null
+          garage_spaces: number | null
+          geocode_precision: string | null
+          half_baths: number | null
+          lat: number | null
+          list_price: number | null
+          living_area: number | null
+          lon: number | null
+          lot_size: number | null
+          mls_number: string | null
+          photo_count: number | null
+          prop_subtype: string | null
+          prop_type: string | null
+          sale_price: number | null
+          settled_date: string | null
+          state: string | null
+          street_name: string | null
+          style: string | null
+          town: string | null
+          year_built: number | null
+          zip: string | null
+        }
+        Relationships: []
+      }
+      idx_town_counts: {
+        Row: {
+          listings: number | null
+          town: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      crm_upsert_contact: {
+        Args: {
+          p_birthday?: string
+          p_email?: string
+          p_first: string
+          p_last: string
+          p_match_email?: string
+          p_match_phone?: string
+          p_phone?: string
+          p_prefer_new?: boolean
+          p_source?: string
+          p_tag?: string
+          p_tag_color?: string
+        }
+        Returns: number
+      }
+      handyman_is_owner: { Args: never; Returns: boolean }
+      handyman_next_document_number: {
+        Args: { p_kind: string }
+        Returns: string
+      }
+      handyman_prepare_table: {
+        Args: { table_name: string }
+        Returns: undefined
+      }
+      idx_address_key: {
+        Args: {
+          p_address: string
+          p_state: string
+          p_town: string
+          p_zip: string
+        }
+        Returns: string
+      }
+      idx_archive_sold:
+        | { Args: never; Returns: number }
+        | { Args: { p_mls: string[] }; Returns: number }
+      idx_comparable_sales: {
+        Args: {
+          p_exclude_mls?: string
+          p_lat?: number
+          p_limit?: number
+          p_lon?: number
+          p_max_sqft?: number
+          p_min_sqft?: number
+          p_months?: number
+          p_prop_type: string
+          p_radius_km?: number
+          p_state?: string
+          p_town: string
+        }
+        Returns: {
+          acres: number
+          address: string
+          basement: boolean
+          bedrooms: number
+          distance_km: number
+          full_baths: number
+          garage_spaces: number
+          geocode_precision: string
+          half_baths: number
+          lat: number
+          list_price: number
+          living_area: number
+          lon: number
+          lot_size: number
+          mls_number: string
+          photo_count: number
+          prop_subtype: string
+          prop_type: string
+          sale_price: number
+          settled_date: string
+          street_name: string
+          style: string
+          town: string
+          year_built: number
+          zip: string
+        }[]
+      }
+      idx_distance_km: {
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
+        Returns: number
+      }
+      idx_refresh_comp_pool: { Args: never; Returns: undefined }
       idx_towns_with_listings: {
         Args: never
         Returns: {

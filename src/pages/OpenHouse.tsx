@@ -32,6 +32,11 @@ import KioskShell, {
   kioskButtonClass,
 } from '@/components/KioskShell';
 import { errorMessage } from '@/lib/utils';
+import ListingLookup from '@/components/admin/ListingLookup';
+import { SITE } from '@/lib/siteConfig';
+
+/** "kevinhoang.co", for the line that says where the guest's link will point. */
+const SITE_HOST = new URL(SITE.origin).host;
 
 const addressSchema = z.object({
   address: z.string().min(1, 'Address is required'),
@@ -78,6 +83,15 @@ const OpenHouse = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previousAddresses, setPreviousAddresses] = useState<string[]>([]);
+  /*
+   * The MLS number of the listing this open house is at, when the address was
+   * matched to one — which is what lets the guest's email link to this home on
+   * kevinhoang.co instead of naming an address they then look up on Zillow.
+   * Null for a house typed by hand: an exclusive, or one not in the feed yet.
+   */
+  const [mlsNumber, setMlsNumber] = useState<string | null>(null);
+  /** The MLS number last used with each previous address, so reusing one keeps its link. */
+  const [previousMls, setPreviousMls] = useState<Record<string, string>>({});
   const [loadingAddresses, setLoadingAddresses] = useState(true); // Start as true to prevent flash
   const [addressInputMode, setAddressInputMode] = useState<'select' | 'manual'>('manual');
 
@@ -132,7 +146,7 @@ const OpenHouse = () => {
       setLoadingAddresses(true);
       const { data, error: fetchError } = await supabase
         .from('open_house_sign_ins')
-        .select('address')
+        .select('address, mls_number')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         // This feeds an autocomplete of addresses already used, and it is
@@ -153,6 +167,13 @@ const OpenHouse = () => {
           new Set(data.map(item => item.address?.trim()).filter(Boolean))
         ).sort() as string[];
         setPreviousAddresses(uniqueAddresses);
+        // Newest first, so the first number seen for an address is the latest.
+        const linked: Record<string, string> = {};
+        for (const item of data) {
+          const key = item.address?.trim();
+          if (key && item.mls_number && !linked[key]) linked[key] = item.mls_number;
+        }
+        setPreviousMls(linked);
         // Switch to select mode if we have addresses, otherwise stay in manual mode
         if (uniqueAddresses.length > 0) {
           setAddressInputMode('select');
@@ -203,6 +224,7 @@ const OpenHouse = () => {
 
   const handleAddressSelect = (selectedAddress: string) => {
     if (selectedAddress === '__new__') {
+      setMlsNumber(null);
       setAddressInputMode('manual');
       addressForm.setValue('address', '');
       addressForm.setValue('unitNumber', '');
@@ -212,6 +234,7 @@ const OpenHouse = () => {
       addressForm.setValue('address', selectedAddress);
       addressForm.setValue('unitNumber', '');
       addressForm.setValue('cityTown', '');
+      setMlsNumber(previousMls[selectedAddress] ?? null);
       setAddressInputMode('select');
     }
   };
@@ -253,6 +276,9 @@ const OpenHouse = () => {
       const { error: submitError } = await supabase.functions.invoke('submit-open-house-signin', {
         body: {
           address: address.trim(),
+          // The listing is looked up again on the server from this number; the
+          // email is never built from anything this request says about it.
+          mlsNumber,
           town,
           welcomeAddress,
           firstName: data.firstName.trim(),
@@ -398,15 +424,29 @@ const OpenHouse = () => {
                       </FormControl>
                     ) : (
                       <div className="space-y-4">
-                        <FormControl>
-                          <Input
-                            id="address"
-                            placeholder="Enter property address"
-                            style={{ textTransform: 'none' }}
-                            autoCapitalize="off"
-                            {...field}
-                          />
-                        </FormControl>
+                        {/* Not wrapped in FormControl: that clones its child to
+                            inject an id and aria props, and this child is a
+                            component with an `id` of its own rather than an
+                            input. The <Label htmlFor> above already finds it. */}
+                        <ListingLookup
+                          id="address"
+                          placeholder="Start typing the address, or an MLS number"
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value);
+                            // Typing over a matched address means it may no
+                            // longer be that listing.
+                            setMlsNumber(null);
+                          }}
+                          onSelect={(listing) => {
+                            field.onChange(listing.address ?? '');
+                            // The feed's address line already carries the unit.
+                            addressForm.setValue('unitNumber', '');
+                            addressForm.setValue('cityTown', listing.town ?? '');
+                            setMlsNumber(listing.mls_number);
+                          }}
+                          inputProps={{ style: { textTransform: 'none' }, autoCapitalize: 'off' }}
+                        />
                         <FormField
                           control={addressForm.control}
                           name="unitNumber"
@@ -451,6 +491,7 @@ const OpenHouse = () => {
                         <button
                           type="button"
                           onClick={() => {
+                            setMlsNumber(null);
                             setAddressInputMode('manual');
                             addressForm.setValue('address', '');
                             addressForm.setValue('unitNumber', '');
@@ -469,6 +510,7 @@ const OpenHouse = () => {
                         <button
                           type="button"
                           onClick={() => {
+                            setMlsNumber(null);
                             setAddressInputMode('select');
                             addressForm.setValue('address', '');
                             addressForm.setValue('unitNumber', '');
@@ -478,6 +520,12 @@ const OpenHouse = () => {
                         >
                           select from previous addresses
                         </button>
+                      </p>
+                    )}
+                    {!loadingAddresses && mlsNumber && (
+                      <p className="numeral mt-1 text-xs text-emerald-700">
+                        Matched to MLS {mlsNumber}. Guests will be emailed this home&rsquo;s page
+                        on {SITE_HOST}.
                       </p>
                     )}
                     <FormMessage />

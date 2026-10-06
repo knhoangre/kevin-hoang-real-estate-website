@@ -1,14 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@3.1.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-
-function escapeHtml(text: string): string {
-  return String(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import {
+  escapeHtml,
+  fetchEmailListing,
+  isMlsNumber,
+  listingCardHtml,
+  listingUrl,
+  townSearchUrl,
+} from '../_shared/listingEmail.ts';
 
 /** Uppercase first letter only; rest unchanged from sign-in. */
 function capitalizeFirstName(name: string): string {
@@ -73,6 +73,15 @@ function buildSignInConfirmationEmailHtml(opts: {
   agentName: string;
   advisorTitle: string;
   ctaUrl: string;
+  /**
+   * The home the guest is standing in, as a card linking to its page on this
+   * site. Already-escaped HTML from listingCardHtml(), or empty for a house that
+   * is not in the feed and for events.
+   */
+  listingHtml?: string;
+  /** "More homes in Newton" — a link, and the town it names. Both or neither. */
+  townUrl?: string;
+  townName?: string;
 }): string {
   const {
     firstNameDisplay,
@@ -87,7 +96,36 @@ function buildSignInConfirmationEmailHtml(opts: {
     agentName,
     advisorTitle,
     ctaUrl,
+    listingHtml = "",
+    townUrl = "",
+    townName = "",
   } = opts;
+
+  /*
+   * The listing block sits directly under the greeting, above the marketing
+   * copy. It is the one part of this email the guest will come back for — the
+   * house they just walked through — and before it existed they went and found
+   * it on Zillow instead.
+   */
+  const listingBlock = listingHtml
+    ? `<tr>
+                  <td class="email-paragraph" style="padding:0 0 14px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    Here is the home you are touring, so you can look back at it later:
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 0 ${townUrl ? "14px" : "28px"} 0;">${listingHtml}</td>
+                </tr>${
+      townUrl
+        ? `
+                <tr>
+                  <td class="email-paragraph" style="padding:0 0 28px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
+                    Still looking? <a href="${escapeHtml(townUrl)}" style="color:#1a1a1a;text-decoration:underline;">See everything on the market in ${escapeHtml(townName)}</a>.
+                  </td>
+                </tr>`
+        : ""
+    }`
+    : "";
 
   const safeWelcome = escapeHtml(welcomeTitle);
   const safeFirst = escapeHtml(firstNameDisplay);
@@ -251,6 +289,7 @@ function buildSignInConfirmationEmailHtml(opts: {
                     Thank you for joining us today.
                   </td>
                 </tr>
+                ${listingBlock}
                 <tr>
                   <td class="email-paragraph" style="padding:0 0 24px 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;">
                     <strong style="font-weight:600;">Navigating the Market:</strong> Finding the right home in ${safeTownPhrase} is often about understanding the subtle differences between streets and recent comparable sales that don't always tell the whole story.
@@ -407,6 +446,7 @@ serve(async (req) => {
       realtorCompany,
       town: townRaw,
       welcomeAddress: welcomeAddressRaw,
+      mlsNumber: mlsNumberRaw,
     } = body;
     // Event: explicit type or eventName present without address
     const isEvent = Boolean((type === 'event' && eventName) || (eventName && !address));
@@ -468,6 +508,18 @@ serve(async (req) => {
     console.log('Initialized Supabase client with service role key');
     console.log('Service role key length:', supabaseServiceKey.length);
     console.log('Supabase URL:', supabaseUrl);
+
+    /*
+     * The listing this open house is at, when the kiosk matched the address to
+     * one. Read from the feed by MLS number — never taken from the request: this
+     * endpoint is callable with the anon key, so a card built from the body
+     * would let anyone send an email under this name with any photo and link.
+     * A number that is not in the feed yields null, and is then neither stored
+     * nor linked. Events have no listing.
+     */
+    const listing = !isEvent && isMlsNumber(mlsNumberRaw)
+      ? await fetchEmailListing(supabase, mlsNumberRaw)
+      : null;
 
     // Format phone number if provided
     let formattedPhone = normalizedPhone;
@@ -622,6 +674,7 @@ serve(async (req) => {
         .from('open_house_sign_ins')
         .insert({
           address: address.trim(),
+          mls_number: listing?.mls_number ?? null,
           first_name_id: firstNameData.id,
           last_name_id: lastNameData.id,
           email_id: emailData?.id || null,
@@ -826,9 +879,21 @@ serve(async (req) => {
       console.log('Attempting to send email...');
       const subject = isEvent ? `Event Sign-In - ${eventName}` : `Open House Sign-In - ${address}`;
       const headerTitle = isEvent ? 'Event Sign-In' : 'Open House Sign-In';
+      /*
+       * Everything a visitor typed is escaped before it goes into this HTML.
+       * It was interpolated raw: a name field containing markup would have been
+       * rendered as markup in the inbox of the one person certain to open it.
+       */
+      const safeFirstName = escapeHtml(firstName);
+      const safeLastName = escapeHtml(lastName);
+      const safeRealtorName = escapeHtml(realtorName || 'Not provided');
+      const safeRealtorCompany = escapeHtml(realtorCompany || 'Not provided');
+      const listingLine = listing
+        ? `<div style="margin-top:8px;font-size:14px;"><a href="${escapeHtml(listingUrl(listing.mls_number))}" style="color:#1a1a1a;">MLS ${escapeHtml(listing.mls_number)} — view the listing</a></div>`
+        : '';
       const locationLabelField = isEvent
-        ? `<div class="field"><span class="label">Event</span><div class="value">${eventName}</div></div>`
-        : `<div class="field"><span class="label">Property Address</span><div class="value">${address}</div></div>`;
+        ? `<div class="field"><span class="label">Event</span><div class="value">${escapeHtml(eventName)}</div></div>`
+        : `<div class="field"><span class="label">Property Address</span><div class="value">${escapeHtml(address)}${listingLine}</div></div>`;
       const realtorSection = isEvent ? '' : `
                   <div class="field">
                     <span class="label">Has Agent</span>
@@ -837,11 +902,11 @@ serve(async (req) => {
                   ${worksWithRealtor ? `
                   <div class="field">
                     <span class="label">Agent Name</span>
-                    <div class="value">${realtorName || 'Not provided'}</div>
+                    <div class="value">${safeRealtorName}</div>
                   </div>
                   <div class="field">
                     <span class="label">Agent Company</span>
-                    <div class="value">${realtorCompany || 'Not provided'}</div>
+                    <div class="value">${safeRealtorCompany}</div>
                   </div>
                   ` : ''}
                   `;
@@ -939,15 +1004,15 @@ serve(async (req) => {
                   ${locationLabelField}
                   <div class="field">
                     <span class="label">First Name</span>
-                    <div class="value">${firstName}</div>
+                    <div class="value">${safeFirstName}</div>
                   </div>
                   <div class="field">
                     <span class="label">Last Name</span>
-                    <div class="value">${lastName}</div>
+                    <div class="value">${safeLastName}</div>
                   </div>
                   <div class="field">
                     <span class="label">Email</span>
-                    <div class="value">${normalizedEmail || 'Not provided'}</div>
+                    <div class="value">${escapeHtml(normalizedEmail || 'Not provided')}</div>
                   </div>
                   <div class="field">
                     <span class="label">Phone Number</span>
@@ -964,7 +1029,7 @@ serve(async (req) => {
                           </a>
                         </div>
                         <div style="margin-top: 8px; text-align: center; color: #666; font-size: 14px;">
-                          ${formattedPhone}
+                          ${escapeHtml(formattedPhone)}
                         </div>
                       ` : 'Not provided'}
                     </div>
@@ -985,10 +1050,12 @@ serve(async (req) => {
         const welcomeTrimmed = typeof welcomeAddressRaw === "string"
           ? welcomeAddressRaw.trim()
           : "";
+        // With a matched listing the feed's own address and town are used, so
+        // the heading, the card and the page it links to all read the same.
         const welcomeTitle = isEvent
           ? (eventName || "").trim() || locationLabel
-          : welcomeTrimmed || (address || "").trim() || locationLabel;
-        const townPhrase = townTrimmed || "this community";
+          : listing?.address || welcomeTrimmed || (address || "").trim() || locationLabel;
+        const townPhrase = listing?.town || townTrimmed || "this community";
 
         const imageUrl = canonicalWwwKevinhoangUrl(
           (Deno.env.get("SIGNIN_EMAIL_IMAGE_URL") || "").trim() ||
@@ -1032,6 +1099,9 @@ serve(async (req) => {
           agentName,
           advisorTitle,
           ctaUrl,
+          listingHtml: listing ? listingCardHtml(listing, { source: "open-house" }) : "",
+          townUrl: listing?.town ? townSearchUrl(listing.town, "open-house") : "",
+          townName: listing?.town ?? "",
         });
 
         const confirmSubject = `Your sign-in — Welcome${welcomeTitle ? ` to ${welcomeTitle}` : ""}`;
