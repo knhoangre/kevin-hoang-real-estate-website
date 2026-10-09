@@ -50,6 +50,7 @@ import { formatPrice } from '@/lib/listings';
 import { formatPhoneInput } from '@/lib/phone';
 import { smsHrefTo, smsHrefToGroup } from '@/lib/siteConfig';
 import { sentenceList } from '@/lib/utils';
+import { listingPath } from '@/lib/listingUrl';
 import type { ListingSuggestion } from '@/lib/idxSearch';
 import {
   STOP_KINDS,
@@ -947,7 +948,7 @@ export default function AdminShowings() {
                         </div>
                         {stop.mlsNumber && (
                           <a
-                            href={`/search/${stop.mlsNumber}`}
+                            href={listingPath({ ...stop, mls_number: stop.mlsNumber })}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline"

@@ -20,7 +20,7 @@
  *
  * This route is NOT prerendered per token — there is no `getStaticPaths`,
  * because tokens are created at runtime. It relies on the scoped rewrite in
- * vercel.json, exactly as /search/:mls does.
+ * vercel.json, as /search/:listing does.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

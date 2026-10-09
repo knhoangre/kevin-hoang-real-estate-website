@@ -501,7 +501,20 @@ serve(async (req) => {
           : row.list_price !== null
             ? formatPrice(Number(row.list_price))
             : '',
-        url: row.mls_number ? listingUrl(row.mls_number) : null,
+        // From the live listing when there is one. When it has left the feed,
+        // from the stop's own snapshot: the page reads only the number at the
+        // end, so the link still opens and still says which house it was.
+        url: row.mls_number
+          ? listingUrl(
+              listing ?? {
+                mls_number: row.mls_number,
+                address: row.address,
+                town: row.town,
+                state: row.state,
+                zip: row.zip,
+              }
+            )
+          : null,
       });
     }
 

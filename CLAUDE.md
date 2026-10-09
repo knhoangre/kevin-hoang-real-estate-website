@@ -27,6 +27,7 @@ Two things here are checks rather than generators, and both exit non-zero on fai
 node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, no network)
 node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
 node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
+node scripts/listing-url-check.ts      # a listing's URL: old number-only links, and the email copy of the slug
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS AND the people on a showing tour (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -146,15 +147,32 @@ every typo and dead link.
 the same reason — a URL whose dynamic segment cannot be known at build time —
 and both take the extensionless destination:
 
-- `/search/:path*` → `/search`. An MLS number cannot be prerendered: there are
-  ~22,000 active listings and the set changes hourly, so the prerendered
-  `/search` shell fetches the listing client-side.
+- `/search/:path*` → `/search/listing`. An MLS number cannot be prerendered:
+  there are ~22,000 active listings and the set changes hourly. So every listing
+  URL is served ONE document — the listing page's own loading state, prerendered
+  as `/search/listing` — and the listing is fetched client-side.
 - `/apply/:path*` → `/apply`. A rental-application invite token is generated at
   runtime, so `/apply/<token>` has no prerendered file either.
 
-The destination is `/search` and `/apply`, **not** `/search/index.html`:
-`cleanUrls: true` strips the extension, so the explicit file path does not
-resolve and every deep URL falls through to the 404. They are scoped to those
+The destination is `/search/listing` and `/apply`, **not**
+`/search/listing/index.html`: `cleanUrls: true` strips the extension, so the
+explicit file path does not resolve and every deep URL falls through to the 404.
+
+**A rewrite must serve the document of the SAME route in the same state.** Until
+2026-10-09 the first rewrite pointed at `/search` — the search page's document,
+served for a URL the router renders as `SearchListing`. React cannot hydrate one
+page as another: every listing ever opened threw six errors (#418 x5, #423),
+discarded the HTML and rendered again from nothing, which a visitor saw as the
+search page flashing up before the home they had been sent. It is the same
+failure as the homepage's markup being served at a private URL, arrived at from
+the other side. `/apply/<token>` never had it, because `/apply` and
+`/apply/:token` are one component with one first render. The rule for
+`SearchListing` that follows: its first render is the loading skeleton WHATEVER
+the URL says — `state` starts as `'loading'` even for a URL that names no
+listing, and "missing" is set in an effect. **These errors are thrown, not
+logged**: they reach Playwright as `pageerror` and never as a console message,
+and a check listening only to the console reported "none" on a page throwing
+six. They are scoped to those
 two prefixes on purpose: Vercel checks the filesystem before applying rewrites,
 so every real route is still served directly and every unknown path still falls
 through to `public/404.html` with a real 404. A broader rewrite is how this site
@@ -504,6 +522,38 @@ rows to find 24 rentals.
     ignores scroll-margin on those, which opened the view with the photo's top
     under the bar. Each frame is a fixed 4:3 with `object-contain`: the fixed
     height is what makes "open at photo 30" land before the images have loaded.
+- **A listing's URL is `/search/<address>-<MLS number>`, and only the number is
+  read** ([listingUrl.ts](src/lib/listingUrl.ts)). It was `/search/73568135`,
+  which texted beside three others says nothing about which house it is; Kevin
+  asked for the address on 2026-10-09 and gave the shape,
+  `170-Gore-St-Unit-417-Cambridge-MA-02141`. The number stays on the end because
+  an address is not one listing — the same condo is for sale and for rent at
+  once under two numbers, and returns a year later under a third — and because
+  the feed respells addresses.
+  - **Every link sent before that date still works, and that is structural, not
+    a redirect.** A segment that is all digits IS the number. The page then
+    rewrites its own address bar to the full form (`replace`, so Back is still
+    one press; the query string and hash ride along, since emailed links carry
+    `utm_source`). There is no redirect table to maintain and none to go stale.
+  - **Because only the number is read, the words can be wrong.** A saved home's
+    snapshot has no ZIP and still makes a working link; a respelled address in
+    an old email still opens. Do not "validate" the words against the listing.
+  - **In a slug the number must be six digits or more.** A link that lost its
+    number ends in a ZIP, and five digits used to be an acceptable MLS number —
+    the visitor would be told a house had sold that was never looked up. That
+    case has its own wording ("This link is missing its listing").
+  - **Every link is built by `listingPath()`** — the cards, the comps table, the
+    two admin pages. The edge functions carry a mirror (`listingSlug` in
+    [listingEmail.ts](supabase/functions/_shared/listingEmail.ts)) for the
+    schedule's text and emails, and `node scripts/listing-url-check.ts` runs both
+    copies over the same addresses, so it is a mirror that is checked.
+  - **GA4 is sent `/search/<mls>` for every form of the link** (`analyticsPath`).
+    One listing would otherwise be three rows, and the address-bar rewrite would
+    count one visit twice — `<Analytics>` is keyed on that folded path, not on
+    the pathname. The address is in the page title, which GA4 reports beside it.
+  - Words are cased the way an address is written, because the feed is not
+    consistent ("60 PATTISON ST Unit C14" is a real value): a word all in one
+    case gets a capital, a word with its own shape ("McGrath") is left alone.
 - **IDX and owned listings are opposite SEO cases.** The sold listings are
   first-party, unique and indexable — the strongest evidence on the site, which
   is why they also appear per-town via
@@ -517,7 +567,7 @@ rows to find 24 rentals.
   town name so the six instances stay distinct under the topical-distinctness
   rule.
 
-### The price estimate (`/search/<mls>`)
+### The price estimate (on a listing's `/search/…` page)
 
 Comparable-sales valuation on the IDX listing pages. Two modules: everything
 numeric is in [valuation.ts](src/lib/valuation.ts), which is **pure — no network,

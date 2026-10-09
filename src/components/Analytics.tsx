@@ -33,11 +33,18 @@ declare global {
  * PKCE `code` on /auth/callback, and the raw pathname, which holds a rental
  * invite token on /apply/<token>. See analyticsPath().
  */
-const pageLocation = (pathname: string) =>
-  `${window.location.origin}${analyticsPath(pathname)}`;
+const pageLocation = (path: string) => `${window.location.origin}${path}`;
 
 const Analytics = () => {
   const { pathname } = useLocation();
+  /*
+   * The path as GA4 is to see it — and what the effects below are keyed on,
+   * rather than the raw pathname. A listing opened from an old /search/<mls>
+   * link has its address bar rewritten to the full form once it has loaded;
+   * that is one visit to one page, and keyed on the pathname it was two
+   * page_views. Both forms reduce to the same value here.
+   */
+  const path = analyticsPath(pathname);
 
   /*
     The page_view, deferred by one frame.
@@ -51,16 +58,16 @@ const Analytics = () => {
   */
   useEffect(() => {
     if (!GA_ENABLED || typeof window.gtag !== 'function') return;
-    if (isInternalPath(pathname)) return;
+    if (isInternalPath(path)) return;
 
     const frame = requestAnimationFrame(() => {
       window.gtag?.('event', 'page_view', {
-        page_location: pageLocation(pathname),
+        page_location: pageLocation(path),
         page_title: document.title,
       });
     });
     return () => cancelAnimationFrame(frame);
-  }, [pathname]);
+  }, [path]);
 
   /*
     Contact-intent tracking, by delegation from the document.
@@ -96,7 +103,7 @@ const Analytics = () => {
         traffic_source is until registered. The effect was that "which page
         produced this phone call" could not be answered at all.
       */
-      const where = { page_location: pageLocation(pathname) };
+      const where = { page_location: pageLocation(path) };
 
       if (href.startsWith('tel:')) track(EVENTS.call, where);
       else if (href.startsWith('sms:')) track(EVENTS.text, where);
@@ -107,7 +114,7 @@ const Analytics = () => {
 
     document.addEventListener('click', onClick);
     return () => document.removeEventListener('click', onClick);
-  }, [pathname]);
+  }, [path]);
 
   return (
     <Head>

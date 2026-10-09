@@ -41,6 +41,7 @@ import { comparableAsking, toMiles } from '@/lib/valuation';
 import { useListingValuation } from '@/hooks/useListingValuation';
 import CompsScatter from '@/components/listing/CompsScatter';
 import { VALUATION_ANCHOR } from '@/components/listing/ValuationSummary';
+import { listingPath } from '@/lib/listingUrl';
 
 /** One decimal, and never "0.0 miles" for something across the street. */
 const formatDistance = (km: number | null): string | null => {
@@ -243,7 +244,10 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
                         one. A comp a reader cannot go and look at is an
                         assertion rather than evidence. */}
                     <Link
-                      to={`/search/${comp.mls_number}`}
+                      // A comp row carries no state of its own. It does not
+                      // need one: every comp query is filtered to the
+                      // subject's state, so this listing's state is the comp's.
+                      to={listingPath({ ...comp, state: listing.state })}
                       className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
                     >
                       {comp.address ?? `MLS ${comp.mls_number}`}

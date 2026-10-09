@@ -36,10 +36,13 @@ import {
  *    listings in the HTML. Nothing crawls this page, and the feed changes hourly
  *    — a snapshot would be stale before it deployed.
  *
- * 3. It is reached through a rewrite. vercel.json has no SPA fallback on
- *    purpose, so unknown paths 404 rather than soft-404. /search/:mls cannot be
- *    prerendered, so it gets one narrowly-scoped rewrite — scoped to /search
- *    alone, which is why it cannot bring the sitewide soft-404 problem back.
+ * 3. A listing is reached through a rewrite. vercel.json has no SPA fallback
+ *    on purpose, so unknown paths 404 rather than soft-404. /search/:listing
+ *    cannot be prerendered per listing, so it gets one narrowly-scoped rewrite
+ *    — scoped to /search alone, which is why it cannot bring the sitewide
+ *    soft-404 problem back. That rewrite serves the LISTING page's own
+ *    prerendered loading state (/search/listing), not this page's document:
+ *    serving this one is what made every listing flash the search page first.
  *
  * The filters live in the query string rather than in component state, because
  * `?town=Needham&max=900000` is a link that can be sent to a client. A search

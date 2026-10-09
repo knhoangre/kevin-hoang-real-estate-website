@@ -191,20 +191,32 @@ export const routes: RouteRecord[] = [
       // on the site serving syndicated MLS data rather than first-party
       // content: MLS PIN's rules require an IDX display be non-indexable, and
       // the SEO case agrees — it is the same data thousands of other agent
-      // sites publish. /search/:mls additionally needs the one narrowly-scoped
-      // rewrite in vercel.json, because an MLS number cannot be prerendered.
+      // sites publish. /search/:listing additionally needs the one
+      // narrowly-scoped rewrite in vercel.json, because an MLS number cannot be
+      // prerendered.
       page('search', () => import('./pages/Search'), 'src/pages/Search.tsx'),
       {
-        path: 'search/:mls',
+        // The segment is "<address words>-<MLS number>", or the number alone
+        // for a link sent before the address was added. src/lib/listingUrl.ts.
+        path: 'search/:listing',
         lazy: async () => ({ Component: (await import('./pages/SearchListing')).default }),
         entry: 'src/pages/SearchListing.tsx',
-        // Deliberately no getStaticPaths: there are 22,000 active listings and
-        // the set changes hourly. The shell prerenders; the listing is fetched.
+        // ONE path, and it is not a listing. There are 22,000 active listings
+        // and the set changes hourly, so none of them is prerendered — but the
+        // page's LOADING state is, as /search/listing, and that document is
+        // what the rewrite in vercel.json serves for every listing URL. The
+        // browser hydrates it as the same component in the same state, then
+        // fetches the listing.
         //
-        // This is the one route that depends on the single rewrite in
-        // vercel.json. That file takes no `comment` keys — Vercel validates it
-        // against a schema that rejects unknown properties — so the reasoning
-        // lives in CLAUDE.md under "Routing / 404 model".
+        // The rewrite used to serve /search's own document here. That is a
+        // different page: hydration failed on every listing opened (React #418
+        // and #423), the HTML was thrown away, and the search page flashed up
+        // before the home.
+        //
+        // vercel.json takes no `comment` keys — Vercel validates it against a
+        // schema that rejects unknown properties — so the reasoning lives in
+        // CLAUDE.md under "Routing / 404 model".
+        getStaticPaths: () => ['/search/listing'],
       },
 
       // --- Legal ----------------------------------------------------------
@@ -237,9 +249,11 @@ export const routes: RouteRecord[] = [
       privatePage('events', 'Event Sign In', () => import('./pages/Events'), 'src/pages/Events.tsx'),
       // --- Rental applications ---------------------------------------------
       // /apply/:token cannot be prerendered — tokens are created at runtime —
-      // so like /search/:mls it has no getStaticPaths and depends on the second
-      // scoped rewrite in vercel.json. The /apply shell is what that rewrite
-      // serves. Both are noindex: an application form must never be indexed.
+      // so it has no getStaticPaths and depends on the second scoped rewrite in
+      // vercel.json. The /apply shell is what that rewrite serves, and it is
+      // the same component with the same first render, which is why hydrating
+      // it for a token works. Both are noindex: an application form must never
+      // be indexed.
       privatePage('apply', 'Rental Application', () => import('./pages/RentalApply'), 'src/pages/RentalApply.tsx'),
       {
         path: 'apply/:token',

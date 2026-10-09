@@ -14,6 +14,7 @@
  * Safe un-configured, like <Analytics> and submit-indexnow.mjs: with no
  * SITE.ga4Id there is no gtag on the page, and every call here is a no-op.
  */
+import { mlsFromListingParam } from '@/lib/listingUrl';
 
 /** Where a session came from, as far as the referrer can tell us. */
 export type TrafficSource =
@@ -114,8 +115,27 @@ export const classifyReferrer = (referrer: string, currentHost: string): Traffic
  * `window.location.href`: GA4's path dimension strips the query string but
  * `page_location` retains it, and /auth/callback carries the PKCE `code` there.
  */
-export const analyticsPath = (pathname: string): string =>
-  pathname.startsWith('/apply/') ? '/apply/:token' : pathname;
+export const analyticsPath = (pathname: string): string => {
+  if (pathname.startsWith('/apply/')) return '/apply/:token';
+
+  /*
+   * A listing is reported under its MLS number, whatever words are in front of
+   * it. The same home is reachable as /search/73568135 (every link sent before
+   * 2026-10-09), as the full /search/<address>-73568135, and as shorter forms
+   * built from a snapshot — three rows for one listing unless they are folded
+   * here. The number is the key; the address is in the page TITLE, which GA4
+   * reports beside it.
+   *
+   * It is also what stops a visit being counted twice: the listing page
+   * rewrites an old link to the full form once the listing has loaded, and
+   * <Analytics> sends a page_view per distinct value of THIS, not per pathname.
+   */
+  if (pathname.startsWith('/search/')) {
+    const mls = mlsFromListingParam(pathname.slice('/search/'.length).replace(/\/$/, ''));
+    if (mls) return `/search/${mls}`;
+  }
+  return pathname;
+};
 
 /**
  * Routes that are us, not an audience.

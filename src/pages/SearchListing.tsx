@@ -1,5 +1,5 @@
 import { Children, isValidElement, useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Bed, Bath, Square, Calendar, Home, Phone, Printer, ArrowLeft,
   Car, Trees, Layers, Receipt, Waves, Building2, DoorOpen,
@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { recordView } from '@/lib/favorites';
 import { formatPrice, formatBaths, formatSoldMonth } from '@/lib/listings';
 import { SITE, telHref, smsHrefWith } from '@/lib/siteConfig';
+import { listingPath, mlsFromListingParam } from '@/lib/listingUrl';
 import {
   listingByMls,
   officeName,
@@ -35,7 +36,8 @@ import {
 } from '@/lib/idxSearch';
 
 /**
- * One active listing, at /search/<mls>.
+ * One active listing, at /search/<address>-<mls> — see src/lib/listingUrl.ts for
+ * the shape of that address, and for why /search/<mls> alone still works.
  *
  * THIS IS THE POINT OF THE WHOLE FEATURE. The ask was to send a client a link
  * to a home instead of a Zillow page, and to print a sheet instead of the MLS
@@ -46,10 +48,22 @@ import {
  * while iMessage, Facebook, Slack and WhatsApp unfurlers ignore robots
  * directives entirely. A texted link still shows a photo card.
  *
- * Not prerendered, so <Seo> here writes its tags after hydration. That is
- * acceptable precisely because the audience is unfurlers and humans following a
- * link rather than crawlers building an index — and the fallback while the
+ * No listing is prerendered, so <Seo> here writes its tags after hydration. That
+ * is acceptable precisely because the audience is unfurlers and humans following
+ * a link rather than crawlers building an index — and the fallback while the
  * fetch is in flight is an honest generic title, never a wrong specific one.
+ *
+ * THE LOADING STATE IS PRERENDERED, AND THE FIRST RENDER MUST BE EXACTLY IT.
+ * Every listing URL is served one document, /search/listing — this component as
+ * the generator renders it, which is its loading skeleton. The browser then
+ * hydrates that document for whichever listing the URL names, so the first
+ * client render has to produce the same markup: `state` starts as 'loading'
+ * whatever the URL says, and nothing above the skeleton may print the MLS
+ * number, the address, or anything else read from the URL. Until 2026-10-09 the
+ * rewrite served the SEARCH page's document here instead; React could not
+ * hydrate one page as another, threw six errors (#418 x5, #423) on every
+ * listing ever opened, discarded the HTML and started again — which a visitor
+ * saw as the search page flashing up before the home they had been sent.
  */
 
 /**
@@ -122,7 +136,12 @@ const SpecGroup = ({ title, children }: { title: string; children: React.ReactNo
 };
 
 const SearchListing = () => {
-  const { mls } = useParams<{ mls: string }>();
+  const { listing: segment } = useParams<{ listing: string }>();
+  // The number at the end of the segment, or the whole of it for a link from
+  // before the address was added. Null when the URL names no listing at all.
+  const mls = mlsFromListingParam(segment);
+  const location = useLocation();
+  const navigate = useNavigate();
   const [listing, setListing] = useState<IdxListing | null>(null);
   const [office, setOffice] = useState<string | null>(null);
   /*
@@ -135,7 +154,12 @@ const SearchListing = () => {
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
 
   useEffect(() => {
-    if (!mls) return;
+    if (!mls) {
+      // In an effect and not as the initial state: the first render has to be
+      // the loading skeleton, because that is the document being hydrated.
+      setState('missing');
+      return;
+    }
     let cancelled = false;
     setState('loading');
     setHistory([]);
@@ -169,6 +193,35 @@ const SearchListing = () => {
       cancelled = true;
     };
   }, [mls]);
+
+  /*
+   * Put the address in the address bar.
+   *
+   * Somebody who opens /search/73568135 — every link sent before 2026-10-09 —
+   * is shown the listing, and then the URL quietly becomes the full form, so
+   * what they copy or forward from here says which house it is. `replace`, not
+   * a push: there is one page here, and Back must not have to be pressed twice
+   * to leave it. The query string rides along, since an emailed link carries
+   * its utm_source there.
+   *
+   * It also tidies a link whose words are out of date or incomplete (a saved
+   * home's snapshot has no ZIP). Only the number was ever read, so nothing was
+   * wrong with such a link — this is just the page writing its own name out.
+   *
+   * Waits for the listing THIS url names: moving between two listings leaves
+   * the previous one in state for a moment, and its address must not be
+   * written over the new one's number.
+   */
+  useEffect(() => {
+    if (state !== 'ready' || !listing || listing.mls_number !== mls) return;
+    const canonical = listingPath(listing);
+    if (location.pathname !== canonical) {
+      navigate(
+        { pathname: canonical, search: location.search, hash: location.hash },
+        { replace: true }
+      );
+    }
+  }, [state, listing, mls, location.pathname, location.search, location.hash, navigate]);
 
   /*
    * Note the visit, for a signed-in visitor. It is what "Recommended for you"
@@ -247,17 +300,33 @@ const SearchListing = () => {
         {state === 'missing' && (
           <div className="py-20 text-center">
             <h1 className="font-display text-3xl font-semibold text-ink">
-              This listing is no longer available
+              {mls ? 'This listing is no longer available' : 'This link is missing its listing'}
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-gray-600">
-              {/*
-                The honest reading of an MLS number that is not in the feed: it
-                sold, went under agreement, or was withdrawn. Saying "not found"
-                would suggest a broken link, and the listing was real.
-              */}
-              MLS {mls} is not in the current feed, which usually means it has
-              sold, gone under agreement, or been withdrawn since the link was
-              shared.
+              {mls ? (
+                /*
+                  The honest reading of an MLS number that is not in the feed:
+                  it sold, went under agreement, or was withdrawn. Saying "not
+                  found" would suggest a broken link, and the listing was real.
+                */
+                <>
+                  MLS {mls} is not in the current feed, which usually means it has
+                  sold, gone under agreement, or been withdrawn since the link was
+                  shared.
+                </>
+              ) : (
+                /*
+                  A different thing, said differently. There is no number here
+                  to have sold: the link was cut short, and telling somebody
+                  the house is gone would send them away from one that is
+                  still for sale.
+                */
+                <>
+                  The end of the link, where the listing&rsquo;s number goes, is not
+                  there. It was probably cut short when it was copied. Search for the
+                  address, or ask for the link again.
+                </>
+              )}
             </p>
             <Link
               to="/search"

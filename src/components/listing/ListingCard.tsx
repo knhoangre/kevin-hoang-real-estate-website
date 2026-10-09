@@ -11,6 +11,7 @@ import {
   isAvailable,
   type IdxListing,
 } from '@/lib/idxSearch';
+import { listingPath } from '@/lib/listingUrl';
 
 /**
  * One listing, as a card.
@@ -41,7 +42,7 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
     */
     <div className="group relative h-full">
     <Link
-      to={`/search/${listing.mls_number}`}
+      to={listingPath(listing)}
       className="block h-full overflow-hidden rounded-xl border border-gray-200 transition-colors hover:border-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">

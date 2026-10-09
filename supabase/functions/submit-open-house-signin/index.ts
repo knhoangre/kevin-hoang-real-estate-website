@@ -889,7 +889,7 @@ serve(async (req) => {
       const safeRealtorName = escapeHtml(realtorName || 'Not provided');
       const safeRealtorCompany = escapeHtml(realtorCompany || 'Not provided');
       const listingLine = listing
-        ? `<div style="margin-top:8px;font-size:14px;"><a href="${escapeHtml(listingUrl(listing.mls_number))}" style="color:#1a1a1a;">MLS ${escapeHtml(listing.mls_number)} — view the listing</a></div>`
+        ? `<div style="margin-top:8px;font-size:14px;"><a href="${escapeHtml(listingUrl(listing))}" style="color:#1a1a1a;">MLS ${escapeHtml(listing.mls_number)} — view the listing</a></div>`
         : '';
       const locationLabelField = isEvent
         ? `<div class="field"><span class="label">Event</span><div class="value">${escapeHtml(eventName)}</div></div>`

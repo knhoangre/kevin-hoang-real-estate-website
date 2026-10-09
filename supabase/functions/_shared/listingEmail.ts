@@ -16,11 +16,14 @@
  * the attribution wherever its listing content is displayed, and an email that
  * shows the photo and the price is a display.
  *
- * Three small formatters below are DELIBERATE MIRRORS of the app's own
+ * Four small pieces below are DELIBERATE MIRRORS of the app's own
  * (`formatPrice`/`formatBaths` in src/lib/listings.ts, `photoUrl` and the status
- * labels in src/lib/idxSearch.ts). An edge function cannot import from the app
- * bundle, and the alternative — the email and the page describing one house two
- * ways — is the failure this comment exists to prevent. Change one, change both.
+ * labels in src/lib/idxSearch.ts, `listingSlug` in src/lib/listingUrl.ts). An
+ * edge function cannot import from the app bundle, and the alternative — the
+ * email and the page describing one house two ways — is the failure this
+ * comment exists to prevent. Change one, change both. For `listingSlug` that is
+ * checked rather than trusted: `node scripts/listing-url-check.ts` runs both
+ * copies over the same addresses.
  */
 import type { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
@@ -43,15 +46,68 @@ export const escapeHtml = (text: unknown): string =>
 export const isMlsNumber = (value: unknown): value is string =>
   typeof value === 'string' && /^\d{5,12}$/.test(value);
 
+/** What a link to a listing is built from. Only `mls_number` is required. */
+export interface ListingRef {
+  mls_number: string;
+  address?: string | null;
+  town?: string | null;
+  state?: string | null;
+  zip?: string | null;
+}
+
+/*
+ * MIRROR of `cased`, `words` and `listingSlug` in src/lib/listingUrl.ts, where
+ * the reasoning for each line is written down. In short: the address is in the
+ * link so the person reading it knows which house it is; the MLS number is at
+ * the end and is the only part the page reads, so a link built here from a
+ * stop's snapshot opens the same page as one built from the live feed.
+ */
+const cased = (word: string): string => {
+  if (/\d/.test(word)) return word.toUpperCase();
+  if (word === word.toUpperCase() || word === word.toLowerCase()) {
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  }
+  return word;
+};
+
+const words = (text: string): string[] =>
+  text
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’.]/g, '')
+    .replace(/&/g, ' and ')
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean);
+
+/** "170-Gore-St-Unit-417-Cambridge-MA-02141-73568135" */
+export const listingSlug = (listing: ListingRef): string => {
+  const state = (listing.state ?? '').trim();
+  const zip = /^\d{5}/.exec((listing.zip ?? '').trim())?.[0] ?? '';
+
+  const parts = [
+    ...words(listing.address ?? '').map(cased),
+    ...words(listing.town ?? '').map(cased),
+    ...words(state).map((w) => (w.length === 2 ? w.toUpperCase() : cased(w))),
+    zip,
+    listing.mls_number,
+  ].filter(Boolean);
+
+  return parts.join('-');
+};
+
 /**
- * The listing's page on this site.
+ * The listing's page on this site, with its address in the link.
  *
  * `source` becomes utm_source so GA4 can say how many guests came back through
  * the email — which is the whole question this feature was built to answer.
  * It is one of our own fixed strings, never anything from a request.
+ *
+ * The slug is letters, digits and hyphens by construction, so it needs no
+ * encoding — and the address in it comes from the database, like everything
+ * else in these emails.
  */
-export const listingUrl = (mls: string, source?: string): string =>
-  `${SITE_ORIGIN}/search/${encodeURIComponent(mls)}${
+export const listingUrl = (listing: ListingRef, source?: string): string =>
+  `${SITE_ORIGIN}/search/${listingSlug(listing)}${
     source ? `?utm_source=${encodeURIComponent(source)}&utm_medium=email` : ''
   }`;
 
@@ -181,7 +237,7 @@ export const listingCardHtml = (
   l: EmailListing,
   opts: { source?: string; cta?: string } = {}
 ): string => {
-  const url = escapeHtml(listingUrl(l.mls_number, opts.source));
+  const url = escapeHtml(listingUrl(l, opts.source));
   const hasPhoto = (l.photo_count ?? 0) > 0;
   const status = statusLabel(l.status);
   const cta = escapeHtml(opts.cta ?? 'See photos, price history and details');

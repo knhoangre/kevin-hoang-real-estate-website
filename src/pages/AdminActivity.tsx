@@ -29,6 +29,7 @@ import {
   type FavoriteRow,
   type ViewRow,
 } from '@/lib/favorites';
+import { listingPath } from '@/lib/listingUrl';
 
 const when = (iso: string | null) =>
   iso
@@ -44,9 +45,13 @@ const where = (row: { address: string | null; town: string | null; mls_number: s
   [row.address, row.town].filter(Boolean).join(', ') || `MLS ${row.mls_number}`;
 
 /** The home's page on this site. A new tab, so the list is still there afterwards. */
-const ListingLink = ({ mls }: { mls: string }) => (
+const ListingLink = ({
+  row,
+}: {
+  row: { mls_number: string; address: string | null; town: string | null };
+}) => (
   <a
-    href={`/search/${mls}`}
+    href={listingPath(row)}
     target="_blank"
     rel="noopener noreferrer"
     className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline"
@@ -180,7 +185,7 @@ export default function AdminActivity() {
                           <td className="numeral px-6 py-4 text-gray-700">{price(row)}</td>
                           <td className="numeral px-6 py-4 text-gray-700">{when(row.created_at)}</td>
                           <td className="px-6 py-4 text-right">
-                            <ListingLink mls={row.mls_number} />
+                            <ListingLink row={row} />
                           </td>
                         </tr>
                       ))}
@@ -217,7 +222,7 @@ export default function AdminActivity() {
                           <td className="numeral px-6 py-4 text-gray-700">{row.view_count}</td>
                           <td className="numeral px-6 py-4 text-gray-700">{when(row.last_viewed_at)}</td>
                           <td className="px-6 py-4 text-right">
-                            <ListingLink mls={row.mls_number} />
+                            <ListingLink row={row} />
                           </td>
                         </tr>
                       ))}

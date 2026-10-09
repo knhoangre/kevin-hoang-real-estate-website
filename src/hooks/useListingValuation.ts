@@ -17,8 +17,9 @@ import { supports, valuate, type Valuation } from '@/lib/valuation';
  * nothing either way. `comparableCandidates` already swallows its own errors:
  * an estimate is context, and it must never take the listing down with it.
  *
- * Never runs during static generation: /search/:mls is not prerendered with
- * content, and react-query does not execute a queryFn during a server render.
+ * Never runs during static generation: the listing page is prerendered only in
+ * its loading state, with no listing to value, and react-query does not execute
+ * a queryFn during a server render.
  */
 export const useListingValuation = (listing: IdxListing | null) =>
   useQuery<Valuation | null>({
