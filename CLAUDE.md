@@ -407,6 +407,17 @@ page asks for — sale, rent and per-town — and the same search reads 26 buffe
 for NULLS FIRST and none of those indexes apply. Rentals have their own index
 because every rent sorts below every house, so a shared one walked 17,000 sale
 rows to find 24 rentals.
+- **Pressing Next lands at the top of the results, and two things used to stop
+  it.** [ScrollToTop](src/components/ScrollToTop.tsx) has the navigation type in
+  its effect's dependencies, and that changes on its own: a visit starts as POP
+  and the first query-string change makes it PUSH, so the effect re-ran and sent
+  the reader to the top of the document — once per visit, on the first press
+  only. It now does nothing unless the path itself moved. Behind that, the
+  page's own scroll was `behavior: 'smooth'`, and a page change swaps 24 cards
+  for a skeleton half the height and back within a quarter of a second: the
+  scroll started for the results and ended beside the Next button, on every
+  press. It goes in one step now. Both were found by logging every scroll call
+  in a browser, not by reading — neither looks wrong on the page.
 - **The cards and the total are two requests.** `count: 'exact'` makes PostgREST
   count in the same statement, so the 24 cards used to wait on a count of every
   match. `searchListings` returns rows only and `countListings` the total; the

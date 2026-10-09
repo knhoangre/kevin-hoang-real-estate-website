@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 
 /**
@@ -21,12 +21,28 @@ import { useLocation, useNavigationType } from 'react-router-dom';
  *
  * Do not reintroduce per-page `useEffect(() => window.scrollTo(0, 0))`. Those
  * fire on POP as well and defeat this.
+ *
+ * ONLY WHEN THE PAGE ACTUALLY CHANGED. The navigation type is in the effect's
+ * dependencies, because the effect reads it — and it changes on its own. Every
+ * visit starts as POP; the first thing done on the page that only alters the
+ * query string (pressing Next on /search, applying a filter) turns it into
+ * PUSH. The effect re-ran for that, saw "not POP", and sent the reader to the
+ * top of the document — once per visit, on the first press only, which is why
+ * it looked like nothing in particular. /search scrolls to the top of its own
+ * results on a page change, and this overrode it. So the last path scrolled
+ * for is remembered, and a run where it has not moved does nothing.
  */
 const ScrollToTop = () => {
   const { pathname, hash } = useLocation();
   const navigationType = useNavigationType();
+  const lastPlace = useRef(`${pathname}${hash}`);
 
   useEffect(() => {
+    const place = `${pathname}${hash}`;
+    // Same page: only the query string or the navigation type moved.
+    if (place === lastPlace.current) return;
+    lastPlace.current = place;
+
     // Back/Forward: the browser restores the saved position itself.
     if (navigationType === 'POP') return;
     // Anchor links own their own scroll target.

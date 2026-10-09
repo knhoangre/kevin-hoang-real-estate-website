@@ -188,7 +188,15 @@ const Search = () => {
     const previous = lastPageRef.current;
     lastPageRef.current = filters.page;
     if (previous !== null && previous !== filters.page) {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // At once, not `behavior: 'smooth'`. A page change swaps 24 cards for a
+      // skeleton half the height and back again inside a quarter of a second,
+      // and a scroll still in flight through that does not survive it: the
+      // document shrinks under it, the position is clamped, and when the cards
+      // return the browser puts the reader back beside the Next button they
+      // pressed. Measured — it started for the results and ended where it
+      // began, on every press. Arriving in one step lands above the part of
+      // the page that moves.
+      resultsRef.current?.scrollIntoView({ block: 'start' });
     }
   }, [filters.page, hydrated]);
 
