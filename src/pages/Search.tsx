@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useHydrated } from '@/hooks/useHydrated';
 import { Search as SearchIcon, X, MapPin, RefreshCw } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import PageShell, { ShellSection } from '@/components/PageShell';
@@ -67,9 +68,30 @@ const Skeleton = () => (
 const inputClass =
   'w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-ink focus:border-champagne-ink focus:outline-none focus:ring-1 focus:ring-champagne-ink';
 
+/** What the generator rendered /search with: no query string at all. */
+const NO_PARAMS = new URLSearchParams();
+
 const Search = () => {
   const [params, setParams] = useSearchParams();
-  const filters = useMemo(() => filtersFromParams(params), [params]);
+  /*
+   * THE FIRST RENDER IGNORES THE QUERY STRING, on purpose.
+   *
+   * This page is prerendered once, as /search with no filters, and that
+   * document is what the browser hydrates for /search?town=Abington too. Read
+   * straight from the URL, the first render had a town selected, a chip for it
+   * and a different tab lit — none of which is in the HTML — so React threw
+   * (#418 for each, then #423), discarded the document and drew the page again.
+   * A filtered search is exactly the link that gets sent to a client.
+   *
+   * So the filters are the defaults until the page has hydrated, and the URL's
+   * from the next render, a frame later. Nothing is fetched for the defaults in
+   * between: see the `hydrated` guards below.
+   */
+  const hydrated = useHydrated();
+  const filters = useMemo(
+    () => filtersFromParams(hydrated ? params : NO_PARAMS),
+    [params, hydrated]
+  );
 
   // Mirrors the URL. Editing a field should not re-run the query on every
   // keystroke — the form commits on submit, and the URL is the committed state.
@@ -108,6 +130,11 @@ const Search = () => {
    * back to whether this page came back full.
    */
   useEffect(() => {
+    // Not for the placeholder filters of the hydrating render: that would be a
+    // search and a count of 15,000 rows for a question nobody asked, thrown
+    // away a moment later when the URL's own filters arrive.
+    if (!hydrated) return undefined;
+
     let cancelled = false;
     setListings(null);
     setTotal(null);
@@ -136,7 +163,7 @@ const Search = () => {
     return () => {
       cancelled = true;
     };
-  }, [filters, attempt]);
+  }, [filters, attempt, hydrated]);
 
   const commit = (next: SearchFilters) => setParams(paramsFromFilters(next));
 
@@ -152,13 +179,18 @@ const Search = () => {
    * while someone is still adjusting the form.
    */
   const resultsRef = useRef<HTMLParagraphElement>(null);
-  const lastPageRef = useRef(filters.page);
+  // Null until the URL's own page number is known. Seeded from the first
+  // render it would hold the placeholder's page 1, and opening a link to
+  // ?page=3 would then count as "the page changed" and scroll on arrival.
+  const lastPageRef = useRef<number | null>(null);
   useEffect(() => {
-    if (lastPageRef.current !== filters.page) {
-      lastPageRef.current = filters.page;
+    if (!hydrated) return;
+    const previous = lastPageRef.current;
+    lastPageRef.current = filters.page;
+    if (previous !== null && previous !== filters.page) {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [filters.page]);
+  }, [filters.page, hydrated]);
 
   /*
    * One chip per active criterion, each knowing how to clear only itself.

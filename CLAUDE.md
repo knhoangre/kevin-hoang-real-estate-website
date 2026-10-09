@@ -133,6 +133,17 @@ use `getStaticPaths` to expand into one page per post/town, sourced from
   homepage's markup at those URLs, which hydrates against the wrong tree.
 - **No nested `<a>` elements.** The parser auto-closes the outer one, so server
   markup can never match the client tree and hydration fails for the whole page.
+- **The first render may not read the query string.** A page is prerendered
+  once, with none, and that document is what the browser hydrates for
+  `/search?town=Abington` too. `Search` built its filters straight from the URL,
+  so a filtered link rendered a selected town, a chip and a different tab that
+  are not in the HTML: fifteen thrown errors and a redrawn page on exactly the
+  links that get sent to clients (and that the open-house email links to),
+  until 2026-10-09. [useHydrated()](src/hooks/useHydrated.ts) is false for the
+  hydrating render and true after; `Search` uses the default filters until it
+  flips, and fetches nothing for them — its request effect and its
+  scroll-on-page-change effect both wait on the flag, or a link to `?page=3`
+  would search twice and scroll on arrival.
 
 ### Routing / 404 model ([vercel.json](vercel.json))
 
