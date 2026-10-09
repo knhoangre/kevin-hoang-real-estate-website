@@ -11,7 +11,8 @@
  *            button calls: Kevin copies the text, or opens it in Messages, and
  *            sends it from his own phone. Email is never required.
  *
- *   send     Emails the schedule to the tour's client, with a calendar file
+ *   send     Emails the schedule to everyone on the tour who has an address —
+ *            one message, all of them on the To line — with a calendar file
  *            attached and Kevin on cc, and stamps `sent_at`.
  *
  * It takes an ID rather than an address or a body for the same reason the
@@ -23,6 +24,11 @@
  * stops, in the same function call. Two renderers — one here, one in the browser
  * for the text — is how a client ends up with an email that says 10:00 and a
  * text that says 10:30.
+ *
+ * A TOUR IS A LIST OF PEOPLE (`showing_tours.clients`), often a couple. The
+ * greeting names each of them, and they share one email rather than getting a
+ * copy apiece: two people going to the same houses on the same morning should
+ * be able to see that the other has it, and reply-all to move a time.
  *
  * LISTINGS ARE RE-READ FROM THE FEED AT SEND TIME, so a price that was cut
  * between booking the showing and sending the schedule is the price in the
@@ -103,6 +109,37 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 /* -------------------------------------------------------------------------- */
+/* The people                                                                  */
+/* -------------------------------------------------------------------------- */
+
+interface Person {
+  name: string;
+  email: string | null;
+}
+
+/**
+ * `clients` is jsonb, so it arrives untyped. The trigger on showing_tours is
+ * what guarantees its shape; this only refuses to throw on a row that somehow
+ * does not have it, since the result of that would be an unsendable tour.
+ */
+const peopleOf = (raw: unknown): Person[] =>
+  (Array.isArray(raw) ? raw : []).flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') return [];
+    const { name, email } = entry as Record<string, unknown>;
+    if (typeof name !== 'string' || !name.trim()) return [];
+    return [
+      { name: name.trim(), email: typeof email === 'string' && email.trim() ? email.trim() : null },
+    ];
+  });
+
+/** "Tammy", "Tammy and Matthew", "Tammy, Matthew and Sam" — first names, as spoken. */
+const greetingNames = (people: Person[]): string => {
+  const names = people.map((p) => p.name.split(/\s+/)[0]);
+  if (names.length <= 1) return names[0] ?? 'there';
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+};
+
+/* -------------------------------------------------------------------------- */
 /* The stops, resolved                                                         */
 /* -------------------------------------------------------------------------- */
 
@@ -170,8 +207,8 @@ const routeUrl = (stops: Stop[]): string | null => {
  * links are not tappable has lost the point of sending it. No tracking
  * parameters — a text is read on a phone and every character is visible.
  */
-const renderText = (firstName: string, dateLabel: string, note: string | null, stops: Stop[]) => {
-  const lines: string[] = [`Hi ${firstName}, here is our schedule for ${dateLabel}:`];
+const renderText = (greeting: string, dateLabel: string, note: string | null, stops: Stop[]) => {
+  const lines: string[] = [`Hi ${greeting}, here is our schedule for ${dateLabel}:`];
   if (note) lines.push('', note);
 
   for (const stop of stops) {
@@ -196,7 +233,7 @@ const renderText = (firstName: string, dateLabel: string, note: string | null, s
 const P =
   "font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;";
 
-const renderHtml = (firstName: string, dateLabel: string, note: string | null, stops: Stop[]) => {
+const renderHtml = (greeting: string, dateLabel: string, note: string | null, stops: Stop[]) => {
   const route = routeUrl(stops);
 
   const stopRows = stops
@@ -252,7 +289,7 @@ const renderHtml = (firstName: string, dateLabel: string, note: string | null, s
               ${escapeHtml(dateLabel)}
             </td></tr>
             <tr><td style="padding:0 0 22px 0;${P}">
-              Hi ${escapeHtml(firstName)},<br /><br />
+              Hi ${escapeHtml(greeting)},<br /><br />
               Here ${stops.length === 1 ? 'is the home' : `are the ${stops.length} homes`} we are seeing, in order. Each one links to its page on my site, with every photo, the price history and an estimate, so you can look before we go and again afterwards.
             </td></tr>
             ${note ? `<tr><td style="padding:0 0 22px 0;${P}">${escapeHtml(note)}</td></tr>` : ''}
@@ -424,7 +461,7 @@ serve(async (req) => {
 
     const { data: tour, error: tourError } = await admin
       .from('showing_tours')
-      .select('id, client_name, client_email, client_phone, tour_date, note')
+      .select('id, clients, tour_date, note')
       .eq('id', tourId)
       .maybeSingle();
     if (tourError) {
@@ -468,22 +505,27 @@ serve(async (req) => {
       });
     }
 
-    const firstName = String(tour.client_name).trim().split(/\s+/)[0];
+    const people = peopleOf(tour.clients);
+    const greeting = greetingNames(people);
     const dateLabel = longDate(tour.tour_date);
     const note = tour.note?.trim() || null;
     const subject = `Showing schedule for ${dateLabel}`;
-    const text = renderText(firstName, dateLabel, note, stops);
-    const html = renderHtml(firstName, dateLabel, note, stops);
+    const text = renderText(greeting, dateLabel, note, stops);
+    const html = renderHtml(greeting, dateLabel, note, stops);
 
     if (action === 'preview') {
       return json({ subject, text, html, stops: stops.length });
     }
 
     // ---- send -------------------------------------------------------------
-    const to = String(tour.client_email ?? '').trim();
-    if (!to) {
+    // Once each: a couple who share an address get one copy, not two.
+    const to = [...new Set(people.flatMap((p) => (p.email ? [p.email.toLowerCase()] : [])))];
+    if (to.length === 0) {
       return json(
-        { sent: false, error: 'This tour has no email address. Add one, or send it as a text.' },
+        {
+          sent: false,
+          error: 'Nobody on this tour has an email address. Add one, or send it as a text.',
+        },
         400
       );
     }
@@ -497,10 +539,10 @@ serve(async (req) => {
     const resend = new Resend(resendApiKey);
     const result = await resend.emails.send({
       from: 'Kevin Hoang <contact@kevinhoang.co>',
-      to: [to],
-      // Kevin gets the copy the client got, so "what did I send them" is
+      to,
+      // Kevin gets the copy the clients got, so "what did I send them" is
       // answered by his own inbox.
-      ...(to.toLowerCase() !== AGENT.email ? { cc: [AGENT.email] } : {}),
+      ...(to.includes(AGENT.email) ? {} : { cc: [AGENT.email] }),
       replyTo: AGENT.email,
       subject,
       html,

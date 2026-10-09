@@ -12,7 +12,7 @@
  * naming the wrong Saturday.
  */
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database, Json } from '@/integrations/supabase/types';
 
 type TourRow = Database['public']['Tables']['showing_tours']['Row'];
 type StopRow = Database['public']['Tables']['showing_tour_stops']['Row'];
@@ -39,11 +39,33 @@ export interface TourStop {
   listPrice: number | null;
 }
 
+/**
+ * One person on a tour. A tour is often a couple or a family, and each of them
+ * may be reachable a different way — one by text, one by email.
+ */
+export interface TourPerson {
+  /**
+   * Made up once by the browser and kept. It is how the database tells "this
+   * person's phone was corrected" from "this person was removed and somebody
+   * else added", which a position in a list cannot say.
+   */
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  /**
+   * The CRM contact this person was filed as. WRITTEN BY THE DATABASE: the
+   * trigger on showing_tours files anyone new and stamps this, and ignores
+   * whatever a client sends in its place. Null means not in the CRM — usually
+   * because there is no last name yet, or nothing to reach them by.
+   */
+  contactId: number | null;
+}
+
 export interface ShowingTour {
   id: string;
-  clientName: string;
-  clientEmail: string | null;
-  clientPhone: string | null;
+  /** Everyone on the tour, in the order they were entered. Never empty. */
+  people: TourPerson[];
   /** "YYYY-MM-DD". */
   tourDate: string;
   note: string | null;
@@ -68,11 +90,33 @@ const toStop = (row: StopRow): TourStop => ({
   listPrice: row.list_price,
 });
 
+const text = (value: unknown): string | null =>
+  typeof value === 'string' && value.trim() ? value.trim() : null;
+
+/**
+ * The `clients` column, read defensively. It is jsonb, so the generated type is
+ * `Json` and says nothing about its shape; the trigger is what guarantees one,
+ * and this is what refuses to crash the page if a row ever predates it.
+ */
+const toPeople = (raw: Json): TourPerson[] =>
+  (Array.isArray(raw) ? raw : []).flatMap((entry, i) => {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
+    const name = text(entry.name);
+    if (!name) return [];
+    return [
+      {
+        id: text(entry.id) ?? `row-${i}`,
+        name,
+        email: text(entry.email),
+        phone: text(entry.phone),
+        contactId: typeof entry.contactId === 'number' ? entry.contactId : null,
+      },
+    ];
+  });
+
 const toTour = (row: TourRow & { showing_tour_stops?: StopRow[] | null }): ShowingTour => ({
   id: row.id,
-  clientName: row.client_name,
-  clientEmail: row.client_email,
-  clientPhone: row.client_phone,
+  people: toPeople(row.clients),
   tourDate: row.tour_date,
   note: row.note,
   sentAt: row.sent_at,
@@ -82,52 +126,147 @@ const toTour = (row: TourRow & { showing_tour_stops?: StopRow[] | null }): Showi
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
 });
 
+/** A tour and its stops in one read — what every function returning a tour selects. */
+const TOUR_SELECT = '*, showing_tour_stops(*)';
+
 /** Every tour with its stops, latest date first. */
 export const listTours = async (): Promise<ShowingTour[]> => {
   const { data, error } = await supabase
     .from('showing_tours')
-    .select('*, showing_tour_stops(*)')
+    .select(TOUR_SELECT)
     .order('tour_date', { ascending: false })
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data ?? []).map(toTour);
 };
 
+/** A person as the form holds them: every field a string, so inputs stay controlled. */
+export interface PersonDraft {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  /**
+   * Known to be this CRM contact — because the database said so on the last
+   * save, or because the row was just filled from a CRM suggestion. Cleared the
+   * moment the row is edited, since it is then a claim nobody has checked. For
+   * display only: it is never sent.
+   */
+  contactId: number | null;
+}
+
 export interface TourDetails {
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
+  people: PersonDraft[];
   tourDate: string;
   note: string;
 }
 
+/** A row id. `randomUUID` needs a secure context, which a LAN dev URL is not. */
+const rowId = (): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+export const blankPerson = (): PersonDraft => ({
+  id: rowId(),
+  name: '',
+  email: '',
+  phone: '',
+  contactId: null,
+});
+
+export const isBlankPerson = (p: PersonDraft): boolean =>
+  !p.name.trim() && !p.email.trim() && !p.phone.trim();
+
+export const draftOf = (p: TourPerson): PersonDraft => ({
+  id: p.id,
+  name: p.name,
+  email: p.email ?? '',
+  phone: p.phone ?? '',
+  contactId: p.contactId,
+});
+
+/**
+ * Whether saving will file this person in the CRM. A deliberate mirror of the
+ * rule at the top of crm_upsert_contact(): a first AND a last name, and an email
+ * or a ten-digit phone. It decides only which line the form shows under a row —
+ * the database is what actually files, or does not.
+ */
+export const canFileInCrm = (p: Pick<PersonDraft, 'name' | 'email' | 'phone'>): boolean => {
+  if (p.name.trim().split(/\s+/).length < 2) return false;
+  const digits = p.phone.replace(/\D/g, '');
+  const phoneOk = digits.length === 10 || (digits.length === 11 && digits[0] === '1');
+  return phoneOk || p.email.trim().length > 0;
+};
+
+/** "Tammy Nguyen", "Tammy Nguyen & Matthew Nguyen", "A, B & C" — a tour's heading. */
+export const tourNames = (tour: Pick<ShowingTour, 'people'>): string => {
+  const names = tour.people.map((p) => p.name);
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+};
+
+/** Every address the schedule email goes to, once each. */
+export const tourEmails = (tour: Pick<ShowingTour, 'people'>): string[] => [
+  ...new Set(tour.people.flatMap((p) => (p.email ? [p.email] : []))),
+];
+
 /** Blank strings become NULL, so "no email" is one thing in the table and not two. */
 const blank = (value: string) => value.trim() || null;
 
+/**
+ * No `contactId`: that key is the database's to write. Blank rows are dropped
+ * here rather than sent — the trigger drops them too, but a spare empty line on
+ * the form is not something to make it decide about.
+ */
 const detailColumns = (d: TourDetails) => ({
-  client_name: d.clientName.trim(),
-  client_email: blank(d.clientEmail)?.toLowerCase() ?? null,
-  client_phone: blank(d.clientPhone),
+  clients: d.people
+    .filter((p) => !isBlankPerson(p))
+    .map((p) => ({
+      id: p.id,
+      name: p.name.trim(),
+      email: blank(p.email)?.toLowerCase() ?? null,
+      phone: blank(p.phone),
+    })),
   tour_date: d.tourDate,
   note: blank(d.note),
 });
+
+/**
+ * The database's own sentence, when it refused the people on a tour. The trigger
+ * raises check_violation with a message written for Kevin ("Everyone on a tour
+ * needs a name."), the same arrangement as guard_rental_document_count().
+ */
+export const tourSaveMessage = (error: unknown): string | null => {
+  const e = error as { code?: unknown; message?: unknown } | null;
+  return e?.code === '23514' && typeof e.message === 'string' ? e.message : null;
+};
 
 export const createTour = async (details: TourDetails): Promise<ShowingTour> => {
   const { data, error } = await supabase
     .from('showing_tours')
     .insert(detailColumns(details))
-    .select('*')
+    .select(TOUR_SELECT)
     .single();
   if (error) throw error;
   return toTour(data);
 };
 
-export const updateTour = async (id: string, details: TourDetails): Promise<void> => {
-  const { error } = await supabase
+/**
+ * Returns the row AS SAVED, which is not what was sent: names come back
+ * trimmed, emails lower-cased, and each person with the contactId the database
+ * filed them under. The form re-seeds from it, so the "In your CRM" line under a
+ * name is the database's answer and not the page's guess.
+ */
+export const updateTour = async (id: string, details: TourDetails): Promise<ShowingTour> => {
+  const { data, error } = await supabase
     .from('showing_tours')
     .update({ ...detailColumns(details), updated_at: new Date().toISOString() })
-    .eq('id', id);
+    .eq('id', id)
+    .select(TOUR_SELECT)
+    .single();
   if (error) throw error;
+  return toTour(data);
 };
 
 /** Removes the tour and, by cascade, its stops. */
@@ -195,8 +334,9 @@ export const isWorthFindingClient = (text: string): boolean => text.trim().lengt
  *
  * Every word typed has to match somewhere — first name, last name or email —
  * so "sar ch" finds Sarah Chen and not every Sarah. A suggestion, not a link:
- * the tour stores the name and contact details it was sent to, and typing
- * somebody who is not in the CRM is exactly as valid.
+ * the tour stores the name and contact details it was sent to. Somebody who is
+ * NOT in the CRM is typed in just the same, and the database files them there
+ * when the tour is saved — see the trigger in 20261008100000_showing_tour_people.
  */
 export const suggestClients = async (
   text: string,
@@ -280,7 +420,7 @@ export const previewSchedule = async (tourId: string): Promise<SchedulePreview> 
   return data as SchedulePreview;
 };
 
-/** Emails the schedule to the tour's client. Returns when it went. */
+/** Emails the schedule to everyone on the tour who has an address. Returns when it went. */
 export const sendSchedule = async (tourId: string): Promise<string> => {
   const { data, error } = await supabase.functions.invoke('showing-schedule', {
     body: { action: 'send', tourId },

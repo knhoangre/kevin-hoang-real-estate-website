@@ -375,11 +375,37 @@ export const smsHrefWith = (body: string) =>
  * A ten-digit number gets +1; anything else is passed through as digits, which
  * is the most a handler can be asked to make sense of.
  */
-export const smsHrefTo = (phone: string, body: string) => {
+const smsNumber = (phone: string) => {
   const digits = phone.replace(/\D/g, '');
-  const to =
-    digits.length === 10 ? `+1${digits}` : digits.length === 11 && digits[0] === '1' ? `+${digits}` : digits;
-  return `sms:${to}?&body=${encodeURIComponent(body)}`;
+  return digits.length === 10
+    ? `+1${digits}`
+    : digits.length === 11 && digits[0] === '1'
+      ? `+${digits}`
+      : digits;
+};
+
+export const smsHrefTo = (phone: string, body: string) =>
+  `sms:${smsNumber(phone)}?&body=${encodeURIComponent(body)}`;
+
+/**
+ * One text to SEVERAL people — a tour for a couple, opened as a single group
+ * message instead of the same schedule sent twice.
+ *
+ * There is no one form of this that every phone reads. RFC 5724 puts the
+ * recipients in a comma-separated list, which is what Android's handlers
+ * follow. Apple's Messages takes only the first number from that and wants
+ * `sms://open?addresses=` instead — a form Apple does not document, so it is
+ * the one link on the showings page that could stop working without anything
+ * here changing. That is why the per-person links and Copy stay beside it.
+ *
+ * `apple` is passed in rather than sniffed here: this module is imported during
+ * static generation, where there is no `navigator` to ask.
+ */
+export const smsHrefToGroup = (phones: string[], body: string, apple: boolean) => {
+  const list = phones.map(smsNumber).join(',');
+  return apple
+    ? `sms://open?addresses=${list}&body=${encodeURIComponent(body)}`
+    : `sms:${list}?&body=${encodeURIComponent(body)}`;
 };
 
 /**

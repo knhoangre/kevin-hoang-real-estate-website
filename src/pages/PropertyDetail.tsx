@@ -1,13 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Bed, Bath, Square, Phone, CalendarDays, MapPin } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
+import ListingGallery from '@/components/listing/ListingGallery';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import NotFound from '@/pages/NotFound';
 import { soldListings, listingBySlug, type SoldListing } from '@/data/soldListings';
@@ -173,40 +167,11 @@ const PropertyDetail = () => {
       }}
     >
       <ShellSection width="wide">
-        {listing.images.length > 0 && (
-          <Carousel className="mb-12" opts={{ loop: listing.images.length > 1 }}>
-            <CarouselContent>
-              {listing.images.map((src, i) => (
-                <CarouselItem key={src}>
-                  <div className="aspect-[16/10] overflow-hidden rounded-2xl bg-gray-100">
-                    <img
-                      src={src}
-                      /*
-                        Positional alt text, deliberately. Nobody recorded what
-                        each room is, and inventing "the sunlit primary
-                        bedroom" would be describing a photograph nobody looked
-                        at — the same fabrication rule that governs the copy.
-                        The address plus the position is true and is what a
-                        screen-reader user actually needs to navigate a gallery.
-                      */
-                      alt={`${listing.address} — photo ${i + 1} of ${listing.images.length}`}
-                      className="h-full w-full object-cover"
-                      loading={i === 0 ? undefined : 'lazy'}
-                      fetchPriority={i === 0 ? 'high' : undefined}
-                      decoding="async"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            {listing.images.length > 1 && (
-              <>
-                <CarouselPrevious className="left-3" />
-                <CarouselNext className="right-3" />
-              </>
-            )}
-          </Carousel>
-        )}
+        {/* The same gallery as /search/<mls>. Its alt text is positional
+            ("<address> — photo 3 of 42") and that is deliberate: nobody
+            recorded what each room is, and inventing "the sunlit primary
+            bedroom" would be describing a photograph nobody looked at. */}
+        <ListingGallery className="mb-12" photos={listing.images} address={listing.address} />
 
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)] lg:gap-16">
           <div>

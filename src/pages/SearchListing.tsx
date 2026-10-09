@@ -6,17 +6,11 @@ import {
   Flame, Snowflake, Droplets, Plug, Hammer, MapPin, Sofa, Sparkles,
   TrendingDown, TrendingUp, MessageSquare,
 } from 'lucide-react';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 import Seo from '@/components/Seo';
 import IdxDisclosure from '@/components/IdxDisclosure';
 import ListingPayment from '@/components/listing/ListingPayment';
 import ListingEnquiry from '@/components/listing/ListingEnquiry';
+import ListingGallery from '@/components/listing/ListingGallery';
 import SimilarListings from '@/components/listing/SimilarListings';
 import ListingValuation from '@/components/listing/ListingValuation';
 import ValuationSummary from '@/components/listing/ValuationSummary';
@@ -316,32 +310,17 @@ const SearchListing = () => {
               </p>
             </div>
 
-            {photos.length > 0 && (
-              <Carousel className="mb-10 print:hidden" opts={{ loop: photos.length > 1 }}>
-                <CarouselContent>
-                  {photos.map((src, i) => (
-                    <CarouselItem key={src}>
-                      <div className="aspect-[16/10] overflow-hidden rounded-2xl bg-gray-100">
-                        <img
-                          src={src}
-                          alt={`${listing.address ?? 'Listing'} — photo ${i + 1} of ${photos.length}`}
-                          className="h-full w-full object-cover"
-                          loading={i === 0 ? undefined : 'lazy'}
-                          fetchPriority={i === 0 ? 'high' : undefined}
-                          decoding="async"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                {photos.length > 1 && (
-                  <>
-                    <CarouselPrevious className="left-3" />
-                    <CarouselNext className="right-3" />
-                  </>
-                )}
-              </Carousel>
-            )}
+            {/* Keyed on the listing, so opening another home starts at its
+                first photo rather than wherever the last one was left. */}
+            <ListingGallery
+              key={listing.mls_number}
+              className="mb-10 print:hidden"
+              photos={photos}
+              address={listing.address ?? 'Listing'}
+              // The full-screen view covers the page, attribution included, and
+              // feed photos are an IDX display wherever they are shown.
+              credit={office ? `Listing courtesy of ${office}. Photos from MLS PIN.` : 'Photos from MLS PIN.'}
+            />
 
             {/* One photo only when printing — 40 pages of photos is not a sheet. */}
             {photos.length > 0 && (

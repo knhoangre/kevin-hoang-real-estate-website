@@ -27,7 +27,7 @@ Two things here are checks rather than generators, and both exit non-zero on fai
 node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, no network)
 node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
 node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
-sh supabase/tests/run.sh          # the IDX comp migrations AND the saved-homes RLS (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS AND the people on a showing tour (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -483,6 +483,27 @@ rows to find 24 rentals.
   - `formatPrice` / `formatBaths` and the rest live in
     [src/lib/listings.ts](src/lib/listings.ts). They were three private copies
     that had already drifted ("Price on Request" vs "Price on request").
+- **[ListingGallery](src/components/listing/ListingGallery.tsx) is the one
+  photo gallery**, on `/search/<mls>` and `/properties/<slug>` alike. The
+  picture is the control: the left and right edges (22% each) go back and
+  forward, the middle opens every photo full screen as a column to scroll
+  through, starting at the photo that was showing. Three things in it look like
+  details and are not:
+  - **The edge zones are children of Embla's viewport, after the track.** Embla
+    slides its viewport's FIRST child and listens for drags on the viewport
+    itself, so buttons there stay put, a swipe that starts on one still drags,
+    and Embla's own click suppression stops a swipe ending over an edge from
+    also skipping a photo. Laid over the carousel from outside, they swallow
+    every touch that starts on them.
+  - **A click steps from the photo the press STARTED on, not `scrollNext()`.** A
+    press mid-slide grabs the carousel and Embla settles on the nearer photo —
+    usually the one being left — so fast clicking moved one photo per two
+    clicks. Measured, not guessed: the check clicks three times 60ms apart.
+  - **The full-screen view positions itself with arithmetic, not
+    `scroll-margin-top`.** The frames are `overflow-hidden`, and Chromium 131
+    ignores scroll-margin on those, which opened the view with the photo's top
+    under the bar. Each frame is a fixed 4:3 with `object-contain`: the fixed
+    height is what makes "open at photo 30" land before the images have loaded.
 - **IDX and owned listings are opposite SEO cases.** The sold listings are
   first-party, unique and indexable — the strongest evidence on the site, which
   is why they also appear per-town via
@@ -1115,6 +1136,15 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   deployment mails a link to itself, and anything not matching `*.kevinhoang.co`
   falls back to the canonical site. `sent_at` is stamped after a successful send;
   a failed stamp is logged and still reports sent, because the mail did go.
+- **Several applicant emails means several invites, never one shared link.**
+  The invite form takes up to six addresses (2026-10-08) and creates one invite
+  and sends one email per address. An invite is claimed by the first account
+  that opens it and is `{valid:false}` to everyone after, and each roommate is
+  an applicant with their own income, references and signature — so a shared
+  link would be a link only one of them could use. They arrive together because
+  an application takes its property from its invite. The same address typed
+  twice is one link; on a partial failure the form keeps only the addresses
+  that got none, so retrying does not invite the others twice.
 - **Copy link stays next to Send email.** Mail bounces, and a link the admin can
   paste into a text is the fallback that depends on nothing working.
 - **The admin is emailed when an application is submitted, by
@@ -1291,12 +1321,54 @@ client, with a link to each home on this site.
 - **Nothing is looked up but the listing.** MLS PIN's IDX download carries no
   open-house schedule and no showing availability, so every time on a tour is
   one Kevin typed. Do not build anything that claims to find them.
+- **A tour is a LIST of people, in one jsonb column (`showing_tours.clients`).**
+  It was one client in three columns until 2026-10-08, which made a couple
+  either one name field holding two people or two tours for the same Saturday.
+  Each person has a name and whatever reaches them; the greeting names all of
+  them ("Hi Tammy and Matthew") and the email goes to everyone with an address,
+  on one To line. A column rather than a child table because the people are
+  edited as a set and saved with one UPDATE — and because the single-request
+  write for a child table is an upsert, which fires BEFORE INSERT triggers for
+  rows that did not change (the idx_price_history defect). `showingTours.ts` is
+  the contract for its shape, the way `rentalApplication.ts` is for an
+  application's.
+- **Anyone on a tour who is not in the CRM is filed there on save, by a
+  trigger** (`showing_tour_people`), through `crm_upsert_contact()`. Kevin asked
+  for this on 2026-10-08: a client typed into a tour was otherwise a person the
+  CRM had never heard of. Four things in it are decisions:
+  - **`p_prefer_new` is FALSE.** A tour adds people and fills blanks; it never
+    overwrites. The case that settles it is a couple sharing an email — under
+    TRUE the second of them matches the first's contact and renames it.
+  - **Only a person who is new or changed is filed.** Otherwise editing a note
+    re-files everybody, and a contact Kevin deleted from the CRM comes back.
+    Someone NOT yet filed is offered again on every save, which is how tours
+    older than the migration, and a person who gains a last name later, get in.
+    The migration itself filed nobody.
+  - **The rule for who can be filed is `crm_upsert_contact`'s own:** a first
+    AND last name, and an email or ten-digit phone. "Tammy" with a phone is
+    fine on a tour and is not a contact yet. `canFileInCrm()` mirrors that rule
+    only to choose the line shown under a row.
+  - **`contactId` is the database's to write.** The trigger ignores whatever the
+    browser sends in that key, so "In your CRM" under a name is its answer.
+    Each person's `id` is made up once by the browser and kept; it is how a
+    corrected phone number is told apart from a different person.
+- **`crm_upsert_contact()` was callable with the public key until 2026-10-08.**
+  Supabase grants every new function to `anon` and `authenticated` BY NAME and
+  the migration that created it never revoked them, so anyone could write to
+  the CRM — and with `p_prefer_new`, move an existing contact onto another name
+  and phone. It is `service_role` only now; its callers are SECURITY DEFINER
+  triggers and are unaffected. The same check is worth making on any function
+  added here: `has_function_privilege('anon', …)` in a test, as
+  `showing_tours_test.sql` does.
 - **Two ways out, and neither needs the other.** `showing-schedule` has two
   actions: `send` emails the client (calendar file attached, Kevin on cc) and
   stamps `sent_at`; `preview` returns the same schedule as a text message and
   as the email's HTML and SENDS NOTHING. "Text message" calls `preview` — Kevin
   copies the text or opens it in Messages (`smsHrefTo`) and sends it from his own
-  phone. A tour needs a name and an email OR a phone; the table enforces that.
+  phone. A tour needs everyone named and an email OR a phone for at least one
+  of them; the trigger enforces that. With two or more phone numbers there is
+  one link per person and a group link — the group form (`smsHrefToGroup`) is
+  one Apple does not document, so the per-person links are never replaced by it.
 - **One renderer, on the server.** The text and the email are built from the
   same resolved stops in one call. A second renderer in the browser for the text
   is how a client gets an email that says 10:00 and a text that says 10:30.
@@ -1580,6 +1652,14 @@ Padding lives in `PageShell` alone: its three containers are
 it OVERRIDES the container's configured `2rem` (utilities beat components), so
 the configured gutter had never applied anywhere. `/faq` still hand-rolls
 `container px-4` around the same sticky-sidebar layout and so keeps the old 16px.
+
+**A dark button highlights in champagne, never in a different black.**
+`bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep` is the pair on
+every dark button on a light surface. The admin's body buttons carried
+`hover:bg-black/80` — a hover nobody could see — until 2026-10-08; they read
+`ADMIN_BUTTON` from [AdminShell.tsx](src/components/AdminShell.tsx) now. A few
+public ones still have the old hover (both contact forms, `/auth`, `/rentals`,
+`/saved`, `/apply`, `/first-time-buyers`).
 
 The navbar is `fixed` at `h-20`. Pages that clear it use `pt-20`; pages whose dark hero
 deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.

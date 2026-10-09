@@ -6,6 +6,12 @@
  * order and turn them into something to send: every stop with its time, its
  * address and a link to that home on this site.
  *
+ * A TOUR IS OFTEN MORE THAN ONE PERSON. A couple, or a buyer and a parent: each
+ * has their own row with their own name, email and phone. The schedule greets
+ * all of them by first name and the email goes to everyone who has an address.
+ * Anyone typed here who is not in the CRM is filed there when the tour is saved
+ * — by the database, not by this page (see showingTours.ts).
+ *
  * TWO WAYS OUT, AND NEITHER NEEDS THE OTHER.
  *   - Email: sent from here, with a calendar file and Kevin on cc.
  *   - Text: GENERATED here and sent by Kevin from his own phone. Nothing is
@@ -30,8 +36,11 @@ import {
   Plus,
   Trash2,
   User,
+  UserPlus,
+  Users,
+  X,
 } from 'lucide-react';
-import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
+import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
 import ListingLookup from '@/components/admin/ListingLookup';
 import SuggestInput from '@/components/admin/SuggestInput';
 import { Input } from '@/components/ui/input';
@@ -39,15 +48,20 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { formatPrice } from '@/lib/listings';
 import { formatPhoneInput } from '@/lib/phone';
-import { smsHrefTo } from '@/lib/siteConfig';
+import { smsHrefTo, smsHrefToGroup } from '@/lib/siteConfig';
+import { sentenceList } from '@/lib/utils';
 import type { ListingSuggestion } from '@/lib/idxSearch';
 import {
   STOP_KINDS,
   addStop,
+  blankPerson,
+  canFileInCrm,
   createTour,
   deleteTour,
+  draftOf,
   formatStopTime,
   formatTourDate,
+  isBlankPerson,
   isWorthFindingClient,
   listTours,
   previewSchedule,
@@ -55,8 +69,12 @@ import {
   sendSchedule,
   suggestClients,
   todayInBoston,
+  tourEmails,
+  tourNames,
+  tourSaveMessage,
   updateTour,
   type ClientSuggestion,
+  type PersonDraft,
   type SchedulePreview,
   type ShowingTour,
   type StopKind,
@@ -74,28 +92,48 @@ const sentStamp = (iso: string) =>
     minute: '2-digit',
   });
 
-const BLANK_DETAILS: TourDetails = {
-  clientName: '',
-  clientEmail: '',
-  clientPhone: '',
-  tourDate: '',
+/** The most people one tour lists. The table enforces the same ceiling. */
+const MAX_PEOPLE = 8;
+
+/** A function, not a constant: each blank form needs a row with its own id. */
+const blankDetails = (tourDate = ''): TourDetails => ({
+  people: [blankPerson()],
+  tourDate,
   note: '',
-};
+});
 
 const detailsOf = (tour: ShowingTour): TourDetails => ({
-  clientName: tour.clientName,
-  clientEmail: tour.clientEmail ?? '',
-  clientPhone: tour.clientPhone ?? '',
+  people: tour.people.length > 0 ? tour.people.map(draftOf) : [blankPerson()],
   tourDate: tour.tourDate,
   note: tour.note ?? '',
 });
 
-/** A name, and at least one way to reach them. Mirrors the table's own constraint. */
+/**
+ * What "has this form been edited" compares. Blank rows and `contactId` are
+ * left out: a spare empty line is not an edit, and contactId is the database's
+ * answer about a row rather than something typed into it.
+ */
+const comparable = (d: TourDetails) =>
+  JSON.stringify({
+    people: d.people
+      .filter((p) => !isBlankPerson(p))
+      .map((p) => [p.id, p.name.trim(), p.email.trim().toLowerCase(), p.phone.trim()]),
+    tourDate: d.tourDate,
+    note: d.note.trim(),
+  });
+
+/**
+ * Everybody named, and at least one of them reachable. Mirrors the trigger on
+ * showing_tours, so the usual mistakes are caught before a round trip — the
+ * trigger's own message is still shown if it ever disagrees.
+ */
 const detailsProblem = (d: TourDetails): string | null => {
-  if (!d.clientName.trim()) return 'Add the client’s name.';
+  const people = d.people.filter((p) => !isBlankPerson(p));
+  if (people.length === 0) return 'Add the client’s name.';
+  if (people.some((p) => !p.name.trim())) return 'Everyone on the tour needs a name.';
   if (!d.tourDate) return 'Choose the date.';
-  if (!d.clientEmail.trim() && !d.clientPhone.trim()) {
-    return 'Add an email address or a phone number — either one is enough.';
+  if (!people.some((p) => p.email.trim() || p.phone.trim())) {
+    return 'Add an email address or a phone number for at least one person.';
   }
   return null;
 };
@@ -119,6 +157,37 @@ const renderClient = (c: ClientSuggestion) => (
   </>
 );
 
+/**
+ * The line under a person's row: whether they are in the CRM, and if not, what
+ * saving will do about it. Kevin asked that nobody typed here goes missing from
+ * the CRM, so the page says which of the three cases each row is rather than
+ * leaving it to be found out later on /crm/contacts.
+ */
+const CrmLine = ({ person }: { person: PersonDraft }) => {
+  if (isBlankPerson(person)) return null;
+  if (person.contactId !== null) {
+    return (
+      <p className="flex items-center gap-1.5 text-xs text-emerald-800">
+        <Check className="h-3.5 w-3.5" aria-hidden />
+        In your CRM
+      </p>
+    );
+  }
+  if (canFileInCrm(person)) {
+    return (
+      <p className="flex items-center gap-1.5 text-xs text-champagne-ink">
+        <UserPlus className="h-3.5 w-3.5" aria-hidden />
+        Saving adds them to your CRM, if they are not in it already.
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-gray-500">
+      Not in your CRM. Add a last name and an email or phone, and saving adds them.
+    </p>
+  );
+};
+
 const DetailsFields = ({
   idPrefix,
   value,
@@ -128,80 +197,161 @@ const DetailsFields = ({
   value: TourDetails;
   onChange: (next: TourDetails) => void;
 }) => {
-  const set = (key: keyof TourDetails) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (key: 'tourDate' | 'note') => (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ ...value, [key]: e.target.value });
 
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor={`${idPrefix}-name`}>Client</Label>
-        <SuggestInput<ClientSuggestion>
-          id={`${idPrefix}-name`}
-          required
-          placeholder="Start typing a name — CRM contacts are suggested"
-          value={value.clientName}
-          onChange={(name) => onChange({ ...value, clientName: name })}
-          onSelect={(c) =>
-            onChange({
-              ...value,
-              clientName: c.name,
+  /**
+   * Typing in a row. `contactId` is dropped with it: the row was known to be a
+   * CRM contact as it stood, and an edited row is a claim nobody has checked
+   * until the next save.
+   */
+  const typed = (id: string, patch: Partial<Pick<PersonDraft, 'name' | 'email' | 'phone'>>) =>
+    onChange({
+      ...value,
+      people: value.people.map((p) => (p.id === id ? { ...p, ...patch, contactId: null } : p)),
+    });
+
+  const picked = (id: string, c: ClientSuggestion) =>
+    onChange({
+      ...value,
+      people: value.people.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              name: c.name,
               // What the CRM has, without wiping something already typed here
               // when the CRM has nothing.
-              clientEmail: c.email ?? value.clientEmail,
-              clientPhone: c.phone ? formatPhoneInput(c.phone) : value.clientPhone,
-            })
-          }
-          worth={isWorthFindingClient}
-          suggest={suggestClients}
-          valueOf={clientName}
-          keyOf={clientKey}
-          renderItem={renderClient}
-          listLabel="Matching contacts"
-          footer="From your CRM. Somebody new? Just keep typing."
-        />
+              email: c.email ?? p.email,
+              phone: c.phone ? formatPhoneInput(c.phone) : p.phone,
+              contactId: c.contactId,
+            }
+          : p
+      ),
+    });
+
+  const remove = (id: string) =>
+    onChange({ ...value, people: value.people.filter((p) => p.id !== id) });
+
+  const several = value.people.length > 1;
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-3">
+        {value.people.map((person, i) => (
+          /*
+            A fieldset per person, so "Email" and "Phone" are announced as
+            belonging to somebody. Keyed on the row's own id, not its position:
+            removing the first of two must not hand the second one's typing to
+            the first one's inputs.
+          */
+          <fieldset
+            key={person.id}
+            className={several ? 'rounded-lg border border-gray-200 p-4' : undefined}
+          >
+            <legend className={several ? 'numeral px-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-gray-500' : 'sr-only'}>
+              Person {i + 1}
+            </legend>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto]">
+              <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+                <Label htmlFor={`${idPrefix}-name-${person.id}`}>{i === 0 ? 'Client' : 'Name'}</Label>
+                <SuggestInput<ClientSuggestion>
+                  id={`${idPrefix}-name-${person.id}`}
+                  required={i === 0}
+                  placeholder="Start typing a name"
+                  value={person.name}
+                  onChange={(name) => typed(person.id, { name })}
+                  onSelect={(c) => picked(person.id, c)}
+                  worth={isWorthFindingClient}
+                  suggest={suggestClients}
+                  valueOf={clientName}
+                  keyOf={clientKey}
+                  renderItem={renderClient}
+                  listLabel="Matching contacts"
+                  footer="From your CRM. Somebody new? Keep typing — saving adds them."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`${idPrefix}-email-${person.id}`}>Email</Label>
+                <Input
+                  id={`${idPrefix}-email-${person.id}`}
+                  type="email"
+                  autoComplete="off"
+                  value={person.email}
+                  onChange={(e) => typed(person.id, { email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`${idPrefix}-phone-${person.id}`}>Phone</Label>
+                <Input
+                  id={`${idPrefix}-phone-${person.id}`}
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="off"
+                  placeholder="774-222-0952"
+                  value={person.phone}
+                  onChange={(e) => typed(person.id, { phone: formatPhoneInput(e.target.value) })}
+                />
+              </div>
+              {several && (
+                <div className="flex items-end sm:col-span-2 lg:col-span-1">
+                  <button
+                    type="button"
+                    onClick={() => remove(person.id)}
+                    aria-label={`Remove ${person.name.trim() || `person ${i + 1}`} from this tour`}
+                    className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-red-700 hover:underline"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden />
+                    Remove
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="mt-2">
+              <CrmLine person={person} />
+            </div>
+          </fieldset>
+        ))}
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          {value.people.length < MAX_PEOPLE && (
+            <button
+              type="button"
+              onClick={() => onChange({ ...value, people: [...value.people, blankPerson()] })}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Add another person
+            </button>
+          )}
+          <p className="text-xs text-gray-500">
+            {several
+              ? 'One email or phone across the group is enough. The email goes to everyone with an address.'
+              : 'Email or phone — one is enough.'}
+          </p>
+        </div>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-email`}>Email</Label>
-        <Input
-          id={`${idPrefix}-email`}
-          type="email"
-          autoComplete="off"
-          value={value.clientEmail}
-          onChange={set('clientEmail')}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-phone`}>Phone</Label>
-        <Input
-          id={`${idPrefix}-phone`}
-          type="tel"
-          inputMode="tel"
-          autoComplete="off"
-          placeholder="774-222-0952"
-          value={value.clientPhone}
-          onChange={(e) => onChange({ ...value, clientPhone: formatPhoneInput(e.target.value) })}
-        />
-        <p className="text-xs text-gray-500">Email or phone — one is enough.</p>
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-date`}>Date</Label>
-        <Input
-          id={`${idPrefix}-date`}
-          type="date"
-          required
-          value={value.tourDate}
-          onChange={set('tourDate')}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-note`}>Note to the client</Label>
-        <Input
-          id={`${idPrefix}-note`}
-          autoComplete="off"
-          placeholder="Meet at the first house. Parking is on the street."
-          value={value.note}
-          onChange={set('note')}
-        />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-date`}>Date</Label>
+          <Input
+            id={`${idPrefix}-date`}
+            type="date"
+            required
+            value={value.tourDate}
+            onChange={set('tourDate')}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`${idPrefix}-note`}>Note to the client</Label>
+          <Input
+            id={`${idPrefix}-note`}
+            autoComplete="off"
+            placeholder="Meet at the first house. Parking is on the street."
+            value={value.note}
+            onChange={set('note')}
+          />
+        </div>
       </div>
     </div>
   );
@@ -323,7 +473,7 @@ const AddStopForm = ({
         <button
           type="submit"
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-60"
+          className={ADMIN_BUTTON}
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
           Add stop
@@ -336,6 +486,8 @@ const AddStopForm = ({
 /* ------------------------------------------------------------------ */
 /* Sending it                                                          */
 /* ------------------------------------------------------------------ */
+
+const firstName = (name: string) => name.trim().split(/\s+/)[0];
 
 const DeliveryPanel = ({
   tour,
@@ -366,6 +518,15 @@ const DeliveryPanel = ({
   }, [fingerprint]);
 
   const noStops = tour.stops.length === 0;
+  const emails = tourEmails(tour);
+  const emailList = sentenceList(emails);
+  const texting = tour.people.filter((p) => p.phone);
+  // Asked once, after mount — this page is prerendered, and there is no
+  // navigator there to ask. It only chooses which form of group link to write.
+  const [apple, setApple] = useState(true);
+  useEffect(() => {
+    setApple(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent));
+  }, []);
 
   const build = async (which: 'text' | 'email') => {
     if (building) return;
@@ -385,12 +546,12 @@ const DeliveryPanel = ({
   };
 
   const send = async () => {
-    if (sending || !tour.clientEmail) return;
+    if (sending || emails.length === 0) return;
     setSending(true);
     try {
       const sentAt = await sendSchedule(tour.id);
       onSent(sentAt);
-      toast({ title: 'Schedule emailed', description: `Sent to ${tour.clientEmail}, with you on cc.` });
+      toast({ title: 'Schedule emailed', description: `Sent to ${emailList}, with you on cc.` });
     } catch (err) {
       toast({
         variant: 'destructive',
@@ -431,7 +592,7 @@ const DeliveryPanel = ({
           type="button"
           onClick={() => build('text')}
           disabled={noStops || building !== null}
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-50"
+          className={ADMIN_BUTTON}
         >
           {building === 'text' ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -460,20 +621,48 @@ const DeliveryPanel = ({
                 {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
-              {tour.clientPhone ? (
-                <a
-                  href={smsHrefTo(tour.clientPhone, preview.text)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
-                >
-                  <MessageSquare className="h-4 w-4" aria-hidden />
-                  Open in Messages to {tour.clientPhone}
-                </a>
-              ) : (
+              {texting.length === 0 && (
                 <span className="text-xs text-gray-500">
                   Add a phone number above to open it straight in Messages.
                 </span>
               )}
             </div>
+            {texting.length > 0 && (
+              /* One link per person, always. With two or more there is also a
+                 group link, FIRST because one thread is what a couple expects —
+                 but it is the form Apple does not document (see smsHrefToGroup),
+                 so the individual links are never replaced by it. */
+              <ul className="space-y-2 border-t border-gray-100 pt-3">
+                {texting.length > 1 && (
+                  <li>
+                    <a
+                      href={smsHrefToGroup(
+                        texting.map((p) => p.phone as string),
+                        preview.text,
+                        apple
+                      )}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
+                    >
+                      <Users className="h-4 w-4" aria-hidden />
+                      Open one group text to {sentenceList(texting.map((p) => firstName(p.name)))}
+                    </a>
+                  </li>
+                )}
+                {texting.map((p) => (
+                  <li key={p.id}>
+                    <a
+                      href={smsHrefTo(p.phone as string, preview.text)}
+                      className="numeral inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
+                    >
+                      <MessageSquare className="h-4 w-4" aria-hidden />
+                      {texting.length > 1
+                        ? `Text ${firstName(p.name)} only — ${p.phone}`
+                        : `Open in Messages to ${p.phone}`}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>
@@ -485,19 +674,19 @@ const DeliveryPanel = ({
           <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Email</h3>
         </div>
         <p className="text-sm leading-relaxed text-gray-600">
-          {tour.clientEmail
-            ? `Sends the schedule to ${tour.clientEmail} with a calendar file attached, and a copy to you.`
-            : 'This tour has no email address. Add one above to email it, or send it as a text.'}
+          {emails.length > 0
+            ? `Sends the schedule to ${emailList} with a calendar file attached, and a copy to you.`
+            : 'Nobody on this tour has an email address. Add one above to email it, or send it as a text.'}
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <button
             type="button"
             onClick={send}
-            disabled={noStops || sending || !tour.clientEmail}
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-50"
+            disabled={noStops || sending || emails.length === 0}
+            className={ADMIN_BUTTON}
           >
             {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Mail className="h-4 w-4" aria-hidden />}
-            {tour.sentAt ? 'Email it again' : 'Email to client'}
+            {tour.sentAt ? 'Email it again' : emails.length > 1 ? `Email to all ${emails.length}` : 'Email to client'}
           </button>
           <button
             type="button"
@@ -545,8 +734,8 @@ export default function AdminShowings() {
   const [tours, setTours] = useState<ShowingTour[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
-  const [draft, setDraft] = useState<TourDetails>(BLANK_DETAILS);
-  const [details, setDetails] = useState<TourDetails>(BLANK_DETAILS);
+  const [draft, setDraft] = useState<TourDetails>(blankDetails);
+  const [details, setDetails] = useState<TourDetails>(blankDetails);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -585,12 +774,16 @@ export default function AdminShowings() {
     try {
       const created = await createTour(draft);
       setTours((rows) => [created, ...rows]);
-      setDraft(BLANK_DETAILS);
+      setDraft(blankDetails());
       setShowNew(false);
       setParams({ id: created.id });
     } catch (err) {
       console.error('Could not create the tour:', err);
-      toast({ variant: 'destructive', title: 'Could not create the tour', description: 'Please try again.' });
+      toast({
+        variant: 'destructive',
+        title: 'Could not create the tour',
+        description: tourSaveMessage(err) ?? 'Please try again.',
+      });
     } finally {
       setBusy(false);
     }
@@ -606,12 +799,32 @@ export default function AdminShowings() {
     }
     setBusy(true);
     try {
-      await updateTour(tour.id, details);
-      await load();
-      toast({ title: 'Saved' });
+      const saved = await updateTour(tour.id, details);
+      setTours((rows) => rows.map((t) => (t.id === saved.id ? saved : t)));
+      // Re-seeded from what the database kept, not left as typed: that is
+      // where each person's "In your CRM" comes from, and the trimmed and
+      // lower-cased values are what "unsaved" has to compare against next.
+      setDetails(detailsOf(saved));
+      const added = saved.people.filter(
+        (p) => p.contactId !== null && !tour.people.some((was) => was.contactId === p.contactId)
+      );
+      toast(
+        added.length > 0
+          ? {
+              title: 'Saved',
+              description: `${sentenceList(added.map((p) => p.name))} ${
+                added.length === 1 ? 'is' : 'are'
+              } in your CRM.`,
+            }
+          : { title: 'Saved' }
+      );
     } catch (err) {
       console.error('Could not save the tour:', err);
-      toast({ variant: 'destructive', title: 'Could not save', description: 'Please try again.' });
+      toast({
+        variant: 'destructive',
+        title: 'Could not save',
+        description: tourSaveMessage(err) ?? 'Please try again.',
+      });
     } finally {
       setBusy(false);
     }
@@ -629,7 +842,7 @@ export default function AdminShowings() {
 
   const dropTour = async () => {
     if (!tour) return;
-    if (!window.confirm(`Delete the tour for ${tour.clientName}? Its stops go with it.`)) return;
+    if (!window.confirm(`Delete the tour for ${tourNames(tour)}? Its stops go with it.`)) return;
     try {
       await deleteTour(tour.id);
       setTours((rows) => rows.filter((t) => t.id !== tour.id));
@@ -642,11 +855,11 @@ export default function AdminShowings() {
 
   /* ---- One tour ------------------------------------------------------ */
   if (openId) {
-    const unsaved = tour ? JSON.stringify(details) !== JSON.stringify(detailsOf(tour)) : false;
+    const unsaved = tour ? comparable(details) !== comparable(detailsOf(tour)) : false;
 
     return (
       <AdminShell
-        title={tour ? tour.clientName : 'Showing tour'}
+        title={tour ? tourNames(tour) : 'Showing tour'}
         description={tour ? formatTourDate(tour.tourDate) : undefined}
         actions={
           <>
@@ -686,7 +899,7 @@ export default function AdminShowings() {
                     <button
                       type="submit"
                       disabled={busy || !unsaved}
-                      className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-50"
+                      className={ADMIN_BUTTON}
                     >
                       {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
                       Save changes
@@ -786,7 +999,7 @@ export default function AdminShowings() {
         <button
           type="button"
           onClick={() => {
-            setDraft({ ...BLANK_DETAILS, tourDate: todayInBoston() });
+            setDraft(blankDetails(todayInBoston()));
             setShowNew((v) => !v);
           }}
           className={adminActionClass('primary')}
@@ -803,7 +1016,7 @@ export default function AdminShowings() {
             <button
               type="submit"
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-60"
+              className={ADMIN_BUTTON}
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Plus className="h-4 w-4" aria-hidden />}
               Create tour and add stops
@@ -828,7 +1041,7 @@ export default function AdminShowings() {
           <table className="w-full text-left text-sm">
             <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
               <tr>
-                <th className="px-6 py-3 font-semibold">Client</th>
+                <th className="px-6 py-3 font-semibold">Who</th>
                 <th className="px-6 py-3 font-semibold">Date</th>
                 <th className="px-6 py-3 font-semibold">Stops</th>
                 <th className="px-6 py-3 font-semibold">Email</th>
@@ -842,9 +1055,12 @@ export default function AdminShowings() {
                   className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
                 >
                   <td className="px-6 py-4">
-                    <span className="font-medium text-ink">{t.clientName}</span>
+                    <span className="font-medium text-ink">{tourNames(t)}</span>
                     <span className="numeral block text-xs text-gray-500">
-                      {[t.clientEmail, t.clientPhone].filter(Boolean).join(' · ')}
+                      {t.people
+                        .flatMap((p) => [p.email, p.phone])
+                        .filter(Boolean)
+                        .join(' · ')}
                     </span>
                   </td>
                   <td className="numeral px-6 py-4 text-gray-700">{formatTourDate(t.tourDate)}</td>

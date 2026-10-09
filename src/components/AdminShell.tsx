@@ -125,6 +125,23 @@ export const adminActionClass = (tone: keyof typeof ACTION_TONES = 'ghost') =>
   `${ACTION_BASE} ${ACTION_TONES[tone]}`;
 
 /**
+ * The button for the BODY of an admin page — on the white cards, where the
+ * header-band tones above would be white on white.
+ *
+ * Ink at rest, champagne on hover: the same pair every dark button on the
+ * public site uses. The showings and applications pages each carried their own
+ * copy of this string with `hover:bg-black/80`, which is a black button that
+ * "highlights" to a slightly different black — a hover nobody could see, and
+ * the one place in the admin where the accent colour was missing. One constant,
+ * so the next page cannot drift back.
+ *
+ * `disabled:pointer-events-none` is what stops a disabled button taking the
+ * hover colour, which would read as "ready" on something that is not.
+ */
+export const ADMIN_BUTTON =
+  'inline-flex items-center gap-2 rounded-full bg-ink-deep px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
+
+/**
  * Sized through Unsplash's params — a bare photo URL serves the multi-megabyte
  * original. Reused from the public heroes rather than introducing another
  * image, so it is already in cache for anyone who arrived through the site.

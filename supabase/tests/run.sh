@@ -81,5 +81,22 @@ psql_file "$REPO/supabase/migrations/20261006120000_listing_favorites_and_views.
 echo
 psql_file "$TESTS/favorites_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
 
+# The people on a showing tour, and filing them in the CRM. crm_upsert_contact()
+# comes from its own migration, as written, over stand-ins for the CRM's tables.
+# The seed goes in BETWEEN the two showing-tour migrations: half of what the
+# second one does is carry existing single-client tours over.
+echo
+psql_file "$TESTS/02_crm_bootstrap.sql" -q
+for m in 20260913120000_rental_applicant_to_crm 20261006110000_showing_tours; do
+  echo "Applying $m"
+  psql_file "$REPO/supabase/migrations/$m.sql" -q 2>&1 | grep -v 'NOTICE.*skipping' || true
+done
+psql_file "$TESTS/showing_tours_seed.sql" -q
+echo "Applying 20261008100000_showing_tour_people"
+psql_file "$REPO/supabase/migrations/20261008100000_showing_tour_people.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+psql_file "$TESTS/showing_tours_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+
 echo
 echo "All assertions passed."

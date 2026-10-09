@@ -2908,9 +2908,7 @@ export type Database = {
       }
       showing_tours: {
         Row: {
-          client_email: string | null
-          client_name: string
-          client_phone: string | null
+          clients: Json
           created_at: string
           id: string
           note: string | null
@@ -2919,9 +2917,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          client_email?: string | null
-          client_name: string
-          client_phone?: string | null
+          clients?: Json
           created_at?: string
           id?: string
           note?: string | null
@@ -2930,9 +2926,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          client_email?: string | null
-          client_name?: string
-          client_phone?: string | null
+          clients?: Json
           created_at?: string
           id?: string
           note?: string | null

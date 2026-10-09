@@ -23,3 +23,14 @@ export function errorMessage(err: unknown, fallback = 'Something went wrong'): s
   }
   return fallback;
 }
+
+/**
+ * "a", "a and b", "a, b and c" — a list as it is said in a sentence.
+ *
+ * The admin pages name people and addresses in toasts ("Sent to a and b"), and
+ * two of them had grown the same four lines on the same day.
+ */
+export function sentenceList(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}

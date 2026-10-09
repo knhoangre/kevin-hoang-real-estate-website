@@ -14,8 +14,8 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, MapPin, Pencil, Plus } from 'lucide-react';
-import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
+import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, MapPin, Pencil, Plus, X } from 'lucide-react';
+import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
 import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
@@ -24,6 +24,7 @@ import AddressAutocomplete from '@/components/admin/AddressAutocomplete';
 import type { AddressSuggestion } from '@/lib/massgis';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { sentenceList } from '@/lib/utils';
 import {
   APPLICATION_STATUSES,
   createInvite,
@@ -66,11 +67,29 @@ const STATE_LABEL: Record<string, string> = {
 /* New invite                                                          */
 /* ------------------------------------------------------------------ */
 
+/** The most applicants one press of the button invites. Roommates, not a mailing list. */
+const MAX_INVITEES = 6;
+
+/**
+ * ONE FORM, ONE LINK PER APPLICANT.
+ *
+ * A unit is often let to two or three people, and each of them is an applicant:
+ * their own income, their own references, their own signature on the consents.
+ * So several addresses here do not share a link — an invite is claimed by the
+ * first account that opens it and is `{valid:false}` to everyone after, which is
+ * the point of it. Each address gets its own invite and its own email, all for
+ * the same property, and they arrive together in that property's card because
+ * an application takes its property from its invite (see groupByProperty).
+ */
 const NewInviteForm = ({
   onCreated,
+  onFinished,
   previous,
 }: {
-  onCreated: (i: RentalInviteRecord) => void;
+  /** Links that now exist — possibly fewer than were asked for. */
+  onCreated: (invites: RentalInviteRecord[]) => void;
+  /** Every address has its link, so the form can close. */
+  onFinished: () => void;
   /** Properties already used, for the reuse picker. */
   previous: PreviousProperty[];
 }) => {
@@ -85,9 +104,17 @@ const NewInviteForm = ({
     propertyState: 'MA',
     propertyZip: '',
     monthlyRent: '',
-    inviteeEmail: '',
     expiresInDays: '30',
   });
+  /*
+   * The addresses, one per applicant. Rows carry a key of their own because
+   * they can be removed from the middle: keyed on position, the row after a
+   * removed one would inherit its input — and its focus.
+   */
+  const nextKey = useRef(1);
+  const [emails, setEmails] = useState([{ key: 0, value: '' }]);
+  const setEmail = (key: number, value: string) =>
+    setEmails((rows) => rows.map((r) => (r.key === key ? { ...r, value } : r)));
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((p) => ({ ...p, [k]: e.target.value }));
@@ -114,7 +141,7 @@ const NewInviteForm = ({
     if (s.unitHint) window.setTimeout(() => unitRef.current?.focus(), 0);
   };
 
-  /** Fills the property fields from one already used, leaving the email alone. */
+  /** Fills the property fields from one already used, leaving the emails alone. */
   const reuse = (choice: PreviousProperty) => {
     setUnitHint(null);
     setForm((p) => ({
@@ -133,70 +160,117 @@ const NewInviteForm = ({
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
+
+    // Once each, whatever the capitals: the same address twice is two links for
+    // one person, and the second would sit "Not opened" in the list for ever.
+    const recipients = [
+      ...new Set(emails.map((r) => r.value.trim().toLowerCase()).filter(Boolean)),
+    ];
+    if (recipients.length === 0) return;
+
     setBusy(true);
-    try {
-      const invite = await createInvite({
-        // The label is what the applicant sees above the form. Derived from the
-        // address rather than asked for separately: two fields that say the
-        // same thing is how they drift apart. formatProperty is the one place
-        // an address becomes a line, so the label cannot drift from the list.
-        label: formatProperty({
+    const created: RentalInviteRecord[] = [];
+    const mailed: string[] = [];
+    const notMailed: string[] = [];
+    const notCreated: string[] = [];
+
+    // One at a time, on purpose. Each address is an invite AND an email; in
+    // parallel a failure halfway leaves no telling which links exist.
+    for (const email of recipients) {
+      let invite: RentalInviteRecord;
+      try {
+        invite = await createInvite({
+          // The label is what the applicant sees above the form. Derived from
+          // the address rather than asked for separately: two fields that say
+          // the same thing is how they drift apart. formatProperty is the one
+          // place an address becomes a line, so the label cannot drift from
+          // the list.
+          label: formatProperty({
+            propertyAddress: form.propertyAddress,
+            unit: form.unit,
+            propertyTown: form.propertyTown,
+            propertyState: form.propertyState,
+            propertyZip: form.propertyZip,
+          }),
           propertyAddress: form.propertyAddress,
           unit: form.unit,
           propertyTown: form.propertyTown,
           propertyState: form.propertyState,
           propertyZip: form.propertyZip,
-        }),
-        propertyAddress: form.propertyAddress,
-        unit: form.unit,
-        propertyTown: form.propertyTown,
-        propertyState: form.propertyState,
-        propertyZip: form.propertyZip,
-        monthlyRent: form.monthlyRent,
-        inviteeEmail: form.inviteeEmail,
-        expiresInDays: Number(form.expiresInDays) || 0,
-      });
+          monthlyRent: form.monthlyRent,
+          inviteeEmail: email,
+          expiresInDays: Number(form.expiresInDays) || 0,
+        });
+      } catch (err) {
+        console.error('Could not create invite:', err);
+        notCreated.push(email);
+        continue;
+      }
       // Emailed straight away: the address is required, so a created link that
       // never went out is a link the admin has to remember to send by hand.
-      let sent = false;
       try {
         await sendInvite(invite.id);
-        sent = true;
+        mailed.push(email);
+        created.push({ ...invite, sentAt: new Date().toISOString() });
       } catch (mailErr) {
         console.error('Could not email the invite:', mailErr);
+        notMailed.push(email);
+        created.push(invite);
       }
+    }
+    setBusy(false);
 
-      onCreated(sent ? { ...invite, sentAt: new Date().toISOString() } : invite);
-      setUnitHint(null);
-      setForm({
-        propertyAddress: '',
-        unit: '',
-        propertyTown: '',
-        propertyState: 'MA',
-        propertyZip: '',
-        monthlyRent: '',
-        inviteeEmail: '',
-        expiresInDays: '30',
-      });
-      toast(
-        sent
-          ? { title: 'Link sent', description: `Emailed to ${form.inviteeEmail}.` }
-          : {
-              variant: 'destructive',
-              title: 'Link created, but the email did not send',
-              description: 'Copy the link and send it yourself, or use Resend email.',
-            }
-      );
-    } catch (err) {
-      console.error('Could not create invite:', err);
+    if (created.length > 0) onCreated(created);
+
+    if (notCreated.length > 0) {
+      // The property stays filled in and only the addresses that got no link
+      // stay on the form, so pressing the button again finishes the job
+      // without inviting the others twice.
+      setEmails(notCreated.map((value) => ({ key: nextKey.current++, value })));
       toast({
         variant: 'destructive',
-        title: 'Could not create the link',
-        description: 'Please try again.',
+        title:
+          created.length > 0
+            ? `No link was created for ${sentenceList(notCreated)}`
+            : 'Could not create the link',
+        description:
+          created.length > 0
+            ? 'The others are in the list below. Press the button again to retry.'
+            : 'Please try again.',
       });
-    } finally {
-      setBusy(false);
+      return;
     }
+
+    setUnitHint(null);
+    setForm({
+      propertyAddress: '',
+      unit: '',
+      propertyTown: '',
+      propertyState: 'MA',
+      propertyZip: '',
+      monthlyRent: '',
+      expiresInDays: '30',
+    });
+    setEmails([{ key: nextKey.current++, value: '' }]);
+    onFinished();
+    toast(
+      notMailed.length === 0
+        ? {
+            title: mailed.length === 1 ? 'Link sent' : `${mailed.length} links sent`,
+            description:
+              mailed.length === 1
+                ? `Emailed to ${mailed[0]}.`
+                : `Each of ${sentenceList(mailed)} has their own link.`,
+          }
+        : {
+            variant: 'destructive',
+            title:
+              recipients.length === 1
+                ? 'Link created, but the email did not send'
+                : `The email to ${sentenceList(notMailed)} did not send`,
+            description: 'Copy the link and send it yourself, or use Resend email.',
+          }
+    );
   };
 
   return (
@@ -305,19 +379,6 @@ const NewInviteForm = ({
         <Input id="inv-rent" inputMode="decimal" value={form.monthlyRent} onChange={set('monthlyRent')} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="inv-email">Applicant email</Label>
-        <Input
-          id="inv-email"
-          type="email"
-          required
-          value={form.inviteeEmail}
-          onChange={set('inviteeEmail')}
-        />
-        <p className="text-xs text-gray-500">
-          The link is emailed here, and prefills their application.
-        </p>
-      </div>
-      <div className="space-y-1.5">
         <Label htmlFor="inv-expiry">Expires in (days)</Label>
         <Input
           id="inv-expiry"
@@ -327,18 +388,65 @@ const NewInviteForm = ({
         />
         <p className="text-xs text-gray-500">0 for no expiry.</p>
       </div>
+
+      {/* Last and full width: it is the one part of this form that grows. */}
+      <fieldset className="space-y-2 sm:col-span-2">
+        <legend className="mb-1.5 text-sm font-medium leading-none text-ink">
+          {emails.length > 1 ? 'Applicant emails' : 'Applicant email'}
+        </legend>
+        {emails.map((row, i) => (
+          <div key={row.key} className="flex items-center gap-2">
+            <Input
+              id={`inv-email-${row.key}`}
+              type="email"
+              // Only the first: a second row left empty is simply not sent to.
+              required={i === 0}
+              autoComplete="off"
+              placeholder={i === 0 ? 'applicant@example.com' : 'Another applicant'}
+              aria-label={emails.length > 1 ? `Applicant ${i + 1} email` : 'Applicant email'}
+              value={row.value}
+              onChange={(e) => setEmail(row.key, e.target.value)}
+              className="sm:max-w-md"
+            />
+            {emails.length > 1 && (
+              <button
+                type="button"
+                onClick={() => setEmails((rows) => rows.filter((r) => r.key !== row.key))}
+                aria-label={`Remove ${row.value.trim() || `applicant ${i + 1}`}`}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-bone hover:text-red-700"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            )}
+          </div>
+        ))}
+        {emails.length < MAX_INVITEES && (
+          <button
+            type="button"
+            onClick={() => setEmails((rows) => [...rows, { key: nextKey.current++, value: '' }])}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
+          >
+            <Plus className="h-4 w-4" aria-hidden />
+            Add another applicant
+          </button>
+        )}
+        <p className="text-xs text-gray-500">
+          {emails.length > 1
+            ? 'Each person is emailed their own link and fills in their own application. They appear together under this property.'
+            : 'The link is emailed here, and prefills their application.'}
+        </p>
+      </fieldset>
+
       <div className="sm:col-span-2">
-        <button
-          type="submit"
-          disabled={busy}
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80 disabled:opacity-60"
-        >
+        <button type="submit" disabled={busy} className={ADMIN_BUTTON}>
           {busy ? (
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
           ) : (
             <Plus className="h-4 w-4" aria-hidden />
           )}
-          Create application link
+          {emails.filter((r) => r.value.trim()).length > 1
+            ? 'Create application links'
+            : 'Create application link'}
         </button>
       </div>
     </form>
@@ -682,10 +790,8 @@ export default function AdminApplications() {
         <AdminCard className="mb-8">
           <NewInviteForm
             previous={previous}
-            onCreated={(invite) => {
-              setInvites((rows) => [invite, ...rows]);
-              setShowNew(false);
-            }}
+            onCreated={(created) => setInvites((rows) => [...created, ...rows])}
+            onFinished={() => setShowNew(false)}
           />
         </AdminCard>
       )}
