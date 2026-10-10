@@ -1,4 +1,5 @@
 import { designOf, type MarketingDoc } from '@/lib/marketing';
+import AroundPage from './Around';
 import { ClassicBooklet, GalleryBooklet, NoirBooklet, WelcomeBooklet } from './Booklets';
 import { ClassicSheet, GallerySheet, NoirSheet } from './Sheets';
 
@@ -24,7 +25,13 @@ const DRAW: Record<string, (props: { doc: MarketingDoc }) => JSX.Element> = {
 const DocPages = ({ doc }: { doc: MarketingDoc }) => {
   const design = designOf(doc);
   const Draw = DRAW[design.id] ?? (design.family === 'booklet' ? ClassicBooklet : ClassicSheet);
-  return <Draw doc={doc} />;
+  return (
+    <>
+      <Draw doc={doc} />
+      {/* A booklet's optional third page, in the same skin as the two before it. */}
+      {design.family === 'booklet' && <AroundPage doc={doc} skin={design.id} />}
+    </>
+  );
 };
 
 export default DocPages;

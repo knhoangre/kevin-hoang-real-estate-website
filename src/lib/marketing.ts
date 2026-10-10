@@ -24,6 +24,7 @@
  *     "$70 - $80 / month" would be a number about a house that nobody added up.
  *   * HOW A LONG LIST BREAKS ACROSS PAGES.
  */
+import { MANUAL_PREFIX, blankAround, hydrateAround, type Around } from './around.ts';
 import { formatPrice } from './listings.ts';
 import { casedAddress } from './listingUrl.ts';
 
@@ -135,6 +136,9 @@ export interface MarketingDoc {
   rows: Row[];
   /** Small print under a sheet's table. */
   note: string;
+
+  /** The booklet's neighborhood page: what is near the house, and a map. See around.ts. */
+  around: Around;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -366,6 +370,7 @@ export const blankDoc = (kind: DocKind, me: Agent): MarketingDoc => ({
   agents: [me],
   rows: kind === 'booklet' ? [] : [blankRow(), blankRow(), blankRow()],
   note: '',
+  around: blankAround(),
 });
 
 /* -------------------------------------------------------------------------- */
@@ -475,6 +480,7 @@ export const hydrateDoc = (stored: unknown, kind: DocKind, me: Agent): Marketing
         )
       : blank.rows,
     note: text(stored.note),
+    around: hydrateAround(stored.around),
   };
   // A design this version does not have (renamed, or another kind's) falls back
   // to the kind's first rather than drawing nothing.
@@ -627,6 +633,15 @@ export const seedFromListing = (doc: MarketingDoc, l: ListingFacts, office: stri
     description: (l.remarks ?? '').trim(),
     stats: statsFrom(l),
     photos: { ...dealPhotos(l.mls_number, count), ...kept },
+    // What was near the LAST address is not near this one. The page stays
+    // switched on, and what Kevin typed by hand stays; the map and the fetched
+    // lists go, to be found again for the new house.
+    around: {
+      ...doc.around,
+      home: null,
+      checked: '',
+      places: doc.around.places.filter((p) => p.id.startsWith(MANUAL_PREFIX)),
+    },
   };
 };
 

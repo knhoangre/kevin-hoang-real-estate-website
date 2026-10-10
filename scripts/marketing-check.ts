@@ -14,8 +14,40 @@
  *   * a crop that can be dragged until an empty edge shows;
  *   * a total that adds up only the rows it could read;
  *   * a long list running into the footer instead of onto a second page;
- *   * a stored document from before a field existed failing to open.
+ *   * a stored document from before a field existed failing to open;
+ *   * on the neighborhood page: a school that is nearer but not public being
+ *     ticked for him, a park measured to the wrong parcel, a pin numbered for
+ *     a place that is not on the map, tiles that leave a gap.
  */
+import {
+  MANUAL_PREFIX,
+  MAP_FRAME,
+  TILE_DRAWN,
+  blankAround,
+  formatMiles,
+  gradeSpan,
+  highwayName,
+  highwaysFrom,
+  hydrateAround,
+  mapMilesAcross,
+  mapPoint,
+  mapTiles,
+  mergeFound,
+  milesBetween,
+  parksFrom,
+  placesFromPhoton,
+  schoolsFrom,
+  shownPlaces,
+  sourcesOf,
+  transitFrom,
+  type ArcFeature,
+  type Around,
+  type LatLon,
+  type MbtaStop,
+  type PhotonFeature,
+  type Place,
+  type PlaceGroup,
+} from '../src/lib/around.ts';
 import {
   DENSITY,
   DESIGNS,
@@ -395,6 +427,230 @@ is(
 is(hydrateDoc({ agents: [me, me, me] }, 'booklet', me).agents.length, 2, 'at most two agents');
 is(docTitle({ street: ' 151 Washington St ', cityLine: 'Medford, MA 02155' }), '151 Washington St, Medford, MA 02155', 'a document is listed under its address');
 is(docTitle({ street: '', cityLine: '' }), '', 'and under nothing until it has one');
+
+/* =========================================================== around the home */
+
+const home: LatLon = { lat: 42.334944, lon: -71.224472 };
+/** A point so many miles north and east of the house. */
+const off = (north: number, east = 0): { x: number; y: number } => ({
+  y: home.lat + north / 69.09,
+  x: home.lon + east / (69.17 * Math.cos((home.lat * Math.PI) / 180)),
+});
+const near = (a: number, b: number, tolerance = 0.02) => Math.abs(a - b) <= tolerance;
+
+yes(near(milesBetween(home, { lat: off(1).y, lon: off(1).x }), 1), 'a point a mile north is a mile away');
+yes(near(milesBetween(home, { lat: off(0, 1).y, lon: off(0, 1).x }), 1), 'and so is one a mile east');
+is(formatMiles(0.04), 'under 0.1 mi', 'next door is "under 0.1 mi", never "0.0 mi"');
+is(formatMiles(0.449), '0.4 mi', 'distances are to one decimal');
+is(formatMiles(12.3), '12 mi', 'and to the mile past ten');
+
+is(gradeSpan('K,01,02,03,04,05'), 'K–5', 'an elementary school is K–5');
+is(gradeSpan('PK,K,01,02,03,04,05'), 'PK–5', 'with pre-K, PK–5');
+is(gradeSpan('09,10,11,12'), '9–12', 'a high school is 9–12');
+is(gradeSpan('PK'), 'Pre-K', 'one grade is named');
+is(gradeSpan(null), '', 'no grades is nothing');
+
+const school = (NAME: string, GRADES: string, TYPE_DESC: string, miles: number): ArcFeature => ({
+  attributes: { NAME, GRADES, TYPE_DESC },
+  geometry: off(miles),
+});
+const schools = schoolsFrom(
+  [
+    school('Mason-Rice School', 'K,01,02,03,04,05', 'Public Elementary', 1.3),
+    school('Zervas School', 'K,01,02,03,04,05', 'Public Elementary', 0.5),
+    school('Learning Prep School', '02,03,04,05,06,07,08,09,10,11,12', 'Special Education (Approved)', 0.9),
+    school('Peirce School', 'K,01,02,03,04,05', 'Public Elementary', 0.6),
+    school('Newton North High School', '09,10,11,12', 'Public Secondary', 1.1),
+    school('F.A. Day Middle School', '06,07,08', 'Public Middle', 1.7),
+    school('Wellan Montessori School', 'PK,K,01,02,03,04,05,06,07,08', 'Private', 0.2),
+    school('Newton Early Childhood Program', 'PK', 'Public Elementary', 0.3),
+    school('Zervas School', 'K,01,02,03,04,05', 'Public Elementary', 0.5),
+    { attributes: { NAME: '  ', GRADES: '', TYPE_DESC: '' }, geometry: off(0.1) },
+  ],
+  home
+);
+is(
+  schools.map((p) => p.name),
+  ['Wellan Montessori School', 'Newton Early Childhood Program', 'Zervas School', 'Peirce School', 'Learning Prep School', 'Newton North High School', 'Mason-Rice School', 'F.A. Day Middle School'],
+  'schools are listed nearest first, once each, and a nameless row is dropped'
+);
+is(
+  schools.filter((p) => p.show).map((p) => p.name),
+  ['Zervas School', 'Peirce School', 'Newton North High School', 'Mason-Rice School', 'F.A. Day Middle School'],
+  'the public schools are ticked — the middle and high school even though others are nearer'
+);
+yes(!schools.find((p) => p.name.startsWith('Wellan'))!.show, 'a private school is listed but not ticked, though it is the nearest');
+yes(!schools.find((p) => p.name.includes('Early Childhood'))!.show, 'nor is a pre-K programme');
+is(schools[2].note, 'K–5 · Public', 'a school says its grades and that it is public');
+is(schools[4].note, '2–12 · Special education', 'and a special-education school says so');
+is(schools[2].distance, '0.5 mi', 'with its distance');
+
+const square = (north: number, east: number, size = 0.02): number[][][] => {
+  const a = off(north, east);
+  const b = off(north + size, east + size);
+  return [[[a.x, a.y], [b.x, a.y], [b.x, b.y], [a.x, b.y], [a.x, a.y]]];
+};
+const park = (SITE_NAME: string, GIS_ACRES: number, north: number, east: number, size?: number): ArcFeature => ({
+  attributes: { SITE_NAME, GIS_ACRES },
+  geometry: { rings: square(north, east, size) },
+});
+const parks = parksFrom(
+  [
+    park('Coldspring Park', 5.5, 0.9, 0),
+    park('Coldspring Park', 60.4, 0.5, 0, 0.3),
+    park('Lincoln Playground', 5.35, 0.4, 0),
+    park('Zervas School', 3.8, 0.2, 0),
+    park('Traffic Island', 0.2, 0.1, 0),
+    park('Pocket Green', 0.3, 0.15, 0),
+    park('Albemarle Playground', 1.2, 0.7, 0),
+  ],
+  home
+);
+is(parks.map((p) => p.name), ['Lincoln Playground', 'Coldspring Park', 'Albemarle Playground'], 'parks: nearest first; school grounds, traffic islands and planted corners are not parks');
+is(parks[1].note, '66 acres', "a park in several parcels is one park, and its acres are added");
+is(parks[1].distance, '0.5 mi', 'measured to its nearest edge, not to the parcel that happened to come first');
+is(parks[2].note, '1 acre', 'one acre is "1 acre"');
+yes(near(milesBetween(home, { lat: parks[1].lat!, lon: parks[1].lon! }), 0.68, 0.06), 'its pin is on the largest parcel');
+
+const exit = (CORRIDOR: string, EXIT_NUM: string, JUNCTION: string, miles: number): ArcFeature => ({
+  attributes: { CORRIDOR, EXIT_NUM, JUNCTION },
+  geometry: off(0, miles),
+});
+const highways = highwaysFrom(
+  [
+    exit('I95', '37', 'Jct. RTE 16', 1.5),
+    exit('I90', '125', 'Jct. RTE 16', 1.0),
+    exit('I95', '36', 'Jct. RTE 9', 1.3),
+    exit('SR2', '133', 'Park Ave.', 5.7),
+    exit('I90', '123B', 'Jct. RTE 30', 2.0),
+  ],
+  home
+);
+is(
+  highways.map((p) => `${p.name} | ${p.note} | ${p.distance}`),
+  ['I-90 (Mass Pike) | Exit 125 · Route 16 | 1.0 mi', 'I-95 | Exit 36 · Route 9 | 1.3 mi', 'Route 2 | Exit 133 · Park Ave. | 5.7 mi'],
+  'highways: one line each, at its nearest exit, named the way people say it'
+);
+is(highwayName('US3'), 'Route 3', 'a US route is "Route 3"');
+is(highwayName('Lowell Connector'), 'Lowell Connector', 'a corridor with no number is printed as it came');
+
+const stop = (name: string, description: string | null, miles: number, vehicle_type = 0): MbtaStop => ({
+  attributes: { name, description, latitude: off(miles).y, longitude: off(miles).x, vehicle_type },
+});
+const transit = transitFrom(
+  [
+    stop('Waban', 'Waban - Green Line - (D) Riverside', 0.72),
+    stop('Waban', 'Waban - Green Line - Park Street & North', 0.7),
+    stop('Malden Center', 'Malden Center - Orange Line - Forest Hills', 1.3, 1),
+    stop('Malden Center', 'Malden Center - Commuter Rail - Track 1', 1.31, 2),
+    stop('West Newton', null, 0.9, 2),
+    { attributes: { name: 'Nowhere', description: null, latitude: null, longitude: null } },
+  ],
+  home
+);
+is(
+  transit.map((p) => `${p.name} | ${p.note} | ${p.distance}`),
+  ['Waban | Green Line | 0.7 mi', 'West Newton | Commuter Rail | 0.9 mi', 'Malden Center | Orange Line, Commuter Rail | 1.3 mi'],
+  'stations: one per station whatever its platforms, with every line it is on'
+);
+
+const osm = (name: string | null, osm_value: string, miles: number): PhotonFeature => ({
+  geometry: { coordinates: [off(miles).x, off(miles).y] },
+  properties: { name, osm_value },
+});
+const dining = placesFromPhoton(
+  [
+    osm('Boston Shawarma', 'restaurant', 0.94),
+    osm('Boston Shawarma', 'restaurant', 0.95),
+    osm(null, 'restaurant', 0.2),
+    osm('Starbucks', 'cafe', 1.5),
+    osm('Starbucks', 'cafe', 1.37),
+    osm('Lavender Cafe', 'cafe', 0.96),
+  ],
+  'dining',
+  home
+);
+is(
+  dining.map((p) => `${p.name} | ${p.note} | ${p.distance}`),
+  ['Boston Shawarma | Restaurant | 0.9 mi', 'Lavender Cafe | Café | 1.0 mi', 'Starbucks | Café | 1.4 mi'],
+  'dining: a place mapped four times is one place, a chain is its nearest branch, and the nameless are dropped'
+);
+is(placesFromPhoton([osm('Waban Market', 'supermarket', 0.63)], 'groceries', home)[0].note, '', 'a grocery needs no note');
+
+// The map.
+const centre = mapPoint(home, 14, home);
+is([centre.left, centre.top, centre.inside], [MAP_FRAME.w / 2, MAP_FRAME.h / 2, true], 'the house is the centre of the map');
+const across = mapMilesAcross(home, 14);
+yes(near(across, 2.6, 0.15), `at zoom 14 the frame is about two and a half miles across (${across.toFixed(2)})`);
+const eastEdge = mapPoint(home, 14, { lat: home.lat, lon: off(0, across / 2).x });
+yes(near(eastEdge.left, MAP_FRAME.w, 1.5), 'and a point half that far east is on its right edge');
+yes(!eastEdge.inside, 'where a pin would be cut in half, so it gets none');
+yes(mapPoint(home, 14, { lat: off(0.5).y, lon: home.lon }).top < MAP_FRAME.h / 2, 'north is up');
+yes(mapMilesAcross(home, 15) < across / 1.9, 'one zoom closer shows half as much');
+
+for (const zoom of [12, 14, 16]) {
+  const tiles = mapTiles(home, zoom);
+  const covers = (x: number, y: number) =>
+    tiles.some((t) => x >= t.left - 1e-6 && x <= t.left + t.size + 1e-6 && y >= t.top - 1e-6 && y <= t.top + t.size + 1e-6);
+  const gaps = [];
+  for (let x = 0; x <= MAP_FRAME.w; x += 20) for (let y = 0; y <= MAP_FRAME.h; y += 20) if (!covers(x, y)) gaps.push([x, y]);
+  is(gaps.length, 0, `zoom ${zoom}: the tiles cover the whole frame`);
+  yes(tiles.length <= 16 && tiles.every((t) => t.z === zoom && t.size === TILE_DRAWN), `zoom ${zoom}: with ${tiles.length} tiles, each drawn whole`);
+  is(new Set(tiles.map((t) => `${t.x}/${t.y}`)).size, tiles.length, `zoom ${zoom}: and none twice`);
+}
+
+// What the page draws.
+const place = (group: PlaceGroup, name: string, miles: number | null, show = true): Place => ({
+  id: `${group}-${name}`,
+  group,
+  name,
+  note: '',
+  distance: miles === null ? '' : formatMiles(miles),
+  lat: miles === null ? null : off(miles).y,
+  lon: miles === null ? null : off(miles).x,
+  show,
+});
+const page: Around = {
+  ...blankAround(),
+  on: true,
+  home,
+  places: [
+    place('highways', 'I-90 (Mass Pike)', 4.4),
+    place('schools', 'Near School', 0.3),
+    place('schools', 'Unticked School', 0.2, false),
+    place('schools', 'Far School', 1.7),
+    place('parks', 'Typed By Hand', null),
+    place('parks', 'A Park', 0.4),
+    ...Array.from({ length: 5 }, (_, i) => place('groceries', `Market ${i + 1}`, 0.1 * (i + 1))),
+  ],
+};
+const shown = shownPlaces(page);
+is(shown.schools.map((p) => [p.name, p.n]), [['Near School', 1], ['Far School', null]], 'an unticked place is not drawn, and one beyond the map has no number');
+is(shown.parks.map((p) => [p.name, p.n]), [['Typed By Hand', null], ['A Park', 2]], 'a place typed by hand is listed without a number');
+is(shown.groceries.map((p) => p.n), [3, 4, 5], 'a list stops at its limit, and numbers run on from the list before');
+is(shown.highways[0].n, null, 'an exit four miles off is a line, not a pin');
+is(sourcesOf(shown, true), ['MassGIS', 'OpenStreetMap'], 'the small print names only the sources that were used');
+is(sourcesOf(shownPlaces({ ...page, places: [place('parks', 'Typed', null)] }), false), [], 'and none for a page typed entirely by hand');
+
+// Stored pages.
+is(hydrateAround(JSON.parse(JSON.stringify(page))), page, 'a saved neighborhood page opens as it was saved');
+is(hydrateAround(undefined), blankAround(), 'a booklet saved before the page existed opens without one');
+is(hydrateAround({ on: 'yes', zoom: 99, home: { lat: 'x', lon: 1 }, places: [{ group: 'casinos', name: 'x' }, 7] }),
+  { ...blankAround(), zoom: 16 },
+  'a page of the wrong shape opens blank, with its zoom brought into range');
+is(hydrateAround({ places: [{ group: 'parks', name: 'Half', lat: 42.3 }] }).places[0].lon, null, 'half a coordinate is no coordinate');
+is(hydrateDoc({ street: '1 Elm St' }, 'booklet', me).around, blankAround(), 'and so does the document around it');
+
+// Finding again, and choosing another listing.
+const typed: Place = { ...place('dining', 'The place Kevin knows', null), id: `${MANUAL_PREFIX}1` };
+const before2: Around = { ...page, places: [place('schools', 'Old School', 0.3), place('dining', 'Old Diner', 0.2), typed] };
+const merged = mergeFound(before2, home, [place('schools', 'New School', 0.4)], ['dining'], 'October 2026');
+is(merged.places.map((p) => p.name), ['New School', 'Old Diner', 'The place Kevin knows'],
+  'finding again replaces what was found, keeps what was typed, and keeps a list that could not be fetched');
+is(merged.checked, 'October 2026', 'and records when');
+const moved2 = seedFromListing({ ...blankDoc('booklet', me), around: before2 }, condo, null).around;
+is([moved2.on, moved2.home, moved2.places.map((p) => p.name)], [true, null, ['The place Kevin knows']],
+  'choosing another listing drops the old address\'s map and lists, and keeps the page and what was typed');
 
 console.log('');
 if (failures > 0) {

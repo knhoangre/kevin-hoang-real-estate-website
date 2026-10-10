@@ -947,6 +947,9 @@ describes what is LIVE. This section is what replaces the sold half of it.
 6. A week later: the sync stops writing sold rows to Supabase and starts failing
    on a CockroachDB error; then the Supabase-side sold rows, `idx_sold_archive`,
    `idx_comp_pool` and its cron are removed. Kevin runs that deletion himself.
+   The booklet's listing field (`scope="all"`) also finds sold listings in
+   `idx_listings` and will stop offering them when they go; it needs an address
+   search on the sold database first.
    **Before that deletion, `fill_listing_favorite()` has to change**: it copies a
    saved home's snapshot out of `idx_listings` and refuses a number it cannot
    find there, and since 2026-10-09 a sold home can be saved — so with the sold
@@ -1641,6 +1644,80 @@ row become several rows). His originals are in `pdf/`, which is not committed.
   document lists it.
 - **It saves itself** 1.2 s after the last change; printing and leaving flush
   first. An open document is `?doc=<id>`, so it needs no rewrite.
+- **The listing field searches EVERY listing, sold ones included**
+  (`ListingLookup scope="all"`), while open houses and showing tours keep the
+  active feed. The first thing Kevin typed was one of his own closed listings and
+  he was offered nothing (2026-10-10). Both scopes run on the same trigram
+  index, which covers the whole table.
+- **The editor's sections are NOT `AdminCard`s, and that is the other half of
+  the same bug.** `AdminCard` is `overflow-hidden`; the suggestions drop below
+  the field, past the card's bottom edge, and were cut off — found, and
+  invisible. The browser check that passed had asked only whether an option
+  existed. `check_lookup` now asks `elementFromPoint` at each option's centre:
+  a test of something a person clicks has to hit-test it, because Playwright
+  will happily find, and even click, what nobody can see.
+
+#### "Around the home" — the booklet's neighborhood page
+
+An optional third page (Kevin, 2026-10-10: schools, parks, restaurants,
+highways, a map): a map with the house at its centre, and what is near it. It
+prints on its own sheet and is tucked inside.
+[around.ts](src/lib/around.ts) is pure and checked like `marketing.ts`;
+[aroundFetch.ts](src/lib/aroundFetch.ts) only asks.
+
+- **Four sources, each free, keyless and readable from the page — and not the
+  one that could have done it all.** Schools (the PK-12 layer, from DESE),
+  parks (Protected and Recreational OpenSpace) and highway interchanges are
+  MassGIS layers on `arcgisserver.digital.mass.gov/…/AGOL`, the server the
+  address suggestions already use; stations are the MBTA's API; restaurants,
+  cafés and groceries are OpenStreetMap through komoot's Photon
+  (`/reverse?osm_tag=…`), because nobody official publishes those. Overpass
+  would answer all six in one request and was the first choice: on 2026-10-10
+  it took 46 seconds to time out on one neighborhood, twice, and answers 406
+  without a `Referer`. Do not move back to it to "simplify".
+- **Each list is fetched separately and fails separately**
+  (`Promise.allSettled`). One service down costs one list, which is named in
+  the editor and keeps what it had.
+- **Massachusetts only.** `locate()` is the Commonwealth's locator and refuses
+  a match under 85: a pin on the wrong street puts every distance out.
+- **Nothing on the page is written by us.** Names and distances are a source's
+  or typed by Kevin; an empty list is left off. Distances are STRAIGHT-LINE and
+  the small print says so — a drive time needs a routing service, and a guess
+  would be a number about the house nobody measured.
+- **A school nearby is not a school assigned**, and no free source says which
+  is. The heading says "nearby", the small print says the district decides,
+  and there are no ratings. `schoolsFrom` ticks the two nearest public
+  elementary schools, the nearest public middle and high school, then the
+  nearest remaining public ones; private, charter and special-education
+  schools are listed unticked. A pre-K programme is "Public Elementary" in the
+  layer and was ticked FIRST until the check caught it.
+- **A park is several rows of one name** (the layer is per parcel): they are
+  merged, the acres added, the distance measured to the nearest corner of any,
+  and the pin put on the largest. School grounds are in the layer as recreation
+  land and are left out.
+- **A highway is one line, at its nearest EXIT** — the road can pass a quarter
+  of a mile from a house whose nearest ramp is three miles off.
+- **Numbers run in one sequence and only places ON the map get one**
+  (`shownPlaces`). An exit four miles off is a line with a dot, not a "14"
+  that sends the reader hunting for a pin that is not there.
+- **The map is a grid of plain `<img>` tiles** from `tile.openstreetmap.org`,
+  with the pins as ordinary elements over it — no mapping library, no canvas.
+  Tiles, like MLS photos, may be shown and not read. `MAP_FRAME` is one size in
+  every design so the pins need one sum, and "© OpenStreetMap contributors" on
+  the map is a condition of use. Tiles are drawn at 192px (`TILE_DRAWN`): at
+  256 the map prints as soft as a screenshot, at 128 it is crisp and the street
+  names are under four points. The tile server refuses a request with no
+  `Referer`, which a test that `set_content`s into a blank page does not send.
+- **One layout, four skins** ([Around.tsx](src/components/marketing/designs/Around.tsx),
+  `ar-<design>` in print.css), so it matches whichever booklet it is tucked
+  into without being built four times.
+- **Choosing another listing drops the old address's map and lists** and keeps
+  the page switched on and whatever was typed by hand (ids starting
+  `manual-`). Finding again replaces what was found and keeps the same.
+- **The editor says to keep the page to names and distances.** Describing who
+  lives somewhere, or calling it safe or good for families, is a fair-housing
+  problem, and so is ranking the schools. Do not add a "neighborhood
+  description" generator to this page.
 
 **The `/admin` hub's cards are in headed groups** — Clients, Listings, Sign-in
 kiosks. The kiosks had a heading and the tools above them had none (Kevin,

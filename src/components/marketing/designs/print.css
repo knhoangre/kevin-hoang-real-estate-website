@@ -2094,3 +2094,334 @@ ul {
   width: 84px;
   height: 30px;
 }
+
+/* ========================================================================
+   BOOKLET — "Around the home", the optional third page
+
+   One layout, skinned per design by the variables below. The map's frame is
+   MAP_FRAME in around.ts (440 x 320) in every skin: the pins are placed with
+   that size, and the two lists under it start 28px below it.
+   ======================================================================== */
+
+.around {
+  --ar-ink: #1a1a1a;
+  --ar-soft: #5d5d5d;
+  --ar-accent: #8c6b35;
+  --ar-line: #d9d4ca;
+  --ar-pin: #0d0d0f;
+  --ar-pin-ink: #fff;
+  --ar-body: var(--sans);
+  --ar-display: var(--display);
+  color: var(--ar-ink);
+  font-family: var(--ar-body);
+}
+.around .ar-field {
+  display: none;
+}
+.around .ar-head {
+  position: absolute;
+  left: 44px;
+  width: 440px;
+  top: 58px;
+  height: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.around .ar-eyebrow {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ar-accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.around .ar-title {
+  margin-top: 8px;
+  font-family: var(--ar-display);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.around .ar-map,
+.around .ar-nomap {
+  position: absolute;
+  left: 44px;
+  top: 156px;
+  overflow: hidden;
+  background: #eceae4;
+}
+.around .ar-nomap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #bdb8ae;
+  font: 600 10px/1.3 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b8780;
+}
+.around .ar-map img {
+  position: absolute;
+  display: block;
+  max-width: none;
+}
+.around .ar-pin,
+.around .ar-n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ar-pin);
+  color: var(--ar-pin-ink);
+  font-family: var(--sans);
+  font-weight: 700;
+  line-height: 1;
+}
+.around .ar-pin {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  border: 1.5px solid #fff;
+  box-sizing: content-box;
+  font-size: 7.5px;
+}
+.around .ar-home {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #c5a572;
+}
+.around .ar-home svg {
+  width: 15px;
+  height: 15px;
+  fill: #0d0d0f;
+}
+.around .ar-credit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #333;
+  font: 400 6.5px/1.3 var(--sans);
+}
+.around .ar-pair {
+  position: absolute;
+  left: 44px;
+  width: 440px;
+  top: 504px;
+  /* Never into the small print below. */
+  max-height: 214px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 26px;
+}
+.around .ar-lists {
+  position: absolute;
+  left: 44px;
+  width: 440px;
+  top: 66px;
+  /* The page's limits per list fit with room to spare; this is for the day a
+     limit is raised and nobody re-measures. */
+  max-height: 700px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.around .ar-list h3 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ar-ink);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+.around .ar-list li {
+  display: grid;
+  grid-template-columns: 15px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 9px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--ar-line);
+  font-size: 10.5px;
+  line-height: 15px;
+}
+.around .ar-n {
+  width: 14px;
+  height: 14px;
+  font-size: 7px;
+}
+.around .ar-dot {
+  justify-self: center;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ar-accent);
+}
+.around .ar-name {
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.around .ar-name em {
+  margin-left: 8px;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--ar-soft);
+}
+.around .ar-far {
+  font-size: 9.5px;
+  color: var(--ar-soft);
+  white-space: nowrap;
+}
+/* Two lists side by side under the map: half the width, so the fact goes
+   under the name instead of beside it. */
+.around .ar-pair .ar-name {
+  white-space: normal;
+  line-height: 13px;
+}
+.around .ar-pair .ar-name em {
+  display: block;
+  margin-left: 0;
+}
+.around .ar-small {
+  position: absolute;
+  left: 44px;
+  width: 440px;
+  bottom: 50px;
+  font-size: 7px;
+  line-height: 1.5;
+  color: var(--ar-soft);
+}
+
+/* --- Classic: his black rules and Verdana --- */
+.around.ar-classic {
+  --ar-ink: #000;
+  --ar-soft: #444;
+  --ar-accent: #000;
+  --ar-line: #cfcfcf;
+  --ar-pin: #000;
+  --ar-body: var(--verdana);
+  --ar-display: var(--verdana);
+}
+.around.ar-classic .ar-title {
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.around.ar-classic .ar-eyebrow {
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+.around.ar-classic .ar-list h3 {
+  border-bottom-width: 3px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.around.ar-classic .ar-list li {
+  font-size: 9.8px;
+}
+
+/* --- Welcome Home: the slab headline --- */
+.around.ar-welcome {
+  --ar-ink: #000;
+  --ar-soft: #444;
+  --ar-accent: #000;
+  --ar-line: #cfcfcf;
+  --ar-pin: #000;
+  --ar-body: var(--verdana);
+  --ar-display: var(--slab);
+}
+.around.ar-welcome .ar-title {
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.around.ar-welcome .ar-eyebrow {
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+.around.ar-welcome .ar-map {
+  outline: 5px solid #000;
+  outline-offset: 0;
+}
+.around.ar-welcome .ar-list h3 {
+  border-bottom-width: 2px;
+  font-family: var(--slab);
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+.around.ar-welcome .ar-list li {
+  font-size: 9.8px;
+}
+
+/* --- Noir: the dark field, champagne rules --- */
+.around.ar-noir {
+  --ar-ink: #f4f0e8;
+  --ar-soft: #b9b3a6;
+  --ar-accent: #c5a572;
+  --ar-line: rgba(197, 165, 114, 0.26);
+  --ar-pin: #c5a572;
+  --ar-pin-ink: #0d0d0f;
+}
+.around.ar-noir .ar-field {
+  display: block;
+  position: absolute;
+  inset: 24px;
+  background: var(--deep);
+}
+.around.ar-noir .ar-title {
+  color: #fff;
+}
+.around.ar-noir .ar-map {
+  outline: 1px solid rgba(197, 165, 114, 0.7);
+  outline-offset: 6px;
+}
+.around.ar-noir .ar-list h3 {
+  border-bottom-color: rgba(197, 165, 114, 0.6);
+  color: var(--ar-accent);
+}
+/* On the map itself the pins stay dark: champagne on a pale map disappears. */
+.around.ar-noir .ar-pin {
+  background: #0d0d0f;
+  color: #fff;
+}
+.around.ar-noir .ar-name {
+  color: #fff;
+}
+
+/* --- Gallery: light, serif, hairlines --- */
+.around.ar-gallery {
+  --ar-line: #ebe7df;
+}
+.around.ar-gallery .ar-title {
+  font-weight: 500;
+}
+.around.ar-gallery .ar-list h3 {
+  border-bottom-color: var(--champ);
+  color: #555;
+  font-weight: 600;
+}

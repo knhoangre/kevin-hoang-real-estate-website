@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowUp,
   ImagePlus,
+  MapPin,
   Plus,
   Printer,
   RefreshCw,
@@ -18,6 +19,18 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  MANUAL_PREFIX,
+  MAX_ZOOM_MAP,
+  MIN_ZOOM,
+  PLACE_GROUPS,
+  mapMilesAcross,
+  mergeFound,
+  type Around,
+  type Place,
+  type PlaceGroup,
+} from '@/lib/around';
+import { findNearby, locate } from '@/lib/aroundFetch';
 import { listingByMls, officeName, type ListingSuggestion } from '@/lib/idxSearch';
 import {
   DOC_KINDS,
@@ -150,6 +163,9 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
   const [uploading, setUploading] = useState(false);
   const [lookup, setLookup] = useState('');
   const [busy, setBusy] = useState(false);
+  const [finding, setFinding] = useState(false);
+  /** What the last "Find what's nearby" could not do, in a sentence. */
+  const [findNote, setFindNote] = useState<string | null>(null);
 
   const frame = useRef<DocFrameHandle>(null);
   // The latest document, for the save that fires after the render that made it.
@@ -343,6 +359,68 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
       return word ? doc.office.toLowerCase().includes(word) : false;
     });
 
+  /* ---------------------------------------------------------- around the home */
+
+  const around = doc.around;
+  const setAround = (patch: Partial<Around>) => change((d) => ({ ...d, around: { ...d.around, ...patch } }));
+  const setPlace = (placeId: string, patch: Partial<Place>) =>
+    change((d) => ({
+      ...d,
+      around: {
+        ...d.around,
+        places: d.around.places.map((p) => (p.id === placeId ? { ...p, ...patch } : p)),
+      },
+    }));
+  const addPlace = (group: PlaceGroup) =>
+    setAround({
+      places: [
+        ...around.places,
+        {
+          id: `${MANUAL_PREFIX}${Date.now()}`,
+          group,
+          name: '',
+          note: '',
+          distance: '',
+          lat: null,
+          lon: null,
+          show: true,
+        },
+      ],
+    });
+
+  /**
+   * Look the address up, then ask each source what is near it. Each list can
+   * fail by itself (see aroundFetch); the ones that did are named, and keep
+   * whatever they had.
+   */
+  const findAround = async () => {
+    setFinding(true);
+    setFindNote(null);
+    try {
+      const home = await locate(doc.street, doc.cityLine);
+      if (!home) {
+        setFindNote(
+          'That address was not found on the Massachusetts map. Check the street and the town above — this works for Massachusetts addresses only.'
+        );
+        return;
+      }
+      const { places, failed } = await findNearby(home);
+      const when = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      change((d) => ({ ...d, around: mergeFound({ ...d.around, on: true }, home, places, failed, when) }));
+      if (failed.length > 0) {
+        const names = failed.map((g) => PLACE_GROUPS.find((x) => x.id === g)?.label.toLowerCase() ?? g);
+        setFindNote(
+          `Could not load ${names.join(', ')} just now. The rest is in; press the button again in a minute, or add them by hand.`
+        );
+      }
+    } catch (err) {
+      console.error('Could not find what is nearby:', err);
+      setFindNote('The address lookup did not answer. Check your connection and try again.');
+    } finally {
+      setFinding(false);
+    }
+  };
+
   const setAgent = (index: number, patch: Partial<Agent>) =>
     set(
       'agents',
@@ -403,7 +481,9 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
           <p className="mt-2 max-w-xs text-xs leading-relaxed text-gray-500">
             {sheet
               ? 'Opens the print box with the page already set. Choose "Save as PDF" there for a file.'
-              : 'Print double-sided, flipping on the short edge, then fold in half. "Save as PDF" in the print box gives a file.'}
+              : around.on
+                ? 'Pages 1 and 2 are the booklet: print them double-sided, flipping on the short edge, and fold. Page 3 is the neighborhood page: print it on its own sheet and tuck it inside.'
+                : 'Print double-sided, flipping on the short edge, then fold in half. "Save as PDF" in the print box gives a file.'}
           </p>
         </div>
       </div>
@@ -650,6 +730,170 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
                 placeholder={'Large yard\nHeated driveway\n3 car garage'}
                 onChange={(event) => set('features', event.target.value.split('\n'))}
               />
+            </Section>
+          )}
+
+          {!sheet && (
+            <Section
+              title="Around the home"
+              hint="An extra page for the booklet: a map with the home at its centre, and the schools, parks, restaurants, transit and highways near it."
+            >
+              <label className="flex items-start gap-3 text-sm text-ink">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[#8c6b35]"
+                  checked={around.on}
+                  onChange={(event) => setAround({ on: event.target.checked })}
+                />
+                <span>
+                  Add this page to the booklet
+                  <span className="mt-0.5 block text-xs leading-relaxed text-gray-500">
+                    It prints as page 3, on a sheet of its own. Fold it and tuck it inside.
+                  </span>
+                </span>
+              </label>
+
+              <div>
+                <button
+                  type="button"
+                  className={ADMIN_BUTTON}
+                  disabled={finding || !doc.street.trim() || !doc.cityLine.trim()}
+                  onClick={() => void findAround()}
+                >
+                  <MapPin className="h-4 w-4" aria-hidden />
+                  {finding ? 'Looking…' : around.home ? 'Find what’s nearby again' : 'Find what’s nearby'}
+                </button>
+                {!doc.street.trim() || !doc.cityLine.trim() ? (
+                  <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                    Fill in the street and the town first, or choose a listing.
+                  </p>
+                ) : (
+                  around.checked && (
+                    <p className="mt-2 text-xs leading-relaxed text-gray-500">
+                      Last looked up {around.checked}. Schools, parks and highway exits are the
+                      state’s own lists; stations are the MBTA’s; restaurants and groceries are from
+                      OpenStreetMap, which is the one to read through before printing.
+                    </p>
+                  )
+                )}
+                {findNote && (
+                  <p className="mt-2 rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900" role="status">
+                    {findNote}
+                  </p>
+                )}
+              </div>
+
+              {around.on && (
+                <>
+                  <Field
+                    id="mk-around-title"
+                    label="Page heading"
+                    value={around.title}
+                    onChange={(v) => setAround({ title: v })}
+                  />
+
+                  {around.home && (
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm font-medium text-ink">Map</span>
+                      <button
+                        type="button"
+                        className={SMALL_BUTTON}
+                        disabled={around.zoom >= MAX_ZOOM_MAP}
+                        onClick={() => setAround({ zoom: around.zoom + 1 })}
+                      >
+                        Closer
+                      </button>
+                      <button
+                        type="button"
+                        className={SMALL_BUTTON}
+                        disabled={around.zoom <= MIN_ZOOM}
+                        onClick={() => setAround({ zoom: around.zoom - 1 })}
+                      >
+                        Wider
+                      </button>
+                      <span className="numeral text-xs text-gray-500">
+                        About {mapMilesAcross(around.home, around.zoom).toFixed(1)} miles across. A
+                        place beyond its edge is listed without a number.
+                      </span>
+                    </div>
+                  )}
+
+                  {PLACE_GROUPS.map((group) => {
+                    const rows = around.places.filter((p) => p.group === group.id);
+                    const ticked = rows.filter((p) => p.show).length;
+                    return (
+                      <div key={group.id} className="border-t border-gray-200 pt-4">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <p className="text-sm font-semibold text-ink">{group.label}</p>
+                          <p className="numeral text-xs text-gray-500">
+                            {ticked > group.max
+                              ? `${ticked} ticked — the page shows the first ${group.max}`
+                              : `Up to ${group.max} on the page`}
+                          </p>
+                        </div>
+                        <div className="mt-2 space-y-1.5">
+                          {rows.map((place) => (
+                            <div key={place.id} className="flex items-center gap-1.5">
+                              <input
+                                type="checkbox"
+                                aria-label={`Show ${place.name || 'this place'}`}
+                                className="h-4 w-4 shrink-0 accent-[#8c6b35]"
+                                checked={place.show}
+                                onChange={(event) => setPlace(place.id, { show: event.target.checked })}
+                              />
+                              <Input
+                                aria-label="Name"
+                                value={place.name}
+                                placeholder="Name"
+                                className={`h-9 min-w-0 flex-[3] px-2 text-sm ${place.show ? '' : 'opacity-60'}`}
+                                onChange={(event) => setPlace(place.id, { name: event.target.value })}
+                              />
+                              <Input
+                                aria-label="Detail"
+                                value={place.note}
+                                placeholder="Detail"
+                                className={`h-9 min-w-0 flex-[2] px-2 text-xs ${place.show ? '' : 'opacity-60'}`}
+                                onChange={(event) => setPlace(place.id, { note: event.target.value })}
+                              />
+                              <Input
+                                aria-label="Distance"
+                                value={place.distance}
+                                placeholder="0.5 mi"
+                                className={`numeral h-9 w-[4.5rem] shrink-0 px-2 text-xs ${place.show ? '' : 'opacity-60'}`}
+                                onChange={(event) => setPlace(place.id, { distance: event.target.value })}
+                              />
+                              <button
+                                type="button"
+                                className={ICON_BUTTON}
+                                aria-label={`Remove ${place.name || 'this place'}`}
+                                onClick={() =>
+                                  setAround({ places: around.places.filter((p) => p.id !== place.id) })
+                                }
+                              >
+                                <X className="h-4 w-4" aria-hidden />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          className={`${SMALL_BUTTON} mt-2`}
+                          onClick={() => addPlace(group.id)}
+                        >
+                          <Plus className="h-3.5 w-3.5" aria-hidden />
+                          Add one by hand
+                        </button>
+                      </div>
+                    );
+                  })}
+
+                  <p className="text-xs leading-relaxed text-gray-500">
+                    Keep this page to names and distances. Describing who lives in a neighborhood,
+                    or calling it safe or good for families, is a fair-housing problem; so is
+                    ranking the schools. A place added by hand is listed without a pin on the map.
+                  </p>
+                </>
+              )}
             </Section>
           )}
 
@@ -915,7 +1159,7 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
           {!sheet && (
             <p className="mt-3 text-xs leading-relaxed text-gray-500">
               Page 1 is the outside of the booklet: the back on its left half, the front cover on its
-              right. Page 2 is the inside.
+              right. Page 2 is the inside.{around.on && ' Page 3 is the neighborhood page.'}
             </p>
           )}
         </div>

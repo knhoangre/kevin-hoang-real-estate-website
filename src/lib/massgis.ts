@@ -30,7 +30,7 @@
  * an admin from typing an address by hand.
  */
 
-const LOCATOR =
+export const LOCATOR =
   'https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/ONLYPOINTS_SUGGEST_PRO/GeocodeServer';
 
 /**
