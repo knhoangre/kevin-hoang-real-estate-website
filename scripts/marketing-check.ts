@@ -481,6 +481,27 @@ is(
 );
 yes(!schools.find((p) => p.name.startsWith('Wellan'))!.show, 'a private school is listed but not ticked, though it is the nearest');
 yes(!schools.find((p) => p.name.includes('Early Childhood'))!.show, 'nor is a pre-K programme');
+// A dense area: a dozen private schools nearer than any public high school.
+const dense = schoolsFrom(
+  [
+    ...Array.from({ length: 14 }, (_, i) => school(`Private Academy ${i + 1}`, 'K,01,02,03', 'Private', 0.1 + i * 0.05)),
+    school('Alternative High School', '09,10,11,12', 'Public Secondary', 1.1),
+    school('Town High School', '09,10,11,12', 'Public Secondary', 1.7),
+    school('Third High School', '09,10,11,12', 'Public Secondary', 2.0),
+    school('Town Middle School', '06,07,08', 'Public Middle', 2.2),
+    school('Far Elementary', 'K,01,02,03,04,05', 'Public Elementary', 2.4),
+  ],
+  home
+);
+is(
+  dense.filter((p) => p.show).map((p) => p.name),
+  ['Alternative High School', 'Town High School', 'Third High School', 'Town Middle School', 'Far Elementary'],
+  'where a dozen other schools are nearer, the public middle and high schools are still found and ticked'
+);
+yes(dense.findIndex((p) => p.name === 'Town High School') > dense.findIndex((p) => p.name === 'Private Academy 12'),
+  'and they sit in the list in order of distance, after the nearer ones');
+is(dense.filter((p) => p.name.startsWith('Private')).length, 12, 'the nearest dozen of everything else are offered, unticked');
+
 is(schools[2].note, 'K–5 · Public', 'a school says its grades and that it is public');
 is(schools[4].note, '2–12 · Special education', 'and a special-education school says so');
 is(schools[2].distance, '0.5 mi', 'with its distance');

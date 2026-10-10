@@ -1687,10 +1687,15 @@ prints on its own sheet and is tucked inside.
 - **A school nearby is not a school assigned**, and no free source says which
   is. The heading says "nearby", the small print says the district decides,
   and there are no ratings. `schoolsFrom` ticks the two nearest public
-  elementary schools, the nearest public middle and high school, then the
-  nearest remaining public ones; private, charter and special-education
-  schools are listed unticked. A pre-K programme is "Public Elementary" in the
-  layer and was ticked FIRST until the check caught it.
+  elementary schools, the nearest public middle school and the TWO nearest
+  public high schools, then the nearest remaining public ones; private,
+  charter and special-education schools are listed unticked. Two high schools
+  because the nearest is often not the one anybody means — at 151 Washington
+  St, Medford it is the alternative school, with Medford High next — and they
+  are offered however far down the list they fall: 46 schools are within range
+  of that address, and cut to the nearest fourteen Medford High was not there
+  to tick. A pre-K programme is "Public Elementary" in the layer and was ticked
+  FIRST until the check caught it.
 - **A park is several rows of one name** (the layer is per parcel): they are
   merged, the acres added, the distance measured to the nearest corner of any,
   and the pin put on the largest. School grounds are in the layer as recreation

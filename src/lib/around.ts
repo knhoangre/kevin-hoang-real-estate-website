@@ -245,10 +245,20 @@ const schoolKind = (typeDesc: string): string => {
  * WHICH ARE TICKED is the one judgement here. A buyer wants the public schools
  * at each level, and the six nearest schools of any kind are often five
  * elementary schools and a special-education programme. So: the two nearest
- * public elementary schools, the nearest public middle and the nearest public
- * high school, then the nearest remaining public schools up to the page's
- * limit. Private, charter and special-education schools are in the list,
- * unticked, for Kevin to add.
+ * public elementary schools, the nearest public middle school and the two
+ * nearest public high schools, then the nearest remaining public schools up to
+ * the page's limit. Private, charter and special-education schools are in the
+ * list, unticked, for Kevin to add.
+ *
+ * TWO high schools, because the nearest is often not the one anybody means. At
+ * 151 Washington St in Medford the nearest public 9–12 school is Curtis-Tufts,
+ * the alternative school, and Medford High is the next; in Waban it is Newton
+ * North, and much of Waban goes to Newton South.
+ *
+ * WHAT IS OFFERED is the nearest dozen — and, however far down they come, the
+ * two nearest public middle and high schools. There are 46 schools within two
+ * and a half miles of that Medford address; cut to the nearest fourteen, Medford
+ * High was not in the list to be ticked at all (2026-10-10).
  */
 export const schoolsFrom = (features: ArcFeature[], home: LatLon): Place[] => {
   const seen = new Set<string>();
@@ -271,26 +281,34 @@ export const schoolsFrom = (features: ArcFeature[], home: LatLon): Place[] => {
     });
   }
   found.sort(byDistance);
-  const list = found.slice(0, 14);
 
   // A pre-K programme is a "Public Elementary" school on paper and not what the
   // list is for. Left to the layer's own category it was ticked FIRST, as the
   // nearest elementary school; the check caught that before a booklet did.
-  const publicSchools = list.filter((f) => /^public/i.test(f.type) && !/^Pre-K\b/.test(f.note));
-  const ticked = new Set<Found>();
-  const take = (pattern: RegExp, count: number) =>
-    publicSchools
-      .filter((f) => pattern.test(f.type))
-      .slice(0, count)
-      .forEach((f) => ticked.add(f));
-  take(/^public elementary/i, 2);
-  take(/^public middle/i, 1);
-  take(/^public secondary/i, 1);
+  const publicSchools = found.filter((f) => /^public/i.test(f.type) && !/^Pre-K\b/.test(f.note));
+  const nearest = (pattern: RegExp, count: number) =>
+    publicSchools.filter((f) => pattern.test(f.type)).slice(0, count);
+
+  const ticked = new Set<Found>([
+    ...nearest(/^public elementary/i, 2),
+    ...nearest(/^public middle/i, 1),
+    ...nearest(/^public secondary/i, 2),
+  ]);
   for (const f of publicSchools) {
     if (ticked.size >= maxOf('schools')) break;
     ticked.add(f);
   }
-  return toPlaces(list, (f) => ticked.has(f));
+
+  const offered = new Set<Found>([
+    ...found.slice(0, 12),
+    ...ticked,
+    ...nearest(/^public middle/i, 2),
+    ...nearest(/^public secondary/i, 2),
+  ]);
+  return toPlaces(
+    found.filter((f) => offered.has(f)),
+    (f) => ticked.has(f)
+  );
 };
 
 /* -------------------------------------------------------------------------- */
