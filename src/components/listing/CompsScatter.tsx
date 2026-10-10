@@ -4,11 +4,11 @@
  * WHY THIS CHART AND NOT A HISTOGRAM OR A PRICE STRIP. The reader's question is
  * not "what do houses cost round here", it is "is THIS price sensible". That is
  * a question about one point against a relationship, so the chart has to show
- * the relationship: the cloud of real closings, the line through them, and the
- * subject sitting above or below it. A histogram of prices hides the subject
- * inside a bar; a one-dimensional strip shows the answer with none of the
- * working. This shows the working, which is the entire brief — the estimate is
- * only as trustworthy as the evidence a reader can see for themselves.
+ * the relationship: the real closings, and the subject sitting above or below
+ * them. A histogram of prices hides the subject inside a bar; a one-dimensional
+ * strip shows the answer with none of the working. This shows the working,
+ * which is the entire brief — the estimate is only as trustworthy as the
+ * evidence a reader can see for themselves.
  *
  * RAW SALE PRICES, NOT ADJUSTED ONES. The dots are what those houses genuinely
  * closed at. Plotting adjusted prices would draw a tighter, prettier cloud that
@@ -22,7 +22,7 @@
  * CRMDashboard, so reaching for it here drops the whole library into a public
  * route's chunk. Its ResponsiveContainer measures DOM width, so it renders
  * empty on first paint and on paper. A viewBox scales without measuring
- * anything. And thirty points and a straight line is not a charting problem.
+ * anything. And five points is not a charting problem.
  * The precedent is already in this folder: ListingPayment draws its cost split
  * as a plain flex bar with role="img" and an enumerated aria-label.
  *
@@ -124,22 +124,12 @@ const CompsScatter = ({
   for (let v = yScale.min; v <= yScale.max + 1e-9; v += yScale.step) yTicks.push(v);
 
   /*
-   * The trend line, fitted here rather than passed in.
-   *
-   * This is an unweighted least-squares line through the DRAWN points, and it
-   * is deliberately not the estimator's own regression: that one is
-   * multivariate and weighted, and a two-dimensional chart cannot honestly
-   * depict a five-dimensional fit. Drawing this one keeps the line and the dots
-   * as the same statement — it is the trend in what is on screen, nothing more.
+   * NO TREND LINE. There was one — a least-squares line through the drawn
+   * points — while a chart held thirty or more sales. It holds five now, all
+   * within 20% of the subject's size, and a line through five points that close
+   * together slopes whichever way one sale tips it, including downhill —
+   * bigger houses selling for less. The five dots are the statement.
    */
-  const n = points.length;
-  const mx = points.reduce((s, p) => s + p.x, 0) / n;
-  const my = points.reduce((s, p) => s + p.y, 0) / n;
-  const sxx = points.reduce((s, p) => s + (p.x - mx) ** 2, 0);
-  const sxy = points.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0);
-  const slope = sxx > 0 ? sxy / sxx : 0;
-  const lineAt = (x: number) => my + slope * (x - mx);
-  const showLine = sxx > 0 && Number.isFinite(slope);
 
   const summary = [
     `Scatter plot of ${points.length} comparable sales.`,
@@ -219,19 +209,6 @@ const CompsScatter = ({
           stroke="#9ca3af"
           strokeWidth={1}
         />
-
-        {showLine && (
-          <line
-            x1={px(xScale.min)}
-            y1={py(lineAt(xScale.min))}
-            x2={px(xScale.max)}
-            y2={py(lineAt(xScale.max))}
-            className="stroke-champagne-ink"
-            strokeWidth={1.5}
-            strokeDasharray="6 4"
-            opacity={0.7}
-          />
-        )}
 
         {/* One dot per closed sale. Opacity carries the comp's weight, so the
             sales the estimate actually leans on read as the solid ones. */}
@@ -317,10 +294,6 @@ const CompsScatter = ({
         <span className="inline-flex items-center gap-2">
           <span className="h-2.5 w-4 bg-champagne/25" aria-hidden />
           Range
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="h-0.5 w-4 border-t border-dashed border-champagne-ink" aria-hidden />
-          Trend in these sales
         </span>
       </figcaption>
     </figure>

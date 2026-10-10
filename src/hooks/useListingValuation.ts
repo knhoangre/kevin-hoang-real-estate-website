@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import type { IdxListing } from '@/lib/idxSearch';
+import { headlinePrice, type IdxListing } from '@/lib/idxSearch';
 import { comparableCandidates, subjectCoordinate } from '@/lib/idxComps';
-import { supports, valuate, type Valuation } from '@/lib/valuation';
+import { againstAsking, supports, valuate, type Valuation } from '@/lib/valuation';
 
 /**
  * The comparable-sales valuation for one listing, fetched once per page.
@@ -35,6 +35,10 @@ export const useListingValuation = (listing: IdxListing | null) =>
       const coordinate = await subjectCoordinate(listing);
       const candidates = await comparableCandidates(listing, coordinate);
       const result = valuate(listing, candidates);
-      return 'valuation' in result ? result.valuation : null;
+      if (!('valuation' in result)) return null;
+      // Checked against the asking price HERE, once, so the line beside the
+      // price and the panel below it cannot disagree about whether there is a
+      // number. See againstAsking().
+      return againstAsking(result.valuation, headlinePrice(listing));
     },
   });

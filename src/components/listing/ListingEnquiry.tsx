@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { submitContactMessage } from '@/lib/submitContact';
 import { EVENTS, track } from '@/lib/analytics';
 import type { IdxListing } from '@/lib/idxSearch';
+import { formatPhoneInput } from '@/lib/phone';
 
 /**
  * Ask about THIS listing, without picking up the phone.
@@ -47,14 +48,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-/** Hyphens as they type. Same shape as the homepage form's, digits only. */
-const formatPhoneNumber = (value: string) => {
-  const numbers = value.replace(/\D/g, '');
-  if (numbers.length <= 3) return numbers;
-  if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-  return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-};
 
 const ListingEnquiry = ({ listing }: { listing: IdxListing }) => {
   const { toast } = useToast();
@@ -203,7 +196,7 @@ const ListingEnquiry = ({ listing }: { listing: IdxListing }) => {
                       placeholder="555-555-5555"
                       autoComplete="tel"
                       {...field}
-                      onChange={(e) => field.onChange(formatPhoneNumber(e.target.value))}
+                      onChange={(e) => field.onChange(formatPhoneInput(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />

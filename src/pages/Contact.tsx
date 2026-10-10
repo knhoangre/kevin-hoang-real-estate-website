@@ -21,6 +21,7 @@ import { SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
 import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
 import { agentIdentity, contactPage } from "@/lib/schema";
+import { formatPhoneInput } from "@/lib/phone";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -77,13 +78,6 @@ const Contact = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  const formatPhoneNumber = (input: string) => {
-    const numbers = input.replace(/\D/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-  };
 
   /**
    * Sends the message.
@@ -342,11 +336,10 @@ const Contact = () => {
                                 placeholder={t('contact.form.phone_number')}
                                 className="uppercase"
                                 onChange={(e) => {
-                                  const formatted = formatPhoneNumber(e.target.value);
+                                  const formatted = formatPhoneInput(e.target.value);
                                   e.target.value = formatted;
                                   onChange(formatted);
                                 }}
-                                maxLength={12}
                                 {...rest}
                               />
                             </FormControl>

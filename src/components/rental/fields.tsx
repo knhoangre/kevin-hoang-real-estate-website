@@ -199,7 +199,6 @@ export function PhoneField<T extends FieldValues>({
               inputMode="tel"
               autoComplete={autoComplete}
               placeholder="123-456-7890"
-              maxLength={12}
               disabled={disabled}
               value={field.value ?? ''}
               onChange={(e) => field.onChange(formatPhoneInput(e.target.value))}

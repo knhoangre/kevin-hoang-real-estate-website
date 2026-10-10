@@ -39,6 +39,12 @@
  *     floor area, so adjusting for both counts the same square feet twice. They
  *     filter which sales are comparable and then stay out of the arithmetic.
  *
+ *   * A SALE THAT IS NOT LIKE THE SUBJECT IS NOT A COMP, HOWEVER MANY THERE ARE.
+ *     Every comp is the same property type, within 20% of the floor area, within
+ *     a bedroom and a bathroom, and at most FIVE are used — the nearest and most
+ *     alike. See LIKENESS and MAX_COMPS below for what that replaced and what it
+ *     measured.
+ *
  *   * A MEAN IS NOT USED ANYWHERE. One estate sale or one teardown moves an
  *     average somewhere no house transacted. The same reasoning medianAskingRent
  *     sets out in idxSearch.ts, applied to a stronger claim.
@@ -140,7 +146,14 @@ export interface Valuation {
    * Null when there IS an estimate. The range, the chart and the comps are
    * shown in every case.
    */
-  withheld: 'dispersion' | 'larger-than-comps' | 'smaller-than-comps' | 'lot-beyond-comps' | null;
+  withheld:
+    | 'dispersion'
+    | 'larger-than-comps'
+    | 'smaller-than-comps'
+    | 'lot-beyond-comps'
+    /** Set by againstAsking(), not by valuate() — see that function. */
+    | 'far-from-asking'
+    | null;
   /** Weighted 25th and 75th percentile of adjusted prices. Always present. */
   low: number;
   high: number;
@@ -167,51 +180,132 @@ export type ValuationRefusal =
   | 'no-floor-area'
   | 'too-few-comps';
 
+/**
+ * One rung of the ladder: WHERE a sale may be and HOW LONG ago. What a sale has
+ * to be like is not a rung's business — that is LIKENESS, and it is the same on
+ * every rung.
+ */
 export interface CompTier {
   index: number;
   label: string;
   radiusKm: number | null;
   months: number;
-  sqftTolerance: number;
-  bedTolerance: number | null;
-  /** Whether the tier insists a comp share an architectural style code. */
-  sameStyle: boolean;
   /** Whether the tier insists a comp share the subject's five-digit ZIP. */
   sameZip?: boolean;
 }
 
 /**
- * The ladder, tightest first. The caller walks it and stops at the first rung
- * that yields MIN_COMPS.
+ * What makes a sale comparable at all, and it does NOT loosen as the ladder
+ * widens.
  *
- * The bounds are the ones appraisal practice uses — six to twelve months in a
- * stable market, the same immediate market area — widened rather than abandoned
- * when a thin town cannot fill them. Measured on the live feed on 2026-09-20,
- * a twelve-month window holds 273 single-family closings in Needham and 559 in
- * Newton, but 76 in Dover and 74 in Somerville, so the wide rungs are not
- * hypothetical: in Dover they are the normal case, and the panel says which
- * rung it used.
+ * Until 2026-10-09 it did: the last rung took any sale within 45% of the floor
+ * area with any number of bedrooms, and every rung used ALL the sales it
+ * matched. Kevin read the result on live listings — up to seventy "comparables"
+ * under one house, some of them thousands of square feet apart from it — and
+ * asked for what an agent would actually pull: the same kind of home, about the
+ * same size, the same beds and baths, and a handful of them.
+ *
+ *   size   within 20% of the subject's floor area, on every rung
+ *   beds   within one (two on a multi-family, where the count is the total
+ *          across units, so one bedroom is a smaller difference)
+ *   baths  within one, half-baths at half weight
+ *
+ * An UNKNOWN bedroom or bath count is not a mismatch, for the reason an unknown
+ * style is not: "we were not told" would otherwise empty the comp set for every
+ * listing whose agent left a field blank.
+ *
+ * MEASURED 2026-10-09 on 1,276 real closings (thirty per town and type, each
+ * hidden from its own comps): on the homes both rules could value the error is
+ * about the same (median 9.6% before, 8.8% after — closer on 301 homes, further
+ * on 288). Five like sales are as accurate as dozens of loose ones; they are
+ * not much MORE accurate. What changed is which homes get a number: the rule
+ * now declines where five like sales do not exist — 19% of those closings
+ * instead of 8% — and the homes that lost their number were the ones the old
+ * rule was worst on (median 13.0% off, against 9.6% for the rest). The furthest
+ * comp from its subject went from 3,093 sq ft away to 1,725, and the typical
+ * furthest from 500 to 296.
+ */
+export const LIKENESS = {
+  sqftTolerance: 0.2,
+  bedTolerance: 1,
+  bedToleranceMultiFamily: 2,
+  bathTolerance: 1,
+} as const;
+
+/**
+ * What to ask the database for: TWO questions, because one cannot serve both
+ * jobs.
+ *
+ *   like  every sale a comp could be — within LIKENESS of the subject's size,
+ *         over the longest rung. Asked on its own so that it comes back WHOLE.
+ *   pool  a wide sample of the town's market, 45% either side in size, which is
+ *         what the market trend and the adjustment rates are fitted on. A
+ *         regression cannot measure what a square foot is worth from houses
+ *         that are all the same size, so this band is deliberately wider than
+ *         a comp may be.
+ *
+ * Until 2026-10-09 there was only the pool query, capped at its 250 most recent
+ * rows. In a busy town that cap is weeks, not months: Boston condos filled it
+ * with six weeks of sales, so a listing there found almost nothing from its own
+ * ZIP code and fell back to sales from anywhere in the city. Newton and
+ * Cambridge lose their older sales to the same cap. The like band is narrow
+ * enough to come back complete in every town but Boston, and there it reaches
+ * months instead of weeks.
+ *
+ * idxComps.ts and the backtest both call this, so the page and the instrument
+ * that measures it cannot ask different questions.
+ */
+export const candidateBounds = (
+  area: number
+): { months: number; minSqft: number; maxSqft: number; limit: number }[] => [
+  {
+    months: Math.max(...TIERS.map((t) => t.months)),
+    minSqft: Math.round(area * (1 - LIKENESS.sqftTolerance)),
+    maxSqft: Math.round(area * (1 + LIKENESS.sqftTolerance)),
+    // The function's own ceiling.
+    limit: 500,
+  },
+  {
+    months: 18,
+    minSqft: Math.round(area * 0.55),
+    maxSqft: Math.round(area * 1.45),
+    limit: 250,
+  },
+];
+
+/**
+ * The ladder, nearest first. The caller walks it and stops at the first rung
+ * holding MAX_COMPS like sales, then keeps the best MAX_COMPS of that rung.
+ *
+ * Each rung widens WHERE. None of them widens what a comp has to be like — see
+ * LIKENESS — and none goes past twelve months.
+ *
+ * THERE IS NO TOWN-WIDE RUNG, and there was one until 2026-10-09. A sale from
+ * somewhere else in the town, at a distance nobody knows, is not a comparable:
+ * "Boston" is one MLS town from Back Bay to Mattapan. Measured on 1,276 real
+ * closings the town-wide rung was the worst on the ladder — off by 18% on
+ * average against 13% for the rest, and one number in five more than 25% out —
+ * and on a sample of 152 homes for sale statewide, where it was mostly Boston,
+ * its estimates sat a median of 28% from the asking price against 11% for the
+ * ZIP rung. A thin town used to be answered by widening until something
+ * matched; it is now answered by saying there is no estimate. An eighteen-month
+ * same-ZIP rung was tried in its place and added nothing.
  *
  * Distance is in kilometres because the query measures in kilometres; the UI
  * renders miles, which is what a reader in Massachusetts thinks in.
  */
 export const TIERS: CompTier[] = [
-  { index: 0, label: 'within half a mile, last 6 months', radiusKm: 0.8, months: 6, sqftTolerance: 0.15, bedTolerance: 0, sameStyle: true },
-  { index: 1, label: 'within 1 mile, last 9 months', radiusKm: 1.6, months: 9, sqftTolerance: 0.2, bedTolerance: 1, sameStyle: true },
-  { index: 2, label: 'within 2 miles, last 12 months', radiusKm: 3.2, months: 12, sqftTolerance: 0.25, bedTolerance: 1, sameStyle: false },
+  { index: 0, label: 'within half a mile, in the last 12 months', radiusKm: 0.8, months: 12 },
+  { index: 1, label: 'within 1 mile, in the last 12 months', radiusKm: 1.6, months: 12 },
+  { index: 2, label: 'within 2 miles, in the last 12 months', radiusKm: 3.2, months: 12 },
   /*
    * THE RUNG THAT WORKS WITHOUT COORDINATES. Everything above needs a geocode on
-   * both sides, so until the backfill lands — and for any address the Census
-   * geocoder cannot place — the ladder used to fall straight from "within two
-   * miles" to "same town". In a compact town that costs little. In Boston it is
-   * the difference between Back Bay and Mattapan: single-family estimates there
-   * were 26% off at town level (backtest, 2026-09-26), because "Boston" is one
-   * MLS town covering neighbourhoods an order of magnitude apart in price. ZIP
-   * codes track those neighbourhoods closely, and every row has one.
+   * both sides, and sales outside the seventeen served towns have none. ZIP
+   * codes track a city's neighbourhoods closely, and every row has one:
+   * single-family estimates in Boston were 26% off against the whole town and
+   * 12% against the ZIP (backtest, 2026-09-26).
    */
-  { index: 3, label: 'same ZIP code, last 12 months', radiusKm: null, months: 12, sqftTolerance: 0.25, bedTolerance: 1, sameStyle: false, sameZip: true },
-  { index: 4, label: 'same town, last 18 months', radiusKm: null, months: 18, sqftTolerance: 0.3, bedTolerance: 1, sameStyle: false },
-  { index: 5, label: 'same town, last 18 months, wider size range', radiusKm: null, months: 18, sqftTolerance: 0.45, bedTolerance: null, sameStyle: false },
+  { index: 3, label: 'in the same ZIP code, in the last 12 months', radiusKm: null, months: 12, sameZip: true },
 ];
 
 /**
@@ -220,24 +314,30 @@ export const TIERS: CompTier[] = [
  * medianAskingRent sets three, for a median of ASKING rents offered as a
  * starting point in an editable field. This is a statement about what one
  * specific house is worth, shown next to somebody else's asking price, so it
- * carries more weight and needs more behind it. Five also happens to be the
- * number of closed sales a residential appraisal grid conventionally brackets a
- * subject with.
+ * carries more weight and needs more behind it.
+ *
+ * Three was tried again on 2026-10-09, when the size band tightened and more
+ * homes fell short of five: it would have put a number on about forty more of
+ * 1,276 closings, and those were off by nearly 20% on average against 13% for
+ * the rest. With fewer than five like sales the page shows nothing.
  */
 export const MIN_COMPS = 5;
 
 /**
- * How many comps a rung must hold before the ladder STOPS there.
+ * The most sales an estimate is built from — the five nearest and most alike.
  *
- * Higher than MIN_COMPS on purpose. MIN_COMPS is the floor below which there is
- * no estimate at all; this is the point at which a tighter rung is preferred to
- * a wider one. With geocodes loaded, stopping at the first rung of five meant
- * most estimates leaned on five or six sales within a mile, and the backtest got
- * WORSE for it — nearer evidence, but too little of it to average out one odd
- * sale. Eight keeps proximity first while asking a rung to be adequately
- * populated before it is trusted on its own.
+ * It used to be every sale a rung matched, which in a busy town was dozens and
+ * once 173. A reader cannot check seventy sales, and an estimate nobody can
+ * check is the thing this module exists not to be. Five is also what an
+ * appraiser's grid holds. Equal to MIN_COMPS on purpose: an estimate rests on
+ * exactly five like sales or it is not made.
+ *
+ * The ladder stops at the first rung that HOLDS five. Asking a rung for eight
+ * before trusting it (TIER_TARGET, until 2026-10-09) was a fix for estimates
+ * leaning on five loosely matched sales; with the likeness band fixed it
+ * measured as no different, and it was removed.
  */
-export const TIER_TARGET = 8;
+export const MAX_COMPS = 5;
 
 /**
  * Above this, the comps disagree too much to name a single number.
@@ -421,8 +521,8 @@ const sharesStyle = (a: string | null, b: string | null): boolean => {
   const sa = styleSet(a);
   const sb = styleSet(b);
   // An unknown style cannot be said to differ. Treating "we were not told" as a
-  // mismatch would silently empty tier 0 and 1 for every listing whose agent
-  // left the field blank.
+  // mismatch would count against every listing whose agent left the field
+  // blank.
   if (sa.size === 0 || sb.size === 0) return true;
   for (const s of sa) if (sb.has(s)) return true;
   return false;
@@ -536,27 +636,23 @@ export const matchesTier = (
     if (comp.distance_km === null || comp.distance_km > tier.radiusKm) return false;
   }
 
-  const ratio = Math.abs(comp.living_area - area) / area;
-  if (ratio > tier.sqftTolerance) return false;
+  // LIKENESS — the same on every rung. See the note on the constant.
+  if (Math.abs(comp.living_area - area) / area > LIKENESS.sqftTolerance) return false;
 
-  if (tier.bedTolerance !== null && subject.bedrooms !== null && comp.bedrooms !== null) {
-    if (Math.abs(comp.bedrooms - subject.bedrooms) > tier.bedTolerance) return false;
+  const bedTolerance =
+    subject.prop_type === 'MF' ? LIKENESS.bedToleranceMultiFamily : LIKENESS.bedTolerance;
+  if (subject.bedrooms !== null && comp.bedrooms !== null) {
+    if (Math.abs(comp.bedrooms - subject.bedrooms) > bedTolerance) return false;
+  }
+
+  const subjectBaths = bathCount(subject.full_baths, subject.half_baths);
+  const compBaths = bathCount(comp.full_baths, comp.half_baths);
+  if (subjectBaths !== null && compBaths !== null) {
+    if (Math.abs(compBaths - subjectBaths) > LIKENESS.bathTolerance) return false;
   }
 
   // A two-family is never a comp for a three-family, at any rung.
   if (subject.prop_type === 'MF' && unitClass(comp.prop_subtype) !== unitClass(subject.prop_subtype)) {
-    return false;
-  }
-
-  // Style only means something where MLS PIN publishes a codebook for it, which
-  // is single-family and condo. On multi-family the column can hold subtype
-  // codes the feed fell back to, so matching on it would compare unrelated
-  // letters — see the STYLE/SF_TYPE alias note in _shared/idx.ts.
-  if (
-    tier.sameStyle &&
-    subject.prop_type !== 'MF' &&
-    !sharesStyle(subject.style, comp.style)
-  ) {
     return false;
   }
 
@@ -718,27 +814,36 @@ const sqftRate = (
 };
 
 /**
- * How much this comp counts.
+ * How much this comp counts — and, since 2026-10-09, which five are kept.
  *
- * Three exponential decays multiplied together — distance, age of sale, and
- * dissimilarity in floor area. This is the standard comparables-AVM weighting:
- * a comp is better the nearer, more recent and more alike it is, and the decay
- * is smooth so that no comp falls off a cliff at a tier boundary.
+ * Exponential decays multiplied together: distance, age of sale, and how unlike
+ * the subject it is in floor area, bedrooms, bathrooms and style. This is the
+ * standard comparables-AVM weighting: a comp is better the nearer, more recent
+ * and more alike it is, and the decay is smooth so that no comp falls off a
+ * cliff at a rung's boundary.
  *
- * A comp with NO coordinate is not discarded — at the wide rungs most rows may
- * have none until the geocode backfill lands — but it is halved, because "we do
- * not know where this is" is genuinely weaker evidence than "this is 300 metres
- * away" and should not be able to outweigh it.
+ * ONE SCORE FOR BOTH JOBS. chooseComps() ranks a rung by this and keeps the top
+ * five; the estimate then weights those five by it. A second, different score
+ * for selection would be a second opinion about what "alike" means.
+ *
+ * A comp with NO coordinate is not discarded but it is discounted, because "we
+ * do not know where this is" is genuinely weaker evidence than "this is 300
+ * metres away" and should not be able to outweigh it.
+ *
+ * Style is a preference here and no longer a filter: a Colonial is a better
+ * comp for a Colonial than a Ranch is, but a Ranch the same size on the same
+ * street is still better than nothing. Multi-family is exempt — the column has
+ * no codebook there, see _shared/idx.ts.
  */
-const compWeight = (subject: ValuationSubject, comp: Comp, now = new Date()): number => {
+export const compWeight = (subject: ValuationSubject, comp: Comp, now = new Date()): number => {
   const area = subject.living_area ?? 0;
 
   /*
    * With a distance, decay on it. Without one, fall back to the ZIP: a same-ZIP
    * sale is genuinely better evidence than one from the other end of town, and
-   * at the town-wide rungs — which is where every ungeocoded valuation ends up —
-   * this is the only locational signal left. Either unknown half is still
-   * weaker than any measured distance under about a kilometre.
+   * the ZIP rung — where every ungeocoded valuation ends up — has no finer
+   * signal. Either unknown half is still weaker than any measured distance
+   * under about a kilometre.
    */
   const sameZip = zip5(subject.zip) !== null && zip5(subject.zip) === zip5(comp.zip);
   const distance =
@@ -753,7 +858,60 @@ const compWeight = (subject: ValuationSubject, comp: Comp, now = new Date()): nu
       ? Math.exp(-Math.abs(comp.living_area - area) / area / 0.25)
       : 0.5;
 
-  return Math.max(distance * recency * size, 1e-6);
+  // Each bedroom of difference costs 40%; a full bathroom about half.
+  const beds =
+    subject.bedrooms !== null && comp.bedrooms !== null
+      ? 0.6 ** Math.abs(subject.bedrooms - comp.bedrooms)
+      : 1;
+  const subjectBaths = bathCount(subject.full_baths, subject.half_baths);
+  const compBaths = bathCount(comp.full_baths, comp.half_baths);
+  const baths =
+    subjectBaths !== null && compBaths !== null
+      ? Math.exp(-Math.abs(subjectBaths - compBaths) / 1.5)
+      : 1;
+  const style =
+    subject.prop_type !== 'MF' && !sharesStyle(subject.style, comp.style) ? 0.7 : 1;
+
+  return Math.max(distance * recency * size * beds * baths * style, 1e-6);
+};
+
+/**
+ * The five sales an estimate is built from, out of everything a rung matched.
+ *
+ * The five highest-scoring, with one exception that an appraiser makes on
+ * purpose: THE COMPS SHOULD BRACKET THE SUBJECT, one at least as large and one
+ * at least as small, so the estimate is read between real sales rather than
+ * projected past them. Five sales chosen for likeness alone often leave the
+ * subject just outside their size range, by chance. So when the
+ * best five are all smaller and the rung holds a larger one, that sale replaces
+ * the weakest of the five — and the same the other way. Measured 2026-10-09:
+ * without the swap about sixty more of 1,276 homes lost their single number to
+ * the bracketing rule in valuate(), for no gain in accuracy on the rest.
+ *
+ * Ties break on the MLS number so the same listing always shows the same five.
+ */
+export const chooseComps = (subject: ValuationSubject, matched: Comp[], now = new Date()): Comp[] => {
+  const ranked = matched
+    .map((comp) => ({ comp, score: compWeight(subject, comp, now) }))
+    .sort((a, b) => b.score - a.score || a.comp.mls_number.localeCompare(b.comp.mls_number))
+    .map((r) => r.comp);
+
+  const chosen = ranked.slice(0, MAX_COMPS);
+  const rest = ranked.slice(MAX_COMPS);
+  const area = subject.living_area ?? 0;
+
+  const sides = [
+    (c: Comp) => (c.living_area ?? 0) >= area,
+    (c: Comp) => (c.living_area ?? 0) <= area,
+  ];
+  for (const onSide of sides) {
+    if (chosen.some(onSide)) continue;
+    // Every chosen comp is on the OTHER side, so replacing the weakest cannot
+    // unbracket it.
+    const standIn = rest.find(onSide);
+    if (standIn) chosen[chosen.length - 1] = standIn;
+  }
+  return chosen;
 };
 
 /**
@@ -775,34 +933,34 @@ export const valuate = (
   // be correct on any input rather than only on what that query returns.
   if (area < 300 || area > 15000) return { refusal: 'no-floor-area' };
 
-  // Walk the ladder and stop at the first rung with enough behind it. If none
-  // reaches TIER_TARGET, the fullest rung is used, provided it clears MIN_COMPS.
-  let tier = TIERS[TIERS.length - 1];
+  // Walk the ladder and stop at the first rung holding five like sales, then
+  // keep the best five of it. If no rung holds five there is no estimate.
+  let tier: CompTier | null = null;
+  let rung: Comp[] = [];
   let selected: Comp[] = [];
   for (const candidate of TIERS) {
     const matched = candidates.filter(
-      (c) => c.mls_number !== subject.mls_number && matchesTier(subject, c, candidate, now)
+      (c) =>
+        c.mls_number !== subject.mls_number &&
+        !!c.sale_price &&
+        matchesTier(subject, c, candidate, now)
     );
-    if (matched.length >= TIER_TARGET) {
+    if (matched.length >= MIN_COMPS) {
       tier = candidate;
-      selected = matched;
+      rung = matched;
+      selected = chooseComps(subject, matched, now);
       break;
-    }
-    // Keep the widest attempt, so a refusal can still say how close it came.
-    if (matched.length > selected.length) {
-      tier = candidate;
-      selected = matched;
     }
   }
 
-  if (selected.length < MIN_COMPS) return { refusal: 'too-few-comps' };
+  if (tier === null) return { refusal: 'too-few-comps' };
 
   const monthlyTrend = marketTrend(candidates, now);
 
   /*
    * RATES FROM THE MARKET, APPLIED TO THE NEAREST COMPS — which is how an
-   * appraiser separates the two jobs. The comps chosen above are few by design
-   * (the nearest and most alike), and a regression on six or eight sales cannot
+   * appraiser separates the two jobs. The comps chosen above are five by design
+   * (the nearest and most alike), and a regression on five sales cannot
    * support five coefficients: it either fails to fit or fits noise, and the
    * grid falls back to a crude flat rate. The whole candidate pool — every sale
    * of this type in the town within the window, typically one to two hundred —
@@ -926,6 +1084,10 @@ export const valuate = (
   const areas = selected.map((c) => c.living_area as number);
 
   /*
+   * chooseComps() brackets whenever the rung allows it, so this fires only when
+   * NO like sale on the missing side exists — every sale within 20% of this
+   * home's size, nearby, was smaller than it (or every one larger).
+   *
    * The same test on LOT size, on the large side only and with slack. Measured
    * on a live Mansfield listing on 2026-09-26: a 2,500 sq ft ranch on ten acres,
    * marketed as a three-lot development parcel, was valued as a ranch — the
@@ -938,9 +1100,14 @@ export const valuate = (
    * slightly bigger than the biggest comp's is still the same kind of property.
    * Single-family and multi-family only — a condo's `acres` is the complex's,
    * or absent.
+   *
+   * Measured against every like sale on the RUNG, not only the five kept. Five
+   * sales have a smaller largest lot than thirty do, so against the five this
+   * fired on 31 of 1,276 closings instead of 17 (2026-10-09), and the fourteen
+   * it added were ordinary houses the estimate was no worse on than any other.
    */
   const subjectAcres = subject.acres ?? 0;
-  const compAcres = selected.map((c) => c.acres ?? 0).filter((a) => a > 0);
+  const compAcres = rung.map((c) => c.acres ?? 0).filter((a) => a > 0);
   const lotBeyond =
     subject.prop_type !== 'CC' &&
     subjectAcres > 0 &&
@@ -989,6 +1156,58 @@ export const valuate = (
  */
 export const comparableAsking = (asking: number | null): number | null =>
   asking !== null && Number.isFinite(asking) && asking >= 10_000 ? asking : null;
+
+/**
+ * How far the estimate may sit from the asking price and still be shown.
+ *
+ * MEASURED, AND THE RESULT IS BLUNT. On 812 real closings that had both an
+ * estimate and a list price (2026-10-09), the list price was a median of 3.0%
+ * from what the home sold for. Where the estimate was more than 20% from the
+ * list price — 162 homes — the estimate was the closer of the two ONCE in the
+ * 20-25% band and twice in everything beyond it, and it was off by a median of
+ * 21% rising to 43%. An estimate that far from the asking price is not news
+ * about the asking price. It is the model missing something about the home —
+ * the building, the condition, the exact street — that the person who priced
+ * it could see.
+ *
+ * So past this point there is no number. Applying it took the estimates that
+ * ARE shown from a median of 9.3% off to 6.8%, from 80% within 20% of the sale
+ * price to 96%, and from 113 that were more than 25% out to 12.
+ *
+ * What it costs is stated plainly, because it is real: the estimate can no
+ * longer be the thing that says a listing is wildly overpriced. It can say 15%.
+ * It was never right when it said 40%.
+ */
+export const ASKING_DISAGREEMENT = 0.2;
+
+/**
+ * Withhold the estimate when it and the asking price are too far apart.
+ *
+ * Separate from valuate() on purpose: that function answers "what do these
+ * sales say" and knows nothing about what anyone is asking, which is what lets
+ * the backtest and the synthetic check run it on homes with no list price at
+ * all. This is the second question — "is that answer fit to print beside this
+ * asking price" — and the page asks it once, in useListingValuation.
+ *
+ * A placeholder price ($1, an auction) is no price to compare with, so the
+ * valuation passes through untouched. So does a valuation with nothing to
+ * compare: when the number was already withheld for another reason, the RANGE
+ * is what the page would print, and the same test is applied to its nearer
+ * edge — a range of $600k-$660k under a $1.4M asking price is the same wrong
+ * statement as a single figure.
+ */
+export const againstAsking = (valuation: Valuation, asking: number | null): Valuation => {
+  const ask = comparableAsking(asking);
+  if (ask === null) return valuation;
+
+  const nearest =
+    valuation.estimate !== null
+      ? valuation.estimate
+      : Math.min(Math.max(ask, valuation.low), valuation.high);
+  if (Math.abs(nearest - ask) / ask <= ASKING_DISAGREEMENT) return valuation;
+
+  return { ...valuation, estimate: null, withheld: 'far-from-asking' };
+};
 
 /** Kilometres to miles, for display. The query measures in km; readers do not. */
 export const toMiles = (km: number): number => km * 0.621371;

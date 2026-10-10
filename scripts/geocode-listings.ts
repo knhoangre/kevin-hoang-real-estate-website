@@ -7,7 +7,7 @@
  * WHY THIS EXISTS. MLS PIN's feed carries no latitude or longitude — asserted
  * in the code rather than assumed — so "comparable sales near this house" has
  * no way to mean anything until addresses are resolved to coordinates. The comp
- * ladder is built to run without them and falls back to town-wide matching, so
+ * ladder is built to run without them and falls back to the same ZIP code, so
  * this sharpens the feature rather than switching it on.
  *
  * WHY THE CENSUS GEOCODER. Free, no API key, no usage terms on the results,

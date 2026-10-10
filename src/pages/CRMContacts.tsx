@@ -51,6 +51,8 @@ import { Search, Mail, Phone, Calendar, MessageSquare, Upload, Download, Edit, S
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { errorMessage } from '@/lib/utils';
+import { formatPhone } from '@/lib/crmContacts';
+import { formatPhoneInput } from '@/lib/phone';
 
 type Address = {
   id: number;
@@ -596,11 +598,8 @@ export default function CRMContacts() {
             let phoneId = null;
             if (contact.phone) {
               // Format phone number if provided
-              let formattedPhone = contact.phone;
-              const numbers = formattedPhone.replace(/\D/g, "");
-              if (numbers.length === 10) {
-                formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-              }
+              // A spreadsheet export writes "+1 (203) 379-8682" as often as not.
+              const formattedPhone = formatPhone(contact.phone);
               
               // Try to find existing phone
               const { data: existingPhone, error: lookupError } = await supabase
@@ -927,13 +926,7 @@ export default function CRMContacts() {
 
     try {
       // Format phone if provided
-      let formattedPhone = editFormData.phone;
-      if (formattedPhone) {
-        const numbers = formattedPhone.replace(/\D/g, "");
-        if (numbers.length === 10) {
-          formattedPhone = `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
-        }
-      }
+      const formattedPhone = editFormData.phone ? formatPhone(editFormData.phone) : editFormData.phone;
 
       // Get or create first name
       let firstNameId;
@@ -1616,7 +1609,7 @@ export default function CRMContacts() {
                       </Label>
                       <Input
                         value={editFormData.phone}
-                        onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                        onChange={(e) => setEditFormData({ ...editFormData, phone: formatPhoneInput(e.target.value) })}
                         placeholder="860-682-2251"
                         className="mt-0"
                       />

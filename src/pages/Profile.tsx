@@ -12,6 +12,7 @@ import { Loader2, Eye, EyeOff, Check, X, Upload, Camera, ZoomIn, ZoomOut, Rotate
 import { Separator } from "@/components/ui/separator";
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { formatPhoneInput } from '@/lib/phone';
 
 interface ProfileData {
   first_name: string;
@@ -490,7 +491,7 @@ export default function Profile() {
                   type="tel"
                   value={profile.phone_number}
                   onChange={(e) =>
-                    setProfile((prev) => ({ ...prev, phone_number: e.target.value }))
+                    setProfile((prev) => ({ ...prev, phone_number: formatPhoneInput(e.target.value) }))
                   }
                 />
               </div>

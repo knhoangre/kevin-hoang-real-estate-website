@@ -34,6 +34,7 @@ import KioskShell, {
 import { errorMessage } from '@/lib/utils';
 import ListingLookup from '@/components/admin/ListingLookup';
 import { SITE } from '@/lib/siteConfig';
+import { formatPhoneInput } from '@/lib/phone';
 
 /** "kevinhoang.co", for the line that says where the guest's link will point. */
 const SITE_HOST = new URL(SITE.origin).host;
@@ -237,13 +238,6 @@ const OpenHouse = () => {
       setMlsNumber(previousMls[selectedAddress] ?? null);
       setAddressInputMode('select');
     }
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
   const getSignInLocationPayload = () => {
@@ -632,11 +626,10 @@ const OpenHouse = () => {
                       id="phone"
                       placeholder="XXX-XXX-XXXX"
                       onChange={(e) => {
-                        const formatted = formatPhoneNumber(e.target.value);
+                        const formatted = formatPhoneInput(e.target.value);
                         e.target.value = formatted;
                         onChange(formatted);
                       }}
-                      maxLength={12}
                       {...rest}
                     />
                   </FormControl>

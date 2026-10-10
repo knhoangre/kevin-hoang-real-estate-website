@@ -60,6 +60,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SITE } from "@/lib/siteConfig";
+import { formatPhoneInput } from "@/lib/phone";
 
 type Deal = {
   id: number;
@@ -915,7 +916,7 @@ export default function CRMDeals() {
                             type="tel"
                             value={newContact.phone}
                             onChange={(e) =>
-                              setNewContact({ ...newContact, phone: e.target.value })
+                              setNewContact({ ...newContact, phone: formatPhoneInput(e.target.value) })
                             }
                             placeholder="617-555-0140"
                           />

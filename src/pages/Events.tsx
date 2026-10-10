@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { formatPhoneInput } from '@/lib/phone';
 import { EVENTS, track } from '@/lib/analytics';
 import {
   Form,
@@ -146,13 +147,6 @@ const Events = () => {
       eventForm.setValue('eventName', value);
       setEventInputMode('select');
     }
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
   const handleSignInSubmit = async (data: SignInFormValues) => {
@@ -426,11 +420,10 @@ const Events = () => {
                       id="phone"
                       placeholder="XXX-XXX-XXXX"
                       onChange={(e) => {
-                        const formatted = formatPhoneNumber(e.target.value);
+                        const formatted = formatPhoneInput(e.target.value);
                         e.target.value = formatted;
                         onChange(formatted);
                       }}
-                      maxLength={12}
                       {...rest}
                     />
                   </FormControl>

@@ -34,10 +34,10 @@
  */
 import { Link } from 'react-router-dom';
 import { LineChart } from 'lucide-react';
-import { formatPrice } from '@/lib/listings';
+import { formatBathsShort, formatPrice } from '@/lib/listings';
 import { headlinePrice, type IdxListing } from '@/lib/idxSearch';
 import { estimateSuppressed } from '@/lib/idxComps';
-import { comparableAsking, toMiles } from '@/lib/valuation';
+import { comparableAsking, LIKENESS, MAX_COMPS, toMiles } from '@/lib/valuation';
 import { useListingValuation } from '@/hooks/useListingValuation';
 import CompsScatter from '@/components/listing/CompsScatter';
 import { VALUATION_ANCHOR } from '@/components/listing/ValuationSummary';
@@ -108,10 +108,50 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
         {distance ? `, a median of ${distance} away` : ''}. Closed prices, not
         asking prices.
       </p>
+      {/* The rule, in the reader's terms. It is what makes these five the
+          comparables rather than five sales that happened to be nearby, and
+          the numbers are read from LIKENESS so the sentence cannot outlive a
+          change to it. */}
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600">
+        Each one is the same kind of property, within{' '}
+        {Math.round(LIKENESS.sqftTolerance * 100)}% of this home&rsquo;s size, and
+        within{' '}
+        {listing.prop_type === 'MF'
+          ? 'two bedrooms (counted across every unit)'
+          : 'one bedroom'}{' '}
+        and one bathroom of it. Where more than {MAX_COMPS} sales matched, these
+        are the nearest and most alike.
+      </p>
 
       {/* --- The number, or the honest absence of one --- */}
       <div className="mt-8 rounded-2xl border border-gray-200 bg-bone p-7">
-        {estimate !== null ? (
+        {valuation.withheld === 'far-from-asking' ? (
+          <>
+            {/* No number AND no headline range: a range printed large under an
+                asking price twice its size is the same claim as a number. The
+                figures are in the sentence, where they read as the reason. */}
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+              No estimate for this home
+            </p>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-gray-700">
+              The closest matching sales point to{' '}
+              <span className="numeral">
+                {formatPrice(valuation.low)}–{formatPrice(valuation.high)}
+              </span>
+              {asking !== null && (
+                <>
+                  , a long way from the{' '}
+                  <span className="numeral">{formatPrice(asking)}</span> asking
+                  price
+                </>
+              )}
+              . When the two are that far apart it is almost always because
+              something about {label} is not in the sale records — the
+              building, the condition, the exact spot — so no estimate is given.
+              The sales are listed below.
+            </p>
+          </>
+        ) : estimate !== null ? (
           <>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
               These sales suggest
@@ -119,10 +159,14 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
             <p className="numeral mt-2 text-4xl font-semibold text-ink sm:text-5xl">
               {formatPrice(estimate)}
             </p>
-            <p className="numeral mt-2 text-sm text-gray-600">
-              Most of the evidence falls between {formatPrice(valuation.low)} and{' '}
-              {formatPrice(valuation.high)}
-            </p>
+            {/* Five units in one building can close at one price, and "between
+                $415,000 and $415,000" is not a range. */}
+            {valuation.high > valuation.low && (
+              <p className="numeral mt-2 text-sm text-gray-600">
+                Most of the evidence falls between {formatPrice(valuation.low)} and{' '}
+                {formatPrice(valuation.high)}
+              </p>
+            )}
           </>
         ) : (
           <>
@@ -221,13 +265,15 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
         The sales this is built from
       </h3>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[42rem] border-collapse text-left text-sm">
+        <table className="w-full min-w-[48rem] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500">
               <th scope="col" className="py-2 pr-4 font-semibold">Address</th>
               <th scope="col" className="py-2 pr-4 font-semibold">Sold</th>
               <th scope="col" className="py-2 pr-4 font-semibold">Away</th>
-              <th scope="col" className="py-2 pr-4 text-right font-semibold">Size</th>
+              <th scope="col" className="py-2 pr-4 text-right font-semibold">Beds</th>
+              <th scope="col" className="py-2 pr-4 text-right font-semibold">Baths</th>
+              <th scope="col" className="py-2 pr-4 text-right font-semibold">Sq ft</th>
               <th scope="col" className="py-2 pr-4 text-right font-semibold">Sold for</th>
               <th scope="col" className="py-2 text-right font-semibold">
                 Adjusted to this home
@@ -235,6 +281,29 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
             </tr>
           </thead>
           <tbody>
+            {/* The subject first, so each sale is read against it rather than
+                against a specification further up the page. */}
+            <tr className="border-b border-gray-200 bg-bone align-top">
+              <td className="py-3 pr-4 font-semibold text-ink">
+                {label}
+                <span className="block text-xs font-normal text-gray-500">This home</span>
+              </td>
+              <td className="py-3 pr-4 text-gray-500">—</td>
+              <td className="py-3 pr-4 text-gray-500">—</td>
+              <td className="numeral py-3 pr-4 text-right font-semibold text-ink">
+                {listing.bedrooms ?? '—'}
+              </td>
+              <td className="numeral py-3 pr-4 text-right font-semibold text-ink">
+                {listing.full_baths === null && listing.half_baths === null
+                  ? '—'
+                  : formatBathsShort(listing.full_baths, listing.half_baths)}
+              </td>
+              <td className="numeral py-3 pr-4 text-right font-semibold text-ink">
+                {listing.living_area?.toLocaleString() ?? '—'}
+              </td>
+              <td className="py-3 pr-4 text-right text-gray-500">—</td>
+              <td className="py-3 text-right text-gray-500">—</td>
+            </tr>
             {valuation.comps.map((comp) => {
               const away = formatDistance(comp.distance_km);
               return (
@@ -258,6 +327,14 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
                     {formatMonths(comp.monthsAgo)}
                   </td>
                   <td className="numeral py-3 pr-4 text-gray-700">{away ?? '—'}</td>
+                  <td className="numeral py-3 pr-4 text-right text-gray-700">
+                    {comp.bedrooms ?? '—'}
+                  </td>
+                  <td className="numeral py-3 pr-4 text-right text-gray-700">
+                    {comp.full_baths === null && comp.half_baths === null
+                      ? '—'
+                      : formatBathsShort(comp.full_baths, comp.half_baths)}
+                  </td>
                   <td className="numeral py-3 pr-4 text-right text-gray-700">
                     {comp.living_area?.toLocaleString() ?? '—'}
                   </td>

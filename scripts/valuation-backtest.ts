@@ -3,6 +3,7 @@
  *
  *   node scripts/valuation-backtest.ts
  *   node scripts/valuation-backtest.ts --per-town 40
+ *   node scripts/valuation-backtest.ts --raw      (without the asking-price check)
  *
  * WHAT THIS IS, AND WHAT IT IS NOT. scripts/valuation-check.ts asserts the
  * estimator recovers parameters it was not told, on a market generated from
@@ -31,10 +32,10 @@
  * RE-RUN THIS after any change to the tiers, the adjustment grid or the
  * weighting — and again once the geocode backfill lands, which should be the
  * single largest improvement available: with no coordinates every valuation
- * resolves at tier 3 (town-wide) because tiers 0 to 2 all require a radius.
+ * resolves at the ZIP rung because the three above it all require a radius.
  */
 import { readFileSync } from 'node:fs';
-import { addressKey, valuate, TIERS, type Comp, type ValuationSubject } from '../src/lib/valuation.ts';
+import { addressKey, againstAsking, candidateBounds, valuate, TIERS, type Comp, type ValuationSubject } from '../src/lib/valuation.ts';
 
 const readEnvFile = (): Record<string, string> => {
   try {
@@ -73,6 +74,7 @@ const arg = (flag: string, fallback: number): number => {
 };
 const PER_TOWN = arg('--per-town', 25);
 const NO_GEO = process.argv.includes('--no-geo');
+const RAW = process.argv.includes('--raw');
 
 /**
  * Property types to measure. All three the estimator supports, by default —
@@ -93,12 +95,6 @@ const TOWNS = [
   'Cambridge', 'Somerville', 'Waltham', 'Medford', 'Malden', 'Quincy',
   'Braintree', 'Brookline', 'Belmont', 'Winchester',
 ];
-
-/** The query bounds, derived from the tiers so they cannot drift apart. */
-const widest = TIERS.reduce(
-  (a, t) => ({ months: Math.max(a.months, t.months), sqft: Math.max(a.sqft, t.sqftTolerance) }),
-  { months: 0, sqft: 0 }
-);
 
 interface Scored {
   type: string;
@@ -123,6 +119,7 @@ const main = async () => {
     if (!res.ok) continue;
     const holdouts = (await res.json()) as (ValuationSubject & {
       sale_price: number | null;
+      list_price: number | null;
       settled_date: string | null;
     })[];
 
@@ -147,27 +144,37 @@ const main = async () => {
       const geo =
         !NO_GEO && geoRes.ok ? ((await geoRes.json()) as { lat: number; lon: number }[])[0] : undefined;
 
-      const compRes = await fetch(`${URL_}/rest/v1/rpc/idx_comparable_sales`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          p_prop_type: type,
-          p_town: town,
-          p_state: 'MA',
-          p_lat: geo?.lat ?? null,
-          p_lon: geo?.lon ?? null,
-          p_radius_km: null,
-          p_months: widest.months,
-          p_min_sqft: Math.round(home.living_area * (1 - widest.sqft)),
-          p_max_sqft: Math.round(home.living_area * (1 + widest.sqft)),
-          p_exclude_mls: home.mls_number,
-          p_limit: 250,
-        }),
-      });
-      if (!compRes.ok) continue;
+      // The same two questions the page asks — see candidateBounds() — merged
+      // on the MLS number the way comparableCandidates() merges them.
+      const answers = await Promise.all(
+        candidateBounds(home.living_area).map((b) =>
+          fetch(`${URL_}/rest/v1/rpc/idx_comparable_sales`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              p_prop_type: type,
+              p_town: town,
+              p_state: 'MA',
+              p_lat: geo?.lat ?? null,
+              p_lon: geo?.lon ?? null,
+              p_radius_km: null,
+              p_months: b.months,
+              p_min_sqft: b.minSqft,
+              p_max_sqft: b.maxSqft,
+              p_exclude_mls: home.mls_number,
+              p_limit: b.limit,
+            }),
+          })
+        )
+      );
+      if (answers.some((r) => !r.ok)) continue;
+      const byMls = new Map<string, Comp>();
+      for (const r of answers) {
+        for (const c of (await r.json()) as Comp[]) if (!byMls.has(c.mls_number)) byMls.set(c.mls_number, c);
+      }
 
       const asOf = new Date(`${home.settled_date}T00:00:00Z`);
-      const comps = ((await compRes.json()) as Comp[]).filter(
+      const comps = [...byMls.values()].filter(
         (c) =>
           c.mls_number !== home.mls_number &&
           c.settled_date !== null &&
@@ -179,14 +186,18 @@ const main = async () => {
         refused += 1;
         continue;
       }
-      if (result.valuation.estimate === null) {
+      // What the PAGE would show: the estimate, checked against the asking
+      // price the way useListingValuation checks it. --raw skips that, to see
+      // what the comps alone say.
+      const shown = RAW ? result.valuation : againstAsking(result.valuation, home.list_price ?? null);
+      if (shown.estimate === null) {
         rangeOnly += 1;
         continue;
       }
       scored.push({
         type,
         town,
-        pct: ((result.valuation.estimate - home.sale_price) / home.sale_price) * 100,
+        pct: ((shown.estimate - home.sale_price) / home.sale_price) * 100,
         comps: result.valuation.comps.length,
         tier: result.valuation.tier.index,
       });

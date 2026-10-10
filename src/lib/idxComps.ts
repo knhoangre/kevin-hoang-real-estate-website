@@ -19,7 +19,7 @@ import { withRetry } from '@/lib/idxSearch';
 import { soldComps, soldOnCockroach } from '@/lib/soldApi';
 import {
   addressKey,
-  TIERS,
+  candidateBounds,
   type Comp,
   type ValuationSubject,
 } from '@/lib/valuation';
@@ -157,24 +157,23 @@ export const subjectCoordinate = async (
 /* -------------------------------------------------------------------------- */
 
 /**
- * Every sale that could possibly be a comp for this subject.
+ * Every sale that could possibly be a comp for this subject, and the wider
+ * market its rates are measured on.
  *
- * ONE QUERY AT THE WIDEST BOUNDS, not one per tier. The tiers are then applied
- * in the browser by `valuate()`, which is what lets the ladder walk five rungs
- * without five round trips — and, more importantly, lets the market trend be
- * fitted across the WHOLE candidate set rather than across the handful of sales
- * that survived the tightest rung. A trend estimated from six comps is noise;
- * one estimated from two hundred sales in the same town is a measurement.
+ * TWO QUERIES, NOT ONE PER TIER — see candidateBounds() for why there are two
+ * and what each is for. The tiers are then applied in the browser by
+ * `valuate()`, which is what lets the ladder walk its rungs without a round
+ * trip each, and lets the market trend be fitted across the town rather than
+ * across the five sales that survived. A trend estimated from five comps is
+ * noise; one estimated from two hundred sales in the same town is a
+ * measurement.
  *
- * The widest bounds come from the last tier rather than being written out again
- * here, so adding or loosening a rung cannot leave the query unable to feed it.
- * That has an obvious failure mode if a future tier is wider than the query, so
- * the months and the size band are both derived from TIERS directly.
+ * They run together and are merged on the MLS number: the bands overlap, and a
+ * sale counted twice would carry double weight in everything fitted on it.
  *
  * No radius is passed. Distance filtering happens per tier in the browser, on
  * the `distance_km` the query returns — and asking for a radius here would
- * exclude every ungeocoded row from the wide rungs, which are precisely the
- * rungs that exist to catch them.
+ * exclude every ungeocoded row from the ZIP rung, which exists to catch them.
  */
 export const comparableCandidates = async (
   subject: ValuationSubject,
@@ -183,19 +182,21 @@ export const comparableCandidates = async (
   if (!subject.prop_type || !subject.town) return [];
   const area = subject.living_area ?? 0;
   if (area <= 0) return [];
+  const propType = subject.prop_type;
+  const town = subject.town;
 
-  const widest = TIERS.reduce(
-    (acc, t) => ({
-      months: Math.max(acc.months, t.months),
-      sqftTolerance: Math.max(acc.sqftTolerance, t.sqftTolerance),
-    }),
-    { months: 0, sqftTolerance: 0 }
-  );
-
-  try {
+  /*
+   * RETRIED, like every /search read. The first call after a quiet spell — or
+   * right after a sync rewrote the pages — reads the index off disk and can
+   * exceed the anon role's 8s timeout; measured 2026-09-26, a cold call timed
+   * out and the next answered in 0.2s. Without the retry the estimate simply
+   * failed to appear for whichever visitor happened to be first, and since
+   * this fetch swallows its errors, nobody would ever have known why.
+   */
+  const ask = async (b: ReturnType<typeof candidateBounds>[number]): Promise<Comp[]> => {
     const bounds = {
-      p_prop_type: subject.prop_type,
-      p_town: subject.town,
+      p_prop_type: propType,
+      p_town: town,
       // Not optional. Town names are not unique across MLS PIN's coverage —
       // "Dover" is 127 Massachusetts rows and 19 New Hampshire ones on the live
       // feed — so a comp set banded on town alone silently spans two markets.
@@ -203,37 +204,37 @@ export const comparableCandidates = async (
       p_lat: coordinate?.lat ?? null,
       p_lon: coordinate?.lon ?? null,
       p_radius_km: null,
-      p_months: widest.months,
-      p_min_sqft: Math.round(area * (1 - widest.sqftTolerance)),
-      p_max_sqft: Math.round(area * (1 + widest.sqftTolerance)),
+      p_months: b.months,
+      p_min_sqft: b.minSqft,
+      p_max_sqft: b.maxSqft,
       p_exclude_mls: subject.mls_number,
-      p_limit: 250,
+      p_limit: b.limit,
     };
 
-    /*
-     * RETRIED, like every /search read. The first call after a quiet spell — or
-     * right after a sync rewrote the pages — reads the index off disk and can
-     * exceed the anon role's 8s timeout; measured 2026-09-26, a cold call timed
-     * out and the next answered in 0.2s. Without the retry the estimate simply
-     * failed to appear for whichever visitor happened to be first, and since
-     * this fetch swallows its errors, nobody would ever have known why.
-     */
     // The same question, of the database that keeps every sale, once
     // SITE.soldData says the reads have moved. One `bounds` object feeds both
     // paths, so they cannot drift on what a bound means.
     if (soldOnCockroach()) {
-      return await withRetry(() => soldComps<Comp>(bounds), 'Comparable sales');
+      return withRetry(() => soldComps<Comp>(bounds), 'Comparable sales');
     }
 
-    const { data, error } = await withRetry(async () => {
+    const { data } = await withRetry(async () => {
       const res = await compsDb.rpc('idx_comparable_sales', bounds);
       // withRetry retries on a THROW, and a PostgREST error arrives as a value,
       // so it is rethrown here — otherwise a timeout would never be retried.
       if (res.error) throw res.error;
       return res;
     }, 'Comparable sales');
-    if (error) throw error;
     return (data ?? []) as Comp[];
+  };
+
+  try {
+    const answers = await Promise.all(candidateBounds(area).map(ask));
+    const byMls = new Map<string, Comp>();
+    for (const comp of answers.flat()) {
+      if (!byMls.has(comp.mls_number)) byMls.set(comp.mls_number, comp);
+    }
+    return [...byMls.values()];
   } catch (err) {
     // Swallowed on purpose, and logged rather than surfaced. This is the same
     // contract priceHistory() keeps: supporting context that fails must leave

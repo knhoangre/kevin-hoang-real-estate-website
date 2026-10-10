@@ -6,6 +6,7 @@ import { submitContactMessage } from '@/lib/submitContact';
 import { EVENTS, track } from '@/lib/analytics';
 import { errorMessage } from '@/lib/utils';
 import { SITE, smsHref, telHref, locality } from '@/lib/siteConfig';
+import { formatPhoneInput } from '@/lib/phone';
 
 /**
  * /vi/lien-he — the counterpart of /contact.
@@ -165,7 +166,7 @@ const ViContact = () => {
                   id="vi-phone"
                   type="tel"
                   value={values.phone}
-                  onChange={set('phone')}
+                  onChange={(e) => setValues((v) => ({ ...v, phone: formatPhoneInput(e.target.value) }))}
                   autoComplete="tel"
                 />
               </div>

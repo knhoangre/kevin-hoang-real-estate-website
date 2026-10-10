@@ -30,6 +30,10 @@ export const VALUATION_ANCHOR = 'what-nearby-sales-say';
 const ValuationSummary = ({ listing }: { listing: IdxListing }) => {
   const { data: valuation } = useListingValuation(listing);
   if (!valuation) return null;
+  // The sales and the asking price are too far apart for either a number or a
+  // range to be worth a line beside the price — see againstAsking(). The panel
+  // further down still lists the sales and says why.
+  if (valuation.withheld === 'far-from-asking') return null;
 
   const suppressed = estimateSuppressed(listing.mls_number);
   const estimate = suppressed ? null : valuation.estimate;

@@ -28,6 +28,7 @@ node scripts/valuation-check.ts   # assertions for the comp estimator (no deps, 
 node scripts/massgis-check.ts     # the address-suggestion parser; add --live to hit MassGIS
 node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
 node scripts/listing-url-check.ts      # a listing's URL: old number-only links, and the email copy of the slug
+node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203) 379-8682" is 203-379-8682
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS AND the people on a showing tour (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -599,6 +600,58 @@ no DOM** so it can be run against a synthetic market whose true answer is known;
 generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
 +0.5%/month) and asserts the estimator recovers them.
 
+- **An estimate is built from FIVE sales that are like the home, or it is not
+  made.** Kevin read the panel on live listings on 2026-10-09 — up to seventy
+  "comparables" under one house, some thousands of square feet apart from it —
+  and asked for what an agent would pull. Until then the ladder loosened what a
+  comp had to be as it widened (45% in size and any bedroom count on the last
+  rung) and used every sale a rung matched; the most on one home was 173.
+  - **`LIKENESS` is the same on every rung**: same property type, within 20% of
+    the floor area, within one bedroom (two on a multi-family, where the count
+    is across units) and one bathroom. An unknown bed or bath count is not a
+    mismatch. Widening the search widens WHERE, never what a comp is.
+  - **`MAX_COMPS` is 5 and equals `MIN_COMPS`.** `chooseComps()` keeps the five
+    highest by `compWeight()` — distance, recency, size, beds, baths, style —
+    and that same score weights them, so there is one opinion about "alike".
+    It swaps the weakest for a sale on the other side of the subject's size
+    when the best five are all larger or all smaller, which is the bracketing
+    an appraiser does on purpose. Three comps was tried: the forty-odd homes it
+    added were off by nearly 20% on average.
+  - **There is NO town-wide rung.** Half a mile, one mile, two miles, same ZIP —
+    all twelve months — and then nothing. A sale somewhere else in the town at
+    an unknown distance is not a comp: on 152 homes for sale statewide that
+    rung was mostly Boston and its numbers sat a median of 28% from the asking
+    price. Do not add it back to raise coverage.
+  - **The page asks the database TWO questions** (`candidateBounds()`): the
+    like band, so it comes back whole, and a wide pool the trend and the rates
+    are fitted on. One capped query was returning six weeks of Boston condos,
+    so a listing there found nothing from its own ZIP code.
+  - **`againstAsking()` withholds the estimate when it is more than 20% from the
+    asking price**, and this is the change that moved accuracy. Measured on 812
+    closings: the list price was a median of 3.0% from the sale price, and where
+    the estimate was more than 20% from the list price (162 homes) the estimate
+    was the closer of the two three times. That far apart, the model is missing
+    something the person who priced the home could see. The panel then says
+    "No estimate for this home", gives the reason with both figures in the
+    sentence, and still lists the sales; the one-line summary beside the price
+    is not shown at all. It is applied in `useListingValuation`, not in
+    `valuate()`, which knows nothing about what anyone is asking. The cost is
+    real and worth knowing: the estimate can no longer be the thing that says a
+    listing is wildly overpriced.
+  - **Measured 2026-10-09 on 1,276 closings** (thirty per town and type; the
+    `final*.ts` harness was a one-off, `valuation-backtest.ts` is the kept
+    instrument and applies the asking check unless `--raw`). What the page shows:
+    median error 6.8%, mean 8.3%, bias +0.7%, **96% within 20%**, 1.8% more than
+    25% out, worst 45%. Before: 10.2%, 13.7%, +3.3%, 78%, 14.4%, worst 148%.
+    **The price of that is coverage** — a number on 51% of those homes instead
+    of 79%, sales but no number on 26%, nothing on 23% (was 8%). On the homes
+    both rules could value, five like sales alone are barely better than dozens
+    of loose ones (median 9.5% → 8.8%); it is declining the thin cases and the
+    asking check that did the work.
+  - **The chart has no trend line any more.** A line through five points within
+    20% of each other in size slopes whichever way one sale tips it.
+  - The comps table carries beds and baths and opens with the subject's own row,
+    so each sale is read against it.
 - **The sold feed is DELETED as it ages, so `idx_sold_archive` is the comp source
   of truth — never `idx_listings`.** MLS PIN's sold feed is a rolling twelve-month
   window (measured 2026-09-20: 2025-09-17 to 2026-09-18, to the day), and
@@ -665,8 +718,10 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
 - **`style` is a comma-separated SET and the codes collide across property types.**
   "A,D" is a real value; "A" is Colonial on a single-family and Detached on a condo.
   Compare with `styleSet()` overlap, always within one `prop_type`. An **unknown**
-  style is not a mismatch — treating it as one empties the tight tiers for every
-  listing whose agent left the field blank.
+  style is not a mismatch — treating it as one counts against every listing
+  whose agent left the field blank. Since 2026-10-09 style is a PREFERENCE in
+  `compWeight()` (a different style counts 0.7) and no longer a filter on the
+  tight rungs: a Ranch the same size on the same street is still a comp.
 - **The chart is hand-rolled SVG and plots RAW sale prices.** recharts is a
   dependency but is imported only by the admin-only lazy `CRMDashboard`, so using it
   here would drop the library into a public chunk, and `ResponsiveContainer`
@@ -684,7 +739,9 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
   **Not yet checked against MLS PIN Attachment C**, the same open caveat
   [IdxDisclosure.tsx](src/components/IdxDisclosure.tsx) carries about its own wording.
 - **Measured accuracy, 2026-09-26, with geocodes loaded: median absolute error
-  10.2%, mean 14.3%, bias +4.5%, 74% within 20%** — 413 real closings across the
+  10.2%, mean 14.3%, bias +4.5%, 74% within 20%** (SUPERSEDED by the 2026-10-09
+  figures at the top of this section; kept for what it says about the
+  instrument) — 413 real closings across the
   17 towns, `--per-town 12`. By type: condo 8.5%, multi-family 9.1%,
   single-family 13.3%. On a sample of 90 live active listings statewide, the
   panel appears on 80. `node scripts/valuation-backtest.ts` is the instrument: it
@@ -704,14 +761,12 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
     because "same town" fails in big towns: Boston is one MLS town from Back Bay
     to Mattapan, and single-family there was 26% off at town level, 12% at ZIP
     level (bias −11.5% → +1.4%). ZIPs track Boston's neighbourhoods closely.
-  - **Rates come from the whole pool; the comps come from the ladder.** Once the
-    tight rungs became reachable, estimates leaned on five or six sales and the
-    regression fitted to those same few either failed or fitted noise.
-    `deriveRates` now runs on every time-adjusted sale of the type in the town,
-    and `TIER_TARGET` (8) is what a rung must hold before the ladder stops there
-    — `MIN_COMPS` (5) is only the refusal floor. Both measured as small,
-    consistent gains; putting the ZIP rung ahead of two miles was measured as
-    noise and not kept.
+  - **Rates come from the whole pool; the comps come from the ladder.** Five
+    sales cannot support five regression coefficients, so `deriveRates` runs on
+    every time-adjusted sale of the type in the town and the comps only supply
+    the prices those rates adjust. `TIER_TARGET` (8 before a rung was trusted)
+    existed for the same reason and was removed on 2026-10-09: with the likeness
+    band fixed it measured as no different from stopping at five.
   - **Single-family runs ~6% high and that is most likely condition**, which no
     field carries: a house that needs work sells below comps the model cannot
     tell it apart from. That is the case for photo condition scoring, not for more
@@ -1819,6 +1874,16 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   collected but not reportable. See [ANALYTICS_SETUP.md](ANALYTICS_SETUP.md).
   **No tool can report the query behind an AI-assistant visit** — assistants send
   no query and often no referrer, so `ai_*` counts are a floor, not a measurement.
+- **Every phone field formats through `formatPhoneInput()` in
+  [phone.ts](src/lib/phone.ts), and none may set `maxLength`.** A pasted
+  "+1 (203) 379-8682" came out as a different number until 2026-10-09, for two
+  reasons that hid each other. The country code was kept as the first digit and
+  the number cut to ten from the front (120-337-9868). And five fields carried
+  `maxLength={12}`, which the browser applies to pasted text BEFORE `onChange`
+  runs, so the formatter was handed "+1 (203) 379". `phoneDigits()` drops a
+  leading 1 — no North American area code starts with one — and there were six
+  private copies of the formatter, now one. `node scripts/phone-check.ts`
+  covers the function; the `maxLength` half only shows in a real browser.
 - **Both contact forms submit through
   [src/lib/submitContact.ts](src/lib/submitContact.ts).** There are two forms —
   `components/Contact.tsx` on the homepage and `pages/Contact.tsx` on /contact —

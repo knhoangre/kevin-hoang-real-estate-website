@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
 import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
+import { formatPhoneInput } from "@/lib/phone";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -101,13 +102,6 @@ const Contact = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
   };
 
   return (
@@ -249,11 +243,10 @@ const Contact = () => {
                       <Input
                         placeholder={t('contact.phone')}
                         onChange={(e) => {
-                          const formatted = formatPhoneNumber(e.target.value);
+                          const formatted = formatPhoneInput(e.target.value);
                           e.target.value = formatted;
                           onChange(formatted);
                         }}
-                        maxLength={12}
                         {...rest}
                       />
                     </FormControl>

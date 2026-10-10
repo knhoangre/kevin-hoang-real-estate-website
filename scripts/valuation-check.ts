@@ -22,6 +22,8 @@
  */
 import {
   valuate,
+  againstAsking,
+  ASKING_DISAGREEMENT,
   ols,
   weightedQuantile,
   marketTrend,
@@ -34,9 +36,13 @@ import {
   unitClass,
   zip5,
   comparableAsking,
+  chooseComps,
+  compWeight,
   TIERS,
   MIN_COMPS,
-  TIER_TARGET,
+  MAX_COMPS,
+  LIKENESS,
+  candidateBounds,
   type Comp,
   type ValuationSubject,
 } from '../src/lib/valuation.ts';
@@ -248,26 +254,53 @@ console.log('\n--- tier matching ---');
 
 {
   const tier0 = TIERS[0];
-  const near0 = makeComp(999, { distance_km: 0.3, settled_date: dateMonthsAgo(2), living_area: 2200, style: 'A', bedrooms: 4 });
-  ok(matchesTier(SUBJECT, near0, tier0, NOW), 'a near, recent, same-size, same-style sale satisfies tier 0');
+  // 2 full + 1 half, like the subject, so each assertion below changes ONE thing.
+  const near0 = makeComp(999, { distance_km: 0.3, settled_date: dateMonthsAgo(2), living_area: 2200, style: 'A', bedrooms: 4, full_baths: 2, half_baths: 1 });
+  ok(matchesTier(SUBJECT, near0, tier0, NOW), 'a near, recent, same-size sale with the same beds and baths satisfies tier 0');
 
   ok(!matchesTier(SUBJECT, { ...near0, distance_km: 5 }, tier0, NOW), 'tier 0 rejects a sale five km away');
   ok(!matchesTier(SUBJECT, { ...near0, distance_km: null }, tier0, NOW), 'tier 0 rejects a sale with NO known distance');
   ok(matchesTier(SUBJECT, { ...near0, distance_km: null }, TIERS[3], NOW), '...but the no-radius tier accepts it');
-  ok(!matchesTier(SUBJECT, { ...near0, settled_date: dateMonthsAgo(11) }, tier0, NOW), 'tier 0 rejects an 11-month-old sale');
-  ok(!matchesTier(SUBJECT, { ...near0, living_area: 3400 }, tier0, NOW), 'tier 0 rejects a house 55% larger');
-  ok(!matchesTier(SUBJECT, { ...near0, style: 'E' }, tier0, NOW), 'tier 0 rejects a Ranch against a Colonial');
-  ok(matchesTier(SUBJECT, { ...near0, style: 'E,A' }, tier0, NOW), 'a multi-code style matches on overlap');
-  ok(matchesTier(SUBJECT, { ...near0, style: null }, tier0, NOW), 'an unknown style is not treated as a mismatch');
-  ok(!matchesTier(SUBJECT, { ...near0, bedrooms: 7 }, tier0, NOW), 'tier 0 rejects a 7-bed against a 4-bed');
-  ok(matchesTier(SUBJECT, { ...near0, bedrooms: 5 }, TIERS[1], NOW), 'tier 1 allows one bedroom of slack');
+  ok(!matchesTier(SUBJECT, { ...near0, settled_date: dateMonthsAgo(13) }, tier0, NOW), 'tier 0 rejects a 13-month-old sale');
+  ok(TIERS.every((t) => !matchesTier(SUBJECT, { ...near0, settled_date: dateMonthsAgo(13) }, t, NOW)), '...and so does every other rung: nothing older than a year is a comp');
+
+  // LIKENESS: the same on every rung. Widening the search never loosens it.
+  ok(LIKENESS.sqftTolerance <= 0.2, 'a comp is never more than 20% apart in floor area');
+  const wide = { ...near0, distance_km: null };
+  ok(matchesTier(SUBJECT, { ...near0, living_area: 2600 }, tier0, NOW), 'a house 18% larger is a comp');
+  ok(TIERS.every((t) => !matchesTier(SUBJECT, { ...wide, distance_km: 0.1, living_area: 2700 }, t, NOW)), 'a house 23% larger is a comp on NO rung');
+  ok(TIERS.every((t) => !matchesTier(SUBJECT, { ...wide, distance_km: 0.1, living_area: 1700 }, t, NOW)), 'nor is one 23% smaller');
+  ok(matchesTier(SUBJECT, { ...near0, bedrooms: 5 }, tier0, NOW), 'one bedroom apart is a comp');
+  ok(TIERS.every((t) => !matchesTier(SUBJECT, { ...wide, distance_km: 0.1, bedrooms: 6 }, t, NOW)), 'two bedrooms apart is a comp on NO rung');
+  ok(matchesTier(SUBJECT, { ...near0, bedrooms: null }, tier0, NOW), 'an unknown bedroom count is not treated as a mismatch');
+  ok(matchesTier(SUBJECT, { ...near0, full_baths: 3, half_baths: 1 }, tier0, NOW), 'one bathroom apart is a comp');
+  ok(TIERS.every((t) => !matchesTier(SUBJECT, { ...wide, distance_km: 0.1, full_baths: 4, half_baths: 0 }, t, NOW)), 'a bath and a half apart is a comp on NO rung');
+  ok(matchesTier(SUBJECT, { ...near0, full_baths: null, half_baths: null }, tier0, NOW), 'an unknown bath count is not treated as a mismatch');
+
+  // Style is a preference in the weighting now, not a filter.
+  ok(matchesTier(SUBJECT, { ...near0, style: 'E' }, tier0, NOW), 'a Ranch can still be a comp for a Colonial');
+  ok(compWeight(SUBJECT, near0, NOW) > compWeight(SUBJECT, { ...near0, style: 'E' }, NOW), '...but the Colonial counts for more');
+  ok(compWeight(SUBJECT, near0, NOW) === compWeight(SUBJECT, { ...near0, style: 'E,A' }, NOW), 'a multi-code style matches on overlap');
+  ok(compWeight(SUBJECT, near0, NOW) === compWeight(SUBJECT, { ...near0, style: null }, NOW), 'an unknown style is not treated as a mismatch');
+  ok(compWeight(SUBJECT, near0, NOW) > compWeight(SUBJECT, { ...near0, bedrooms: 5 }, NOW), 'the same bedroom count counts for more than one apart');
+  ok(compWeight(SUBJECT, near0, NOW) > compWeight(SUBJECT, { ...near0, full_baths: 3 }, NOW), 'and the same bath count for more than one apart');
+  ok(compWeight(SUBJECT, near0, NOW) > compWeight(SUBJECT, { ...near0, living_area: 2500 }, NOW), 'and the same size for more than 14% apart');
 
   const zipTier = TIERS.find((t) => t.sameZip)!;
   ok(!!zipTier && zipTier.radiusKm === null, 'there is a same-ZIP rung that needs no coordinates');
   ok(matchesTier(SUBJECT, { ...near0, distance_km: null, zip: '02492-3311' }, zipTier, NOW), 'the ZIP rung accepts a same-ZIP sale with no geocode (and ignores ZIP+4)');
   ok(!matchesTier(SUBJECT, { ...near0, distance_km: null, zip: '02494' }, zipTier, NOW), 'the ZIP rung rejects the next ZIP over');
   ok(!matchesTier(SUBJECT, { ...near0, distance_km: null, zip: null }, zipTier, NOW), 'the ZIP rung rejects an unknown ZIP rather than assuming a match');
-  ok(TIERS.indexOf(zipTier) < TIERS.findIndex((t) => t.radiusKm === null && !t.sameZip), 'the ZIP rung is tried before town-wide matching');
+  ok(TIERS.indexOf(zipTier) === TIERS.length - 1, 'the ZIP rung is the last one');
+  ok(
+    TIERS.every((t) => !matchesTier(SUBJECT, { ...near0, distance_km: null, zip: '02494' }, t, NOW)),
+    'there is no town-wide rung: a sale in another ZIP at an unknown distance is a comp nowhere'
+  );
+
+  const [like, pool] = candidateBounds(2200);
+  ok(like.minSqft === 1760 && like.maxSqft === 2640, 'the like query asks for exactly the band a comp may sit in');
+  ok(like.months >= Math.max(...TIERS.map((t) => t.months)), '...for as long as the longest rung');
+  ok(pool.minSqft < like.minSqft && pool.maxSqft > like.maxSqft, 'the pool query is wider, for the rates');
 }
 
 /* -------------------------------------------------------------------------- */
@@ -283,7 +316,12 @@ console.log('\n--- the estimate ---');
     const v = result.valuation;
     near(v.estimate as number, TRUE_SUBJECT_VALUE, 0.05, 'the estimate lands on the true value');
     ok(v.low < (v.estimate as number) && (v.estimate as number) < v.high, 'the estimate sits inside its own range');
-    ok(v.comps.length >= MIN_COMPS, `at least ${MIN_COMPS} comps were used`);
+    ok(v.comps.length === MAX_COMPS, `exactly ${MAX_COMPS} comps were used, out of a market of ${market.length}`);
+    ok(
+      v.comps.every((c) => Math.abs((c.living_area as number) - 2200) / 2200 <= 0.2),
+      'every comp is within 20% of the subject in floor area'
+    );
+    ok(v.comps.every((c) => Math.abs((bathCount(c.full_baths, c.half_baths) as number) - 2.5) <= 1), 'and within one bathroom');
     ok(v.comps.every((c) => c.mls_number !== SUBJECT.mls_number), 'the subject is never its own comp');
     near(
       v.comps.reduce((s, c) => s + c.weight, 0),
@@ -305,11 +343,10 @@ console.log('\n--- the estimate ---');
 {
   // The adjustment must actually move the number: a comp 400 sqft smaller than
   // the subject has to be adjusted UP.
-  // 1,950 against a 2,200 subject is an 11% difference — inside tier 0's 15%
-  // band, so the comp is genuinely selected and the adjustment is what is being
-  // tested. At 1,800 it would be 18% and correctly rejected, which would make
-  // this a test of the tier bound rather than of the grid.
-  const small = makeComp(1234, { living_area: 1950, distance_km: 0.2, settled_date: dateMonthsAgo(1) });
+  // 2,000 against a 2,200 subject is a 9% difference, next door, last month and
+  // with the subject's own baths — so it is genuinely one of the five and the
+  // adjustment is what is being tested, not the selection.
+  const small = makeComp(1234, { living_area: 2000, distance_km: 0.05, settled_date: dateMonthsAgo(0.5), full_baths: 2, half_baths: 1 });
   const result = valuate(SUBJECT, [...market, small], NOW);
   if ('valuation' in result) {
     const found = result.valuation.comps.find((c) => c.mls_number === 'C1234');
@@ -324,36 +361,75 @@ console.log('\n--- the estimate ---');
 
 console.log('\n--- how far the ladder goes ---');
 
-ok(TIER_TARGET > MIN_COMPS, 'a rung must hold more than the refusal floor before the ladder stops on it');
+ok(MAX_COMPS === 5 && MIN_COMPS === MAX_COMPS, 'an estimate rests on exactly five like sales, or is not made');
 {
-  // Six sales next door and forty two miles off. Six clears the floor but not
-  // the target, so the ladder should widen to where there is enough evidence.
+  // Six like sales next door and forty two miles off: the six are enough, so
+  // the ladder stops there and keeps the best five of them.
+  const like = { living_area: 2200, bedrooms: 4, full_baths: 2, half_baths: 1 };
   const near = Array.from({ length: 6 }, (_, i) =>
-    makeComp(7000 + i, { distance_km: 0.3, settled_date: dateMonthsAgo(2), living_area: 2200, bedrooms: 4 })
+    makeComp(7000 + i, { ...like, distance_km: 0.3, settled_date: dateMonthsAgo(2) })
   );
   const wider = Array.from({ length: 40 }, (_, i) =>
-    makeComp(7100 + i, { distance_km: 2.5, settled_date: dateMonthsAgo(3), bedrooms: 4 })
+    makeComp(7100 + i, { ...like, distance_km: 2.5, settled_date: dateMonthsAgo(3) })
   );
   const r = valuate(SUBJECT, [...near, ...wider], NOW);
-  ok('valuation' in r && r.valuation.tier.radiusKm === 3.2, 'six near sales and forty within two miles resolves at the two-mile rung');
+  ok('valuation' in r && r.valuation.tier.index === 0, 'six like sales within half a mile are enough: the ladder stops at the first rung');
+  ok('valuation' in r && r.valuation.comps.length === MAX_COMPS, 'and five of the six are kept, none of the forty');
+  ok('valuation' in r && r.valuation.comps.every((c) => (c.distance_km as number) < 0.8), 'all five from within half a mile');
 
-  // The same six with nothing else: the fullest rung is used, because six still
-  // clears MIN_COMPS.
-  const alone = valuate(SUBJECT, near, NOW);
-  ok('valuation' in alone && alone.valuation.comps.length === 6, 'six near sales alone still produce an estimate');
-  if ('valuation' in alone) {
-    ok(alone.valuation.tier.index === 0, 'and are reported at the tightest rung they satisfy');
-  }
+  // Four near and forty at two miles: four is not an estimate, so it widens.
+  const r2 = valuate(SUBJECT, [...near.slice(0, 4), ...wider], NOW);
+  ok('valuation' in r2 && r2.valuation.tier.radiusKm === 3.2, 'four near sales are not enough: the ladder widens to two miles');
+  ok(
+    'valuation' in r2 && r2.valuation.comps.filter((c) => (c.distance_km as number) < 0.8).length === 4,
+    'and the four near ones are still among the five, because nearer counts for more'
+  );
+
+  // Four like sales and nothing else is no estimate, however good they are.
+  const alone = valuate(SUBJECT, near.slice(0, 4), NOW);
+  ok('refusal' in alone && alone.refusal === 'too-few-comps', 'four like sales alone are refused');
+
+  // Plenty of sales, none of them like the subject: also no estimate. This is
+  // the case that used to produce seventy "comparables".
+  const unlike = Array.from({ length: 70 }, (_, i) =>
+    makeComp(7200 + i, { distance_km: 0.3, settled_date: dateMonthsAgo(2), living_area: 3200 + i * 10, bedrooms: 4 })
+  );
+  const none = valuate(SUBJECT, unlike, NOW);
+  ok('refusal' in none && none.refusal === 'too-few-comps', 'seventy nearby sales a thousand square feet larger are not comps');
 }
 {
-  // Rates are fitted on the whole pool, not on the handful selected. Eight near
+  // chooseComps: the five best, except that it brackets when the rung allows.
+  const base = { bedrooms: 4, full_baths: 2, half_baths: 1, settled_date: dateMonthsAgo(2) };
+  const smaller = Array.from({ length: 6 }, (_, i) =>
+    makeComp(7400 + i, { ...base, living_area: 2150 - i * 10, distance_km: 0.1 })
+  );
+  const larger = makeComp(7450, { ...base, living_area: 2500, distance_km: 0.7 });
+  const chosen = chooseComps(SUBJECT, [...smaller, larger], NOW);
+  ok(chosen.length === MAX_COMPS, 'chooseComps keeps five');
+  ok(chosen.some((c) => c.mls_number === 'C7450'), 'a larger sale is brought in when the best five are all smaller');
+  ok(chosen.filter((c) => (c.living_area as number) < 2200).length === 4, 'in place of the weakest of the five, not in addition');
+  const r = valuate(SUBJECT, [...smaller, larger], NOW);
+  ok('valuation' in r && r.valuation.withheld !== 'larger-than-comps', 'so the subject is bracketed and keeps its number');
+
+  const noLarger = chooseComps(SUBJECT, smaller, NOW);
+  ok(noLarger.every((c) => (c.living_area as number) < 2200), 'with no larger sale on the rung there is nothing to bring in');
+  ok(
+    chooseComps(SUBJECT, [...smaller].reverse(), NOW).map((c) => c.mls_number).join() === noLarger.map((c) => c.mls_number).join(),
+    'the same five come back whatever order the sales arrive in'
+  );
+}
+{
+  // Rates are fitted on the whole pool, not on the handful selected. Five near
   // comps of identical size and bath count carry NO information about what a
   // square foot is worth — the rate can only come from the wider market.
   const identical = Array.from({ length: 8 }, (_, i) =>
     makeComp(7300 + i, { distance_km: 0.2, settled_date: dateMonthsAgo(1), living_area: 2200, full_baths: 2, half_baths: 1, bedrooms: 4 })
   );
   const r = valuate(SUBJECT, [...identical, ...market], NOW);
-  ok('valuation' in r && r.valuation.comps.length >= 8, 'eight identical near sales are selected');
+  ok(
+    'valuation' in r && r.valuation.comps.length === MAX_COMPS && r.valuation.comps.every((c) => c.living_area === 2200),
+    'five of the identical near sales are the comps'
+  );
   if ('valuation' in r) {
     ok(
       r.valuation.marginalSqft !== null && Math.abs(r.valuation.marginalSqft - TRUE_SQFT_RATE) < TRUE_SQFT_RATE * 0.2,
@@ -394,6 +470,32 @@ console.log('\n--- bracketing and placeholder prices ---');
   const condo = valuate({ ...SUBJECT, prop_type: 'CC', acres: 10 }, market.map((c) => ({ ...c, prop_type: 'CC' })), NOW);
   ok('valuation' in condo && condo.valuation.withheld !== 'lot-beyond-comps', 'a condo is never withheld on acreage');
 }
+{
+  // The estimate is checked against the asking price as a separate step.
+  const r = valuate(SUBJECT, market, NOW);
+  if ('valuation' in r && r.valuation.estimate !== null) {
+    const v = r.valuation;
+    const est = v.estimate as number;
+    ok(ASKING_DISAGREEMENT === 0.2, 'an estimate may sit 20% from the asking price, no further');
+    ok(againstAsking(v, est).estimate === est, 'an estimate at the asking price is shown');
+    ok(againstAsking(v, est * 1.15).estimate === est, 'and one 13% under an asking price');
+    const far = againstAsking(v, est * 1.6);
+    ok(far.estimate === null && far.withheld === 'far-from-asking', 'an estimate 37% under the asking price is withheld, and the page is told why');
+    ok(againstAsking(v, est * 0.7).withheld === 'far-from-asking', 'the same when it is far ABOVE the asking price');
+    ok(far.comps.length === v.comps.length && far.low === v.low, 'the sales and the range are untouched');
+    ok(againstAsking(v, 1).estimate === est, 'a $1 placeholder is nothing to compare with: the estimate stands');
+    ok(againstAsking(v, null).estimate === est, 'and so is no price at all');
+    ok(v.withheld === null, 'againstAsking does not change the valuation it was given');
+
+    // A valuation already reduced to a range is tested on the range.
+    const rangeOnly = { ...v, estimate: null, withheld: 'dispersion' as const };
+    ok(againstAsking(rangeOnly, (v.low + v.high) / 2).withheld === 'dispersion', 'an asking price inside the range leaves a range-only valuation alone');
+    ok(againstAsking(rangeOnly, v.high * 1.1).withheld === 'dispersion', 'so does one 9% past its top');
+    ok(againstAsking(rangeOnly, v.high * 2).withheld === 'far-from-asking', 'an asking price at twice the top of the range does not');
+  } else {
+    ok(false, 'the healthy market should have produced an estimate to check against asking');
+  }
+}
 ok(comparableAsking(1) === null, 'a $1 list price is a placeholder, not a price to compare with');
 ok(comparableAsking(9_999) === null, 'nor is anything under $10,000');
 ok(comparableAsking(10_000) === 10_000 && comparableAsking(849_000) === 849_000, 'real prices pass through unchanged');
@@ -419,11 +521,16 @@ ok(unitClass('DF') === null, 'a malformed two-letter code is not read as a two-f
 {
   // A two-family subject must never draw a three-family comp, at any rung.
   const twoFam: ValuationSubject = { ...SUBJECT, prop_type: 'MF', prop_subtype: 'G', style: null };
-  const three = makeComp(4242, { prop_type: 'MF', prop_subtype: 'B', living_area: 2200, distance_km: 0.1, settled_date: dateMonthsAgo(1) });
-  const two = makeComp(4243, { prop_type: 'MF', prop_subtype: 'A', living_area: 2200, distance_km: 0.1, settled_date: dateMonthsAgo(1) });
+  const mf = { living_area: 2200, distance_km: 0.1, settled_date: dateMonthsAgo(1), full_baths: 2, half_baths: 1 };
+  const three = makeComp(4242, { ...mf, prop_type: 'MF', prop_subtype: 'B' });
+  const two = makeComp(4243, { ...mf, prop_type: 'MF', prop_subtype: 'A' });
   ok(TIERS.every((t) => !matchesTier(twoFam, three, t, NOW)), 'a three-family is never a comp for a two-family');
   ok(matchesTier(twoFam, two, TIERS[0], NOW), 'a different two-family subtype (A vs G) still matches');
-  ok(matchesTier(twoFam, { ...two, style: 'E' }, TIERS[0], NOW), 'style is ignored on multi-family, where it has no codebook');
+  ok(compWeight(twoFam, two, NOW) === compWeight(twoFam, { ...two, style: 'E' }, NOW), 'style is ignored on multi-family, where it has no codebook');
+  // Bedrooms on a multi-family are the total across units, so two apart there
+  // is what one apart is on a house.
+  ok(matchesTier(twoFam, { ...two, bedrooms: 6 }, TIERS[0], NOW), 'a multi-family two bedrooms apart is still a comp');
+  ok(!matchesTier(twoFam, { ...two, bedrooms: 7 }, TIERS[0], NOW), 'three apart is not');
 
   const twoFamMarket = market.map((c) => ({ ...c, prop_type: 'MF', prop_subtype: 'G' }));
   const r = valuate(twoFam, twoFamMarket, NOW);

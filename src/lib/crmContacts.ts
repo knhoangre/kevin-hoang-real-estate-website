@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { phoneDigits } from '@/lib/phone';
 
 /**
  * Creating one contact, for callers outside the contacts page.
@@ -16,7 +17,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 /** Matches the formatting the contacts page applies, so lookups hit the same row. */
 export const formatPhone = (raw: string) => {
-  const digits = raw.replace(/\D/g, '');
+  // phoneDigits drops a pasted "+1", so "+1 (203) 379-8682" finds — and is
+  // stored as — the same 203-379-8682 a typed number is.
+  const digits = phoneDigits(raw);
   return digits.length === 10
     ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`
     : raw.trim();
