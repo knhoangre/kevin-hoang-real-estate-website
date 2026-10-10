@@ -170,17 +170,15 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
       {/* The same 4:3 box as the photograph, laid over it and transparent to
           the pointer, so the heart can be placed against the photo's bottom
           edge without knowing the card's width. Top-left is the type badge and
-          top-right the status; this corner was free. Sold listings get no
-          heart: there is nothing to go and see. */}
-      {listing.feed !== 'sold' && (
-        <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/3]">
-          <SaveButton
-            mls={listing.mls_number}
-            address={listing.address}
-            className="pointer-events-auto absolute bottom-3 right-3"
-          />
-        </div>
-      )}
+          top-right the status; this corner was free. Sold listings carry it
+          too, since 2026-10-09 — see SaveButton. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[4/3]">
+        <SaveButton
+          mls={listing.mls_number}
+          address={listing.address}
+          className="pointer-events-auto absolute bottom-3 right-3"
+        />
+      </div>
     </div>
   );
 };

@@ -51,8 +51,12 @@ export const PAGE_SIZE = 24;
  * Photos are numbered from 0 and the feed's `photo_count` says how many exist,
  * so every URL is a pure function of the MLS number and the index.
  */
-export const photoUrl = (mls: string, n = 0, size: 'card' | 'full' = 'card') => {
-  const [w, h] = size === 'full' ? [1024, 768] : [600, 450];
+export const photoUrl = (mls: string, n = 0, size: 'card' | 'full' | 'print' = 'card') => {
+  // 'print' asks for more than the host ever holds, which returns the ORIGINAL:
+  // measured 2026-10-09, a 4000px request came back 2048x1365 on one listing,
+  // 1280x853 on another and 481x640 on a third. It never upscales, so what a
+  // booklet gets is whatever the listing agent uploaded.
+  const [w, h] = size === 'print' ? [2400, 1800] : size === 'full' ? [1024, 768] : [600, 450];
   return `https://media.mlspin.com/photo.aspx?nopadding=1&w=${w}&h=${h}&mls=${encodeURIComponent(mls)}&o=&n=${n}`;
 };
 

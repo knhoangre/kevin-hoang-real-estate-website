@@ -29,7 +29,8 @@ node scripts/massgis-check.ts     # the address-suggestion parser; add --live to
 node scripts/recommendations-check.ts  # the taste profile behind "Recommended for you"
 node scripts/listing-url-check.ts      # a listing's URL: old number-only links, and the email copy of the slug
 node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203) 379-8682" is 203-379-8682
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS AND the people on a showing tour (needs Docker)
+node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, the people on a showing tour AND the marketing documents (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -194,6 +195,25 @@ used to return HTTP 200 soft-404s for every typo.
 `/admin/applications?id=` open one application; as `/rentals/:id` they would each
 have needed their own rewrite. Every broadening of that file moves the site back
 toward the soft-404 behaviour, so a dynamic segment has to earn its rewrite.
+
+**A tab left open across a deploy reloads itself, once**
+([RouteError.tsx](src/components/RouteError.tsx), the root route's
+`errorElement`). Every deploy renames the script files and removes the old ones,
+so a tab opened before it asks for a file that is gone the first time it
+navigates to a page it has not loaded: "Unexpected Application Error! Failed to
+fetch dynamically imported module", which Kevin met on `/admin/applications` and
+`/admin/properties` on 2026-10-09 after four deploys in two days. The site was
+fine; the tab was old. The router has already moved the address bar by the time
+the error renders, so one `location.reload()` fetches that page's current
+document. A second failure within fifteen seconds shows a message and a button
+instead — without that guard a file that is really missing is an endless reload.
+If the reloaded document cannot get its own script either, the router never
+starts and none of this renders: the visitor is left on the prerendered page,
+unhydrated, which is what a hard load of a broken deploy always did.
+Only navigation is handled: a dynamic import INSIDE a page (pdf-lib) is left
+alone, because reloading there throws away what was half-typed. Vercel's own
+answer is Skew Protection, a paid-plan feature. It replaces the whole layout,
+so its links are plain `<a>`s.
 
 **`vercel.json` must contain no `comment` keys.** It is JSON, so it has no
 comments, and Vercel validates the file against a schema that rejects unknown
@@ -927,6 +947,11 @@ describes what is LIVE. This section is what replaces the sold half of it.
 6. A week later: the sync stops writing sold rows to Supabase and starts failing
    on a CockroachDB error; then the Supabase-side sold rows, `idx_sold_archive`,
    `idx_comp_pool` and its cron are removed. Kevin runs that deletion himself.
+   **Before that deletion, `fill_listing_favorite()` has to change**: it copies a
+   saved home's snapshot out of `idx_listings` and refuses a number it cannot
+   find there, and since 2026-10-09 a sold home can be saved — so with the sold
+   rows gone, the heart on every sold listing would answer "That listing is no
+   longer available to save".
 
 ### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
 
@@ -1430,7 +1455,17 @@ data per client at `/admin/activity`.
 - **The heart is a SIBLING of the card's link, never inside it.** A `<button>`
   in an `<a>` is the same invalid nesting as the nested-`<a>` hydration failures.
   `ListingCard` is a wrapper holding the link and an overlay the size of the
-  photograph; `group` moved to the wrapper with it. Sold listings get no heart.
+  photograph; `group` moved to the wrapper with it.
+- **Sold listings carry the heart too, since 2026-10-09**, on the card and on the
+  page. They had none on the reasoning that there is nothing left to go and see;
+  Kevin asked for it. The database always allowed it — the snapshot trigger
+  reads any row of `idx_listings`. `/saved` lost its separate "Remove from
+  saved" link under sold cards, since the heart does that now.
+- **On a listing page the button reads "Favorite" / "Favorited" and sits on the
+  address line**, at the right, beside "View on Google Maps" (Kevin, 2026-10-09;
+  they were under the town and under the price). The list is still called Saved
+  homes, and the button's hidden text says so. On a phone the pair wraps under
+  the town line.
 - **Signing in returns to the listing through `sessionStorage`, not `?next=`**
   ([authReturn.ts](src/lib/authReturn.ts)). A URL parameter is something a
   stranger can put in a link, which makes the sign-in page an open redirect; this
@@ -1519,6 +1554,98 @@ client, with a link to each home on this site.
 - **A preview is thrown away when the tour changes**, and the details form says
   when it has unsaved edits. The worst outcome on this page is texting a schedule
   that describes the tour as it was two edits ago.
+
+### Marketing documents (`/admin/marketing`)
+
+Admin only. The three things Kevin hands out for a listing and used to lay out
+by hand in a slide program: a folded **booklet**, a **home expenses** sheet and
+a **home upgrades** sheet. Type an address or an MLS number and the booklet
+fills itself in; the sheets are typed (or pasted — several lines pasted into one
+row become several rows). His originals are in `pdf/`, which is not committed.
+
+- **Three modules, split the way the estimate is.**
+  [marketing.ts](src/lib/marketing.ts) is pure — the document's shape, what MLS
+  fills in, the crop, the total, where a list breaks — and
+  `node scripts/marketing-check.ts` runs it, including his own 26-line Natick
+  sheet (two pages, $386,266.76). [marketingStore.ts](src/lib/marketingStore.ts)
+  is everything that touches Supabase and decides nothing. Drawing is in
+  [src/components/marketing/](src/components/marketing/).
+- **`marketing_documents.doc` is one jsonb column and `marketing.ts` is its
+  contract**, like `rentalApplication.ts`. `hydrateDoc()` lays a stored document
+  over a blank one field by field and keeps a field only where its type is
+  right, so a document saved before a field existed still opens. The columns
+  beside it (`kind`, `design`, `title`, `mls_number`) are copies written at save
+  so the list need not open every document. `mls_number` has no foreign key, for
+  the reason no other table's does.
+- **A picture is never a URL and never redrawn.** A frame holds `{mls, n}` or an
+  upload's path, and a crop is three numbers (`x`, `y`, `zoom`). MLS PIN's photo
+  host sends no CORS header (measured 2026-10-09), so a page may SHOW its
+  photographs and may not read their pixels: a canvas crop — what
+  react-image-crop does on `/profile` — throws on every listing photo. It is
+  also why there is no pdf-lib here.
+- **So printing is the browser's own print box, from a frame.**
+  [DocFrame](src/components/marketing/DocFrame.tsx) draws the document in an
+  `<iframe srcDoc>` with its own stylesheet
+  ([print.css](src/components/marketing/designs/print.css), imported `?raw`) and
+  its own `@page`, and React portals the designs into it. The frame is what
+  keeps `index.css`'s print rules out — every printed page there is 7.5pt
+  portrait with its buttons hidden and dark backgrounds stripped, all
+  `!important` — and it makes the preview and the printout the same document
+  rather than two that resemble each other. "Save as PDF" in the print box is
+  the file. `print-color-adjust: exact` is what prints the dark designs without
+  anyone ticking "Background graphics".
+- **The photograph is placed WHOLE behind its frame, never `object-fit: cover`**
+  ([Pic.tsx](src/components/marketing/Pic.tsx)). The two look identical on
+  screen. Chrome's PDF writer keeps a JPEG as the JPEG it is only when the whole
+  picture is drawn; asked for part of one, it stores that part uncompressed.
+  Measured: the same booklet saved as 7 MB placed whole and 24–26 MB with
+  `object-fit` — over Gmail's limit. `drawnSize()`/`drawnOffset()` are both the
+  arithmetic the check proves (no position, zoom or shape leaves an empty edge)
+  and the numbers the page draws with.
+- **A drag uses pointer capture, not listeners on `window`.** The frames are in
+  another document; the `window` a module sees is not the one the pointer is
+  over. Zoom is a slider, since a wheel over a page that also scrolls is a fight.
+- **`photoUrl(…, 'print')` asks for more than the host holds and gets the
+  original**, which is whatever the listing agent uploaded: 2048px wide on one
+  Newton listing, 1280px on another, 481px on a third. A frame whose picture
+  would print under 150 pixels to the inch is flagged "will print soft" — from
+  `naturalWidth`, which is readable cross-origin.
+- **What MLS does not have is left out, never printed as 0** (`statsFrom`). A
+  list price under $10,000 is a placeholder and is left blank; a condo never
+  prints a lot size, which is the complex's; two half baths are spelled out
+  rather than rounded into a different house.
+- **A column exists only when something is in it, and a total only when every
+  row is a plain dollar amount** (`layoutSheet`, `sumValues`). That one rule is
+  his three upgrade sheets: dates and upgrades, upgrades alone, upgrades and
+  values with a total. An expense sheet is never totalled — its lines are ranges
+  and per-visit prices. Page breaks are worked out from the text, and each
+  design's table must fit `DENSITY`'s line counts above its footer; re-check
+  that after changing a sheet's CSS (the check script prints the clearance).
+- **The designs share ONE pool of frame keys** (`cover`, `back1`, `in1`…), which
+  is what lets a design be switched without losing the pictures chosen and
+  cropped. Classic and Welcome Home are rebuilt from his files; Noir and Gallery
+  are new. Adding one means `DESIGNS` in `marketing.ts`, a component, and its
+  entry in [designs/index.tsx](src/components/marketing/designs/index.tsx).
+- **The brokerage is always printed** (`brokerageOf`) — 254 CMR 3.09 — per
+  agent, because a co-listing can be two brokerages; a blank field falls back to
+  `SITE.brokerage`. A logo is an optional upload, and the dark designs do not
+  draw one. The editor names the listing office and, when it is not one of the
+  brokerages on the page, says to get the listing agent's OK: a booklet with
+  Kevin's name on it reads as his listing.
+- **The `marketing-images` bucket is PUBLIC to read, unlike `rental-documents`.**
+  These are pictures made to be handed out, and a signed URL would expire under
+  a booklet that takes an hour to lay out. Only the admin can write or delete.
+  Uploads are resized to 2400px in the browser first — they are Kevin's own
+  files, so unlike MLS photos they can be — and a duplicate shares its
+  original's uploads, so `deleteDoc` removes a picture only when no other
+  document lists it.
+- **It saves itself** 1.2 s after the last change; printing and leaving flush
+  first. An open document is `?doc=<id>`, so it needs no rewrite.
+
+**The `/admin` hub's cards are in headed groups** — Clients, Listings, Sign-in
+kiosks. The kiosks had a heading and the tools above them had none (Kevin,
+2026-10-09). A tool's group is the `group` on its `ADMIN_LINKS` entry; the nav
+strip in the header ignores it.
 
 ### Transactional email
 

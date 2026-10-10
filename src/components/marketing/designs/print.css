@@ -1,0 +1,2096 @@
+/*
+ * The stylesheet for a marketing document — the booklets and the two sheets.
+ *
+ * It is loaded as TEXT (`?raw`) and written into the document's own frame by
+ * DocFrame; it is never part of the site's stylesheet and Tailwind never sees
+ * it. That separation is the point: index.css sets every printed page to
+ * 7.5pt portrait with its buttons hidden and its dark backgrounds stripped,
+ * which is right for a rental application and would wreck a booklet.
+ *
+ * UNITS ARE CSS PIXELS AT 96 TO THE INCH, which is also how a browser prints
+ * them: a letter page is 1056 x 816 landscape or 816 x 1056 portrait, and a
+ * booklet panel is half of the former. Positions are absolute and fixed on
+ * purpose. These are sheets of paper, not responsive pages — the preview is the
+ * same frame scaled down as a whole.
+ *
+ * Every design keeps what matters at least a quarter of an inch (24px) from
+ * the paper's edge, which is inside what an office printer can reach.
+ */
+
+:root {
+  --ink: #1a1a1a;
+  --deep: #0d0d0f;
+  --champ: #c5a572;
+  --champ-ink: #8c6b35;
+  --line: #e6e1d8;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --slab: 'Crete Round', Rockwell, Georgia, serif;
+  --script: 'Allura', 'Snell Roundhand', cursive;
+  --office: 'Carlito', Calibri, 'Helvetica Neue', Arial, sans-serif;
+  --verdana: Verdana, Geneva, 'DejaVu Sans', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Without this a browser drops every background on paper unless the person
+     finds and ticks "Background graphics" — and the dark designs print white. */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+figure {
+  margin: 0;
+  padding: 0;
+  font-weight: inherit;
+  font-size: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+/* Figures that line up and sit on the baseline. Playfair's default numerals are
+   old-style — a sunken 8 beside a raised 0 — so anything in the display face
+   that can hold a digit asks for lining figures too. */
+.num {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
+}
+.lnum {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: 'lnum' 1;
+}
+
+/* ------------------------------------------------------------------ pages */
+
+.page {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+}
+.page.booklet {
+  width: 1056px;
+  height: 816px;
+}
+.page.sheet {
+  width: 816px;
+  height: 1056px;
+}
+.panel {
+  position: absolute;
+  top: 0;
+  width: 528px;
+  height: 816px;
+}
+.panel.left {
+  left: 0;
+}
+.panel.right {
+  left: 528px;
+}
+
+@media screen {
+  .page + .page {
+    margin-top: 24px;
+  }
+}
+
+@media print {
+  .page {
+    break-after: page;
+    page-break-after: always;
+  }
+  .page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  /* The editor's own marks: selection rings, "add a picture", the soft flag. */
+  .ui {
+    display: none !important;
+  }
+}
+
+/* ----------------------------------------------------------------- frames */
+
+.pic {
+  position: relative;
+  overflow: hidden;
+  background: #ecebe7;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  outline: none;
+}
+.pic:active {
+  cursor: grabbing;
+}
+.pic img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+/* A floor plan or a logo: shown whole, on whatever is behind it. */
+.pic.contain {
+  background: transparent;
+}
+.pic.contain img {
+  object-fit: contain;
+}
+.pic.is-empty {
+  cursor: pointer;
+}
+.pic.round {
+  border-radius: 50%;
+}
+
+.pic-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  text-align: center;
+  font: 600 10px/1.3 var(--sans);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8b8780;
+}
+.pic.contain.is-empty .pic-empty {
+  border: 1px dashed #bdb8ae;
+}
+.pic-flag {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: #b45309;
+  color: #fff;
+  font: 600 10px/1.2 var(--sans);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.pic-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.pic:hover .pic-ring,
+.pic:focus-visible .pic-ring {
+  box-shadow: inset 0 0 0 2px rgba(197, 165, 114, 0.95);
+}
+.pic.is-selected .pic-ring {
+  box-shadow: inset 0 0 0 3px #c5a572, inset 0 0 0 4px rgba(13, 13, 15, 0.55);
+}
+
+@media print {
+  /* An empty frame is not a grey box on paper. */
+  .pic.is-empty {
+    background: transparent;
+  }
+}
+
+/* A value too long for the size it was designed at steps down, rather than
+   wrapping into its neighbour. The step is chosen from the text's length. */
+
+/* ========================================================================
+   BOOKLET — Classic (Kevin's Designs 3 to 6)
+   ======================================================================== */
+
+.bk-classic {
+  font-family: var(--verdana);
+  color: #000;
+}
+.bk-classic .rule {
+  position: absolute;
+  height: 5px;
+  background: #000;
+}
+.bk-classic .left .rule {
+  left: 44px;
+  right: 30px;
+}
+.bk-classic .right .rule {
+  left: 27px;
+  right: 46px;
+}
+.bk-classic .rule.top {
+  top: 104px;
+}
+.bk-classic .rule.bottom {
+  top: 704px;
+}
+
+/* Back panel: two photographs, or the floor plan. */
+.bk-classic .back-photo {
+  position: absolute;
+  left: 59px;
+  width: 408px;
+  height: 271px;
+}
+.bk-classic .back-photo.one {
+  top: 126px;
+}
+.bk-classic .back-photo.two {
+  top: 412px;
+}
+.bk-classic .plan-title {
+  position: absolute;
+  left: 44px;
+  width: 454px;
+  top: 122px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bk-classic .plans {
+  position: absolute;
+  left: 44px;
+  top: 162px;
+  width: 454px;
+  height: 524px;
+  display: grid;
+  gap: 12px 16px;
+  grid-template-columns: 1fr;
+}
+.bk-classic .plans.n2,
+.bk-classic .plans.n3 {
+  grid-template-columns: 1fr 1fr;
+}
+.bk-classic .plans.n3 {
+  grid-template-rows: 1fr 1fr;
+}
+.bk-classic .plans.n3 figure:last-child {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 50%;
+}
+.bk-classic .plans figure {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.bk-classic .plans .pic {
+  flex: 1;
+  min-height: 0;
+}
+.bk-classic .plans figcaption {
+  padding-top: 8px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Front cover. */
+.bk-classic .cover-photo {
+  position: absolute;
+  left: 27px;
+  top: 153px;
+  width: 455px;
+  height: 303px;
+}
+.bk-classic .plate {
+  position: absolute;
+  left: 86px;
+  top: 420px;
+  width: 337px;
+  min-height: 70px;
+  padding: 4px 12px;
+  border-radius: 8px;
+  background: #4d4d4d;
+  color: #fff;
+  text-align: center;
+  font-size: 19px;
+  line-height: 33px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.bk-classic .plate span {
+  display: block;
+}
+.bk-classic .plate.s1 {
+  font-size: 16px;
+}
+.bk-classic .plate.s2 {
+  font-size: 13.5px;
+}
+.bk-classic .agents {
+  position: absolute;
+  left: 27px;
+  top: 506px;
+  width: 455px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+}
+.bk-classic .agent {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.38;
+}
+.bk-classic .agent-photo {
+  flex: none;
+  width: 150px;
+  height: 150px;
+}
+.bk-classic .agent-name {
+  font-size: 20px;
+  letter-spacing: 0.03em;
+}
+.bk-classic .agent-brokerage {
+  margin-top: 8px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+.bk-classic .agent-logo {
+  width: 160px;
+  height: 46px;
+  margin: 8px auto 0;
+}
+/* Two agents stand side by side from the same line. Centred, one with a
+   headshot and one without start at different heights. */
+.bk-classic .agents.two {
+  align-items: flex-start;
+  padding-top: 6px;
+}
+.bk-classic .agents.two .agent {
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 10.5px;
+}
+.bk-classic .agents.two .agent-photo {
+  width: 84px;
+  height: 84px;
+}
+.bk-classic .agents.two .agent-name {
+  font-size: 15px;
+}
+.bk-classic .agents.two .agent-logo {
+  width: 120px;
+  height: 32px;
+}
+
+/* Inside. */
+.bk-classic .lead {
+  position: absolute;
+  left: 50px;
+  top: 105px;
+  width: 447px;
+  height: 298px;
+}
+.bk-classic .desc {
+  position: absolute;
+  left: 50px;
+  top: 426px;
+  width: 447px;
+  height: 212px;
+  overflow: hidden;
+  text-align: justify;
+  font-size: 12.4px;
+  line-height: 15.6px;
+  white-space: pre-line;
+}
+.bk-classic .desc.t1 {
+  font-size: 11.2px;
+  line-height: 14.1px;
+}
+.bk-classic .desc.t2 {
+  font-size: 10.1px;
+  line-height: 12.9px;
+}
+.bk-classic .desc.t3 {
+  font-size: 9px;
+  line-height: 11.6px;
+}
+.bk-classic .stats {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 20px;
+}
+.bk-classic .stats.pair {
+  left: 50px;
+  top: 652px;
+  width: 447px;
+}
+.bk-classic .stats.four {
+  left: 32px;
+  top: 576px;
+  width: 446px;
+}
+.bk-classic .stat {
+  text-align: center;
+}
+.bk-classic .stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bk-classic .stat-label::before,
+.bk-classic .stat-label::after {
+  content: '';
+  flex: 0 0 30px;
+  height: 1.5px;
+  background: #000;
+}
+.bk-classic .stat-value {
+  margin-top: 2px;
+  font-size: 27px;
+  line-height: 1.25;
+}
+.bk-classic .stat-value.s1 {
+  font-size: 21px;
+  line-height: 1.6;
+}
+.bk-classic .stat-value.s2 {
+  font-size: 15px;
+  line-height: 2.2;
+}
+.bk-classic .six {
+  position: absolute;
+  left: 32px;
+  top: 104px;
+  width: 446px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px 24px;
+}
+.bk-classic .six .pic {
+  height: 141px;
+}
+
+/* ========================================================================
+   BOOKLET — Welcome Home (Kevin's Design 2)
+   ======================================================================== */
+
+.bk-welcome {
+  font-family: var(--verdana);
+  color: #000;
+}
+.bk-welcome .presents {
+  position: absolute;
+  left: 20px;
+  width: 498px;
+  top: 116px;
+  text-align: center;
+  font-family: var(--slab);
+  font-size: 27px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.bk-welcome .presents.s1 {
+  font-size: 22px;
+  top: 120px;
+}
+.bk-welcome .presents.s2 {
+  font-size: 18px;
+  top: 124px;
+}
+.bk-welcome .where {
+  position: absolute;
+  text-align: center;
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bk-welcome .where.s1 {
+  font-size: 14px;
+}
+.bk-welcome .where.s2 {
+  font-size: 11.5px;
+}
+.bk-welcome .left .where {
+  left: 20px;
+  width: 498px;
+  top: 172px;
+}
+.bk-welcome .right .where {
+  left: 34px;
+  width: 441px;
+  top: 188px;
+}
+/* The two photographs meet at the fold and run as one band. */
+.bk-welcome .band-photo {
+  position: absolute;
+  top: 234px;
+  height: 343px;
+}
+.bk-welcome .left .band-photo {
+  left: 24px;
+  width: 504px;
+}
+.bk-welcome .right .band-photo {
+  left: 0;
+  width: 504px;
+}
+.bk-welcome .frame {
+  position: absolute;
+  left: 27px;
+  top: 134px;
+  width: 455px;
+  height: 558px;
+  border: 7px solid #000;
+  pointer-events: none;
+}
+.bk-welcome .headline {
+  position: absolute;
+  left: 27px;
+  width: 455px;
+  top: 111px;
+  text-align: center;
+  pointer-events: none;
+}
+.bk-welcome .headline span {
+  display: inline-block;
+  max-width: 400px;
+  padding: 0 16px;
+  background: #fff;
+  font-family: var(--slab);
+  font-size: 37px;
+  line-height: 1.25;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.bk-welcome .headline.s1 span {
+  font-size: 27px;
+  line-height: 1.7;
+}
+.bk-welcome .headline.s2 span {
+  font-size: 19px;
+  line-height: 2.4;
+}
+.bk-welcome .byline {
+  position: absolute;
+  left: 40px;
+  width: 429px;
+  top: 600px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.bk-welcome .byline b {
+  display: block;
+  font-size: 19px;
+  letter-spacing: 0.07em;
+}
+.bk-welcome .byline span {
+  display: block;
+  margin-top: 10px;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+.bk-welcome .agents {
+  position: absolute;
+  left: 30px;
+  top: 590px;
+  width: 480px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.bk-welcome .agent {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  line-height: 1.32;
+  text-transform: uppercase;
+}
+.bk-welcome .agent-photo {
+  flex: none;
+  width: 132px;
+  height: 132px;
+}
+.bk-welcome .agent-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+.bk-welcome .agent-title {
+  margin-bottom: 8px;
+}
+.bk-welcome .agent-brokerage {
+  margin-top: 8px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.bk-welcome .agent-logo {
+  width: 130px;
+  height: 40px;
+  margin-top: 8px;
+}
+.bk-welcome .agents.two .agent {
+  font-size: 10px;
+  gap: 10px;
+}
+.bk-welcome .agents.two .agent-photo {
+  width: 76px;
+  height: 76px;
+}
+.bk-welcome .agents.two .agent-name {
+  font-size: 12px;
+}
+.bk-welcome .agents.two .agent-logo {
+  width: 96px;
+  height: 28px;
+}
+
+/* Inside: eight photographs around a grey band that carries the words. */
+.bk-welcome .grey {
+  position: absolute;
+  left: 316px;
+  top: 75px;
+  width: 422px;
+  height: 665px;
+  background: #e6e7e9;
+}
+.bk-welcome .w {
+  position: absolute;
+}
+.bk-welcome .w-a {
+  left: 41px;
+  top: 95px;
+  width: 296px;
+  height: 197px;
+}
+.bk-welcome .w-b {
+  left: 219px;
+  top: 306px;
+  width: 292px;
+  height: 194px;
+}
+.bk-welcome .w-c {
+  left: 41px;
+  top: 524px;
+  width: 296px;
+  height: 197px;
+}
+.bk-welcome .w-d {
+  left: 538px;
+  top: 91px;
+  width: 242px;
+  height: 161px;
+}
+.bk-welcome .w-e {
+  left: 790px;
+  top: 91px;
+  width: 242px;
+  height: 161px;
+}
+.bk-welcome .w-f {
+  left: 538px;
+  top: 263px;
+  width: 494px;
+  height: 288px;
+}
+.bk-welcome .w-g {
+  left: 538px;
+  top: 563px;
+  width: 242px;
+  height: 162px;
+}
+.bk-welcome .w-h {
+  left: 790px;
+  top: 563px;
+  width: 242px;
+  height: 162px;
+}
+.bk-welcome .headfact {
+  position: absolute;
+  left: 349px;
+  width: 176px;
+  text-align: center;
+}
+.bk-welcome .headfact.one {
+  top: 112px;
+}
+.bk-welcome .headfact.two {
+  top: 222px;
+}
+.bk-welcome .headfact .stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bk-welcome .headfact .stat-label::before,
+.bk-welcome .headfact .stat-label::after {
+  content: '';
+  flex: 1 1 14px;
+  max-width: 40px;
+  height: 1.5px;
+  background: #000;
+}
+.bk-welcome .headfact .stat-value {
+  margin-top: 4px;
+  font-size: 28px;
+  line-height: 1.3;
+}
+.bk-welcome .headfact .stat-value.s1 {
+  font-size: 21px;
+  line-height: 1.6;
+}
+.bk-welcome .headfact .stat-value.s2 {
+  font-size: 16px;
+  line-height: 2.2;
+}
+.bk-welcome .cross {
+  position: absolute;
+  left: 34px;
+  top: 322px;
+  width: 170px;
+  height: 172px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.bk-welcome .cross .stat {
+  display: flex;
+  /* The figure over its label, as on his sheet; the markup has them the other
+     way round, which is the order a screen reader should say them in. */
+  flex-direction: column-reverse;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.bk-welcome .cross .stat:nth-child(odd) {
+  border-right: 1.5px solid #000;
+}
+.bk-welcome .cross .stat:nth-child(-n + 2) {
+  border-bottom: 1.5px solid #000;
+}
+.bk-welcome .cross .stat-value {
+  font-size: 27px;
+  line-height: 1.2;
+}
+.bk-welcome .cross .stat-value.s1 {
+  font-size: 16px;
+  line-height: 1.7;
+}
+.bk-welcome .cross .stat-value.s2 {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.bk-welcome .cross .stat-label {
+  font-size: 12.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.bk-welcome .cross .stat-label.s1 {
+  font-size: 10px;
+}
+.bk-welcome .cross .stat-label.s2 {
+  font-size: 8.5px;
+}
+.bk-welcome .features {
+  position: absolute;
+  left: 350px;
+  top: 528px;
+  width: 178px;
+  max-height: 200px;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.bk-welcome .features h3 {
+  margin-bottom: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.bk-welcome .features li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 9px;
+}
+.bk-welcome .features li::before {
+  content: '-';
+  position: absolute;
+  left: 8px;
+}
+.bk-welcome .features.s1 {
+  font-size: 12.5px;
+}
+.bk-welcome .features.s1 li {
+  margin-bottom: 6px;
+}
+
+/* ========================================================================
+   BOOKLET — Noir (new)
+   ======================================================================== */
+
+.bk-noir {
+  color: #f1ede5;
+}
+/* One dark field across both panels, a quarter-inch inside the paper's edge. */
+.bk-noir .field {
+  position: absolute;
+  inset: 24px;
+  background: var(--deep);
+}
+.bk-noir .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.bk-noir .eyebrow i {
+  flex: none;
+  width: 36px;
+  height: 1px;
+  background: var(--champ);
+}
+.bk-noir .back-photo {
+  position: absolute;
+  left: 72px;
+  top: 80px;
+  width: 408px;
+  height: 272px;
+  outline: 1px solid rgba(197, 165, 114, 0.7);
+  outline-offset: 8px;
+}
+.bk-noir .agents {
+  position: absolute;
+  left: 72px;
+  top: 400px;
+  width: 408px;
+  height: 290px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+.bk-noir .agent {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.bk-noir .agent-photo {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  outline: 1px solid var(--champ);
+  outline-offset: 5px;
+}
+.bk-noir .agent-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.15;
+  color: #fff;
+}
+.bk-noir .agent-title {
+  margin-top: 6px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.bk-noir .agent-line {
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: #d9d4c9;
+}
+.bk-noir .agent-title + .agent-line {
+  margin-top: 8px;
+}
+.bk-noir .agent-brokerage {
+  margin-top: 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.bk-noir .agents.two .agent-photo {
+  width: 76px;
+  height: 76px;
+}
+.bk-noir .agents.two .agent-name {
+  font-size: 19px;
+}
+.bk-noir .back-foot {
+  position: absolute;
+  left: 72px;
+  width: 408px;
+  bottom: 62px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(197, 165, 114, 0.55);
+  text-align: center;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.bk-noir .cover-photo {
+  position: absolute;
+  left: 0;
+  top: 24px;
+  width: 504px;
+  height: 408px;
+}
+.bk-noir .fade {
+  position: absolute;
+  left: 0;
+  top: 252px;
+  width: 504px;
+  height: 181px;
+  background: linear-gradient(to bottom, rgba(13, 13, 15, 0), var(--deep));
+  pointer-events: none;
+}
+.bk-noir .cover-words {
+  position: absolute;
+  left: 44px;
+  width: 416px;
+  top: 458px;
+}
+.bk-noir .street {
+  margin-top: 20px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 1.1;
+  color: #fff;
+}
+.bk-noir .street.s1 {
+  font-size: 32px;
+}
+.bk-noir .street.s2 {
+  font-size: 25px;
+}
+.bk-noir .city {
+  margin-top: 16px;
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #cfc9bd;
+}
+.bk-noir .cover-foot {
+  position: absolute;
+  left: 44px;
+  width: 416px;
+  bottom: 62px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(197, 165, 114, 0.55);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e7e2d8;
+}
+.bk-noir .full {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  width: 504px;
+  height: 768px;
+}
+.bk-noir .story {
+  position: absolute;
+  left: 44px;
+  top: 68px;
+  width: 416px;
+  height: 680px;
+  display: flex;
+  flex-direction: column;
+}
+.bk-noir .story h2 {
+  margin-top: 14px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.15;
+  color: #fff;
+}
+.bk-noir .story h2.s2 {
+  font-size: 22px;
+}
+.bk-noir .hair {
+  flex: none;
+  width: 44px;
+  height: 1px;
+  margin: 20px 0;
+  background: var(--champ);
+}
+.bk-noir .desc {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-size: 10.8px;
+  line-height: 1.68;
+  color: #dcd7cc;
+  white-space: pre-line;
+}
+.bk-noir .desc.t1 {
+  font-size: 10px;
+  line-height: 1.62;
+}
+.bk-noir .desc.t2 {
+  font-size: 9.2px;
+  line-height: 1.56;
+}
+.bk-noir .desc.t3 {
+  font-size: 8.4px;
+  line-height: 1.5;
+}
+.bk-noir .offered {
+  flex: none;
+  margin-top: 22px;
+}
+.bk-noir .offered span {
+  display: block;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.bk-noir .offered b {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 29px;
+  line-height: 1.1;
+  color: #fff;
+}
+.bk-noir .facts {
+  flex: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  margin-top: 22px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(197, 165, 114, 0.45);
+  border-bottom: 1px solid rgba(197, 165, 114, 0.45);
+}
+.bk-noir .fact {
+  padding: 0 12px;
+  border-left: 1px solid rgba(197, 165, 114, 0.3);
+}
+.bk-noir .fact:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.bk-noir .fact b {
+  display: block;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.2;
+  color: #fff;
+}
+.bk-noir .fact b.s1 {
+  font-size: 13px;
+  line-height: 1.66;
+}
+.bk-noir .fact b.s2 {
+  font-size: 10px;
+  line-height: 2.16;
+}
+.bk-noir .fact span {
+  display: block;
+  margin-top: 5px;
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.bk-noir .trio {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+.bk-noir .trio .pic {
+  height: 88px;
+}
+
+/* ========================================================================
+   BOOKLET — Gallery (new)
+   ======================================================================== */
+
+.bk-gallery {
+  color: var(--ink);
+}
+.bk-gallery .kicker {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.bk-gallery .back-photo {
+  position: absolute;
+  left: 52px;
+  top: 64px;
+  width: 424px;
+  height: 283px;
+}
+.bk-gallery .agents {
+  position: absolute;
+  left: 52px;
+  top: 384px;
+  width: 424px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 26px;
+}
+.bk-gallery .agent {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.bk-gallery .agent-photo {
+  flex: none;
+  width: 88px;
+  height: 88px;
+}
+.bk-gallery .agent-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.15;
+}
+.bk-gallery .agent-title {
+  margin-top: 6px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.bk-gallery .agent-line {
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: #555;
+}
+.bk-gallery .agent-title + .agent-line {
+  margin-top: 8px;
+}
+.bk-gallery .agent-brokerage {
+  margin-top: 8px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.bk-gallery .agent-logo {
+  width: 124px;
+  height: 38px;
+  margin-top: 8px;
+}
+.bk-gallery .agents.two .agent-photo {
+  width: 72px;
+  height: 72px;
+}
+.bk-gallery .agents.two .agent-name {
+  font-size: 18px;
+}
+.bk-gallery .agents.two .agent-logo {
+  width: 100px;
+  height: 28px;
+}
+.bk-gallery .foot {
+  position: absolute;
+  left: 52px;
+  width: 424px;
+  bottom: 64px;
+  padding-top: 14px;
+  border-top: 1px solid var(--champ);
+  text-align: center;
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #555;
+}
+.bk-gallery .cover-kicker {
+  position: absolute;
+  left: 40px;
+  width: 448px;
+  top: 66px;
+  text-align: center;
+}
+.bk-gallery .cover-photo {
+  position: absolute;
+  left: 52px;
+  top: 108px;
+  width: 424px;
+  height: 318px;
+}
+.bk-gallery .title {
+  position: absolute;
+  left: 40px;
+  width: 448px;
+  top: 468px;
+  text-align: center;
+}
+.bk-gallery .title h1 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 1.14;
+}
+.bk-gallery .title h1.s1 {
+  font-size: 29px;
+}
+.bk-gallery .title h1.s2 {
+  font-size: 23px;
+}
+.bk-gallery .title i {
+  display: block;
+  width: 48px;
+  height: 1px;
+  margin: 22px auto 20px;
+  background: var(--champ);
+}
+.bk-gallery .title p {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #666;
+}
+.bk-gallery .lead {
+  position: absolute;
+  left: 52px;
+  top: 64px;
+  width: 424px;
+  height: 318px;
+}
+.bk-gallery .copy {
+  position: absolute;
+  left: 52px;
+  top: 412px;
+  width: 424px;
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+}
+.bk-gallery .copy h2 {
+  margin-top: 10px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 23px;
+  line-height: 1.2;
+}
+.bk-gallery .copy h2.s2 {
+  font-size: 18px;
+}
+.bk-gallery .copy .hair {
+  flex: none;
+  width: 44px;
+  height: 1px;
+  margin: 14px 0 16px;
+  background: var(--champ);
+}
+.bk-gallery .desc {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  column-count: 2;
+  column-gap: 24px;
+  /* Two columns of even length, rather than one full and one stub. */
+  column-fill: balance;
+  font-size: 9.9px;
+  line-height: 1.62;
+  color: #333;
+  white-space: pre-line;
+}
+.bk-gallery .desc.t1 {
+  font-size: 9.2px;
+  line-height: 1.56;
+}
+.bk-gallery .desc.t2 {
+  font-size: 8.5px;
+  line-height: 1.5;
+}
+.bk-gallery .desc.t3 {
+  font-size: 7.8px;
+  line-height: 1.46;
+}
+.bk-gallery .four {
+  position: absolute;
+  left: 52px;
+  top: 64px;
+  width: 424px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.bk-gallery .four .pic {
+  height: 190px;
+}
+.bk-gallery .offered {
+  position: absolute;
+  left: 52px;
+  width: 424px;
+  top: 490px;
+}
+.bk-gallery .offered b {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 31px;
+  line-height: 1.1;
+}
+.bk-gallery .facts {
+  position: absolute;
+  left: 52px;
+  width: 424px;
+  top: 586px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 15px 0;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+.bk-gallery .fact {
+  padding: 0 12px;
+  border-left: 1px solid var(--line);
+}
+.bk-gallery .fact:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.bk-gallery .fact b {
+  display: block;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.bk-gallery .fact b.s1 {
+  font-size: 13px;
+  line-height: 1.66;
+}
+.bk-gallery .fact b.s2 {
+  font-size: 10px;
+  line-height: 2.16;
+}
+.bk-gallery .fact span {
+  display: block;
+  margin-top: 5px;
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+
+/* ========================================================================
+   SHEETS — the table all three share
+   ======================================================================== */
+
+.tbl {
+  --cols: 1fr;
+  --vw: 150px;
+}
+.tbl.k-expenses {
+  --vw: 48%;
+}
+.tbl.has-value {
+  --cols: 1fr var(--vw);
+}
+.tbl.has-date {
+  --cols: 96px 1fr;
+}
+.tbl.has-date.has-value {
+  --cols: 96px 1fr var(--vw);
+}
+.tr {
+  display: grid;
+  grid-template-columns: var(--cols);
+}
+.td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  /* A value typed on two lines prints on two. */
+  white-space: pre-line;
+}
+
+/* ========================================================================
+   SHEET — Classic (Kevin's expense and upgrade sheets)
+   ======================================================================== */
+
+.sh-classic {
+  font-family: var(--office);
+  color: #000;
+}
+.sh-classic .hd {
+  position: absolute;
+  left: 31px;
+  top: 40px;
+  width: 754px;
+  height: 165px;
+}
+.sh-classic .hd .pic {
+  position: absolute;
+  inset: 0;
+}
+.sh-classic .frost {
+  position: absolute;
+  left: 10px;
+  right: 0;
+  top: 34px;
+  height: 93px;
+  background: rgba(255, 255, 255, 0.64);
+  pointer-events: none;
+}
+.sh-classic .plate {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  height: 41px;
+  min-width: 380px;
+  max-width: 720px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #fff;
+  font-size: 21px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sh-classic .plate.s1 {
+  font-size: 17.5px;
+}
+.sh-classic .plate.s2 {
+  font-size: 14.5px;
+}
+.sh-classic .title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 56px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.sh-classic .title b {
+  font-family: var(--slab);
+  font-weight: 400;
+  font-size: 35px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sh-classic .title i {
+  margin-top: -4px;
+  font-family: var(--script);
+  font-style: normal;
+  font-size: 64px;
+  line-height: 1;
+}
+.sh-classic .body {
+  position: absolute;
+  left: 88px;
+  top: 232px;
+  width: 640px;
+}
+.sh-classic .td {
+  padding: 14px 16px;
+  font-size: 21px;
+  line-height: 26px;
+  text-transform: uppercase;
+}
+.sh-classic.d-regular .td {
+  padding: 9px 16px;
+  font-size: 17.5px;
+  line-height: 22px;
+}
+.sh-classic.d-compact .td {
+  padding: 5.5px 16px;
+  font-size: 14.5px;
+  line-height: 18px;
+}
+.sh-classic .th .td {
+  font-weight: 700;
+}
+.sh-classic .td.value {
+  border-left: 3px solid #000;
+  text-align: center;
+}
+.sh-classic .td.date {
+  border-right: 3px solid #000;
+  padding-left: 0;
+  text-align: right;
+}
+/* The rule runs a little past the last line, as on his sheets. */
+.sh-classic .tr.tail .td {
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 18px;
+}
+.sh-classic .tr.total {
+  border-top: 3px solid #000;
+  font-weight: 700;
+}
+.sh-classic .tr.total .td {
+  font-weight: 700;
+}
+/* Upgrades alone: no rule to stand beside, so the heading is underlined. */
+.sh-classic .tbl:not(.has-date):not(.has-value) .th {
+  width: 82%;
+  margin-bottom: 10px;
+  border-bottom: 3px solid #000;
+}
+.sh-classic .tbl:not(.has-date):not(.has-value) .th .td {
+  font-size: 24px;
+}
+.sh-classic .note {
+  margin-top: 14px;
+  padding: 0 16px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #444;
+  white-space: pre-line;
+}
+.sh-classic .ft {
+  position: absolute;
+  left: 31px;
+  right: 31px;
+  bottom: 16px;
+  height: 185px;
+  background: #f7f6f4;
+}
+.sh-classic .ft .agent-photo {
+  position: absolute;
+  left: 50%;
+  top: -140px;
+  width: 160px;
+  height: 160px;
+  margin-left: -80px;
+}
+.sh-classic .ft .agent-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 46px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.sh-classic .ft.no-photo .agent-text {
+  top: 34px;
+}
+.sh-classic .ft .agent-name {
+  font-weight: 700;
+  font-size: 31px;
+  line-height: 1.1;
+}
+.sh-classic .ft .agent-title {
+  margin-top: 6px;
+  font-size: 18px;
+}
+.sh-classic .ft .agent-contact {
+  margin-top: 3px;
+  font-size: 19px;
+}
+.sh-classic .ft .agent-contact.s1 {
+  font-size: 15.5px;
+}
+.sh-classic .ft .agent-logo {
+  position: absolute;
+  left: 18px;
+  top: 30px;
+  width: 150px;
+  height: 58px;
+}
+.sh-classic .ft.two {
+  display: flex;
+  align-items: center;
+}
+.sh-classic .ft.two .agent {
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.sh-classic .ft.two .agent-text {
+  position: static;
+}
+.sh-classic .ft.two .agent-photo {
+  position: static;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 8px;
+}
+.sh-classic .ft.two .agent-name {
+  font-size: 21px;
+}
+.sh-classic .ft.two .agent-title {
+  margin-top: 3px;
+  font-size: 13px;
+}
+.sh-classic .ft.two .agent-contact,
+.sh-classic .ft.two .agent-contact.s1 {
+  font-size: 12.5px;
+}
+.sh-classic .ft.two .agent-logo {
+  display: none;
+}
+
+/* ========================================================================
+   SHEET — Noir (new)
+   ======================================================================== */
+
+.sh-noir {
+  color: var(--ink);
+}
+.sh-noir .hd {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  width: 768px;
+  height: 236px;
+  background: var(--deep);
+  overflow: hidden;
+}
+.sh-noir .hd .pic {
+  position: absolute;
+  inset: 0;
+  background: var(--deep);
+}
+.sh-noir .hd .pic-empty {
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  color: #8b8780;
+}
+.sh-noir .shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(13, 13, 15, 0.95) 0%,
+    rgba(13, 13, 15, 0.66) 46%,
+    rgba(13, 13, 15, 0.3) 100%
+  );
+  pointer-events: none;
+}
+.sh-noir .words {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 36px;
+  color: #fff;
+  pointer-events: none;
+}
+.sh-noir .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.sh-noir .eyebrow i {
+  flex: none;
+  width: 36px;
+  height: 1px;
+  background: var(--champ);
+}
+.sh-noir .words h1 {
+  margin-top: 16px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.12;
+}
+.sh-noir .words h1.s1 {
+  font-size: 28px;
+}
+.sh-noir .words h1.s2 {
+  font-size: 22px;
+}
+.sh-noir .words p {
+  margin-top: 12px;
+  font-size: 10.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #d6d0c4;
+}
+.sh-noir .body {
+  position: absolute;
+  left: 88px;
+  top: 300px;
+  width: 640px;
+}
+.sh-noir .td {
+  padding: 16px 4px;
+  font-size: 14px;
+  line-height: 22px;
+}
+.sh-noir.d-regular .td {
+  padding: 11px 4px;
+  font-size: 12.5px;
+  line-height: 18px;
+}
+.sh-noir.d-compact .td {
+  padding: 7px 4px;
+  font-size: 11px;
+  line-height: 15px;
+}
+.sh-noir .td.label {
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.sh-noir .td.value {
+  text-align: right;
+  font-weight: 500;
+}
+.sh-noir .td.date {
+  font-weight: 600;
+  color: var(--champ-ink);
+}
+.sh-noir .tr {
+  border-bottom: 1px solid var(--line);
+}
+.sh-noir .tr.th {
+  border-bottom: 1px solid var(--ink);
+}
+.sh-noir .th .td,
+.sh-noir.d-regular .th .td,
+.sh-noir.d-compact .th .td {
+  padding: 0 4px 10px;
+  font-size: 9px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-noir .tr.total {
+  border-top: 1.5px solid var(--champ);
+  border-bottom: 0;
+  margin-top: -1px;
+}
+.sh-noir .tr.total .td {
+  font-weight: 700;
+}
+.sh-noir .note {
+  margin-top: 14px;
+  padding: 0 4px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: #777;
+  white-space: pre-line;
+}
+.sh-noir .ft {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  height: 150px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  background: var(--deep);
+  color: #fff;
+}
+.sh-noir .ft .agent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.sh-noir .ft .agent-photo {
+  flex: none;
+  width: 84px;
+  height: 84px;
+  outline: 1px solid var(--champ);
+  outline-offset: 5px;
+}
+.sh-noir .ft .agent-text {
+  flex: 1;
+  min-width: 0;
+}
+.sh-noir .ft .agent-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.15;
+}
+.sh-noir .ft .agent-title {
+  margin-top: 6px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.sh-noir .ft .agent-contact {
+  margin-top: 8px;
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #d8d3c8;
+}
+.sh-noir .ft.two {
+  padding: 0 36px;
+  gap: 28px;
+}
+.sh-noir .ft.two .agent {
+  gap: 16px;
+}
+.sh-noir .ft.two .agent-photo {
+  width: 60px;
+  height: 60px;
+}
+.sh-noir .ft.two .agent-name {
+  font-size: 18px;
+}
+
+/* ========================================================================
+   SHEET — Gallery (new)
+   ======================================================================== */
+
+.sh-gallery {
+  color: var(--ink);
+}
+.sh-gallery .hd {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  top: 64px;
+  height: 176px;
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  border-bottom: 1px solid var(--champ);
+}
+.sh-gallery .words {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 26px;
+}
+.sh-gallery .kicker {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-gallery .words h1 {
+  margin-top: 12px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 44px;
+  line-height: 1.05;
+}
+.sh-gallery .words p {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #555;
+}
+.sh-gallery .hd .pic {
+  flex: none;
+  width: 200px;
+  height: 150px;
+}
+.sh-gallery .body {
+  position: absolute;
+  left: 88px;
+  top: 272px;
+  width: 640px;
+}
+.sh-gallery .td {
+  padding: 16px 4px;
+  font-size: 15px;
+  line-height: 22px;
+}
+.sh-gallery.d-regular .td {
+  padding: 11px 4px;
+  font-size: 13.5px;
+  line-height: 18px;
+}
+.sh-gallery.d-compact .td {
+  padding: 7px 4px;
+  font-size: 11.5px;
+  line-height: 15px;
+}
+.sh-gallery .td.label {
+  font-weight: 500;
+}
+.sh-gallery .td.value {
+  text-align: right;
+  font-weight: 600;
+}
+.sh-gallery .td.date {
+  color: #777;
+}
+.sh-gallery .tr {
+  border-bottom: 1px solid #ebe7df;
+}
+.sh-gallery .tr.th {
+  border-bottom: 1px solid var(--ink);
+}
+.sh-gallery .th .td,
+.sh-gallery.d-regular .th .td,
+.sh-gallery.d-compact .th .td {
+  padding: 0 4px 10px;
+  font-size: 8.5px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #777;
+}
+.sh-gallery .tr.total {
+  border-top: 1px solid var(--ink);
+  border-bottom: 0;
+  margin-top: -1px;
+}
+.sh-gallery .tr.total .td {
+  font-weight: 700;
+}
+.sh-gallery .note {
+  margin-top: 14px;
+  padding: 0 4px;
+  font-size: 9.5px;
+  line-height: 1.5;
+  color: #777;
+  white-space: pre-line;
+}
+.sh-gallery .ft {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 56px;
+  height: 104px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  border-top: 1px solid var(--champ);
+}
+.sh-gallery .ft .agent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.sh-gallery .ft .agent-photo {
+  flex: none;
+  width: 68px;
+  height: 68px;
+}
+.sh-gallery .ft .agent-text {
+  flex: 1;
+  min-width: 0;
+}
+.sh-gallery .ft .agent-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.15;
+}
+.sh-gallery .ft .agent-title {
+  margin-top: 5px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-gallery .ft .agent-contact {
+  margin-top: 6px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #555;
+}
+.sh-gallery .ft .agent-logo {
+  flex: none;
+  width: 116px;
+  height: 42px;
+}
+.sh-gallery .ft.two .agent-photo {
+  width: 54px;
+  height: 54px;
+}
+.sh-gallery .ft.two .agent-name {
+  font-size: 17px;
+}
+.sh-gallery .ft.two .agent-logo {
+  width: 84px;
+  height: 30px;
+}

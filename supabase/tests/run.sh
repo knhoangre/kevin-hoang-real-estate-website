@@ -98,5 +98,16 @@ psql_file "$REPO/supabase/migrations/20261008100000_showing_tour_people.sql" -q 
 echo
 psql_file "$TESTS/showing_tours_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
 
+# Marketing documents and the bucket their uploaded pictures go in. The
+# migration writes policies on storage.objects, so Storage's two tables get a
+# stand-in first.
+echo
+psql_file "$TESTS/03_storage_bootstrap.sql" -q
+echo "Applying 20261010100000_marketing_documents"
+psql_file "$REPO/supabase/migrations/20261010100000_marketing_documents.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+psql_file "$TESTS/marketing_documents_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+
 echo
 echo "All assertions passed."

@@ -1,6 +1,7 @@
 import type { RouteRecord } from 'vite-react-ssg';
 import App from './App';
 import PrivatePage from './components/PrivatePage';
+import RouteError from './components/RouteError';
 
 /**
  * Route table for vite-react-ssg.
@@ -51,6 +52,10 @@ export const routes: RouteRecord[] = [
   {
     path: '/',
     element: <App />,
+    // A page whose script will not load — a tab left open across a deploy —
+    // reloads itself once here instead of ending on the router's developer
+    // screen. See RouteError.
+    errorElement: <RouteError />,
     entry: 'src/App.tsx',
     children: [
       // Loaded lazily like every sibling. Rendering the index eagerly while its
@@ -326,6 +331,14 @@ export const routes: RouteRecord[] = [
         'Lockboxes',
         () => import('./pages/Lockboxes'),
         'src/pages/Lockboxes.tsx'
+      ),
+      // Booklets and the expense and upgrade sheets. An open document is
+      // `?doc=<id>` on this route, so it needs no rewrite of its own.
+      privatePage(
+        'admin/marketing',
+        'Marketing',
+        () => import('./pages/AdminMarketing'),
+        'src/pages/AdminMarketing.tsx'
       ),
       privatePage('crm', 'CRM', () => import('./pages/CRMDashboard'), 'src/pages/CRMDashboard.tsx'),
       privatePage('crm/contacts', 'CRM Contacts', () => import('./pages/CRMContacts'), 'src/pages/CRMContacts.tsx'),

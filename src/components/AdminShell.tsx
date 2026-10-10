@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity,
+  BookOpen,
   CalendarClock,
   ClipboardList,
   FileText,
@@ -45,7 +46,24 @@ export interface ToolLink {
   icon: LucideIcon;
   /** One line of purpose. Shown on the hub cards, not in the nav. */
   blurb?: string;
+  /** Which headed group of cards this sits in on the /admin hub. */
+  group?: ToolGroup;
 }
+
+/**
+ * The headed groups on the /admin hub, in the order they appear.
+ *
+ * The kiosks had a heading and the desk tools above them had none, which read
+ * as one titled section under an untitled pile (Kevin, 2026-10-09). Every card
+ * now sits under one. The nav strip in the header ignores this: it is one row,
+ * in ADMIN_LINKS order.
+ */
+export type ToolGroup = 'clients' | 'listings';
+
+export const TOOL_GROUPS: { id: ToolGroup; label: string }[] = [
+  { id: 'clients', label: 'Clients' },
+  { id: 'listings', label: 'Listings' },
+];
 
 /**
  * The desk tools. One array, read by both this nav and the /admin hub, so a new
@@ -62,6 +80,7 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/follow-up',
     icon: ClipboardList,
     blurb: 'Open house and event sign-ins, and messages sent through the site.',
+    group: 'clients',
   },
   {
     to: '/admin/applications',
@@ -69,6 +88,7 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/applications',
     icon: FileText,
     blurb: 'Rental application links, and the applications people send back.',
+    group: 'clients',
   },
   {
     to: '/admin/showings',
@@ -76,6 +96,7 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/showings',
     icon: CalendarClock,
     blurb: 'Put a day of showings in order and send the client one schedule, by email or text.',
+    group: 'clients',
   },
   {
     to: '/admin/activity',
@@ -83,6 +104,7 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/activity',
     icon: Activity,
     blurb: 'Which homes signed-in clients have saved, and what they have been looking at.',
+    group: 'clients',
   },
   {
     to: '/admin/properties',
@@ -90,6 +112,7 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/properties',
     icon: Home,
     blurb: 'The sold-listings table behind /properties.',
+    group: 'listings',
   },
   {
     to: '/admin/lockboxes',
@@ -97,6 +120,15 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/lockboxes',
     icon: KeyRound,
     blurb: 'Every lockbox in the field, where it is, and the code on it.',
+    group: 'listings',
+  },
+  {
+    to: '/admin/marketing',
+    label: 'Marketing',
+    match: '/admin/marketing',
+    icon: BookOpen,
+    blurb: 'Listing booklets, and home expense and upgrade sheets, ready to print.',
+    group: 'listings',
   },
 ];
 

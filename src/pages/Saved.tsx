@@ -235,25 +235,10 @@ const Saved = () => {
                     />
                   );
                 }
-                return (
-                  <div key={row.mls_number} className="flex h-full flex-col">
-                    <div className="flex-1">
-                      <ListingCard listing={listing} />
-                    </div>
-                    {/* A sold listing's card carries no heart — there is nothing
-                        to go and see — so removing it from the list has to be
-                        offered here instead. */}
-                    {listing.feed === 'sold' && (
-                      <button
-                        type="button"
-                        onClick={() => void toggle(row.mls_number)}
-                        className="mt-2 self-start text-sm font-medium text-champagne-ink underline decoration-champagne underline-offset-4 hover:decoration-2"
-                      >
-                        Remove from saved
-                      </button>
-                    )}
-                  </div>
-                );
+                // Every card carries its own heart now, sold ones included, so
+                // the separate "Remove from saved" link that used to sit under
+                // a sold card is gone: one way to take a home back out.
+                return <ListingCard key={row.mls_number} listing={listing} />;
               })}
             </div>
           )}

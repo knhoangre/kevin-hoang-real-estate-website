@@ -1976,6 +1976,39 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_documents: {
+        Row: {
+          created_at: string
+          design: string
+          doc: Json
+          id: string
+          kind: string
+          mls_number: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          design: string
+          doc?: Json
+          id?: string
+          kind: string
+          mls_number?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          design?: string
+          doc?: Json
+          id?: string
+          kind?: string
+          mls_number?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       open_house_sign_ins: {
         Row: {
           address: string

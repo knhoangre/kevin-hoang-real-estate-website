@@ -413,19 +413,47 @@ const SearchListing = () => {
                   half of them below the baseline — "80 Gary Rd" renders with a
                   sunken 8 and a raised 0. Same reason the prices moved off it.
                 */}
-                <h1 className="numeral mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-                  {listing.address}
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  {[listing.town, listing.state, listing.zip].filter(Boolean).join(', ')}
-                </p>
-                {/* Not on a sold listing — there is nothing left to go and see —
-                    and not on paper, where a button is a grey lozenge. */}
-                {listing.feed !== 'sold' && (
-                  <div className="mt-4 print:hidden">
+                {/*
+                  The address on the left; the map and Favorite on the same
+                  line, against the right edge of the column. They sat further
+                  down — the button under the town, the map under the price —
+                  until Kevin asked for both beside the address (2026-10-09),
+                  which is where a reader looks for "where is it" and "keep it".
+                  On a phone the pair wraps under the town line.
+                */}
+                <div className="mt-3 flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
+                  <div className="min-w-0">
+                    <h1 className="numeral text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+                      {listing.address}
+                    </h1>
+                    <p className="mt-2 text-gray-600">
+                      {[listing.town, listing.state, listing.zip].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                  {/* Not on paper, where a button is a grey lozenge. */}
+                  <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-3 print:hidden">
+                    {/*
+                      A link, not an embed: an iframe would pull Google's script
+                      onto a page that is otherwise entirely first-party, and
+                      the viewer almost always wants it in their own maps app
+                      anyway. `q=` with the full address rather than
+                      coordinates, because the feed carries no lat/long and
+                      guessing at one would drop a pin on the wrong house.
+                    */}
+                    {address && (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
+                      >
+                        <MapPin className="h-4 w-4 text-champagne-ink" aria-hidden />
+                        View on Google Maps
+                      </a>
+                    )}
                     <SaveButton mls={listing.mls_number} address={listing.address} variant="page" />
                   </div>
-                )}
+                </div>
                 {/*
                   The dark status pill that used to sit here is gone. It said
                   "Sold" directly beneath a line that already reads "Single
@@ -502,26 +530,6 @@ const SearchListing = () => {
                       ? ` · asked ${formatPrice(listing.list_price)}`
                       : ''}
                   </p>
-                )}
-
-                {/*
-                  The address on a map. A link, not an embed: an iframe would
-                  pull Google's script onto a page that is otherwise entirely
-                  first-party, and the viewer almost always wants it in their own
-                  maps app anyway. `q=` with the full address rather than
-                  coordinates, because the feed carries no lat/long and guessing
-                  at one would drop a pin on the wrong house.
-                */}
-                {address && (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 text-sm text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink print:hidden"
-                  >
-                    <MapPin className="h-4 w-4 text-champagne-ink" aria-hidden />
-                    View on Google Maps
-                  </a>
                 )}
 
                 {/*

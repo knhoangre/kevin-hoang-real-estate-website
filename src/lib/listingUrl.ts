@@ -58,6 +58,15 @@ const cased = (word: string): string => {
   return word;
 };
 
+/**
+ * An address line as it would be written by hand: "60 PATTISON ST Unit C14" ->
+ * "60 Pattison St Unit C14". The same rule the slug uses, for text a reader
+ * sees — the marketing booklets print the address large, and the feed's casing
+ * is whatever the listing agent typed. Punctuation is kept; only case changes.
+ */
+export const casedAddress = (text: string): string =>
+  text.trim().split(/\s+/).filter(Boolean).map(cased).join(' ');
+
 /** Letters and digits only, in hyphen-separated words. Never empty hyphens, never a leading one. */
 const words = (text: string): string[] =>
   text

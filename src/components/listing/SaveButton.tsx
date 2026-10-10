@@ -8,6 +8,11 @@ import { useFavorites } from '@/hooks/useFavorites';
  * labelled pill on the listing page — so that "is this saved" has one
  * implementation and one accessible name wherever it appears.
  *
+ * ON EVERY LISTING, SOLD ONES INCLUDED, since 2026-10-09. Sold homes had none
+ * on the reasoning that there is nothing left to go and see; Kevin asked for it
+ * anyway, and a client marking the sold house they wish they had bought is a
+ * statement of taste like any other.
+ *
  * RED WHEN SAVED, and that is not a brand decision. It is the one colour on a
  * card that means something the reader did, and the design system exempts
  * colour that carries meaning from the champagne accent for exactly that
@@ -57,9 +62,11 @@ const SaveButton = ({
         } ${className}`}
       >
         <Heart className={`h-4 w-4 ${saved ? 'fill-red-600 text-red-600' : ''}`} aria-hidden />
-        {saved ? 'Saved' : 'Save this home'}
+        {/* "Favorite", Kevin's word for it (2026-10-09). The list it fills is
+            still called Saved homes, so the hidden text says where it went. */}
+        {saved ? 'Favorited' : 'Favorite'}
         <span className="sr-only">
-          {saved ? ` — ${what} is in your saved homes` : ` — ${what}`}
+          {saved ? ` — ${what} is in your saved homes` : ` — save ${what}`}
         </span>
       </button>
     );
