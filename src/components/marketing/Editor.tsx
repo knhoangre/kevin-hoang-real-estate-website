@@ -10,7 +10,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { ADMIN_BUTTON, AdminCard } from '@/components/AdminShell';
+import { ADMIN_BUTTON } from '@/components/AdminShell';
 import ListingLookup from '@/components/admin/ListingLookup';
 import { ListError, ListLoading } from '@/components/admin/ListStates';
 import { Input } from '@/components/ui/input';
@@ -92,11 +92,18 @@ const Section = ({
   hint?: string;
   children: React.ReactNode;
 }) => (
-  <AdminCard className="p-5">
+  /*
+    AdminCard's look WITHOUT its `overflow-hidden`. The listing field's
+    suggestions drop below it, past the bottom of this card, and a card that
+    clips its contents cut them off at the edge: results were found and none
+    could be seen, which Kevin met as "nothing appears" on 2026-10-10. Nothing
+    in these sections needs clipping — they hold fields, not a table.
+  */
+  <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
     <h2 className="text-xs font-semibold uppercase tracking-[0.25em] text-champagne-ink">{title}</h2>
     {hint && <p className="mt-2 text-sm leading-relaxed text-gray-600">{hint}</p>}
     <div className="mt-4 space-y-4">{children}</div>
-  </AdminCard>
+  </div>
 );
 
 const Field = ({
@@ -420,6 +427,7 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
                   value={lookup}
                   onChange={setLookup}
                   onSelect={(listing) => void chooseListing(listing)}
+                  scope="all"
                   placeholder={doc.mls ? 'Choose a different listing' : '151 Washington St, or 73568135'}
                 />
               </div>

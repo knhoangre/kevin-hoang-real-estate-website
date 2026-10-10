@@ -20,6 +20,7 @@ import {
   statusLabel,
   suggestListings,
   type ListingSuggestion,
+  type SuggestionScope,
 } from '@/lib/idxSearch';
 
 interface Props {
@@ -33,14 +34,23 @@ interface Props {
   placeholder?: string;
   inputRef?: React.Ref<HTMLInputElement>;
   inputProps?: SuggestInputProps<ListingSuggestion>['inputProps'];
+  /**
+   * 'active' (the default) offers what is on the market; 'all' offers every
+   * listing in the database, sold ones included. See SuggestionScope.
+   */
+  scope?: SuggestionScope;
 }
 
 /** The served towns, floated to the top: an open house is likelier in Newton than in Lowell. */
 const PREFERRED_TOWNS = SITE.areaServed.map((t) => t.name);
 
 // Module scope: SuggestInput reads these in an effect and needs them stable.
+// One function per scope, both at module scope, rather than one built from the
+// prop: an inline arrow would restart the request on every render.
 const suggest = (text: string, signal: AbortSignal) =>
   suggestListings(text, signal, PREFERRED_TOWNS);
+const suggestAll = (text: string, signal: AbortSignal) =>
+  suggestListings(text, signal, PREFERRED_TOWNS, 'all');
 const addressOf = (l: ListingSuggestion) => l.address ?? '';
 const mlsOf = (l: ListingSuggestion) => l.mls_number;
 
@@ -55,6 +65,9 @@ const renderListing = (l: ListingSuggestion) => (
         {formatPrice(l.list_price)}
         {l.prop_type === 'RN' ? '/mo' : ''}
         {statusLabel(l.status) ? ` · ${statusLabel(l.status)}` : ''}
+        {/* The sold feed keeps a listing's last status, which is not always
+            "Sold" — so a closed listing is marked by its feed. */}
+        {l.feed === 'sold' && statusLabel(l.status) !== 'Sold' ? ' · Sold' : ''}
         {' · MLS '}
         {l.mls_number}
       </span>
@@ -71,6 +84,7 @@ const ListingLookup = ({
   placeholder,
   inputRef,
   inputProps,
+  scope = 'active',
 }: Props) => (
   <SuggestInput<ListingSuggestion>
     inputRef={inputRef}
@@ -80,12 +94,16 @@ const ListingLookup = ({
     onChange={onChange}
     onSelect={onSelect}
     worth={isWorthLookingUp}
-    suggest={suggest}
+    suggest={scope === 'all' ? suggestAll : suggest}
     valueOf={addressOf}
     keyOf={mlsOf}
     renderItem={renderListing}
     listLabel="Matching listings"
-    footer="Active listings from MLS PIN. Not there? Keep typing the address."
+    footer={
+      scope === 'all'
+        ? 'Every listing from MLS PIN, sold ones included. Add the town after a comma to narrow it.'
+        : 'Active listings from MLS PIN. Not there? Keep typing the address.'
+    }
     required={required}
     placeholder={placeholder}
   />
