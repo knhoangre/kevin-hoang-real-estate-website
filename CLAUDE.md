@@ -30,6 +30,7 @@ node scripts/recommendations-check.ts  # the taste profile behind "Recommended f
 node scripts/listing-url-check.ts      # a listing's URL: old number-only links, and the email copy of the slug
 node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203) 379-8682" is 203-379-8682
 node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
+node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, the people on a showing tour AND the marketing documents (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -1219,19 +1220,48 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
 - **The ZIP field is not `inputMode="numeric"`.** A leading zero is exactly what a
   numeric field eats, and 8 of 10 ZIPs on this site start with one — that is the
   same import bug that once rendered "Newton, MA 2459".
-- **`/admin/applications` is one card per property, and an application takes
-  its property from its INVITE.** `groupByProperty()` keys on `propertyKey()` —
-  the same street + unit + town key the reuse picker uses — read from the invite
-  the application was claimed through, never from `tenancy.propertyAddress`.
-  That field is editable on the applicant's own form, so two people applying for
-  one unit can spell it two ways and would split into two cards; the invite is
-  the admin's structured record of what the link was for. The typed address is
-  the fallback only for an application whose invite no longer exists. Groups
-  sort by their newest application or link. A link created before the address
-  became its own field groups by its label, so it will not merge with a newer
-  structured link for the same unit — rewriting those rows is a separate
-  decision.
-- **`previousProperties()` keys on street + unit + town, not on the formatted
+- **`/admin/applications` is a list of properties, and each one has its own
+  page** (`?property=<propertyKey>`, so no rewrite). Until 2026-10-18 it was
+  every property's applications and links on one page, a card each; Kevin asked
+  for rows, the latest on top, each opening its page. An application takes its
+  property from its INVITE: `groupByProperty()` keys on `propertyKey()` — the
+  same street + unit + town key the reuse picker uses — read from the invite the
+  application was claimed through, never from `tenancy.propertyAddress`. That
+  field is editable on the applicant's own form, so two people applying for one
+  unit can spell it two ways and would split in two; the invite is the admin's
+  structured record of what the link was for. The typed address is the fallback
+  only for an application whose invite no longer exists.
+  - **The property with the latest SUBMITTED application is first**, and the
+    list is two headed runs: properties with an application in, then those with
+    none yet, newest link first. Sorting both by "newest activity" let a link
+    sent this morning push yesterday's application down the page. A draft is
+    not a submission.
+  - **The pure half is [rentalProperty.ts](src/lib/rentalProperty.ts)**, moved
+    out of `rentalApplication.ts` (which re-exports it) so
+    `node scripts/applications-check.ts` can run it with no dependencies.
+- **A wrong address is corrected on the property's page, and the correction IS
+  the merge.** "Change address" rewrites every link of that property; "Move"
+  rewrites one link of several (one that went out with the wrong address).
+  Nothing is merged by hand: grouping is by address, so the next render files
+  the link with the others at that address and the page follows it there.
+  - **`propertyKey()` compares the street as the USPS writes it** — punctuation
+    dropped, the last word abbreviated by massgis.ts's suffix table — and a unit
+    without its `#` or "Unit", because Kevin corrects an address by typing it
+    again and "12 Elm Street." has to find the "12 Elm St" MassGIS filled in. A
+    typed address that matches a property already there takes that property's
+    spelling on save, so one property does not read two ways.
+  - **The label is rewritten with the address**: it is the "Applying for" line
+    the applicant reads, and it was derived from the address in the first place.
+  - **Applications on the link move too, but only where their copy is still
+    the link's** (`retargetTenancy`). Opening a link copies the property into
+    the applicant's tenancy section; they may have corrected it since, and their
+    words are not ours. Each row is read again before it is written, because
+    `data` is one jsonb document and a copy loaded with the page would undo
+    whatever the applicant typed since.
+  - A link created before the address became its own field has only a label,
+    and its editor starts from that label in the street field — correcting it
+    is how such a link joins the structured links for the same unit.
+- **`previousProperties()` keys on `propertyKey()`, not on the formatted
   line.** An invite recorded before the zip existed still matches the same unit
   entered later with one; the picker exists to stop the admin retyping an address,
   not to demand they retype it identically. Rent comes back as last time's and is
@@ -1380,6 +1410,16 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `/search/<mls>` — in the confirmation email. Before 2026-10-06 the email named
   an address and linked to nothing, so the guest looked the house up on Zillow.
   A house not in the feed is still typed by hand and simply carries no link.
+- **Choosing a condo puts its unit in the Unit box** (`fills="street"` on
+  ListingLookup, `splitUnit()` in [listingUrl.ts](src/lib/listingUrl.ts)). The
+  feed's `address` ends with the unit ("170 Gore St Unit 417"), and until
+  2026-10-18 all of it went in the street box. The unit is taken off the end
+  using the feed's own `unit_no`, never guessed from the text, and comes back as
+  written in a box ("#1" is "1"); the sheet's "<street> Unit <unit>" then puts
+  the line back as it was. Measured on 1,000 live condo rows: every one split.
+  A line that does not END with its unit is not split, or the unit would print
+  twice. ListingLookup's default still fills the whole line, which is what the
+  showing tours and the booklets want.
 - **`open_house_sign_ins.mls_number` is nullable and has NO foreign key.**
   `idx_listings` is a cache: idx-sync deletes a row the moment MLS PIN stops
   sending it. A foreign key would either block that delete, which is a
@@ -1996,6 +2036,18 @@ every dark button on a light surface. The admin's body buttons carried
 `ADMIN_BUTTON` from [AdminShell.tsx](src/components/AdminShell.tsx) now. A few
 public ones still have the old hover (both contact forms, `/auth`, `/rentals`,
 `/saved`, `/apply`, `/first-time-buyers`).
+
+**An admin list is [AdminList](src/components/admin/AdminList.tsx), never a
+`<table>` in an `AdminCard`.** The card is `overflow-hidden`, so on a phone a
+table's right-hand columns were cut off, not scrolled — an application's status,
+a tour's date, when a client was last active (Kevin, 2026-10-18). AdminList is a
+grid on a wide screen and restacks each row on a phone, every cell carrying its
+own label. A row with `to` is one real link, so it can hold no other link or
+button. Applications, Showings and Client activity use it; Lockboxes, Properties
+and CRM contacts still use the shadcn `Table`, which scrolls sideways instead.
+Those views are query strings, which ScrollToTop deliberately ignores, so
+[useViewScroll](src/hooks/useViewScroll.ts) takes a page back to the top when
+its view changes — not on Back.
 
 The navbar is `fixed` at `h-20`. Pages that clear it use `pt-20`; pages whose dark hero
 deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.

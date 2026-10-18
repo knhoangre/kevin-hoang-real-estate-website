@@ -17,7 +17,7 @@
  *
  * No dependencies, no network.
  */
-import { listingPath, listingSlug, mlsFromListingParam } from '../src/lib/listingUrl.ts';
+import { listingPath, listingSlug, mlsFromListingParam, splitUnit } from '../src/lib/listingUrl.ts';
 import {
   listingSlug as emailSlug,
   listingUrl as emailUrl,
@@ -96,6 +96,30 @@ eq(mlsFromListingParam(''), null, 'nor is nothing');
 eq(mlsFromListingParam(undefined), null, 'nor is no segment at all');
 eq(mlsFromListingParam('73568135-170-Gore-St'), null, 'the number has to be last');
 eq(mlsFromListingParam('1 OR 1=1'), null, 'and it has to be a number');
+
+console.log('--- the unit, in its own box ---');
+// Real pairs of `address` and `unit_no` from the feed, 2026-10-18.
+const split = (address: string, unitNo: string | null) => {
+  const s = splitUnit(address, unitNo);
+  return `${s.street} | ${s.unit}`;
+};
+eq(split('170 Gore St Unit 417', '417'), '170 Gore St | 417', 'a condo: the unit leaves the street line');
+eq(split('101 WaiteSt Unit C5', 'C5'), '101 WaiteSt | C5', 'letters and digits');
+eq(split('85 DRAPER Unit #1', '#1'), '85 DRAPER | 1', 'a "#" is not part of the unit');
+eq(split('23 blake street Unit unit 1', 'unit 1'), '23 blake street | 1', 'nor is a second "unit"');
+eq(split('222 Buck Island unit 54', '54'), '222 Buck Island | 54', 'whatever the case of "unit"');
+eq(split('585 Essex St Unit PH 714', 'PH 714'), '585 Essex St | PH 714', 'a unit with a space in it');
+eq(split('52 Underwood St Unit Suite B', 'Suite B'), '52 Underwood St | Suite B', 'a suite is kept as written');
+eq(split('8 McGrath Hwy', null), '8 McGrath Hwy | ', 'a house has no unit, and nothing is split');
+eq(split('12 Community Way', '1'), '12 Community Way | 1', 'a unit the line does not name goes in the box');
+eq(
+  split('101 Main St Unit 7 Rear', '7'),
+  '101 Main St Unit 7 Rear | ',
+  'a unit in the middle of the line is not split out, or it would print twice'
+);
+eq(split('101 Main St', '101'), '101 Main St | 101', 'a street number is not mistaken for the unit');
+const back = splitUnit('170 Gore St Unit 417', '417');
+eq(`${back.street} Unit ${back.unit}`, '170 Gore St Unit 417', 'and the sign-in puts the line back as it was');
 
 console.log('--- the edge functions\' copy ---');
 const samples = [

@@ -28,6 +28,7 @@ import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Check,
+  ChevronRight,
   Copy,
   ExternalLink,
   Loader2,
@@ -41,11 +42,13 @@ import {
   X,
 } from 'lucide-react';
 import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
+import AdminList from '@/components/admin/AdminList';
 import ListingLookup from '@/components/admin/ListingLookup';
 import SuggestInput from '@/components/admin/SuggestInput';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { useViewScroll } from '@/hooks/useViewScroll';
 import { formatPrice } from '@/lib/listings';
 import { formatPhoneInput } from '@/lib/phone';
 import { smsHrefTo, smsHrefToGroup } from '@/lib/siteConfig';
@@ -411,7 +414,7 @@ const AddStopForm = ({
   };
 
   return (
-    <form onSubmit={submit} className="grid gap-4 border-t border-gray-200 bg-gray-50/60 p-6 sm:grid-cols-6">
+    <form onSubmit={submit} className="grid gap-4 border-t border-gray-200 bg-gray-50/60 p-4 sm:grid-cols-6 sm:p-6">
       <div className="space-y-1.5 sm:col-span-6">
         <Label htmlFor="stop-address">Address or MLS number</Label>
         <ListingLookup
@@ -580,7 +583,7 @@ const DeliveryPanel = ({
   return (
     <div className="grid gap-px bg-gray-200 md:grid-cols-2">
       {/* ---- Text ---- */}
-      <div className="space-y-4 bg-white p-6">
+      <div className="space-y-4 bg-white p-4 sm:p-6">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-4 w-4 text-champagne-ink" aria-hidden />
           <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Text message</h3>
@@ -669,7 +672,7 @@ const DeliveryPanel = ({
       </div>
 
       {/* ---- Email ---- */}
-      <div className="space-y-4 bg-white p-6">
+      <div className="space-y-4 bg-white p-4 sm:p-6">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-champagne-ink" aria-hidden />
           <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Email</h3>
@@ -715,7 +718,7 @@ const DeliveryPanel = ({
       </div>
 
       {noStops && (
-        <p className="bg-white px-6 pb-6 text-sm text-gray-600 md:col-span-2">
+        <p className="bg-white px-4 pb-4 text-sm text-gray-600 sm:px-6 sm:pb-6 md:col-span-2">
           Add at least one stop above and both of these come to life.
         </p>
       )}
@@ -731,6 +734,7 @@ export default function AdminShowings() {
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const openId = params.get('id');
+  useViewScroll(openId ?? '');
 
   const [tours, setTours] = useState<ShowingTour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -894,7 +898,7 @@ export default function AdminShowings() {
                 Who and when
               </h2>
               <AdminCard>
-                <form onSubmit={save} className="space-y-5 p-6">
+                <form onSubmit={save} className="space-y-5 p-4 sm:p-6">
                   <DetailsFields idPrefix="tour" value={details} onChange={setDetails} />
                   <div className="flex flex-wrap items-center gap-4">
                     <button
@@ -921,14 +925,18 @@ export default function AdminShowings() {
               </h2>
               <AdminCard>
                 {tour.stops.length === 0 ? (
-                  <p className="p-6 text-sm text-gray-600">
+                  <p className="p-4 text-sm text-gray-600 sm:p-6">
                     No stops yet. Add the first one below — they sort themselves by time.
                   </p>
                 ) : (
                   <ol className="divide-y divide-gray-100">
                     {tour.stops.map((stop) => (
-                      <li key={stop.id} className="flex flex-wrap items-start gap-x-6 gap-y-2 px-6 py-4">
-                        <div className="w-24 shrink-0">
+                      /* On a phone the time and its kind are one line and the
+                         address has the whole width under it. Side by side, the
+                         two links beside the address left it a column a word
+                         wide — "101 / Waite / St / Unit / C5", one per line. */
+                      <li key={stop.id} className="px-4 py-4 sm:flex sm:items-start sm:gap-6 sm:px-6">
+                        <div className="flex items-baseline gap-3 sm:block sm:w-24 sm:shrink-0">
                           <p className="numeral text-base font-semibold text-ink">
                             {formatStopTime(stop.startsAt)}
                           </p>
@@ -936,7 +944,7 @@ export default function AdminShowings() {
                             {STOP_KINDS.find((k) => k.value === stop.kind)?.label}
                           </p>
                         </div>
-                        <div className="min-w-0 flex-1">
+                        <div className="mt-1 min-w-0 flex-1 sm:mt-0">
                           <p className="numeral text-sm font-medium text-ink">
                             {[stop.address, stop.town].filter(Boolean).join(', ')}
                           </p>
@@ -946,24 +954,26 @@ export default function AdminShowings() {
                           </p>
                           {stop.note && <p className="mt-1 text-sm text-gray-700">{stop.note}</p>}
                         </div>
-                        {stop.mlsNumber && (
-                          <a
-                            href={listingPath({ ...stop, mls_number: stop.mlsNumber })}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline"
+                        <div className="mt-2 flex items-center gap-5 sm:mt-0 sm:shrink-0">
+                          {stop.mlsNumber && (
+                            <a
+                              href={listingPath({ ...stop, mls_number: stop.mlsNumber })}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 py-1 text-xs font-medium text-champagne-ink hover:underline"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                              View page
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => dropStop(stop.id)}
+                            className="py-1 text-xs font-medium text-red-700 hover:underline"
                           >
-                            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-                            View page
-                          </a>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => dropStop(stop.id)}
-                          className="text-xs font-medium text-red-700 hover:underline"
-                        >
-                          Remove
-                        </button>
+                            Remove
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ol>
@@ -1012,7 +1022,7 @@ export default function AdminShowings() {
     >
       {showNew && (
         <AdminCard className="mb-8">
-          <form onSubmit={create} className="space-y-5 p-6">
+          <form onSubmit={create} className="space-y-5 p-4 sm:p-6">
             <DetailsFields idPrefix="new" value={draft} onChange={setDraft} />
             <button
               type="submit"
@@ -1039,40 +1049,36 @@ export default function AdminShowings() {
         </AdminCard>
       ) : (
         <AdminCard>
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-6 py-3 font-semibold">Who</th>
-                <th className="px-6 py-3 font-semibold">Date</th>
-                <th className="px-6 py-3 font-semibold">Stops</th>
-                <th className="px-6 py-3 font-semibold">Email</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tours.map((t) => (
-                <tr
-                  key={t.id}
-                  onClick={() => setParams({ id: t.id })}
-                  className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
-                >
-                  <td className="px-6 py-4">
-                    <span className="font-medium text-ink">{tourNames(t)}</span>
-                    <span className="numeral block text-xs text-gray-500">
-                      {t.people
-                        .flatMap((p) => [p.email, p.phone])
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  </td>
-                  <td className="numeral px-6 py-4 text-gray-700">{formatTourDate(t.tourDate)}</td>
-                  <td className="numeral px-6 py-4 text-gray-700">{t.stops.length}</td>
-                  <td className="numeral px-6 py-4 text-gray-700">
-                    {t.sentAt ? `Sent ${sentStamp(t.sentAt)}` : 'Not sent'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminList
+            label="Showing tours"
+            columns={[
+              { label: 'Who', primary: true },
+              { label: 'Date' },
+              { label: 'Stops' },
+              { label: 'Email' },
+              { label: '', end: true },
+            ]}
+            grid="md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_minmax(0,0.5fr)_minmax(0,1.1fr)_1rem]"
+            rows={tours.map((t) => ({
+              key: t.id,
+              to: `?id=${encodeURIComponent(t.id)}`,
+              cells: [
+                <span key="w" className="block min-w-0">
+                  <span className="block font-medium text-ink">{tourNames(t)}</span>
+                  <span className="numeral block break-words text-xs text-gray-500">
+                    {t.people
+                      .flatMap((p) => [p.email, p.phone])
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </span>,
+                formatTourDate(t.tourDate),
+                t.stops.length,
+                t.sentAt ? `Sent ${sentStamp(t.sentAt)}` : 'Not sent',
+                <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
+              ],
+            }))}
+          />
         </AdminCard>
       )}
     </AdminShell>

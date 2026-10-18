@@ -16,9 +16,11 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Eye, Heart, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Eye, Heart, Loader2 } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
+import AdminList from '@/components/admin/AdminList';
 import { useToast } from '@/components/ui/use-toast';
+import { useViewScroll } from '@/hooks/useViewScroll';
 import { formatPrice } from '@/lib/listings';
 import { describeProfile, tasteProfile } from '@/lib/recommendations';
 import {
@@ -54,7 +56,7 @@ const ListingLink = ({
     href={listingPath(row)}
     target="_blank"
     rel="noopener noreferrer"
-    className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline"
+    className="inline-flex items-center gap-1.5 py-1 text-xs font-medium text-champagne-ink hover:underline"
   >
     <ExternalLink className="h-3.5 w-3.5" aria-hidden />
     View
@@ -70,6 +72,7 @@ export default function AdminActivity() {
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const openUser = params.get('user');
+  useViewScroll(openUser ?? '');
 
   const [clients, setClients] = useState<ClientActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +147,7 @@ export default function AdminActivity() {
           <div className="space-y-8">
             {profile && (
               <AdminCard>
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
                     Looking in
                   </p>
@@ -167,30 +170,29 @@ export default function AdminActivity() {
               </h2>
               <AdminCard>
                 {detail.favorites.length === 0 ? (
-                  <p className="p-6 text-sm text-gray-600">Nothing saved.</p>
+                  <p className="p-4 text-sm text-gray-600 sm:p-6">Nothing saved.</p>
                 ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                      <tr>
-                        <th className="px-6 py-3 font-semibold">Home</th>
-                        <th className="px-6 py-3 font-semibold">Price when saved</th>
-                        <th className="px-6 py-3 font-semibold">Saved</th>
-                        <th className="px-6 py-3" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detail.favorites.map((row) => (
-                        <tr key={row.mls_number} className="border-b border-gray-100 last:border-0">
-                          <td className="numeral px-6 py-4 font-medium text-ink">{where(row)}</td>
-                          <td className="numeral px-6 py-4 text-gray-700">{price(row)}</td>
-                          <td className="numeral px-6 py-4 text-gray-700">{when(row.created_at)}</td>
-                          <td className="px-6 py-4 text-right">
-                            <ListingLink row={row} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  // Plain rows, not links: each has its own View link, and a
+                  // link inside a link is invalid nesting.
+                  <AdminList
+                    label="Saved homes"
+                    columns={[
+                      { label: 'Home', primary: true },
+                      { label: 'Price when saved' },
+                      { label: 'Saved' },
+                      { label: '', end: true },
+                    ]}
+                    grid="md:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,1fr)_auto]"
+                    rows={detail.favorites.map((row) => ({
+                      key: row.mls_number,
+                      cells: [
+                        <span key="h" className="numeral font-medium text-ink">{where(row)}</span>,
+                        price(row),
+                        when(row.created_at),
+                        <ListingLink key="v" row={row} />,
+                      ],
+                    }))}
+                  />
                 )}
               </AdminCard>
             </section>
@@ -202,32 +204,29 @@ export default function AdminActivity() {
               </h2>
               <AdminCard>
                 {detail.views.length === 0 ? (
-                  <p className="p-6 text-sm text-gray-600">Nothing viewed while signed in.</p>
+                  <p className="p-4 text-sm text-gray-600 sm:p-6">Nothing viewed while signed in.</p>
                 ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                      <tr>
-                        <th className="px-6 py-3 font-semibold">Home</th>
-                        <th className="px-6 py-3 font-semibold">Price</th>
-                        <th className="px-6 py-3 font-semibold">Times opened</th>
-                        <th className="px-6 py-3 font-semibold">Last opened</th>
-                        <th className="px-6 py-3" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detail.views.map((row) => (
-                        <tr key={row.mls_number} className="border-b border-gray-100 last:border-0">
-                          <td className="numeral px-6 py-4 font-medium text-ink">{where(row)}</td>
-                          <td className="numeral px-6 py-4 text-gray-700">{price(row)}</td>
-                          <td className="numeral px-6 py-4 text-gray-700">{row.view_count}</td>
-                          <td className="numeral px-6 py-4 text-gray-700">{when(row.last_viewed_at)}</td>
-                          <td className="px-6 py-4 text-right">
-                            <ListingLink row={row} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <AdminList
+                    label="Homes viewed"
+                    columns={[
+                      { label: 'Home', primary: true },
+                      { label: 'Price' },
+                      { label: 'Times opened' },
+                      { label: 'Last opened' },
+                      { label: '', end: true },
+                    ]}
+                    grid="md:grid-cols-[minmax(0,2.2fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,1fr)_auto]"
+                    rows={detail.views.map((row) => ({
+                      key: row.mls_number,
+                      cells: [
+                        <span key="h" className="numeral font-medium text-ink">{where(row)}</span>,
+                        price(row),
+                        row.view_count,
+                        when(row.last_viewed_at),
+                        <ListingLink key="v" row={row} />,
+                      ],
+                    }))}
+                  />
                 )}
               </AdminCard>
             </section>
@@ -256,33 +255,31 @@ export default function AdminActivity() {
         </AdminCard>
       ) : (
         <AdminCard>
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-6 py-3 font-semibold">Client</th>
-                <th className="px-6 py-3 font-semibold">Saved</th>
-                <th className="px-6 py-3 font-semibold">Viewed</th>
-                <th className="px-6 py-3 font-semibold">Last active</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((c) => (
-                <tr
-                  key={c.userId}
-                  onClick={() => setParams({ user: c.userId })}
-                  className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
-                >
-                  <td className="px-6 py-4">
-                    <span className="font-medium text-ink">{c.name || c.email || 'Unnamed account'}</span>
-                    {c.name && <span className="block text-xs text-gray-500">{c.email}</span>}
-                  </td>
-                  <td className="numeral px-6 py-4 text-gray-700">{c.savedCount}</td>
-                  <td className="numeral px-6 py-4 text-gray-700">{c.viewedCount}</td>
-                  <td className="numeral px-6 py-4 text-gray-700">{when(c.lastActive)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AdminList
+            label="Clients"
+            columns={[
+              { label: 'Client', primary: true },
+              { label: 'Saved' },
+              { label: 'Viewed' },
+              { label: 'Last active' },
+              { label: '', end: true },
+            ]}
+            grid="md:grid-cols-[minmax(0,2.2fr)_minmax(0,0.6fr)_minmax(0,0.6fr)_minmax(0,1.2fr)_1rem]"
+            rows={clients.map((c) => ({
+              key: c.userId,
+              to: `?user=${encodeURIComponent(c.userId)}`,
+              cells: [
+                <span key="n" className="block min-w-0">
+                  <span className="block font-medium text-ink">{c.name || c.email || 'Unnamed account'}</span>
+                  {c.name && <span className="block break-words text-xs text-gray-500">{c.email}</span>}
+                </span>,
+                c.savedCount,
+                c.viewedCount,
+                when(c.lastActive),
+                <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
+              ],
+            }))}
+          />
         </AdminCard>
       )}
     </AdminShell>

@@ -33,6 +33,7 @@ import KioskShell, {
 } from '@/components/KioskShell';
 import { errorMessage } from '@/lib/utils';
 import ListingLookup from '@/components/admin/ListingLookup';
+import { splitUnit } from '@/lib/listingUrl';
 import { SITE } from '@/lib/siteConfig';
 import { formatPhoneInput } from '@/lib/phone';
 
@@ -424,6 +425,7 @@ const OpenHouse = () => {
                             input. The <Label htmlFor> above already finds it. */}
                         <ListingLookup
                           id="address"
+                          fills="street"
                           placeholder="Start typing the address, or an MLS number"
                           value={field.value}
                           onChange={(value) => {
@@ -433,9 +435,13 @@ const OpenHouse = () => {
                             setMlsNumber(null);
                           }}
                           onSelect={(listing) => {
-                            field.onChange(listing.address ?? '');
-                            // The feed's address line already carries the unit.
-                            addressForm.setValue('unitNumber', '');
+                            // The feed's address line ends with the unit; it goes
+                            // in the Unit box instead, and the sheet's own
+                            // "<street> Unit <unit>" puts the same line back
+                            // together when it is saved.
+                            const { street, unit } = splitUnit(listing.address, listing.unit_no);
+                            field.onChange(street);
+                            addressForm.setValue('unitNumber', unit);
                             addressForm.setValue('cityTown', listing.town ?? '');
                             setMlsNumber(listing.mls_number);
                           }}

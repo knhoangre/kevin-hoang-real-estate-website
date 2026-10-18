@@ -1,21 +1,42 @@
 /**
  * /admin/applications — invites and submitted applications.
  *
- * One card per PROPERTY, each holding the applications for it and the links
- * handed out for it (see groupByProperty). `?id=<uuid>` opens one application
- * read-only, using the SAME
- * RentalApplicationForm the applicant filled in — so the admin's copy cannot
- * quietly omit a field the form collects.
+ * THREE VIEWS, ONE ROUTE:
+ *   - the list: one row per PROPERTY (see groupByProperty), the one with the
+ *     latest submitted application first, under two headings — properties with
+ *     applications in, and properties still waiting for one;
+ *   - `?property=<key>`: one property — its applications and the links handed
+ *     out for it, and where its address is corrected;
+ *   - `?id=<uuid>`: one application, read-only, using the SAME
+ *     RentalApplicationForm the applicant filled in — so the admin's copy cannot
+ *     quietly omit a field the form collects.
  *
- * Like /rentals, the detail view is a query param rather than a dynamic
- * segment: a /admin/applications/:id route could not be prerendered and would
- * need its own rewrite in vercel.json, and that file has exactly two scoped
- * rewrites for a reason.
+ * It was every property's applications and links on one page, one card each
+ * (until 2026-10-18), which was fine at three properties and is a long scroll at
+ * thirty: Kevin asked for the properties as rows, the latest on top, each opening
+ * its own page.
+ *
+ * Like /rentals, the views are query params rather than dynamic segments: a
+ * /admin/applications/:id route could not be prerendered and would need its own
+ * rewrite in vercel.json, and that file has exactly two scoped rewrites for a
+ * reason.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Copy, Link2, Loader2, Mail, MapPin, Pencil, Plus, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  ChevronRight,
+  Copy,
+  Loader2,
+  Mail,
+  MapPin,
+  Pencil,
+  Plus,
+  X,
+} from 'lucide-react';
 import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
+import AdminList, { type AdminColumn } from '@/components/admin/AdminList';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
 import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
@@ -24,9 +45,11 @@ import AddressAutocomplete from '@/components/admin/AddressAutocomplete';
 import type { AddressSuggestion } from '@/lib/massgis';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { useViewScroll } from '@/hooks/useViewScroll';
 import { sentenceList } from '@/lib/utils';
 import {
   APPLICATION_STATUSES,
+  STATUS_TONE,
   createInvite,
   formatProperty,
   formatTenancyAddress,
@@ -35,13 +58,20 @@ import {
   inviteUrl,
   listApplications,
   listInvites,
+  moveApplicationAddress,
   previousProperties,
+  propertyKey,
+  propertyOfInvite,
   revokeInvite,
   sendInvite,
   setApplicationStatus,
   STATUS_LABEL,
+  updateInviteProperty,
   type ApplicationStatus,
   type PreviousProperty,
+  type PropertyGroup,
+  type PropertyParts,
+  type PropertyPartsInput,
   type RentalApplicationRecord,
   type RentalInviteRecord,
 } from '@/lib/rentalApplication';
@@ -63,6 +93,196 @@ const STATE_LABEL: Record<string, string> = {
   revoked: 'Revoked',
 };
 
+/** The small text buttons on a link's row. `py-1` so a thumb can hit one. */
+const ROW_ACTION =
+  'inline-flex items-center gap-1.5 py-1 text-xs font-medium text-champagne-ink hover:underline disabled:opacity-60';
+
+const fullName = (r: RentalApplicationRecord) =>
+  `${r.applicantFirstName ?? ''} ${r.applicantLastName ?? ''}`.trim();
+
+/* ------------------------------------------------------------------ */
+/* The address fields                                                  */
+/* ------------------------------------------------------------------ */
+
+const blankProperty = (): PropertyPartsInput => ({
+  propertyAddress: '',
+  unit: '',
+  propertyTown: '',
+  // Every property on this site is in Massachusetts; it is still a field
+  // rather than a constant because the relocation work is cross-border.
+  propertyState: 'MA',
+  propertyZip: '',
+});
+
+const draftOf = (p: PropertyParts): PropertyPartsInput => ({
+  propertyAddress: p.propertyAddress ?? '',
+  unit: p.unit ?? '',
+  propertyTown: p.propertyTown ?? '',
+  propertyState: p.propertyState ?? 'MA',
+  propertyZip: p.propertyZip ?? '',
+});
+
+/**
+ * Street, unit, town, state, ZIP — and a picker of the properties already used.
+ *
+ * ONE SET OF FIELDS for the two things that write an address: a new link, and
+ * the correction of a wrong one. Two copies is how the correction would end up
+ * missing the MassGIS suggestions, and an address typed by hand is exactly how
+ * the wrong one got there.
+ *
+ * Rendered as grid children: the form around it owns the two-column grid.
+ */
+const PropertyFields = ({
+  idPrefix,
+  value,
+  onChange,
+  previous,
+  reuseLabel,
+  reuseHint,
+  onReuse,
+}: {
+  idPrefix: string;
+  value: PropertyPartsInput;
+  onChange: (next: PropertyPartsInput) => void;
+  /** Properties already used. The picker is left out when there are none. */
+  previous: PreviousProperty[];
+  reuseLabel: string;
+  reuseHint: string;
+  /** Picking one. Fills the fields unless the parent wants more than that. */
+  onReuse?: (choice: PreviousProperty) => void;
+}) => {
+  /*
+   * The building's unit range, when MassGIS knows it ("#1-12"). Shown under the
+   * Unit field as a hint and never written into it: a range says the building
+   * has units, not which one is being let.
+   */
+  const [unitHint, setUnitHint] = useState<string | null>(null);
+  const unitRef = useRef<HTMLInputElement>(null);
+
+  // The form was emptied after a save, so the hint is for nothing on screen.
+  useEffect(() => {
+    if (!value.propertyAddress) setUnitHint(null);
+  }, [value.propertyAddress]);
+
+  const set = (k: keyof PropertyPartsInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    onChange({ ...value, [k]: e.target.value });
+
+  /** A MassGIS suggestion was picked: fill everything it knows. */
+  const applyAddress = (s: AddressSuggestion) => {
+    onChange({
+      ...value,
+      propertyAddress: s.street,
+      propertyTown: s.town,
+      propertyState: s.state,
+      propertyZip: s.zip,
+    });
+    setUnitHint(s.unitHint);
+    // A multi-unit building needs a unit, so that is where the cursor goes next.
+    if (s.unitHint) window.setTimeout(() => unitRef.current?.focus(), 0);
+  };
+
+  const reuse = (choice: PreviousProperty) => {
+    setUnitHint(null);
+    if (onReuse) onReuse(choice);
+    else onChange(draftOf(choice));
+  };
+
+  return (
+    <>
+      {previous.length > 0 && (
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor={`${idPrefix}-reuse`}>{reuseLabel}</Label>
+          <select
+            id={`${idPrefix}-reuse`}
+            value=""
+            onChange={(e) => {
+              const choice = previous.find((p) => p.key === e.target.value);
+              if (choice) reuse(choice);
+            }}
+            className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-ink focus:border-champagne focus:outline-none focus:ring-1 focus:ring-champagne"
+          >
+            <option value="">Choose a property…</option>
+            {previous.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500">{reuseHint}</p>
+        </div>
+      )}
+
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor={`${idPrefix}-address`}>Street address</Label>
+        <AddressAutocomplete
+          id={`${idPrefix}-address`}
+          required
+          placeholder="Start typing — 151 wash…"
+          value={value.propertyAddress}
+          onChange={(v) => {
+            setUnitHint(null);
+            onChange({ ...value, propertyAddress: v });
+          }}
+          onSelect={applyAddress}
+        />
+        <p className="text-xs text-gray-500">
+          Pick a suggestion to fill in the town and ZIP as well.
+        </p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}-unit`}>Unit</Label>
+        <Input
+          ref={unitRef}
+          id={`${idPrefix}-unit`}
+          autoComplete="off"
+          value={value.unit}
+          onChange={set('unit')}
+          aria-describedby={unitHint ? `${idPrefix}-unit-hint` : undefined}
+        />
+        {unitHint && (
+          <p id={`${idPrefix}-unit-hint`} className="numeral text-xs text-gray-500">
+            This building has units {unitHint}.
+          </p>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}-town`}>Town</Label>
+        <Input
+          id={`${idPrefix}-town`}
+          autoComplete="off"
+          placeholder="Needham"
+          value={value.propertyTown}
+          onChange={set('propertyTown')}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}-state`}>State</Label>
+        <Input
+          id={`${idPrefix}-state`}
+          autoComplete="off"
+          maxLength={2}
+          className="uppercase"
+          value={value.propertyState}
+          onChange={set('propertyState')}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor={`${idPrefix}-zip`}>ZIP code</Label>
+        <Input
+          id={`${idPrefix}-zip`}
+          // Not inputMode="numeric": a leading zero is exactly what a numeric
+          // field eats, and 8 of 10 ZIPs on this site start with one.
+          autoComplete="off"
+          maxLength={10}
+          placeholder="02492"
+          value={value.propertyZip}
+          onChange={set('propertyZip')}
+        />
+      </div>
+    </>
+  );
+};
+
 /* ------------------------------------------------------------------ */
 /* New invite                                                          */
 /* ------------------------------------------------------------------ */
@@ -78,32 +298,31 @@ const MAX_INVITEES = 6;
  * So several addresses here do not share a link — an invite is claimed by the
  * first account that opens it and is `{valid:false}` to everyone after, which is
  * the point of it. Each address gets its own invite and its own email, all for
- * the same property, and they arrive together in that property's card because
- * an application takes its property from its invite (see groupByProperty).
+ * the same property, and they arrive together under that property because an
+ * application takes its property from its invite (see groupByProperty).
  */
 const NewInviteForm = ({
   onCreated,
   onFinished,
   previous,
+  initial,
 }: {
   /** Links that now exist — possibly fewer than were asked for. */
   onCreated: (invites: RentalInviteRecord[]) => void;
-  /** Every address has its link, so the form can close. */
-  onFinished: () => void;
+  /** Every address has its link, so the form can close. Given the property's key. */
+  onFinished: (key: string) => void;
   /** Properties already used, for the reuse picker. */
   previous: PreviousProperty[];
+  /** Where to start: the property whose page the form was opened on. */
+  initial?: { property: PropertyPartsInput; monthlyRent: string };
 }) => {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({
-    propertyAddress: '',
-    unit: '',
-    propertyTown: '',
-    // Every property on this site is in Massachusetts; it is still a field
-    // rather than a constant because the relocation work is cross-border.
-    propertyState: 'MA',
-    propertyZip: '',
-    monthlyRent: '',
+  const [property, setProperty] = useState<PropertyPartsInput>(
+    () => initial?.property ?? blankProperty()
+  );
+  const [terms, setTerms] = useState({
+    monthlyRent: initial?.monthlyRent ?? '',
     expiresInDays: '30',
   });
   /*
@@ -116,43 +335,16 @@ const NewInviteForm = ({
   const setEmail = (key: number, value: string) =>
     setEmails((rows) => rows.map((r) => (r.key === key ? { ...r, value } : r)));
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((p) => ({ ...p, [k]: e.target.value }));
-
-  /*
-   * The building's unit range, when MassGIS knows it ("#1-12"). Shown under the
-   * Unit field as a hint and never written into it: a range says the building
-   * has units, not which one is being let.
-   */
-  const [unitHint, setUnitHint] = useState<string | null>(null);
-  const unitRef = useRef<HTMLInputElement>(null);
-
-  /** A MassGIS suggestion was picked: fill everything it knows. */
-  const applyAddress = (s: AddressSuggestion) => {
-    setForm((p) => ({
-      ...p,
-      propertyAddress: s.street,
-      propertyTown: s.town,
-      propertyState: s.state,
-      propertyZip: s.zip,
-    }));
-    setUnitHint(s.unitHint);
-    // A multi-unit building needs a unit, so that is where the cursor goes next.
-    if (s.unitHint) window.setTimeout(() => unitRef.current?.focus(), 0);
-  };
+  const setTerm = (k: keyof typeof terms) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setTerms((p) => ({ ...p, [k]: e.target.value }));
 
   /** Fills the property fields from one already used, leaving the emails alone. */
   const reuse = (choice: PreviousProperty) => {
-    setUnitHint(null);
-    setForm((p) => ({
+    setProperty(draftOf(choice));
+    // The rent as it was last time, which is a starting point and not a
+    // decision — it is the field most likely to have changed between tenants.
+    setTerms((p) => ({
       ...p,
-      propertyAddress: choice.propertyAddress ?? '',
-      unit: choice.unit ?? '',
-      propertyTown: choice.propertyTown ?? '',
-      propertyState: choice.propertyState ?? 'MA',
-      propertyZip: choice.propertyZip ?? '',
-      // The rent as it was last time, which is a starting point and not a
-      // decision — it is the field most likely to have changed between tenants.
       monthlyRent: p.monthlyRent || (choice.monthlyRent != null ? String(choice.monthlyRent) : ''),
     }));
   };
@@ -185,21 +377,11 @@ const NewInviteForm = ({
           // the same thing is how they drift apart. formatProperty is the one
           // place an address becomes a line, so the label cannot drift from
           // the list.
-          label: formatProperty({
-            propertyAddress: form.propertyAddress,
-            unit: form.unit,
-            propertyTown: form.propertyTown,
-            propertyState: form.propertyState,
-            propertyZip: form.propertyZip,
-          }),
-          propertyAddress: form.propertyAddress,
-          unit: form.unit,
-          propertyTown: form.propertyTown,
-          propertyState: form.propertyState,
-          propertyZip: form.propertyZip,
-          monthlyRent: form.monthlyRent,
+          label: formatProperty(property),
+          ...property,
+          monthlyRent: terms.monthlyRent,
           inviteeEmail: email,
-          expiresInDays: Number(form.expiresInDays) || 0,
+          expiresInDays: Number(terms.expiresInDays) || 0,
         });
       } catch (err) {
         console.error('Could not create invite:', err);
@@ -235,24 +417,17 @@ const NewInviteForm = ({
             : 'Could not create the link',
         description:
           created.length > 0
-            ? 'The others are in the list below. Press the button again to retry.'
+            ? 'The others have been made. Press the button again to retry.'
             : 'Please try again.',
       });
       return;
     }
 
-    setUnitHint(null);
-    setForm({
-      propertyAddress: '',
-      unit: '',
-      propertyTown: '',
-      propertyState: 'MA',
-      propertyZip: '',
-      monthlyRent: '',
-      expiresInDays: '30',
-    });
+    const key = propertyKey(property);
+    setProperty(blankProperty());
+    setTerms({ monthlyRent: '', expiresInDays: '30' });
     setEmails([{ key: nextKey.current++, value: '' }]);
-    onFinished();
+    onFinished(key);
     toast(
       notMailed.length === 0
         ? {
@@ -274,117 +449,33 @@ const NewInviteForm = ({
   };
 
   return (
-    <form onSubmit={submit} className="grid gap-4 p-6 sm:grid-cols-2">
+    <form onSubmit={submit} className="grid gap-4 p-4 sm:grid-cols-2 sm:p-6">
       {/* Reuse first: re-letting the same unit is the common case, and it
           brings the rent with it. For a property not let before, the street
-          field below suggests from MassGIS — which serves the same purpose this
+          field suggests from MassGIS — which serves the same purpose this
           picker was built for, since both hand back one canonical spelling
           rather than letting "12 Elm St" and "12 Elm Street" become two
           properties no list can group. */}
-      {previous.length > 0 && (
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="inv-reuse">Reuse a property</Label>
-          <select
-            id="inv-reuse"
-            value=""
-            onChange={(e) => {
-              const choice = previous.find((p) => p.key === e.target.value);
-              if (choice) reuse(choice);
-            }}
-            className="h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-ink focus:border-champagne focus:outline-none focus:ring-1 focus:ring-champagne"
-          >
-            <option value="">Start from a previous property…</option>
-            {previous.map((p) => (
-              <option key={p.key} value={p.key}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-gray-500">
-            Fills the fields below. Everything stays editable, and the rent is last
-            time&rsquo;s.
-          </p>
-        </div>
-      )}
-
-      <div className="space-y-1.5 sm:col-span-2">
-        <Label htmlFor="inv-address">Street address</Label>
-        <AddressAutocomplete
-          id="inv-address"
-          required
-          placeholder="Start typing — 151 wash…"
-          value={form.propertyAddress}
-          onChange={(v) => {
-            setUnitHint(null);
-            setForm((p) => ({ ...p, propertyAddress: v }));
-          }}
-          onSelect={applyAddress}
-        />
-        <p className="text-xs text-gray-500">
-          Pick a suggestion to fill in the town and ZIP as well.
-        </p>
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="inv-unit">Unit</Label>
-        <Input
-          ref={unitRef}
-          id="inv-unit"
-          autoComplete="off"
-          value={form.unit}
-          onChange={set('unit')}
-          aria-describedby={unitHint ? 'inv-unit-hint' : undefined}
-        />
-        {unitHint && (
-          <p id="inv-unit-hint" className="numeral text-xs text-gray-500">
-            This building has units {unitHint}.
-          </p>
-        )}
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="inv-town">Town</Label>
-        <Input
-          id="inv-town"
-          autoComplete="off"
-          placeholder="Needham"
-          value={form.propertyTown}
-          onChange={set('propertyTown')}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="inv-state">State</Label>
-        <Input
-          id="inv-state"
-          autoComplete="off"
-          maxLength={2}
-          className="uppercase"
-          value={form.propertyState}
-          onChange={set('propertyState')}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="inv-zip">ZIP code</Label>
-        <Input
-          id="inv-zip"
-          // Not inputMode="numeric": a leading zero is exactly what a numeric
-          // field eats, and 8 of 10 ZIPs on this site start with one.
-          autoComplete="off"
-          maxLength={10}
-          placeholder="02492"
-          value={form.propertyZip}
-          onChange={set('propertyZip')}
-        />
-      </div>
+      <PropertyFields
+        idPrefix="inv"
+        value={property}
+        onChange={setProperty}
+        previous={previous}
+        reuseLabel="Reuse a property"
+        reuseHint="Fills the fields below. Everything stays editable, and the rent is last time’s."
+        onReuse={reuse}
+      />
       <div className="space-y-1.5">
         <Label htmlFor="inv-rent">Monthly rent</Label>
-        <Input id="inv-rent" inputMode="decimal" value={form.monthlyRent} onChange={set('monthlyRent')} />
+        <Input id="inv-rent" inputMode="decimal" value={terms.monthlyRent} onChange={setTerm('monthlyRent')} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="inv-expiry">Expires in (days)</Label>
         <Input
           id="inv-expiry"
           inputMode="numeric"
-          value={form.expiresInDays}
-          onChange={set('expiresInDays')}
+          value={terms.expiresInDays}
+          onChange={setTerm('expiresInDays')}
         />
         <p className="text-xs text-gray-500">0 for no expiry.</p>
       </div>
@@ -454,6 +545,147 @@ const NewInviteForm = ({
 };
 
 /* ------------------------------------------------------------------ */
+/* Correcting an address                                               */
+/* ------------------------------------------------------------------ */
+
+interface AddressSaved {
+  invites: RentalInviteRecord[];
+  /** Applications whose own copy of the address moved with their link. */
+  applications: RentalApplicationRecord[];
+  /** The property's key from the address as saved. */
+  key: string;
+}
+
+/**
+ * The address of a property's links, or of one link, corrected.
+ *
+ * Kevin types an address wrong now and then, and a wrong address is a property
+ * of its own in the list, apart from the applications for the real one
+ * (2026-10-18). Saving the right address files the link with them: grouping is
+ * by address (propertyKey), so there is nothing to merge — the next render IS
+ * the merge. Picking the property from the list is the surest way to match it,
+ * since that is its spelling exactly; typed, the key still forgives "Street"
+ * for "St".
+ *
+ * The applications started on these links move too, where their copy of the
+ * address is still the one the link gave them — see retargetTenancy.
+ */
+const AddressEditor = ({
+  invites,
+  applications,
+  previous,
+  scope,
+  onSaved,
+  onCancel,
+}: {
+  /** The links being corrected — every link of a property, or one. */
+  invites: RentalInviteRecord[];
+  /** Every application, so the ones on these links can be moved with them. */
+  applications: RentalApplicationRecord[];
+  previous: PreviousProperty[];
+  /** One sentence: what saving changes. */
+  scope: string;
+  onSaved: (saved: AddressSaved) => void;
+  onCancel: () => void;
+}) => {
+  const { toast } = useToast();
+  const [busy, setBusy] = useState(false);
+  const [value, setValue] = useState<PropertyPartsInput>(() => {
+    const first = invites[0];
+    // A link made before the address had fields has only its label, which is
+    // the nearest thing to a street line it has.
+    return first?.propertyAddress?.trim()
+      ? draftOf(propertyOfInvite(first))
+      : { ...blankProperty(), propertyAddress: first?.label ?? '' };
+  });
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (busy || !value.propertyAddress.trim()) return;
+    setBusy(true);
+    // Typed by hand to a property already here ("12 Elm Street" for "12 Elm
+    // St"): it joins that property either way, and takes its spelling too, so
+    // the property's page does not read one way on one link and another on the
+    // next. A part only the typed one has, a ZIP say, is kept.
+    const match = previous.find((p) => p.key === propertyKey(value));
+    const target: PropertyPartsInput = match
+      ? (Object.fromEntries(
+          Object.entries(draftOf(match)).map(([k, v]) => [
+            k,
+            v.trim() || value[k as keyof PropertyPartsInput],
+          ])
+        ) as PropertyPartsInput)
+      : value;
+    try {
+      const saved = await updateInviteProperty(
+        invites.map((i) => i.id),
+        target
+      );
+      // One at a time, and each failure on its own: the links are already
+      // corrected, so an application that could not be moved is a line to
+      // report, not a reason to undo the rest.
+      const moved: RentalApplicationRecord[] = [];
+      let stuck = 0;
+      for (const invite of invites) {
+        for (const app of applications.filter((a) => a.inviteId === invite.id)) {
+          try {
+            const record = await moveApplicationAddress(
+              app.id,
+              { ...propertyOfInvite(invite), label: invite.label },
+              target
+            );
+            if (record) moved.push(record);
+          } catch (err) {
+            console.error('Could not move the application address:', err);
+            stuck += 1;
+          }
+        }
+      }
+      if (stuck > 0) {
+        toast({
+          variant: 'destructive',
+          title: 'The address is saved, but not on every application',
+          description: `${stuck} ${stuck === 1 ? 'application still shows' : 'applications still show'} the old address. Open it and use Edit answers.`,
+        });
+      }
+      onSaved({ invites: saved, applications: moved, key: propertyKey(target) });
+    } catch (err) {
+      console.error('Could not change the address:', err);
+      toast({ variant: 'destructive', title: 'Could not change the address', description: 'Please try again.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="grid gap-4 border-t border-gray-200 bg-gray-50/60 p-4 sm:grid-cols-2 sm:p-6">
+      <p className="text-sm text-gray-700 sm:col-span-2">{scope}</p>
+      <PropertyFields
+        idPrefix={`fix-${invites[0]?.id ?? 'x'}`}
+        value={value}
+        onChange={setValue}
+        previous={previous}
+        reuseLabel="Same as a property already here"
+        reuseHint="Pick it to use its address exactly, and this goes in with it."
+      />
+      <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+        <button type="submit" disabled={busy} className={ADMIN_BUTTON}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Check className="h-4 w-4" aria-hidden />}
+          Save address
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-2 py-2 text-sm font-medium text-gray-600 hover:text-ink"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+};
+
+/* ------------------------------------------------------------------ */
 /* Copyable link                                                       */
 /* ------------------------------------------------------------------ */
 
@@ -474,11 +706,7 @@ const CopyLink = ({ token }: { token: string }) => {
   };
 
   return (
-    <button
-      type="button"
-      onClick={copy}
-      className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline"
-    >
+    <button type="button" onClick={copy} className={ROW_ACTION}>
       {copied ? <Check className="h-3.5 w-3.5" aria-hidden /> : <Copy className="h-3.5 w-3.5" aria-hidden />}
       {copied ? 'Copied' : 'Copy link'}
     </button>
@@ -524,12 +752,7 @@ const ResendButton = ({
   };
 
   return (
-    <button
-      type="button"
-      onClick={send}
-      disabled={busy}
-      className="inline-flex items-center gap-1.5 text-xs font-medium text-champagne-ink hover:underline disabled:opacity-60"
-    >
+    <button type="button" onClick={send} disabled={busy} className={ROW_ACTION}>
       {busy ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
       ) : (
@@ -541,6 +764,94 @@ const ResendButton = ({
 };
 
 /* ------------------------------------------------------------------ */
+/* Lists                                                               */
+/* ------------------------------------------------------------------ */
+
+/** A property's page, as the query string the list links to. */
+const propertyHref = (key: string) => `?${new URLSearchParams({ property: key }).toString()}`;
+
+/**
+ * The structured address of a property, from its newest link that has one —
+ * the heading of its page, split so the street can be the big line.
+ */
+const headingOf = (g: PropertyGroup) => {
+  const structured = g.invites.find((i) => i.propertyAddress?.trim());
+  if (!structured) return { title: g.label || 'No property recorded', place: '' };
+  return {
+    title: formatProperty({ propertyAddress: structured.propertyAddress, unit: structured.unit }),
+    place: formatProperty({
+      propertyTown: structured.propertyTown,
+      propertyState: structured.propertyState,
+      propertyZip: structured.propertyZip,
+    }),
+  };
+};
+
+const PROPERTY_COLUMNS: AdminColumn[] = [
+  { label: 'Property', primary: true },
+  { label: 'Last application' },
+  { label: 'Applications' },
+  { label: 'Links' },
+  { label: '', end: true },
+];
+
+/** The properties under one heading of the list. Each row opens its page. */
+const PropertyRows = ({ groups, label }: { groups: PropertyGroup[]; label: string }) => (
+  <AdminCard>
+    <AdminList
+      label={label}
+      columns={PROPERTY_COLUMNS}
+      grid="md:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,0.5fr)_1rem]"
+      rows={groups.map((g) => {
+        const latest = g.applications.find((a) => a.submittedAt === g.lastSubmitted);
+        // Submitted and not yet moved on: what is waiting to be read.
+        const unread = g.applications.filter((a) => a.status === 'submitted').length;
+        return {
+          key: g.key,
+          to: propertyHref(g.key),
+          cells: [
+            <span key="p" className="flex items-start gap-2.5">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-champagne-ink" aria-hidden />
+              <span className="min-w-0">
+                <span className="numeral block font-medium text-ink">
+                  {g.label || 'No property recorded'}
+                </span>
+                <span className="numeral mt-0.5 block text-xs text-gray-500">
+                  {latest
+                    ? `Latest from ${fullName(latest) || latest.applicantEmail || 'an applicant'}`
+                    : g.invites[0]
+                      ? `Newest link ${shortDate(g.invites[0].createdAt)}`
+                      : 'No link on record'}
+                </span>
+              </span>
+            </span>,
+            g.lastSubmitted ? shortDate(g.lastSubmitted) : 'None yet',
+            <span key="a" className="inline-flex items-center gap-2">
+              {g.applications.length}
+              {unread > 0 && (
+                <span
+                  className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${STATUS_TONE.submitted}`}
+                >
+                  {unread} new
+                </span>
+              )}
+            </span>,
+            g.invites.length,
+            <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
+          ],
+        };
+      })}
+    />
+  </AdminCard>
+);
+
+const SectionHeading = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+    {children}
+  </h2>
+);
+
+/* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -548,11 +859,15 @@ export default function AdminApplications() {
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const openId = params.get('id');
+  const openProperty = params.get('property');
+  useViewScroll(`${openId ?? ''}|${openProperty ?? ''}`);
 
   const [invites, setInvites] = useState<RentalInviteRecord[]>([]);
   const [apps, setApps] = useState<RentalApplicationRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
+  /** Whose address is open for correcting: 'property' for all its links, or one link's id. */
+  const [fixing, setFixing] = useState<string | null>(null);
   /**
    * Whether the open application is editable by the admin.
    *
@@ -586,13 +901,19 @@ export default function AdminApplications() {
     void load();
   }, [load]);
 
+  // An open form belongs to the view it was opened on.
+  useEffect(() => {
+    setShowNew(false);
+    setFixing(null);
+  }, [openId, openProperty]);
+
   /** Which invites have an application against them. */
   const claimedInvites = useMemo(
     () => new Set(apps.map((a) => a.inviteId).filter(Boolean) as string[]),
     [apps]
   );
 
-  /** The properties already invited on, newest first, for the reuse picker. */
+  /** The properties already invited on, newest first, for the reuse pickers. */
   const previous = useMemo(() => previousProperties(invites), [invites]);
 
   /** The list view: one group per property. See groupByProperty. */
@@ -629,10 +950,39 @@ export default function AdminApplications() {
     }
   };
 
-  /** Back to the list: drop out of edit mode and re-read what was written. */
-  const closeApplication = () => {
+  /**
+   * An address was corrected on the page of property `fromKey`. If that
+   * property is now empty — every link on it moved — the page follows them to
+   * where they went; otherwise it stays, one link fewer.
+   */
+  const addressSaved = (fromKey: string) => (saved: AddressSaved) => {
+    const nextInvites = invites.map((r) => saved.invites.find((c) => c.id === r.id) ?? r);
+    const nextApps = apps.map((r) => saved.applications.find((m) => m.id === r.id) ?? r);
+    const joined = groups.find((g) => g.key === saved.key && g.key !== fromKey);
+    setInvites(nextInvites);
+    setApps(nextApps);
+    setFixing(null);
+
+    const moved = saved.applications.length;
+    toast({
+      title: joined ? `Now with ${joined.label}` : 'Address saved',
+      description: [
+        joined && 'It is filed with the other links and applications for that address.',
+        moved > 0 &&
+          `The address on ${moved} ${moved === 1 ? 'application' : 'applications'} moved with it.`,
+      ]
+        .filter(Boolean)
+        .join(' ') || undefined,
+    });
+
+    const stillHere = groupByProperty(nextApps, nextInvites).some((g) => g.key === fromKey);
+    if (!stillHere) setParams({ property: saved.key }, { replace: true });
+  };
+
+  /** Back from an application: drop out of edit mode and re-read what was written. */
+  const closeApplication = (backTo: string | null) => {
     setEditing(false);
-    setParams({}, { replace: true });
+    setParams(backTo ? { property: backTo } : {}, { replace: true });
     // The form autosaves straight to the database, so the row in `apps` is
     // stale the moment anything was typed. Without this the list — and the next
     // application opened — would render the copy read before the edit.
@@ -642,24 +992,24 @@ export default function AdminApplications() {
   /* ---- One application --------------------------------------------- */
   if (openId) {
     const record = apps.find((r) => r.id === openId);
+    const home = record ? groups.find((g) => g.applications.includes(record)) : undefined;
     return (
       <AdminShell
-        title={
+        title={record ? fullName(record) || 'Application' : 'Application'}
+        description={
           record
-            ? `${record.applicantFirstName ?? ''} ${record.applicantLastName ?? ''}`.trim() ||
-              'Application'
-            : 'Application'
+            ? home?.label || formatTenancyAddress(record.data.tenancy) || undefined
+            : undefined
         }
-        description={record ? formatTenancyAddress(record.data.tenancy) || undefined : undefined}
         actions={
           <>
             <button
               type="button"
-              onClick={closeApplication}
+              onClick={() => closeApplication(home?.key ?? null)}
               className={adminActionClass('ghost')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
-              All applications
+              {home ? 'Back to the property' : 'All properties'}
             </button>
             {record && (
               <button
@@ -703,12 +1053,12 @@ export default function AdminApplications() {
         ) : (
           <>
             <AdminCard className="mb-6 print:hidden">
-              <div className="flex flex-wrap items-center gap-4 p-6">
+              <div className="flex flex-wrap items-center gap-4 p-4 sm:p-6">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
                     Contact
                   </p>
-                  <p className="mt-1 text-sm text-ink">
+                  <p className="mt-1 break-words text-sm text-ink">
                     {record.applicantEmail}
                     {record.applicantPhone && ` · ${record.applicantPhone}`}
                   </p>
@@ -770,7 +1120,239 @@ export default function AdminApplications() {
     );
   }
 
+  /* ---- One property ------------------------------------------------- */
+  if (openProperty) {
+    const group = groups.find((g) => g.key === openProperty);
+    const heading = group ? headingOf(group) : null;
+    const newest = group?.invites[0];
+    const rent = group?.invites.find((i) => i.monthlyRent != null)?.monthlyRent ?? null;
+    // Picking the property itself would change nothing.
+    const others = previous.filter((p) => p.key !== openProperty);
+
+    return (
+      <AdminShell
+        title={heading?.title ?? 'Property'}
+        description={
+          [heading?.place, rent != null && `$${Number(rent).toLocaleString()} a month`]
+            .filter(Boolean)
+            .join(' · ') || undefined
+        }
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => setParams({})}
+              className={adminActionClass('ghost')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
+              All properties
+            </button>
+            {group && group.invites.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNew(false);
+                  setFixing((v) => (v === 'property' ? null : 'property'));
+                }}
+                className={adminActionClass('ghost')}
+              >
+                <Pencil className="mr-2 h-4 w-4" aria-hidden />
+                Change address
+              </button>
+            )}
+            {group && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFixing(null);
+                  setShowNew((v) => !v);
+                }}
+                className={adminActionClass('primary')}
+              >
+                <Plus className="mr-2 h-4 w-4" aria-hidden />
+                New link
+              </button>
+            )}
+          </>
+        }
+      >
+        {!group ? (
+          <AdminCard>
+            <p className="p-6 text-sm text-gray-600">
+              {loading ? 'Loading…' : 'Nothing is filed under that address any more.'}
+            </p>
+          </AdminCard>
+        ) : (
+          <div className="space-y-8">
+            {fixing === 'property' && (
+              <AdminCard>
+                <AddressEditor
+                  invites={group.invites}
+                  applications={apps}
+                  previous={others}
+                  scope={
+                    group.invites.length === 1
+                      ? 'Changes the address on this property’s link.'
+                      : `Changes the address on all ${group.invites.length} of this property’s links.`
+                  }
+                  onSaved={addressSaved(group.key)}
+                  onCancel={() => setFixing(null)}
+                />
+              </AdminCard>
+            )}
+
+            {showNew && (
+              <AdminCard>
+                <NewInviteForm
+                  previous={previous}
+                  initial={
+                    newest?.propertyAddress?.trim()
+                      ? {
+                          property: draftOf(propertyOfInvite(newest)),
+                          monthlyRent: rent != null ? String(rent) : '',
+                        }
+                      : undefined
+                  }
+                  onCreated={(created) => setInvites((rows) => [...created, ...rows])}
+                  onFinished={(key) => {
+                    setShowNew(false);
+                    if (key !== group.key) setParams({ property: key });
+                  }}
+                />
+              </AdminCard>
+            )}
+
+            <section>
+              <SectionHeading>Applications ({group.applications.length})</SectionHeading>
+              <AdminCard>
+                {group.applications.length === 0 ? (
+                  <p className="px-4 py-4 text-sm text-gray-600 sm:px-6">No application yet.</p>
+                ) : (
+                  <AdminList
+                    label="Applications"
+                    columns={[
+                      { label: 'Applicant', primary: true },
+                      { label: 'Received' },
+                      { label: 'Status' },
+                      { label: '', end: true },
+                    ]}
+                    grid="md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_1rem]"
+                    rows={group.applications.map((r) => ({
+                      key: r.id,
+                      to: `?id=${encodeURIComponent(r.id)}`,
+                      cells: [
+                        <span key="n" className="block min-w-0">
+                          <span className="block font-medium text-ink">{fullName(r) || '—'}</span>
+                          <span className="block break-words text-xs text-gray-500">
+                            {r.applicantEmail}
+                          </span>
+                        </span>,
+                        r.submittedAt ? shortDate(r.submittedAt) : 'Not sent yet',
+                        <StatusBadge key="s" status={r.status} />,
+                        <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
+                      ],
+                    }))}
+                  />
+                )}
+              </AdminCard>
+            </section>
+
+            {group.invites.length > 0 && (
+              <section>
+                <SectionHeading>Links ({group.invites.length})</SectionHeading>
+                <AdminCard>
+                  <AdminList
+                    label="Links"
+                    columns={[{ label: 'Sent to', primary: true }, { label: 'Link' }, { label: '', end: true }]}
+                    grid="md:grid-cols-[minmax(0,1fr)_auto_auto]"
+                    rows={group.invites.map((invite) => {
+                      const state = inviteState(invite, claimedInvites.has(invite.id));
+                      return {
+                        key: invite.id,
+                        cells: [
+                          <span key="e" className="block min-w-0">
+                            {/* The recipient, not the address: every link here is
+                                for the property in the heading, so what tells
+                                them apart is who each went to. break-words, not
+                                truncate — on a phone, truncating left "jane.d…",
+                                which is not enough to know who it was. */}
+                            <span className="block break-words font-medium text-ink">
+                              {invite.inviteeEmail || 'No recipient recorded'}
+                            </span>
+                            <span className="numeral mt-0.5 block text-xs text-gray-500">
+                              Created {shortDate(invite.createdAt)}
+                              {invite.sentAt
+                                ? ` · emailed ${shortDate(invite.sentAt)}`
+                                : invite.inviteeEmail && ' · not emailed yet'}
+                              {invite.expiresAt && ` · expires ${shortDate(invite.expiresAt)}`}
+                            </span>
+                          </span>,
+                          <span
+                            key="s"
+                            // Matches StatusBadge's px-3 py-1: two pills sitting in
+                            // the same list at different densities looks like a
+                            // mistake even when neither is wrong on its own.
+                            className={`inline-flex items-center whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold leading-5 ${STATE_TONE[state]}`}
+                          >
+                            {STATE_LABEL[state]}
+                          </span>,
+                          <span key="a" className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            {state !== 'revoked' && <CopyLink token={invite.token} />}
+                            {state !== 'revoked' && state !== 'expired' && invite.inviteeEmail && (
+                              <ResendButton invite={invite} onSent={markSent} />
+                            )}
+                            {group.invites.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowNew(false);
+                                  setFixing((v) => (v === invite.id ? null : invite.id));
+                                }}
+                                aria-expanded={fixing === invite.id}
+                                className={ROW_ACTION}
+                              >
+                                <MapPin className="h-3.5 w-3.5" aria-hidden />
+                                Move
+                              </button>
+                            )}
+                            {state === 'live' && (
+                              <button
+                                type="button"
+                                onClick={() => revoke(invite.id)}
+                                className="py-1 text-xs font-medium text-red-700 hover:underline"
+                              >
+                                Revoke
+                              </button>
+                            )}
+                          </span>,
+                        ],
+                        detail:
+                          fixing === invite.id ? (
+                            <AddressEditor
+                              invites={[invite]}
+                              applications={apps}
+                              previous={others}
+                              scope={`Moves only the link sent to ${invite.inviteeEmail || 'this applicant'} — for when it went out with the wrong address. The other links stay here.`}
+                              onSaved={addressSaved(group.key)}
+                              onCancel={() => setFixing(null)}
+                            />
+                          ) : undefined,
+                      };
+                    })}
+                  />
+                </AdminCard>
+              </section>
+            )}
+          </div>
+        )}
+      </AdminShell>
+    );
+  }
+
   /* ---- List --------------------------------------------------------- */
+  const received = groups.filter((g) => g.lastSubmitted);
+  const waiting = groups.filter((g) => !g.lastSubmitted);
+
   return (
     <AdminShell
       title="Rental applications"
@@ -791,7 +1373,12 @@ export default function AdminApplications() {
           <NewInviteForm
             previous={previous}
             onCreated={(created) => setInvites((rows) => [...created, ...rows])}
-            onFinished={() => setShowNew(false)}
+            // To the property the links were made for, which is where Copy
+            // link is — and where they would otherwise have to be found.
+            onFinished={(key) => {
+              setShowNew(false);
+              setParams({ property: key });
+            }}
           />
         </AdminCard>
       )}
@@ -811,124 +1398,25 @@ export default function AdminApplications() {
           {/* `numeral` for the counts: Inter's default figures are
               proportional, so (1) and (7) are different widths and the label
               shifts as the number changes. See the class in index.css. */}
-          <p className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+          <p className="numeral mb-6 text-sm text-gray-500">
             {groups.length} {groups.length === 1 ? 'property' : 'properties'} · {apps.length}{' '}
             {apps.length === 1 ? 'application' : 'applications'} · {invites.length}{' '}
             {invites.length === 1 ? 'link' : 'links'}
           </p>
 
-          {/* ONE CARD PER PROPERTY, newest activity first. It was two flat
-              lists — every application, then every link — which made "who has
-              applied for this unit" a matter of reading the Property column of
-              every row. The address is the heading now, so it is not repeated
-              on each line beneath it. */}
-          <div className="space-y-8">
-            {groups.map((g) => (
-              <AdminCard key={g.key}>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-gray-200 bg-gray-50 px-6 py-4">
-                  <MapPin className="h-4 w-4 shrink-0 text-champagne-ink" aria-hidden />
-                  <h2 className="numeral min-w-0 flex-1 text-base font-semibold text-ink">
-                    {g.label || 'No property recorded'}
-                  </h2>
-                  <p className="numeral text-xs text-gray-500">
-                    {g.applications.length}{' '}
-                    {g.applications.length === 1 ? 'application' : 'applications'} ·{' '}
-                    {g.invites.length} {g.invites.length === 1 ? 'link' : 'links'}
-                  </p>
-                </div>
-
-                {g.applications.length === 0 ? (
-                  <p className="px-6 py-4 text-sm text-gray-600">No application yet.</p>
-                ) : (
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-500">
-                      <tr>
-                        <th className="px-6 py-3 font-semibold">Applicant</th>
-                        <th className="px-6 py-3 font-semibold">Received</th>
-                        <th className="px-6 py-3 font-semibold">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {g.applications.map((r) => (
-                        <tr
-                          key={r.id}
-                          onClick={() => setParams({ id: r.id })}
-                          className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-bone"
-                        >
-                          <td className="px-6 py-4">
-                            <span className="font-medium text-ink">
-                              {`${r.applicantFirstName ?? ''} ${r.applicantLastName ?? ''}`.trim() ||
-                                '—'}
-                            </span>
-                            <span className="block text-xs text-gray-500">{r.applicantEmail}</span>
-                          </td>
-                          <td className="numeral px-6 py-4 text-gray-700">
-                            {r.submittedAt ? shortDate(r.submittedAt) : '—'}
-                          </td>
-                          <td className="px-6 py-4">
-                            <StatusBadge status={r.status} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {g.invites.length > 0 && (
-                  <div className="border-t border-gray-200">
-                    <p className="px-6 pt-4 text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
-                      Links
-                    </p>
-                    <ul className="divide-y divide-gray-100">
-                      {g.invites.map((invite) => {
-                        const state = inviteState(invite, claimedInvites.has(invite.id));
-                        return (
-                          <li key={invite.id} className="flex flex-wrap items-center gap-4 px-6 py-4">
-                            <Link2 className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
-                            <div className="min-w-0 flex-1">
-                              {/* The recipient, not the address: every link in
-                                  this card is for the property in its heading,
-                                  so what tells them apart is who each went to. */}
-                              <p className="truncate text-sm font-medium text-ink">
-                                {invite.inviteeEmail || 'No recipient recorded'}
-                              </p>
-                              <p className="numeral mt-0.5 text-xs text-gray-500">
-                                Created {shortDate(invite.createdAt)}
-                                {invite.sentAt
-                                  ? ` · emailed ${shortDate(invite.sentAt)}`
-                                  : invite.inviteeEmail && ' · not emailed yet'}
-                                {invite.expiresAt && ` · expires ${shortDate(invite.expiresAt)}`}
-                              </p>
-                            </div>
-                            <span
-                              // Matches StatusBadge's px-3 py-1: two pills sitting in
-                              // the same list at different densities looks like a
-                              // mistake even when neither is wrong on its own.
-                              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold leading-5 ${STATE_TONE[state]}`}
-                            >
-                              {STATE_LABEL[state]}
-                            </span>
-                            {state !== 'revoked' && <CopyLink token={invite.token} />}
-                            {state !== 'revoked' && state !== 'expired' && invite.inviteeEmail && (
-                              <ResendButton invite={invite} onSent={markSent} />
-                            )}
-                            {state === 'live' && (
-                              <button
-                                type="button"
-                                onClick={() => revoke(invite.id)}
-                                className="text-xs font-medium text-red-700 hover:underline"
-                              >
-                                Revoke
-                              </button>
-                            )}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                )}
-              </AdminCard>
-            ))}
+          <div className="space-y-10">
+            {received.length > 0 && (
+              <section>
+                <SectionHeading>Applications received</SectionHeading>
+                <PropertyRows groups={received} label="Properties with applications" />
+              </section>
+            )}
+            {waiting.length > 0 && (
+              <section>
+                <SectionHeading>Waiting for an application</SectionHeading>
+                <PropertyRows groups={waiting} label="Properties waiting for an application" />
+              </section>
+            )}
           </div>
         </>
       )}

@@ -122,3 +122,40 @@ export const mlsFromListingParam = (segment: string | undefined | null): string 
   if (/^\d{5,12}$/.test(value)) return value;
   return /-(\d{6,12})$/.exec(value)?.[1] ?? null;
 };
+
+/**
+ * A listing's address line split into the street and the unit, for a form that
+ * has a box for each — the open-house sign-in.
+ *
+ * The feed's `address` is the whole line with the unit on the end ("170 Gore St
+ * Unit 417"), and choosing a condo there put all of it in the street box and
+ * left Unit empty (Kevin, 2026-10-18). The feed also carries the unit on its own,
+ * as `unit_no`, so that is what is taken off the end: nothing here guesses where
+ * a unit starts in a line of text. The unit comes back as someone writes it in a
+ * Unit box — "#5F" and "unit 1", both real values, are "5F" and "1" — so the
+ * sign-in's own "<street> Unit <unit>" puts back the line it started from.
+ *
+ * When the line does not end with that unit, it is not split. If the unit is
+ * somewhere else in it, the whole line stays the street and the box stays empty,
+ * because splitting there would print the unit twice; if the line does not name
+ * the unit at all, it goes in the box.
+ */
+export const splitUnit = (
+  address: string | null | undefined,
+  unitNo: string | null | undefined
+): { street: string; unit: string } => {
+  const line = (address ?? '').trim();
+  const raw = (unitNo ?? '').trim();
+  const unit = raw.replace(/^(?:unit|apt)\.?\s+/i, '').replace(/^#\s*/, '').trim();
+  if (!unit) return { street: line, unit: '' };
+
+  const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tail = new RegExp(
+    `[\\s,]+(?:(?:unit|apt|apartment|ste|suite)\\.?\\s*)?(?:${esc(raw)}|#?\\s*${esc(unit)})$`,
+    'i'
+  );
+  const found = tail.exec(line);
+  if (found && found.index > 0) return { street: line.slice(0, found.index).trim(), unit };
+  if (new RegExp(`[\\s#]${esc(unit)}(?![A-Za-z0-9])`, 'i').test(line)) return { street: line, unit: '' };
+  return { street: line, unit };
+};

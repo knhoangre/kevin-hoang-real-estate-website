@@ -491,6 +491,7 @@ export type ListingSuggestion = Pick<
   IdxListing,
   | 'mls_number'
   | 'address'
+  | 'unit_no'
   | 'town'
   | 'state'
   | 'zip'
@@ -501,8 +502,10 @@ export type ListingSuggestion = Pick<
   | 'feed'
 >;
 
+// `unit_no` is the unit on its own — `address` already ends with it — for a form
+// that has a Unit box (splitUnit in listingUrl.ts).
 const SUGGESTION_COLUMNS =
-  'mls_number,address,town,state,zip,status,list_price,prop_type,photo_count,feed';
+  'mls_number,address,unit_no,town,state,zip,status,list_price,prop_type,photo_count,feed';
 
 /**
  * Which listings a suggestion may come from.

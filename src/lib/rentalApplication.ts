@@ -24,6 +24,10 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { isPhone, isPhoneOrEmpty } from '@/lib/phone';
+import { formatProperty, retargetTenancy, type PropertyParts } from './rentalProperty';
+
+/** The address fields as a form holds them: every one a string. */
+export type PropertyPartsInput = Required<{ [K in keyof PropertyParts]: string }>;
 
 // ---------------------------------------------------------------------------
 // Field primitives
@@ -926,202 +930,92 @@ export const revokeInvite = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+/**
+ * Corrects the address on one or more links — a property's every link, or one.
+ *
+ * The label is rewritten with it, because the label is what the applicant reads
+ * above their form ("Applying for") and it was derived from the address in the
+ * first place. Rent, expiry and recipient are left alone: this fixes WHERE, and
+ * the links of one property can rightly differ in the rest.
+ *
+ * A link is the admin's own row (`public.is_admin()` FOR ALL), so this needs no
+ * function of its own. Where the link goes afterwards is groupByProperty's
+ * answer, from the new address — that is what files it with the others.
+ */
+export const updateInviteProperty = async (
+  ids: string[],
+  parts: PropertyPartsInput
+): Promise<RentalInviteRecord[]> => {
+  const clean = {
+    propertyAddress: parts.propertyAddress.trim(),
+    unit: parts.unit.trim(),
+    propertyTown: parts.propertyTown.trim(),
+    // Uppercase for the same reason createInvite stores it so.
+    propertyState: parts.propertyState.trim().toUpperCase(),
+    propertyZip: parts.propertyZip.trim(),
+  };
+  const { data, error } = await supabase
+    .from('rental_application_invites')
+    .update({
+      label: formatProperty(clean) || null,
+      property_address: clean.propertyAddress || null,
+      unit: clean.unit || null,
+      property_town: clean.propertyTown || null,
+      property_state: clean.propertyState || null,
+      property_zip: clean.propertyZip || null,
+    })
+    .in('id', ids)
+    .select('*');
+  if (error) throw error;
+  return (data ?? []).map(toInvite);
+};
+
+/**
+ * Moves an application's own copy of the address along with its link, where
+ * that copy is still the link's — see retargetTenancy. Returns the record as
+ * written, or null when there was nothing of the link's to move.
+ *
+ * The row is read again first rather than taken from the admin's list: the
+ * answers are one jsonb document, so writing back a copy loaded when the page
+ * opened would undo anything the applicant has typed since.
+ */
+export const moveApplicationAddress = async (
+  id: string,
+  from: PropertyParts & { label?: string | null },
+  to: PropertyParts
+): Promise<RentalApplicationRecord | null> => {
+  const current = await getApplication(id);
+  if (!current) return null;
+  const tenancy = retargetTenancy(current.data.tenancy, from, to);
+  if (!tenancy) return null;
+  const data = { ...current.data, tenancy };
+  const { error } = await supabase
+    .from('rental_applications')
+    .update({ data: data as unknown as Json })
+    .eq('id', id);
+  if (error) throw error;
+  return { ...current, data };
+};
+
 /** The shareable URL. Absolute, because it is pasted into a text or an email. */
 export const inviteUrl = (token: string, origin?: string): string => {
   const base = origin ?? (typeof window !== 'undefined' ? window.location.origin : '');
   return `${base}/apply/${token}`;
 };
 
-/**
- * The property as one line, from whatever parts are present.
- *
- * ONE formatter, used by the admin list, the applicant's "Applying for" card,
- * the invite label and the seeded tenancy address. Three hand-composed template
- * strings is how `formatPrice` ended up as three private copies that had already
- * drifted — and here a drift would show the applicant a different address than
- * the admin thinks they sent.
- *
- * Absent parts are omitted rather than placeheld, so an invite created before
- * town/state/zip existed still reads as the street line it always was.
- */
-export interface PropertyParts {
-  propertyAddress?: string | null;
-  unit?: string | null;
-  propertyTown?: string | null;
-  propertyState?: string | null;
-  propertyZip?: string | null;
-}
-
-export const formatProperty = (p: PropertyParts, { withUnit = true } = {}): string => {
-  const street = [p.propertyAddress?.trim(), withUnit && p.unit?.trim() && `Unit ${p.unit.trim()}`]
-    .filter(Boolean)
-    .join(' · ');
-  const region = [p.propertyState?.trim(), p.propertyZip?.trim()].filter(Boolean).join(' ');
-  const place = [p.propertyTown?.trim(), region].filter(Boolean).join(', ');
-  return [street, place].filter(Boolean).join(', ');
-};
-
-/**
- * The tenancy section's address, for display.
- *
- * `tenancy` keeps the address and the unit as SEPARATE fields, so anything
- * showing both has to join them — and the unit belongs against the STREET, not
- * at the end of the line. Appending it produced two spellings of one address in
- * the same admin list, because what sits in `propertyAddress` depends on when
- * the row was seeded: the old seeding wrote the whole formatted property, unit
- * included, giving "42 Newman St · Unit 3, Malden, MA 02148", while the current
- * one writes the address without it and the unit was appended after the ZIP —
- * "42 Newman St, Malden, MA 02148 · Unit 3". Same unit, two renderings, and an
- * address that renders two ways is an address no list can group.
- *
- * So the unit is inserted after the first comma-separated part, which is the
- * street line in every shape this field has ever held, and skipped entirely when
- * the address already names it. Rows written before either fix read the same as
- * rows written today.
- */
-export const formatTenancyAddress = (t: { propertyAddress?: string; unit?: string }): string => {
-  const address = (t.propertyAddress ?? '').trim();
-  const unit = (t.unit ?? '').trim();
-  if (!unit) return address;
-  // "unit 3" as a whole word, so "3" does not match the 3 in a street number.
-  const named = new RegExp(`\\bunit\\s*${unit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-  if (named.test(address)) return address;
-  if (!address) return `Unit ${unit}`;
-  const [street, ...rest] = address.split(',');
-  return [`${street.trim()} · Unit ${unit}`, ...rest.map((part) => part.trim())]
-    .filter(Boolean)
-    .join(', ');
-};
-
-/**
- * The properties already used, most recent first, for the reuse picker.
- *
- * Keyed on street + unit + town rather than on the formatted line, so an invite
- * that recorded no zip still matches the same unit entered later with one — the
- * point is to stop the admin retyping an address, not to demand they retype it
- * identically.
- */
-export interface PreviousProperty extends PropertyParts {
-  key: string;
-  monthlyRent: number | null;
-  label: string;
-}
-
-/**
- * What makes two records the same property: street + unit + town, case and
- * edge whitespace aside. State and ZIP are deliberately left out — see
- * `previousProperties` — and so is the formatted line, which changes shape with
- * whatever parts happen to be present.
- */
-export const propertyKey = (p: PropertyParts): string =>
-  [p.propertyAddress ?? '', p.unit ?? '', p.propertyTown ?? '']
-    .map((part) => part.trim().toLowerCase())
-    .join('|');
-
-export const previousProperties = (invites: RentalInviteRecord[]): PreviousProperty[] => {
-  const seen = new Map<string, PreviousProperty>();
-  for (const invite of invites) {
-    if (!invite.propertyAddress) continue;
-    const key = propertyKey(invite);
-    // First wins: listInvites() is newest-first, so the most recent entry for a
-    // property is the one whose rent and spelling are offered back.
-    if (seen.has(key)) continue;
-    seen.set(key, {
-      key,
-      propertyAddress: invite.propertyAddress,
-      unit: invite.unit,
-      propertyTown: invite.propertyTown,
-      propertyState: invite.propertyState,
-      propertyZip: invite.propertyZip,
-      monthlyRent: invite.monthlyRent,
-      label: formatProperty(invite),
-    });
-  }
-  return [...seen.values()];
-};
-
-/**
- * Everything on /admin/applications, organised by the property it is about.
- *
- * The page used to be two flat lists — every application, then every link —
- * which is the order things arrived in and not the order anyone thinks in: the
- * question at a desk is "who has applied for Newman Street", and answering it
- * meant reading the Property column of every row.
- *
- * AN APPLICATION TAKES ITS PROPERTY FROM ITS INVITE, not from what the
- * applicant typed. `tenancy.propertyAddress` is an editable field on their
- * form, so two people applying for the same unit can spell it two ways and
- * would land in two groups; the invite is the admin's own record of what the
- * link was for, and it is structured. The typed address is the fallback only
- * for an application whose invite is gone.
- *
- * Groups are ordered by the newest thing that happened in each, so the property
- * with this morning's application is at the top whichever list it would have
- * been in.
- */
-export interface PropertyGroup {
-  key: string;
-  /** One line, from `formatProperty`. Empty for the "no property" group. */
-  label: string;
-  applications: RentalApplicationRecord[];
-  invites: RentalInviteRecord[];
-  /** ISO timestamp of the most recent application or link here. */
-  latest: string;
-}
-
-const receivedAt = (r: RentalApplicationRecord) => r.submittedAt ?? r.createdAt;
-
-export const groupByProperty = (
-  applications: RentalApplicationRecord[],
-  invites: RentalInviteRecord[]
-): PropertyGroup[] => {
-  const groups = new Map<string, PropertyGroup>();
-  const group = (key: string, label: string): PropertyGroup => {
-    let g = groups.get(key);
-    if (!g) {
-      g = { key, label, applications: [], invites: [], latest: '' };
-      groups.set(key, g);
-    }
-    return g;
-  };
-  const touch = (g: PropertyGroup, at: string) => {
-    if (at > g.latest) g.latest = at;
-  };
-
-  const inviteGroup = (invite: RentalInviteRecord) =>
-    invite.propertyAddress?.trim()
-      ? group(propertyKey(invite), formatProperty(invite))
-      : // A link made before the address was its own field has only a label.
-        group(`label:${(invite.label ?? '').trim().toLowerCase()}`, invite.label?.trim() ?? '');
-
-  const byId = new Map(invites.map((invite) => [invite.id, invite]));
-
-  for (const invite of invites) {
-    const g = inviteGroup(invite);
-    g.invites.push(invite);
-    touch(g, invite.createdAt);
-  }
-
-  for (const application of applications) {
-    const invite = application.inviteId ? byId.get(application.inviteId) : undefined;
-    let g: PropertyGroup;
-    if (invite) {
-      g = inviteGroup(invite);
-    } else {
-      const typed = formatTenancyAddress(application.data.tenancy);
-      g = group(`typed:${typed.toLowerCase().replace(/\s+/g, ' ')}`, typed);
-    }
-    g.applications.push(application);
-    touch(g, receivedAt(application));
-  }
-
-  for (const g of groups.values()) {
-    g.applications.sort((a, b) => receivedAt(b).localeCompare(receivedAt(a)));
-    g.invites.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-
-  return [...groups.values()].sort((a, b) => b.latest.localeCompare(a.latest));
-};
+// The property — its one-line form, its key, and the grouping the admin list
+// is built from — lives in rentalProperty.ts, which is pure so a check script
+// can run it. Re-exported so this stays the one import for everything rental.
+export {
+  formatProperty,
+  formatTenancyAddress,
+  groupByProperty,
+  previousProperties,
+  propertyKey,
+  propertyOfInvite,
+  retargetTenancy,
+} from './rentalProperty';
+export type { PreviousProperty, PropertyGroup, PropertyParts } from './rentalProperty';
 
 /** Live / expired / revoked / used, for the admin list. */
 export const inviteState = (
