@@ -17,12 +17,12 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Received request:', req.method);
+    // console.log('Received request:', req.method);
     const { eventName, firstName, lastName, email, phone } = await req.json();
-    console.log('Parsed request data:', { eventName, firstName, lastName, email, phone });
+    // console.log('Parsed request data:', { eventName, firstName, lastName, email, phone });
 
     if (!eventName || !firstName || !lastName || !email) {
-      console.log('Missing required fields:', { eventName, firstName, lastName, email });
+      // console.log('Missing required fields:', { eventName, firstName, lastName, email });
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',

@@ -70,7 +70,7 @@ const MessagesList = () => {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching contact messages...');
+      // console.log('🔍 Fetching contact messages...');
       
       // First try the view, if it fails, try the table directly
       let data, fetchError;
@@ -115,10 +115,10 @@ const MessagesList = () => {
         throw fetchError;
       }
 
-      console.log('📊 Contact messages data:', data?.length || 0, 'records');
-      if (data && data.length > 0) {
-        console.log('Sample record:', data[0]);
-      }
+      // console.log('📊 Contact messages data:', data?.length || 0, 'records');
+      // if (data && data.length > 0) {
+      //   console.log('Sample record:', data[0]);
+      // }
 
       // Transform the data - handle both view format and direct table format
       const transformedData: ContactMessage[] = (data || []).map((item: JoinedContactRow) => {
@@ -143,7 +143,7 @@ const MessagesList = () => {
       });
 
       setMessages(transformedData);
-      console.log('✅ Successfully loaded', transformedData.length, 'messages');
+      // console.log('✅ Successfully loaded', transformedData.length, 'messages');
     } catch (err: unknown) {
       console.error('❌ Error fetching messages:', err);
       setError(errorMessage(err) || 'Failed to load messages');

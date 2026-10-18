@@ -9,14 +9,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   // Log environment variables (in development only)
-  if (mode === 'development') {
-    console.log('Environment variables loaded:', {
-      SUPABASE_URL: env.SUPABASE_URL ? 'Present' : 'Missing',
-      SUPABASE_SERVICE_KEY: env.SUPABASE_SERVICE_KEY ? 'Present' : 'Missing',
-      VITE_SUPABASE_URL: env.VITE_SUPABASE_URL ? 'Present' : 'Missing',
-      VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
-    });
-  }
+  // if (mode === 'development') {
+  //   console.log('Environment variables loaded:', {
+  //     SUPABASE_URL: env.SUPABASE_URL ? 'Present' : 'Missing',
+  //     SUPABASE_SERVICE_KEY: env.SUPABASE_SERVICE_KEY ? 'Present' : 'Missing',
+  //     VITE_SUPABASE_URL: env.VITE_SUPABASE_URL ? 'Present' : 'Missing',
+  //     VITE_SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY ? 'Present' : 'Missing'
+  //   });
+  // }
 
   return {
     plugins: [react()],

@@ -13,12 +13,12 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Received request:', req.method);
+    // console.log('Received request:', req.method);
     const { firstName, lastName, email, phone, message } = await req.json();
-    console.log('Parsed request data:', { firstName, lastName, email, phone, messageLength: message?.length });
+    // console.log('Parsed request data:', { firstName, lastName, email, phone, messageLength: message?.length });
 
     if (!firstName || !lastName || !email || !message) {
-      console.log('Missing required fields:', { firstName, lastName, email, message: !!message });
+      // console.log('Missing required fields:', { firstName, lastName, email, message: !!message });
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
@@ -61,7 +61,7 @@ serve(async (req) => {
         persistSession: false
       }
     });
-    console.log('Initialized Supabase client with service role key');
+    // console.log('Initialized Supabase client with service role key');
 
     // Format phone number if provided
     let formattedPhone = phone;
@@ -208,7 +208,7 @@ serve(async (req) => {
 
     // Also create/update contact in contacts table
     // Check if contact already exists (handle NULL phone_id properly)
-    console.log('Checking for existing contact with email_id:', emailData.id, 'phone_id:', phoneData?.id || null);
+    // console.log('Checking for existing contact with email_id:', emailData.id, 'phone_id:', phoneData?.id || null);
     
     // First, try to find by email_id and phone_id (if phone exists)
     let existingContact = null;
@@ -257,7 +257,7 @@ serve(async (req) => {
     }
 
     if (existingContact) {
-      console.log('Found existing contact with id:', existingContact.id);
+      // console.log('Found existing contact with id:', existingContact.id);
       // Update existing contact's source if needed
       const { error: updateError } = await supabase
         .from('contacts')
@@ -270,10 +270,10 @@ serve(async (req) => {
       if (updateError) {
         console.error('Error updating existing contact:', updateError);
       } else {
-        console.log('Successfully updated existing contact');
+        // console.log('Successfully updated existing contact');
       }
     } else {
-      console.log('No existing contact found, creating new contact');
+      // console.log('No existing contact found, creating new contact');
       // Create new contact
       const contactData = {
         first_name_id: firstNameData.id,
@@ -283,7 +283,7 @@ serve(async (req) => {
         source_id: sourceData.id,
         is_active: true,
       };
-      console.log('Inserting contact with data:', contactData);
+      // console.log('Inserting contact with data:', contactData);
       
       const { data: newContact, error: contactError } = await supabase
         .from('contacts')
@@ -297,7 +297,7 @@ serve(async (req) => {
         console.error('Full error object:', JSON.stringify(contactError, null, 2));
         // Don't throw - message was inserted successfully, but log the error
       } else {
-        console.log('Successfully created new contact with id:', newContact?.id);
+        // console.log('Successfully created new contact with id:', newContact?.id);
         // Verify the contact was actually created
         const { data: verifyContact, error: verifyError } = await supabase
           .from('contacts')
@@ -307,17 +307,17 @@ serve(async (req) => {
         if (verifyError) {
           console.error('Error verifying contact creation:', verifyError);
         } else {
-          console.log('Verified contact exists:', verifyContact);
+          // console.log('Verified contact exists:', verifyContact);
         }
       }
     }
 
-    console.log('Database updated successfully');
+    // console.log('Database updated successfully');
 
     // Send email notification
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    console.log('RESEND_API_KEY exists:', !!resendApiKey);
-    console.log('RESEND_API_KEY length:', resendApiKey?.length);
+    // console.log('RESEND_API_KEY exists:', !!resendApiKey);
+    // console.log('RESEND_API_KEY length:', resendApiKey?.length);
 
     if (!resendApiKey) {
       console.error('Missing RESEND_API_KEY environment variable');
@@ -334,10 +334,10 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    console.log('Initialized Resend client');
+    // console.log('Initialized Resend client');
 
     try {
-      console.log('Attempting to send email...');
+      // console.log('Attempting to send email...');
       const data = await resend.emails.send({
         from: "Kevin Hoang <contact@kevinhoang.co>",
         to: ["knhoangre@gmail.com"],
@@ -476,7 +476,7 @@ serve(async (req) => {
           </html>
         `
       });
-      console.log('Email sent successfully:', data);
+      // console.log('Email sent successfully:', data);
 
       return new Response(
         JSON.stringify({ success: true, data }),

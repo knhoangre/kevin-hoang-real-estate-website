@@ -195,17 +195,17 @@ const Properties = () => {
     if (!files || files.length === 0) return;
 
     const mlsnum = formData.mlsnum || `temp-${Date.now()}`;
-    console.log('Uploading images for MLS:', mlsnum, 'Files:', files.length);
+    // console.log('Uploading images for MLS:', mlsnum, 'Files:', files.length);
     
     const uploadedUrls = await uploadPropertyImages(Array.from(files), mlsnum);
     
-    console.log('Uploaded URLs:', uploadedUrls);
+    // console.log('Uploaded URLs:', uploadedUrls);
     
     const newImages = [...propertyImages, ...uploadedUrls];
     setPropertyImages(newImages);
     setFormData({ ...formData, image_urls: newImages });
     
-    console.log('Updated formData.image_urls:', newImages);
+    // console.log('Updated formData.image_urls:', newImages);
     
     // Reset file input
     e.target.value = '';
@@ -312,11 +312,11 @@ const Properties = () => {
       };
 
       // Debug: Log what we're saving
-      console.log('Saving property with image_urls:', {
-        mlsnum: dataToSave.mlsnum,
-        image_urls_count: dataToSave.image_urls.length,
-        image_urls: dataToSave.image_urls,
-      });
+      // console.log('Saving property with image_urls:', {
+      //   mlsnum: dataToSave.mlsnum,
+      //   image_urls_count: dataToSave.image_urls.length,
+      //   image_urls: dataToSave.image_urls,
+      // });
 
       if (selectedProperty) {
         // Update

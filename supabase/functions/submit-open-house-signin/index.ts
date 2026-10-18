@@ -431,7 +431,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Received request:', req.method);
+    // console.log('Received request:', req.method);
     const body = await req.json();
     const {
       type,
@@ -451,12 +451,12 @@ serve(async (req) => {
     // Event: explicit type or eventName present without address
     const isEvent = Boolean((type === 'event' && eventName) || (eventName && !address));
     const locationLabel = isEvent ? (eventName || '').trim() : (address || '').trim();
-    console.log('Parsed request data:', { type, isEvent, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany });
+    // console.log('Parsed request data:', { type, isEvent, eventName, address, firstName, lastName, email, phone, worksWithRealtor, realtorName, realtorCompany });
 
     const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedPhone = typeof phone === "string" ? phone.trim() : "";
     if (!locationLabel || !firstName || !lastName || (!normalizedEmail && !normalizedPhone)) {
-      console.log('Missing required fields:', { locationLabel, firstName, lastName, email: normalizedEmail, phone: normalizedPhone });
+      // console.log('Missing required fields:', { locationLabel, firstName, lastName, email: normalizedEmail, phone: normalizedPhone });
       return new Response(
         JSON.stringify({
           error: 'Missing required fields',
@@ -505,9 +505,9 @@ serve(async (req) => {
         schema: 'public'
       }
     });
-    console.log('Initialized Supabase client with service role key');
-    console.log('Service role key length:', supabaseServiceKey.length);
-    console.log('Supabase URL:', supabaseUrl);
+    // console.log('Initialized Supabase client with service role key');
+    // console.log('Service role key length:', supabaseServiceKey.length);
+    // console.log('Supabase URL:', supabaseUrl);
 
     /*
      * The listing this open house is at, when the kiosk matched the address to
@@ -692,7 +692,7 @@ serve(async (req) => {
 
     // Also create/update contact in contacts table
     // Check if contact already exists (handle NULL phone_id properly)
-    console.log('Checking for existing contact with email_id:', emailData?.id || null, 'phone_id:', phoneData?.id || null);
+    // console.log('Checking for existing contact with email_id:', emailData?.id || null, 'phone_id:', phoneData?.id || null);
     
     // Track contact creation status
     let contactCreated = false;
@@ -772,7 +772,7 @@ serve(async (req) => {
     }
 
     if (existingContact) {
-      console.log('Found existing contact with id:', existingContact.id);
+      // console.log('Found existing contact with id:', existingContact.id);
       // Update existing contact's source if needed (keep most recent)
       const { error: updateError } = await supabase
         .from('contacts')
@@ -786,11 +786,11 @@ serve(async (req) => {
         console.error('Error updating existing contact:', updateError);
         contactErrorDetails = updateError;
       } else {
-        console.log('Successfully updated existing contact');
+        // console.log('Successfully updated existing contact');
         contactCreated = true;
       }
     } else {
-      console.log('No existing contact found, creating new contact');
+      // console.log('No existing contact found, creating new contact');
       // Create new contact
       const contactData = {
         first_name_id: firstNameData.id,
@@ -800,10 +800,10 @@ serve(async (req) => {
         source_id: sourceData.id,
         is_active: true,
       };
-      console.log('Inserting contact with data:', contactData);
+      // console.log('Inserting contact with data:', contactData);
       
       // Try to insert the contact - use service role to bypass RLS
-      console.log('Attempting to insert contact with service role...');
+      // console.log('Attempting to insert contact with service role...');
       const { data: newContact, error: contactError } = await supabase
         .from('contacts')
         .insert(contactData)
@@ -821,7 +821,7 @@ serve(async (req) => {
         contactErrorDetails = contactError;
         
         // Try alternative approach - check if it's an RLS issue
-        console.log('Attempting to verify service role key is being used...');
+        // console.log('Attempting to verify service role key is being used...');
         const { data: testQuery, error: testError } = await supabase
           .from('contacts')
           .select('id')
@@ -829,13 +829,13 @@ serve(async (req) => {
         if (testError) {
           console.error('❌ Cannot query contacts table - RLS or permission issue:', testError);
         } else {
-          console.log('✅ Can query contacts table, service role is working');
+          // console.log('✅ Can query contacts table, service role is working');
         }
         
         // Don't return - continue with email sending even if contact creation failed
         // The open house sign-in was successful, so we should still send the email
       } else {
-        console.log('✅ Successfully created new contact with id:', newContact?.id);
+        // console.log('✅ Successfully created new contact with id:', newContact?.id);
         contactCreated = true;
         // Verify the contact was actually created
         const { data: verifyContact, error: verifyError } = await supabase
@@ -846,17 +846,17 @@ serve(async (req) => {
         if (verifyError) {
           console.error('❌ Error verifying contact creation:', verifyError);
         } else {
-          console.log('✅ Verified contact exists in database:', verifyContact);
+          // console.log('✅ Verified contact exists in database:', verifyContact);
         }
       }
     }
 
-    console.log('Database updated successfully');
+    // console.log('Database updated successfully');
 
     // Send email notification
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    console.log('RESEND_API_KEY exists:', !!resendApiKey);
-    console.log('RESEND_API_KEY length:', resendApiKey?.length);
+    // console.log('RESEND_API_KEY exists:', !!resendApiKey);
+    // console.log('RESEND_API_KEY length:', resendApiKey?.length);
 
     if (!resendApiKey) {
       console.error('Missing RESEND_API_KEY environment variable');
@@ -873,10 +873,10 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    console.log('Initialized Resend client');
+    // console.log('Initialized Resend client');
 
     try {
-      console.log('Attempting to send email...');
+      // console.log('Attempting to send email...');
       const subject = isEvent ? `Event Sign-In - ${eventName}` : `Open House Sign-In - ${address}`;
       const headerTitle = isEvent ? 'Event Sign-In' : 'Open House Sign-In';
       /*
@@ -1041,7 +1041,7 @@ serve(async (req) => {
           </html>
         `
       });
-      console.log('Email sent successfully:', data);
+      // console.log('Email sent successfully:', data);
 
       let confirmationSent = false;
       let confirmationError: string | null = null;
@@ -1130,11 +1130,11 @@ serve(async (req) => {
 
           await resend.emails.send(confirmationPayload);
           confirmationSent = true;
-          console.log(
-            "Sign-in confirmation email sent (TO guest, CC agent when different)",
-          );
+          // console.log(
+          //   "Sign-in confirmation email sent (TO guest, CC agent when different)",
+          // );
         } else {
-          console.log("No guest email provided; skipping confirmation email send.");
+          // console.log("No guest email provided; skipping confirmation email send.");
         }
       } catch (confirmErr) {
         console.error("Confirmation email error:", confirmErr);

@@ -45,7 +45,7 @@ const OpenHousesList = () => {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching open house sign-ins...');
+      // console.log('🔍 Fetching open house sign-ins...');
       
       // Test if we can access the table at all
       const { data: testData, error: testError } = await supabase
@@ -54,11 +54,11 @@ const OpenHousesList = () => {
         .eq('is_active', true)
         .limit(5);
       
-      console.log('🧪 Test query result:', { 
-        count: testData?.length || 0,
-        data: testData,
-        error: testError 
-      });
+      // console.log('🧪 Test query result:', { 
+      //   count: testData?.length || 0,
+      //   data: testData,
+      //   error: testError 
+      // });
       
       if (testError) {
         console.error('❌ Test query failed - RLS might be blocking:', testError);
@@ -83,10 +83,10 @@ const OpenHousesList = () => {
         throw signInsError;
       }
 
-      console.log('📊 Open house sign-ins data:', signInsData?.length || 0, 'records');
-      if (signInsData && signInsData.length > 0) {
-        console.log('Sample record:', signInsData[0]);
-      }
+      // console.log('📊 Open house sign-ins data:', signInsData?.length || 0, 'records');
+      // if (signInsData && signInsData.length > 0) {
+      //   console.log('Sample record:', signInsData[0]);
+      // }
 
       if (!signInsData || signInsData.length === 0) {
         setGroupedOpenHouses([]);
@@ -99,12 +99,12 @@ const OpenHousesList = () => {
       const emailIds = [...new Set(signInsData.map(s => s.email_id).filter(Boolean))];
       const phoneIds = [...new Set(signInsData.map(s => s.phone_id).filter(Boolean))];
 
-      console.log('📋 IDs to fetch:', {
-        firstNameIds: firstNameIds.length,
-        lastNameIds: lastNameIds.length,
-        emailIds: emailIds.length,
-        phoneIds: phoneIds.length
-      });
+      // console.log('📋 IDs to fetch:', {
+      //   firstNameIds: firstNameIds.length,
+      //   lastNameIds: lastNameIds.length,
+      //   emailIds: emailIds.length,
+      //   phoneIds: phoneIds.length
+      // });
 
       // Fetch all related contact data
       const [firstNames, lastNames, emails, phones] = await Promise.all([
@@ -128,12 +128,12 @@ const OpenHousesList = () => {
       if (emails.error) console.error('❌ Error fetching emails:', emails.error);
       if (phones.error) console.error('❌ Error fetching phones:', phones.error);
 
-      console.log('📊 Contact data fetched:', {
-        firstNames: firstNames.data?.length || 0,
-        lastNames: lastNames.data?.length || 0,
-        emails: emails.data?.length || 0,
-        phones: phones.data?.length || 0
-      });
+      // console.log('📊 Contact data fetched:', {
+      //   firstNames: firstNames.data?.length || 0,
+      //   lastNames: lastNames.data?.length || 0,
+      //   emails: emails.data?.length || 0,
+      //   phones: phones.data?.length || 0
+      // });
 
       // Create lookup maps
       const firstNameMap = new Map((firstNames.data || []).map(f => [f.id, f.first_name]));
@@ -141,12 +141,12 @@ const OpenHousesList = () => {
       const emailMap = new Map((emails.data || []).map(e => [e.id, e.email]));
       const phoneMap = new Map((phones.data || []).map(p => [p.id, p.phone]));
 
-      console.log('🗺️ Lookup maps created:', {
-        firstNameMap: firstNameMap.size,
-        lastNameMap: lastNameMap.size,
-        emailMap: emailMap.size,
-        phoneMap: phoneMap.size
-      });
+      // console.log('🗺️ Lookup maps created:', {
+      //   firstNameMap: firstNameMap.size,
+      //   lastNameMap: lastNameMap.size,
+      //   emailMap: emailMap.size,
+      //   phoneMap: phoneMap.size
+      // });
 
       // Transform the data
       const transformedData: OpenHouseSignIn[] = signInsData.map((item) => {
@@ -181,10 +181,10 @@ const OpenHousesList = () => {
         };
       });
       
-      console.log('🔄 Transformed data:', transformedData.length, 'records');
-      if (transformedData.length > 0) {
-        console.log('📝 Sample transformed record:', transformedData[0]);
-      }
+      // console.log('🔄 Transformed data:', transformedData.length, 'records');
+      // if (transformedData.length > 0) {
+      //   console.log('📝 Sample transformed record:', transformedData[0]);
+      // }
 
       // Group by address
       const grouped = transformedData.reduce((acc, signIn) => {
@@ -209,8 +209,8 @@ const OpenHousesList = () => {
       // Sort by count (most sign-ins first)
       grouped.sort((a, b) => b.count - a.count);
 
-      console.log('✅ Successfully loaded', grouped.length, 'open house groups');
-      console.log('📦 Grouped data:', grouped);
+      // console.log('✅ Successfully loaded', grouped.length, 'open house groups');
+      // console.log('📦 Grouped data:', grouped);
       
       setGroupedOpenHouses(grouped);
     } catch (err: unknown) {
