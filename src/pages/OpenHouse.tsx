@@ -425,7 +425,6 @@ const OpenHouse = () => {
                             input. The <Label htmlFor> above already finds it. */}
                         <ListingLookup
                           id="address"
-                          fills="street"
                           placeholder="Start typing the address, or an MLS number"
                           value={field.value}
                           onChange={(value) => {

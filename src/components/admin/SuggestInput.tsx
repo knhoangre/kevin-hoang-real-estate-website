@@ -13,6 +13,22 @@
  * applied only when chosen, and choosing is optional. If the source is slow or
  * down, the list simply never opens.
  *
+ * THE LIST IS FOR SOMEBODY TYPING, AND FOR NOTHING ELSE. It asks only about
+ * text typed into the field, and is open only while the field has focus. Until
+ * 2026-10-18 it asked about whatever the field held: an address already there —
+ * a link's address opened for correcting, a new link started from a property,
+ * a property picked from the list, a booklet reopened — fetched suggestions
+ * the moment it appeared and opened them in a field nobody had touched. Since
+ * a list that opens without focus is never closed by blur, it then stayed open
+ * over the Unit box beneath it, which could not be tapped (Kevin: "it
+ * shouldn't pop up indefinitely because there is some text in there"). So:
+ *   - a value set from outside (prefilled, picked, reset) asks nothing, and
+ *     clears any list there was;
+ *   - choosing a suggestion closes the list, and it stays closed until the
+ *     next keystroke — tapping back into the field does not reopen it;
+ *   - leaving the field closes the list, and coming back to text that was
+ *     being typed, and not yet chosen, shows the same list again.
+ *
  * KEYBOARD FIRST. Arrow keys move, Enter picks, Escape closes — and Enter only
  * picks when the list is open with a highlighted row. Otherwise it falls
  * through to the form, so pressing Enter in a finished field still submits.
@@ -33,15 +49,11 @@ export interface SuggestInputProps<T> {
   value: string;
   /** Every keystroke, exactly as typed. */
   onChange: (value: string) => void;
-  /**
-   * A suggestion was chosen. The parent MUST write `valueOf(item)` into `value`
-   * — that is how this tells a choice from typing, and so does not reopen the
-   * list over the row that was just picked.
-   */
+  /** A suggestion was chosen. The parent writes what it wants into `value`. */
   onSelect: (item: T) => void;
 
   /*
-   * The four below are read inside an effect. Pass module-level functions, not
+   * The three below are read inside an effect. Pass module-level functions, not
    * inline arrows: a new identity on every render would restart the request on
    * every render.
    */
@@ -49,8 +61,6 @@ export interface SuggestInputProps<T> {
   worth: (text: string) => boolean;
   /** The request. Must honour the signal, or a slow answer can overwrite a newer one. */
   suggest: (text: string, signal: AbortSignal) => Promise<T[]>;
-  /** What choosing an item puts in the field. */
-  valueOf: (item: T) => string;
   keyOf: (item: T) => string;
 
   renderItem: (item: T) => React.ReactNode;
@@ -76,7 +86,6 @@ function SuggestInput<T>({
   onSelect,
   worth,
   suggest,
-  valueOf,
   keyOf,
   renderItem,
   listLabel,
@@ -91,17 +100,25 @@ function SuggestInput<T>({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   /*
-   * The value a suggestion just wrote into the field. Choosing one changes
-   * `value`, which would otherwise look like typing and immediately reopen the
-   * list over the row that was just picked.
+   * What was last TYPED into the field — the only text the list is ever about.
+   * Null when the field's text came from anywhere else: a prefill, a choice, a
+   * reset.
    */
-  const chosen = useRef<string | null>(null);
+  const [typed, setTyped] = useState<string | null>(null);
+  const focused = useRef(false);
+
+  // The field changed from outside: whatever the list said is about other text.
+  useEffect(() => {
+    if (typed !== null && value === typed) return;
+    setTyped(null);
+    setItems([]);
+    setOpen(false);
+    setActive(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only a new value means this
+  }, [value]);
 
   useEffect(() => {
-    if (chosen.current !== null && value === chosen.current) return undefined;
-    chosen.current = null;
-
-    if (!worth(value)) {
+    if (typed === null || !worth(typed)) {
       setItems([]);
       setOpen(false);
       return undefined;
@@ -113,11 +130,12 @@ function SuggestInput<T>({
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
-        const next = await suggest(value, controller.signal);
+        const next = await suggest(typed, controller.signal);
         if (controller.signal.aborted) return;
         setItems(next);
         setActive(-1);
-        setOpen(next.length > 0);
+        // Answered after the field was left: kept for coming back, not shown.
+        setOpen(focused.current && next.length > 0);
       } catch {
         // Aborted or unreachable. The field stays a plain text input.
       }
@@ -127,10 +145,13 @@ function SuggestInput<T>({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [value, worth, suggest]);
+  }, [typed, worth, suggest]);
 
   const choose = (item: T) => {
-    chosen.current = valueOf(item);
+    // The list is done with: what the parent writes next is a value from
+    // outside, which the effect above treats as the end of this list.
+    setTyped(null);
+    setItems([]);
     setOpen(false);
     setActive(-1);
     onSelect(item);
@@ -173,13 +194,24 @@ function SuggestInput<T>({
         aria-expanded={open}
         aria-controls={listId}
         aria-activedescendant={open && active >= 0 ? optionId(active) : undefined}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          setTyped(e.target.value);
+          onChange(e.target.value);
+        }}
         onKeyDown={onKeyDown}
         onFocus={() => {
-          if (items.length > 0 && chosen.current === null) setOpen(true);
+          focused.current = true;
+          // Back to text that was being typed: the same list, again. An address
+          // that was chosen or filled in has no list to come back to.
+          if (typed !== null && items.length > 0) setOpen(true);
         }}
-        // A tick of delay so a click on a row lands before the list closes.
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
+        onBlur={() => {
+          focused.current = false;
+          // A tick of delay so a click on a row lands before the list closes.
+          window.setTimeout(() => {
+            if (!focused.current) setOpen(false);
+          }, 120);
+        }}
       />
 
       {open && items.length > 0 && (

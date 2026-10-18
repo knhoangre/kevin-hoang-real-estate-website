@@ -39,7 +39,6 @@ const PREFERRED_TOWNS = SITE.areaServed.map((t) => t.name);
 // Module scope: SuggestInput reads these in an effect and needs them stable.
 const suggest = (text: string, signal: AbortSignal) =>
   suggestAddresses(text, signal, PREFERRED_TOWNS);
-const streetOf = (s: AddressSuggestion) => s.street;
 const labelOf = (s: AddressSuggestion) => s.label;
 
 const renderSuggestion = (s: AddressSuggestion) => (
@@ -65,7 +64,6 @@ const AddressAutocomplete = forwardRef<HTMLInputElement, Props>(
       onSelect={onSelect}
       worth={isWorthSuggesting}
       suggest={suggest}
-      valueOf={streetOf}
       keyOf={labelOf}
       renderItem={renderSuggestion}
       listLabel="Suggested addresses"

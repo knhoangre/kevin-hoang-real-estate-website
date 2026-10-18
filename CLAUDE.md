@@ -1410,16 +1410,15 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `/search/<mls>` — in the confirmation email. Before 2026-10-06 the email named
   an address and linked to nothing, so the guest looked the house up on Zillow.
   A house not in the feed is still typed by hand and simply carries no link.
-- **Choosing a condo puts its unit in the Unit box** (`fills="street"` on
-  ListingLookup, `splitUnit()` in [listingUrl.ts](src/lib/listingUrl.ts)). The
+- **Choosing a condo puts its unit in the Unit box** (`splitUnit()` in
+  [listingUrl.ts](src/lib/listingUrl.ts), applied in the sign-in's `onSelect`). The
   feed's `address` ends with the unit ("170 Gore St Unit 417"), and until
   2026-10-18 all of it went in the street box. The unit is taken off the end
   using the feed's own `unit_no`, never guessed from the text, and comes back as
   written in a box ("#1" is "1"); the sheet's "<street> Unit <unit>" then puts
   the line back as it was. Measured on 1,000 live condo rows: every one split.
   A line that does not END with its unit is not split, or the unit would print
-  twice. ListingLookup's default still fills the whole line, which is what the
-  showing tours and the booklets want.
+  twice. The showing tours and the booklets still take the whole line.
 - **`open_house_sign_ins.mls_number` is nullable and has NO foreign key.**
   `idx_listings` is a cache: idx-sync deletes a row the moment MLS PIN stops
   sending it. A foreign key would either block that delete, which is a
@@ -1440,9 +1439,19 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   `utm_source=open-house` so GA4 can say how many guests came back.
 - **[SuggestInput](src/components/admin/SuggestInput.tsx) is the one
   suggest-as-you-type field.** `AddressAutocomplete` (MassGIS) and
-  `ListingLookup` (IDX) are thin wrappers that supply a source and a row. Its
-  `worth`/`suggest`/`valueOf`/`keyOf` props are read in an effect, so pass
-  module-level functions — an inline arrow restarts the request every render.
+  `ListingLookup` (IDX) are thin wrappers that supply a source and a row; the
+  showing tours' client-name field uses it directly. Its `worth`/`suggest`/`keyOf`
+  props are read in an effect, so pass module-level functions — an inline arrow
+  restarts the request every render.
+  - **The list is for somebody typing, and only while the field has focus.** It
+    used to ask about whatever the field held, so an address already there — a
+    link opened for correcting, a property picked from the list, a reopened
+    booklet — opened suggestions in a field nobody had touched, and with no
+    focus there was no blur to close them: the list sat over the Unit box
+    (Kevin, 2026-10-18). Now a value set from outside asks nothing; choosing
+    closes the list until the next keystroke; leaving the field closes it, and
+    coming back to text still being typed shows it again. The parent may write
+    anything into the field on a choice — nothing is told apart by its text.
 
 ### Saved homes and recommendations (`/saved`, `/admin/activity`)
 

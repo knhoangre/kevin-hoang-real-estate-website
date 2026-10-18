@@ -147,7 +147,6 @@ const detailsProblem = (d: TourDetails): string | null => {
 /* ------------------------------------------------------------------ */
 
 // Module scope: SuggestInput reads these in an effect and needs them stable.
-const clientName = (c: ClientSuggestion) => c.name;
 const clientKey = (c: ClientSuggestion) => String(c.contactId);
 const renderClient = (c: ClientSuggestion) => (
   <>
@@ -267,7 +266,6 @@ const DetailsFields = ({
                   onSelect={(c) => picked(person.id, c)}
                   worth={isWorthFindingClient}
                   suggest={suggestClients}
-                  valueOf={clientName}
                   keyOf={clientKey}
                   renderItem={renderClient}
                   listLabel="Matching contacts"

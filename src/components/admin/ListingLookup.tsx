@@ -15,7 +15,6 @@ import { Home } from 'lucide-react';
 import SuggestInput, { type SuggestInputProps } from '@/components/admin/SuggestInput';
 import { formatPrice } from '@/lib/listings';
 import { SITE } from '@/lib/siteConfig';
-import { splitUnit } from '@/lib/listingUrl';
 import {
   isWorthLookingUp,
   statusLabel,
@@ -29,16 +28,8 @@ interface Props {
   value: string;
   /** Every keystroke, exactly as typed. */
   onChange: (value: string) => void;
-  /**
-   * A listing was chosen. The parent must write its `address` into `value` —
-   * or, with `fills="street"`, the street from `splitUnit`.
-   */
+  /** A listing was chosen. The parent writes its address into `value`. */
   onSelect: (listing: ListingSuggestion) => void;
-  /**
-   * What choosing a listing puts in this field: the whole line (the default),
-   * or the street alone, for a form whose unit has a box of its own.
-   */
-  fills?: 'address' | 'street';
   required?: boolean;
   placeholder?: string;
   inputRef?: React.Ref<HTMLInputElement>;
@@ -60,8 +51,6 @@ const suggest = (text: string, signal: AbortSignal) =>
   suggestListings(text, signal, PREFERRED_TOWNS);
 const suggestAll = (text: string, signal: AbortSignal) =>
   suggestListings(text, signal, PREFERRED_TOWNS, 'all');
-const addressOf = (l: ListingSuggestion) => l.address ?? '';
-const streetOf = (l: ListingSuggestion) => splitUnit(l.address, l.unit_no).street;
 const mlsOf = (l: ListingSuggestion) => l.mls_number;
 
 const renderListing = (l: ListingSuggestion) => (
@@ -95,7 +84,6 @@ const ListingLookup = ({
   inputRef,
   inputProps,
   scope = 'active',
-  fills = 'address',
 }: Props) => (
   <SuggestInput<ListingSuggestion>
     inputRef={inputRef}
@@ -106,7 +94,6 @@ const ListingLookup = ({
     onSelect={onSelect}
     worth={isWorthLookingUp}
     suggest={scope === 'all' ? suggestAll : suggest}
-    valueOf={fills === 'street' ? streetOf : addressOf}
     keyOf={mlsOf}
     renderItem={renderListing}
     listLabel="Matching listings"
