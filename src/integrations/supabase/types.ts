@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "12.2.12"
   }
   public: {
     Tables: {
@@ -1841,6 +1841,81 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_analyses: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          inputs: Json
+          list_price: number | null
+          mls_number: string
+          prop_type: string | null
+          state: string | null
+          strategy: string
+          town: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          inputs: Json
+          list_price?: number | null
+          mls_number: string
+          prop_type?: string | null
+          state?: string | null
+          strategy?: string
+          town?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          inputs?: Json
+          list_price?: number | null
+          mls_number?: string
+          prop_type?: string | null
+          state?: string | null
+          strategy?: string
+          town?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investment_cost_overrides: {
+        Row: {
+          high: number
+          key: string
+          low: number
+          mid: number
+          note: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          high: number
+          key: string
+          low: number
+          mid: number
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          high?: number
+          key?: string
+          low?: number
+          mid?: number
+          note?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       listing_favorites: {
         Row: {
           address: string | null
@@ -3115,6 +3190,7 @@ export type Database = {
       admin_client_activity: {
         Args: never
         Returns: {
+          analysis_count: number
           email: string
           full_name: string
           last_active: string

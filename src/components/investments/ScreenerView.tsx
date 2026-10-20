@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Link, type SetURLSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
+import { listAnalyses, type SavedAnalysis } from '@/lib/investmentStore';
 import { ArrowRight } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import { Chip, LINK, Panel, Spinner } from '@/components/investments/ui';
@@ -115,6 +117,14 @@ const ScreenerView = ({
     setParams(next, { replace: true });
   };
 
+  const { user } = useAuth();
+  const savedAnalyses = useQuery({
+    queryKey: ['inv-analyses', user?.id ?? null, 'all'],
+    queryFn: () => listAnalyses(user?.id as string),
+    enabled: enabled && Boolean(user),
+    staleTime: 60_000,
+  });
+
   const towns = useQuery({
     queryKey: ['town-list'],
     queryFn: townsWithListings,
@@ -184,6 +194,8 @@ const ScreenerView = ({
 
   return (
     <div>
+      {savedAnalyses.data && savedAnalyses.data.length > 0 && <SavedList rows={savedAnalyses.data} />}
+
       {/* ---------------- Controls ---------------- */}
       <div className="grid gap-4 rounded-2xl border border-gray-200 bg-bone p-5 sm:grid-cols-2 lg:grid-cols-5">
         <label className="block lg:col-span-2">
@@ -327,6 +339,37 @@ const ScreenerView = ({
 };
 
 /* -------------------------------------------------------------------------- */
+
+const STRATEGY_LABEL: Record<string, string> = { hold: 'Rental', flip: 'Fix and flip', brrrr: 'BRRRR' };
+
+/** The investor's saved analyses, newest first: each is the way back to its numbers. */
+const SavedList = ({ rows }: { rows: SavedAnalysis[] }) => (
+  <section aria-labelledby="saved-analyses" className="mb-12">
+    <h2 id="saved-analyses" className="text-xl font-semibold uppercase tracking-wide text-ink">
+      Your saved analyses
+    </h2>
+    <ul className="mt-4 divide-y divide-gray-100 border-y border-gray-200">
+      {rows.map((r) => (
+        <li key={r.id}>
+          <Link
+            to={`/investments?mls=${encodeURIComponent(r.mls_number)}`}
+            className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3 text-sm hover:text-champagne-ink"
+          >
+            <span className="font-medium text-ink">
+              {[r.address, r.town].filter(Boolean).join(', ') || `MLS ${r.mls_number}`}
+            </span>
+            <span className="numeral text-xs text-gray-500">
+              {STRATEGY_LABEL[r.strategy] ?? r.strategy}
+              {r.list_price !== null && ` · asking ${formatPrice(r.list_price)} when saved`}
+              {' · '}
+              {new Date(r.updated_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  </section>
+);
 
 const InvestmentCard = ({ row, sort, town }: { row: Row; sort: Sort; town: string }) => {
   const { listing, rent, parcel, metrics, flags } = row;

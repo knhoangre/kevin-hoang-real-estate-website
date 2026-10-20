@@ -58,6 +58,22 @@ psql_file() {
   docker exec "$CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 "$2" -f /tmp/run.sql
 }
 
+# One file of assertions. Its output is filtered to the ok/FAIL lines for
+# reading, and that is exactly why its status is checked here rather than left
+# to `set -e`: in a pipeline the shell sees only grep's status, so until
+# 2026-10-20 a file that stopped on a FAIL was followed by "All assertions
+# passed".
+run_tests() {
+  if out=$(psql_file "$1" "" 2>&1); then
+    printf '%s\n' "$out" | grep -E 'ok  |FAIL|ERROR' || true
+  else
+    printf '%s\n' "$out" | grep -E 'ok  |FAIL|ERROR' || true
+    echo
+    echo "FAILED in $(basename "$1")"
+    exit 1
+  fi
+}
+
 psql_file "$TESTS/00_bootstrap.sql" -q
 
 for m in $MIGRATIONS; do
@@ -68,7 +84,7 @@ for m in $MIGRATIONS; do
 done
 
 echo
-psql_file "$TESTS/idx_comps_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+run_tests "$TESTS/idx_comps_test.sql"
 
 # Saved homes and viewing history. Per-user data, so these need the stand-ins
 # for Supabase Auth; they are applied here, after the comps tests, which run as
@@ -79,7 +95,15 @@ echo "Applying 20261006120000_listing_favorites_and_views"
 psql_file "$REPO/supabase/migrations/20261006120000_listing_favorites_and_views.sql" -q 2>&1 \
   | grep -v 'NOTICE.*skipping' || true
 echo
-psql_file "$TESTS/favorites_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+run_tests "$TESTS/favorites_test.sql"
+
+# Saved investment analyses and Kevin's cost book, on the same users and
+# listings as the saved homes; the migration replaces admin_client_activity().
+echo "Applying 20261020100000_investment_analyses"
+psql_file "$REPO/supabase/migrations/20261020100000_investment_analyses.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/investment_test.sql"
 
 # The people on a showing tour, and filing them in the CRM. crm_upsert_contact()
 # comes from its own migration, as written, over stand-ins for the CRM's tables.
@@ -96,7 +120,7 @@ echo "Applying 20261008100000_showing_tour_people"
 psql_file "$REPO/supabase/migrations/20261008100000_showing_tour_people.sql" -q 2>&1 \
   | grep -v 'NOTICE.*skipping' || true
 echo
-psql_file "$TESTS/showing_tours_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+run_tests "$TESTS/showing_tours_test.sql"
 
 # Marketing documents and the bucket their uploaded pictures go in. The
 # migration writes policies on storage.objects, so Storage's two tables get a
@@ -107,7 +131,7 @@ echo "Applying 20261010100000_marketing_documents"
 psql_file "$REPO/supabase/migrations/20261010100000_marketing_documents.sql" -q 2>&1 \
   | grep -v 'NOTICE.*skipping' || true
 echo
-psql_file "$TESTS/marketing_documents_test.sql" "" 2>&1 | grep -E 'ok  |FAIL|ERROR'
+run_tests "$TESTS/marketing_documents_test.sql"
 
 echo
 echo "All assertions passed."

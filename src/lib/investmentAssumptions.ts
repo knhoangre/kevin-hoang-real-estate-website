@@ -210,6 +210,20 @@ export const ASSUMPTIONS = {
     source: 'Lender fees, appraisal, title and recording on the new loan.',
     asOf: REVIEWED,
   },
+  /** Months the renovation takes, permits included. */
+  rehabMonths: {
+    value: 4,
+    kind: 'assumption',
+    source: 'Permits, scheduling the trades and a cosmetic-to-moderate renovation. A gut renovation takes longer.',
+    asOf: REVIEWED,
+  },
+  /** Months from finished to sold. */
+  saleMonths: {
+    value: 2,
+    kind: 'assumption',
+    source: 'About a month on the market and a month to closing.',
+    asOf: REVIEWED,
+  },
   /** Utilities, insurance and the like while a house is being worked on, per month. */
   rehabUtilitiesMonthly: {
     value: 300,

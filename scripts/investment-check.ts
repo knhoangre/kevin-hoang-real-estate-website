@@ -51,6 +51,8 @@ import {
 } from '../src/lib/parcels.ts';
 import { ASSUMPTIONS, screenDefaults } from '../src/lib/investmentAssumptions.ts';
 import { RULES } from '../src/lib/investmentRules.ts';
+import { COST_BOOK, scopeTotal, seedScope, withOverrides, type Scope } from '../src/lib/rehabCosts.ts';
+import { arvSeed, flipInputs, hydrateScenario, monthlyCarry, operatingFrom, seedScenario, summarizeScenario } from '../src/lib/scenario.ts';
 import { decodeCodes } from '../src/lib/idxDecode.ts';
 
 let failures = 0;
@@ -443,6 +445,70 @@ ok(
 );
 
 /* -------------------------------------------------------------------------- */
+console.log('--- the cost book ---');
+ok(new Set(COST_BOOK.map((c) => c.key)).size === COST_BOOK.length, 'every cost line has its own key');
+for (const c of COST_BOOK) {
+  ok(c.low <= c.mid && c.mid <= c.high && c.low >= 0, `${c.key}: low \u2264 mid \u2264 high`);
+  ok(Boolean(c.source) && /^\d{4}-\d{2}-\d{2}$/.test(c.asOf) && (c.kind === 'assumption' || Boolean(c.url)), `${c.key}: sourced and dated${c.kind === 'assumption' ? ' (an assumption)' : ''}`);
+}
+const book = withOverrides([
+  { key: 'roof', low: 20_000, mid: 25_000, high: 30_000, note: 'Smith Roofing, Oct 2026', updated_at: '2026-10-20T12:00:00Z' },
+  { key: 'windows', low: 3000, mid: 2000, high: 1000, note: null, updated_at: '2026-10-20T12:00:00Z' },
+  { key: 'no-such-line', low: 1, mid: 2, high: 3, note: null, updated_at: '2026-10-20T12:00:00Z' },
+]);
+const roof = book.find((c) => c.key === 'roof')!;
+eq([roof.mid, roof.kind, roof.asOf], [25_000, 'contractor', '2026-10-20'], 'Kevin\u2019s roof price replaces the book\u2019s, dated and labelled');
+ok(roof.source.includes('Smith Roofing'), 'with his note as its source');
+eq(book.find((c) => c.key === 'windows')!.mid, COST_BOOK.find((c) => c.key === 'windows')!.mid, 'an override with its figures out of order is ignored');
+eq(book.length, COST_BOOK.length, 'an override for a line that no longer exists adds nothing');
+
+const scope: Scope = {
+  contingencyPct: 15,
+  lines: [
+    { key: 'kitchen-refresh', on: true, qty: 1, tier: 'mid' },
+    { key: 'bath-refresh', on: true, qty: 2, tier: 'mid' },
+    { key: 'roof', on: false, qty: 1, tier: 'mid' },
+    { key: 'permits', on: true, qty: 1, tier: 'mid' },
+  ],
+};
+const st1 = scopeTotal(scope, COST_BOOK);
+near(st1.work, 32_000 + 28_000 + 900, 'kitchen $32k + two baths $28k + permits 1.5% of that ($900)');
+near(st1.total, 60_900 * 1.15, 'plus 15% contingency: $70,035');
+eq(st1.lines.map((l) => l.key), ['kitchen-refresh', 'bath-refresh', 'permits'], 'a line switched off costs nothing and is not listed');
+near(scopeTotal({ ...scope, lines: [{ key: 'kitchen-full', on: true, qty: 1, tier: 'mid', amount: 50_000 }] }, COST_BOOK).work, 50_000, 'the investor\u2019s own figure for a line replaces the book\u2019s');
+near(scopeTotal({ ...scope, lines: [{ key: 'kitchen-full', on: true, qty: 1, tier: 'high' }] }, COST_BOOK).work, 95_000, 'the high end of the range');
+
+const seeded = seedScope({ living_area: 1800, full_baths: 2, bedrooms: 3, year_built: 1950, units: 1, septic: true, oilHeat: true, renting: true, conditionFlags: ['tlc'], conditionWords: '\u201cneeds TLC\u201d' });
+const on = seeded.lines.filter((l) => l.on).map((l) => l.key);
+ok(on.includes('kitchen-refresh') && on.includes('bath-refresh') && on.includes('flooring'), 'remarks that say it needs work switch on a refresh');
+ok(on.includes('lead') && on.includes('title-v'), 'a 1950 rental on septic budgets lead and a Title V inspection');
+ok(!on.includes('roof') && !on.includes('rewire'), 'nothing the listing does not evidence is switched on');
+ok(seeded.lines.find((l) => l.key === 'boiler')!.reason === 'The listing says oil heat.', 'oil heat is offered with its reason, off');
+const clean = seedScope({ living_area: 1800, full_baths: 2, bedrooms: 3, year_built: 2005, units: 1, septic: false, oilHeat: false, renting: true, conditionFlags: [], conditionWords: null });
+eq(clean.lines.filter((l) => l.on).length, 0, 'a newer house with nothing said about its condition starts with no work');
+
+console.log('--- the scenario ---');
+const sc = seedScenario({ price: 900_000, propType: 'MF', hoaFee: null, taxes: 9000, homeInsurance: 4410, units: 2, rents: [3000, 3000], scope: seeded, arv: 1_100_000 });
+eq([sc.refi.ltvPct, sc.project.flipMonths, sc.ownerUtilities, sc.annualInsurance], [70, 6, 120, 5513], 'a two-family: 70% refinance, six months to sell, water for two units, a landlord policy');
+near(monthlyCarry(sc), 9000 / 12 + 5513 / 12 + 300, 'held empty: taxes, insurance and utilities');
+eq(hydrateScenario('garbage', sc), sc, 'a stored value that is not a document opens as the seed');
+const h = hydrateScenario({ price: '1', tab: 'nonsense', rents: [1, 2, 3], arv: 990_000, scope: { contingencyPct: 10, lines: [{ key: 'roof', on: true, tier: 'high' }, { key: 'gone-line', on: true }] }, project: { finance: 'cash', hm: { ratePct: 12 } } }, sc);
+eq([h.price, h.tab, h.rents, h.arv], [900_000, 'hold', [3000, 3000], 990_000], 'a string price, an unknown tab and the wrong number of units fall back to the seed');
+eq([h.scope.contingencyPct, h.scope.lines.find((l) => l.key === 'roof')?.on, h.scope.lines.find((l) => l.key === 'roof')?.tier], [10, true, 'high'], 'a stored scope line is kept');
+ok(!h.scope.lines.some((l) => l.key === 'gone-line'), 'a line the book no longer has is dropped');
+eq([h.project.finance, h.project.hm.ratePct, h.project.hm.pointsPct], ['cash', 12, sc.project.hm.pointsPct], 'project fields are kept one by one');
+eq(hydrateScenario(JSON.parse(JSON.stringify(sc)), sc), sc, 'a saved scenario opens as it was saved');
+eq(summarizeScenario({ ...sc, tab: 'flip' }), { price: 900_000, rent: 6000, arv: 1_100_000, tab: 'flip' }, 'Kevin\u2019s summary: price, rent, ARV and strategy');
+eq(summarizeScenario({ price: 'x', rents: 'y' }), { price: null, rent: null, arv: null, tab: 'hold' }, 'and nothing invented from a damaged document');
+const fi = flipInputs(sc, COST_BOOK);
+eq([fi.price, fi.arv, fi.holdMonths, fi.finance.kind], [900_000, 1_100_000, 6, 'hardMoney'], 'the flip reads the shared scenario');
+near(fi.rehab, scopeTotal(sc.scope, COST_BOOK).total, 'and pays for the scoped renovation, contingency included');
+eq(operatingFrom({ ...sc, liveInOne: true }).grossMonthlyRent, 6000, 'after a BRRRR every unit is let, whatever the rental tab assumed');
+eq(arvSeed({ withheld: null, high: 1_234_567 }, false), 1_235_000, 'ARV seed: the top of the comps\u2019 range, to the thousand');
+eq(arvSeed({ withheld: 'far-from-asking', high: 900_000 }, false), 900_000, 'a fixer far from its asking price still gets a seed');
+eq(arvSeed({ withheld: 'larger-than-comps', high: 900_000 }, false), null, 'a house larger than every comp gets none');
+eq(arvSeed({ withheld: null, high: 900_000 }, true), null, 'nor does a listing whose estimate is switched off');
+
 console.log('--- every assumption has a source ---');
 const sd = screenDefaults();
 ok(Object.values(sd).every((v) => Number.isFinite(v)), 'the screener defaults are all numbers');

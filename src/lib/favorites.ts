@@ -13,6 +13,7 @@
  *   - RLS returns the caller's own rows, and every row to the admin.
  * See 20261006120000_listing_favorites_and_views.sql and its tests.
  */
+import { listAnalyses, type SavedAnalysis } from '@/lib/investmentStore';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { AVAILABLE_STATUSES, type IdxListing } from '@/lib/idxSearch';
@@ -250,6 +251,8 @@ export interface ClientActivity {
   name: string | null;
   savedCount: number;
   viewedCount: number;
+  /** Investment analyses saved on /investments. */
+  analysisCount: number;
   lastActive: string | null;
 }
 
@@ -263,14 +266,19 @@ export const clientActivity = async (): Promise<ClientActivity[]> => {
     name: row.full_name,
     savedCount: Number(row.saved_count),
     viewedCount: Number(row.viewed_count),
+    analysisCount: Number(row.analysis_count ?? 0),
     lastActive: row.last_active,
   }));
 };
 
-/** What one client saved and what they looked at, for the admin. RLS lets only the admin read another's. */
+/** What one client saved, looked at and analysed, for the admin. RLS lets only the admin read another's. */
 export const clientDetail = async (
   userId: string
-): Promise<{ favorites: FavoriteRow[]; views: ViewRow[] }> => {
-  const [favorites, views] = await Promise.all([listFavorites(userId), listViews(userId, 100)]);
-  return { favorites, views };
+): Promise<{ favorites: FavoriteRow[]; views: ViewRow[]; analyses: SavedAnalysis[] }> => {
+  const [favorites, views, analyses] = await Promise.all([
+    listFavorites(userId),
+    listViews(userId, 100),
+    listAnalyses(userId),
+  ]);
+  return { favorites, views, analyses };
 };

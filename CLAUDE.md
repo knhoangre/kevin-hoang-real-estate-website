@@ -32,7 +32,7 @@ node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203)
 node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, the people on a showing tour AND the marketing documents (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour AND the marketing documents (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -1537,9 +1537,9 @@ data per client at `/admin/activity`.
 Signed-in only (Kevin, 2026-10-19 — the data is the same public IDX data `/search`
 shows, so this is a reason to make an account, not a lock). The screener ranks one
 town's homes for sale; `?mls=<n>` is one home analysed, so it needs no rewrite. The
-listing page's calculator links to it ("Run this as an investment"). Phase 1 shipped
-2026-10-20: the screener and buy-and-hold. Flip, BRRRR, teardown/build and ADU are in
-the plan, with the math for all of them already in investment.ts and checked.
+listing page's calculator links to it ("Run this as an investment"). Shipped 2026-10-20:
+the screener, and one home run as a rental, a fix-and-flip or a BRRRR, saved per person.
+Teardown/build and ADU are planned; their math is already in investment.ts and checked.
 
 - **Three pure modules decide every number; nothing in a component does.**
   [investment.ts](src/lib/investment.ts) (every strategy, the screener metrics, the
@@ -1579,6 +1579,31 @@ the plan, with the math for all of them already in investment.ts and checked.
   ([investmentRules.ts](src/lib/investmentRules.ts)) says so; keep that framing.
 - **Every listing card now names its listing office**, batched across a grid in
   [offices.ts](src/lib/offices.ts) — `IdxDisclosure` had always said they were marked.
+- **One home is ONE Scenario document** ([scenario.ts](src/lib/scenario.ts)): every
+  input of every tab, so a price or a renovation entered on one tab is the others' too,
+  and it is exactly what "Save" stores in `investment_analyses.inputs`. `hydrateScenario`
+  lays a stored copy over today's seed field by field, so old saves keep opening — the
+  same arrangement as `rentalApplication.ts`. One analysis per person per home.
+- **Save inserts once, then updates by id — never an upsert.** The BEFORE INSERT
+  trigger writes the snapshot (address, town, price, from `idx_listings`) and enforces
+  the 200-per-account cap; an upsert would run it on every save. The UPDATE half of the
+  same trigger puts owner, home and snapshot back whatever an update sends (RLS is
+  scoped by row, not by column). The admin's policy is SELECT only: Kevin reads every
+  saved analysis on `/admin/activity` — disclosed beside the Save button and in the
+  privacy policy — and cannot change an investor's assumptions.
+- **The cost book** ([rehabCosts.ts](src/lib/rehabCosts.ts)) is ranges, each with its
+  source or an "Assumption" label; published Greater Boston prices disagree by 2–3×.
+  Kevin replaces any line at `/admin/costs` (`investment_cost_overrides`, read by every
+  signed-in account, written by the admin only); his figure wins per key and is shown
+  as his. The scope switches on only what the listing evidences — pre-1978 (lead, on a
+  rental), septic (Title V), and condition words in the remarks — and folds the rest.
+- **The refinance follows Fannie Mae, not a flat percentage** (`refinance()`): six
+  months on title for a cash-out, a purchase loan twelve months old before it can be
+  cashed out (limited cash-out before that), delayed financing for a cash buyer, 75% /
+  70% by unit count. The reason is printed beside the number.
+- **The ARV seed is the top of the comps' range** (`arvSeed`), and none at all when the
+  valuation is withheld as larger, smaller or lot-beyond its comps, or the estimate is
+  suppressed for the listing. The page says which.
 
 ### Showing tours (`/admin/showings`)
 

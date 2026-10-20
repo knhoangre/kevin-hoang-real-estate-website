@@ -1,18 +1,23 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import HoldPanel from '@/components/investments/HoldPanel';
-import RulesPanel from '@/components/investments/RulesPanel';
+import { useQuery } from '@tanstack/react-query';
+import DealWorkspace, { ArvNote } from '@/components/investments/DealWorkspace';
 import { Chip, LINK, Panel, Spinner } from '@/components/investments/ui';
 import { VALUATION_ANCHOR } from '@/components/listing/ValuationSummary';
 import { useDealListing, useDealParcel, useRentEvidence } from '@/hooks/useInvestmentData';
 import { useListingValuation } from '@/hooks/useListingValuation';
 import { useOfficeName } from '@/hooks/useOfficeName';
+import { useAuth } from '@/contexts/AuthContext';
 import { estimateSuppressed } from '@/lib/idxComps';
 import { decodeCodes } from '@/lib/idxDecode';
 import { isAvailable, photoUrl, propTypeLabel, statusLabel, type IdxListing } from '@/lib/idxSearch';
 import { fieldFlags, isDwelling, remarkFlags, usableTaxes } from '@/lib/investment';
+import { costOverrides, loadAnalysis } from '@/lib/investmentStore';
 import { formatBaths, formatPrice } from '@/lib/listings';
+import { estimateInsurance } from '@/lib/mortgage';
+import { CONDITION_FLAGS, seedScope, withOverrides } from '@/lib/rehabCosts';
+import { arvSeed, seedScenario } from '@/lib/scenario';
 import { listingPath } from '@/lib/listingUrl';
 import { parcelFits, type Parcel } from '@/lib/parcels';
 import { rentForListing } from '@/lib/rentComps';
@@ -178,6 +183,21 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
   const parcel = useDealParcel(listing, enabled && investable);
   const valuation = useListingValuation(investable ? listing : null);
   const office = useOfficeName(listing?.list_office_id);
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+  const saved = useQuery({
+    queryKey: ['inv-analyses', userId, mls],
+    queryFn: () => loadAnalysis(userId as string, mls),
+    enabled: enabled && investable && Boolean(userId),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+  const overrides = useQuery({
+    queryKey: ['inv-costs'],
+    queryFn: costOverrides,
+    enabled: enabled && investable,
+    staleTime: 10 * 60_000,
+  });
 
   const back = (
     <Link
@@ -232,6 +252,9 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
   const dwelling = isDwelling(listing);
   const rent = dwelling ? rentForListing(listing, ev.leases, ev.asking, ev.capped) : { gross: null, units: [], mix: null };
   const fittingParcel = parcelFits(listing.prop_type, parcel.data);
+  const units = listing.prop_type === 'MF' ? rent.mix?.units ?? 2 : 1;
+  const septic = flags.some((f) => f.key === 'septic');
+  const conditionFlags = flags.filter((f) => CONDITION_FLAGS.has(f.key));
 
   return (
     <div>
@@ -292,40 +315,46 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
 
       <DataPanel listing={listing} parcel={fittingParcel} parcelLoading={parcel.isLoading} valuation={valuation.data} />
 
-      {/* ---------------- Strategy ---------------- */}
-      <section aria-labelledby="strategy-heading" className="mt-16 border-t border-gray-200 pt-10">
-        <h2 id="strategy-heading" className="text-xl font-semibold uppercase tracking-wide text-ink">
-          As a rental
-        </h2>
-        <p className="mt-2 mb-8 max-w-3xl text-sm text-gray-600">
-          Buy it, rent it out, and hold it: what it earns before the mortgage, and what is left after. Every figure can
-          be changed.
-        </p>
-        {!dwelling && (
-          <Panel className="mb-8">
-            This listing has no bathroom and no floor area — it is most likely a parking space or a storage unit, not a
-            home to rent. The figures below start with no rent.
-          </Panel>
-        )}
-        {rents.isLoading ? (
-          <Spinner label={`Reading leases in ${listing.town}…`} />
-        ) : (
-          <HoldPanel
-            key={listing.mls_number}
-            seed={{ listing, rent, taxes: usableTaxes(listing), town: listing.town ?? '' }}
-          />
-        )}
-      </section>
-
-      <RulesPanel
-        context={{
-          strategy: 'hold',
-          propType: listing.prop_type,
-          yearBuilt: listing.year_built,
-          septic: flags.some((f) => f.key === 'septic'),
-          units: rent.mix?.units ?? 1,
-        }}
-      />
+      {!dwelling && (
+        <Panel className="mt-12">
+          This listing has no bathroom and no floor area — it is most likely a parking space or a storage unit, not a
+          home to rent. The figures below start with no rent.
+        </Panel>
+      )}
+      {rents.isLoading || saved.isLoading || overrides.isLoading || valuation.isLoading ? (
+        <Spinner label={`Reading leases in ${listing.town} and nearby sales…`} />
+      ) : (
+        <DealWorkspace
+          key={listing.mls_number}
+          ctx={{ listing, rent, listedTaxes: usableTaxes(listing), town: listing.town ?? '' }}
+          seed={seedScenario({
+            price: listing.list_price ?? 0,
+            propType: listing.prop_type,
+            hoaFee: listing.hoa_fee,
+            taxes: usableTaxes(listing),
+            homeInsurance: estimateInsurance(listing.list_price ?? 0, listing.prop_type),
+            units,
+            rents: Array.from({ length: units }, (_, i) => rent.units[i]?.rent ?? 0),
+            scope: seedScope({
+              living_area: listing.living_area,
+              full_baths: listing.full_baths,
+              bedrooms: listing.bedrooms,
+              year_built: listing.year_built,
+              units,
+              septic,
+              oilHeat: flags.some((f) => f.key === 'oil'),
+              renting: true,
+              conditionFlags: conditionFlags.map((f) => f.key),
+              conditionWords: conditionFlags.length ? conditionFlags.map((f) => f.detail.replace(/^Remarks: /, '')).join(', ') : null,
+            }),
+            arv: arvSeed(valuation.data, estimateSuppressed(listing.mls_number)),
+          })}
+          saved={saved.data ?? null}
+          book={withOverrides(overrides.data)}
+          arv={<ArvNote v={valuation.data} mls={listing.mls_number} />}
+          rules={{ propType: listing.prop_type, yearBuilt: listing.year_built, septic, units }}
+        />
+      )}
     </div>
   );
 };

@@ -99,6 +99,16 @@ const PrivacyPolicy = () => {
                     us to delete your viewing history or your account using the contact details
                     below.
                   </p>
+
+                  <h3 className="text-xl font-semibold text-ink mb-3">Investment Analyses</h3>
+                  <p className="text-gray-700 mb-6">
+                    When you save an investment analysis on the Investments page, we keep the figures
+                    you entered for that home — such as your purchase price, rent, renovation budget,
+                    loan terms and after-repair value — with the address and asking price at the time.
+                    Kevin Hoang can see your saved analyses, so he can talk a deal through with you.
+                    They are not sold or shared with other brokerages, lenders or advertisers, and you
+                    can remove any of them from the analysis itself at any time.
+                  </p>
                 </section>
 
                 <section className="mb-8">

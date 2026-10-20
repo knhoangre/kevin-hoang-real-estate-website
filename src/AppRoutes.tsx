@@ -344,6 +344,9 @@ export const routes: RouteRecord[] = [
         () => import('./pages/AdminMarketing'),
         'src/pages/AdminMarketing.tsx'
       ),
+      // Kevin's own renovation and building prices, which every investment
+      // analysis on /investments starts from.
+      privatePage('admin/costs', 'Renovation Prices', () => import('./pages/AdminCosts'), 'src/pages/AdminCosts.tsx'),
       privatePage('crm', 'CRM', () => import('./pages/CRMDashboard'), 'src/pages/CRMDashboard.tsx'),
       privatePage('crm/contacts', 'CRM Contacts', () => import('./pages/CRMContacts'), 'src/pages/CRMContacts.tsx'),
       privatePage('crm/deals', 'CRM Deals', () => import('./pages/CRMDeals'), 'src/pages/CRMDeals.tsx'),

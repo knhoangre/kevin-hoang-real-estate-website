@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Users,
   Briefcase,
+  Hammer,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -128,6 +129,14 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/marketing',
     icon: BookOpen,
     blurb: 'Listing booklets, and home expense and upgrade sheets, ready to print.',
+    group: 'listings',
+  },
+  {
+    to: '/admin/costs',
+    label: 'Renovation prices',
+    match: '/admin/costs',
+    icon: Hammer,
+    blurb: 'The renovation and building costs investment analyses start from — replace any with your contractors\u2019 figures.',
     group: 'listings',
   },
 ];

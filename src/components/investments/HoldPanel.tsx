@@ -1,22 +1,21 @@
-import { useState } from 'react';
 import { LABEL, MoneyField, NumberField, PercentField, Row, money, pct } from '@/components/calculator/fields';
 import { SourceHint, Stat } from '@/components/investments/ui';
 import { holdAnalysis } from '@/lib/investment';
 import { ASSUMPTIONS, investorRate } from '@/lib/investmentAssumptions';
 import type { IdxListing } from '@/lib/idxSearch';
 import { formatPrice } from '@/lib/listings';
-import { estimateInsurance } from '@/lib/mortgage';
 import { describeRent, type ListingRent } from '@/lib/rentComps';
+import type { Scenario } from '@/lib/scenario';
 import { SITE } from '@/lib/siteConfig';
 
 /**
  * Buy and hold: the operating statement of one home as a rental, and what it
  * does with a mortgage on it.
  *
- * Seeded once, when the page has the listing and the leases: the price, tax bill
- * and condo fee from the listing, the rent from leased rents, everything else
- * from the dated assumptions. From then on every number is the investor's —
- * nothing below re-seeds over something they typed.
+ * A view of the shared Scenario (scenario.ts): the deal view seeds it once —
+ * the price, tax bill and condo fee from the listing, the rent from leased
+ * rents, everything else from the dated assumptions — and every tab reads and
+ * writes the same document, so a price typed here is the flip's price too.
  *
  * The statement is longer than the listing page's calculator on purpose: a
  * capital reserve, the owner's utilities and the leasing broker are real costs
@@ -25,49 +24,21 @@ import { SITE } from '@/lib/siteConfig';
  * (investment-check.ts asserts it).
  */
 
-export interface HoldSeed {
+export interface HoldContext {
   listing: IdxListing;
   rent: ListingRent;
-  /** Already cleaned: null when the listing's bill is missing or nonsense. */
-  taxes: number | null;
+  /** The listing's own tax bill, cleaned; null when it had none worth using. */
+  listedTaxes: number | null;
   town: string;
 }
 
-const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
-  const { listing, rent } = seed;
+export type SetScenario = (patch: Partial<Scenario> | ((s: Scenario) => Partial<Scenario>)) => void;
+
+const HoldPanel = ({ ctx, s: sc, set }: { ctx: HoldContext; s: Scenario; set: SetScenario }) => {
+  const { listing, rent } = ctx;
   const isMulti = listing.prop_type === 'MF';
-  const unitCount = isMulti ? rent.mix?.units ?? 2 : 1;
   const askingPrice = listing.list_price ?? 0;
-
-  const [price, setPrice] = useState(askingPrice);
-  const [liveInOne, setLiveInOne] = useState(false);
-  const [downPct, setDownPct] = useState(ASSUMPTIONS.investorDownPct.value);
-  const [ratePct, setRatePct] = useState(investorRate());
-  const [termYears, setTermYears] = useState(30);
-  const [pointsPct, setPointsPct] = useState(0);
-  const [closingCosts, setClosingCosts] = useState(() =>
-    Math.round((askingPrice * ASSUMPTIONS.buyerClosingPct.value) / 100)
-  );
-  const [upfrontRepairs, setUpfrontRepairs] = useState(0);
-
-  const [unitRents, setUnitRents] = useState<number[]>(() =>
-    Array.from({ length: unitCount }, (_, i) => rent.units[i]?.rent ?? 0)
-  );
-  const [otherIncome, setOtherIncome] = useState(0);
-  const [vacancyPct, setVacancyPct] = useState(ASSUMPTIONS.vacancyPct.value);
-  const [managementPct, setManagementPct] = useState(ASSUMPTIONS.managementPct.value);
-  const [annualTaxes, setAnnualTaxes] = useState(seed.taxes ?? 0);
-  const [annualInsurance, setAnnualInsurance] = useState(() =>
-    Math.round(estimateInsurance(askingPrice, listing.prop_type) * ASSUMPTIONS.landlordInsuranceFactor.value)
-  );
-  const [monthlyHoa, setMonthlyHoa] = useState(listing.hoa_fee ?? 0);
-  const [annualMaintenance, setAnnualMaintenance] = useState(() =>
-    Math.round((askingPrice * ASSUMPTIONS.maintenancePctOfPrice.value) / 100)
-  );
-  const [capexPct, setCapexPct] = useState(ASSUMPTIONS.capexPctOfRent.value);
-  const [ownerUtilities, setOwnerUtilities] = useState(isMulti ? ASSUMPTIONS.ownerUtilitiesPerUnit.value * unitCount : 0);
-  const [leasingFeeMonths, setLeasingFeeMonths] = useState(ASSUMPTIONS.leasingFeeMonths.value);
-  const [turnovers, setTurnovers] = useState(ASSUMPTIONS.turnoversPerYear.value);
+  const { price, liveInOne, loan } = sc;
 
   /*
    * LIVING IN ONE UNIT. The unit the owner lives in earns nothing, and the loan
@@ -75,32 +46,37 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
    * off restores the investor's terms. The first unit is the one assumed lived
    * in; its rent field says so.
    */
-  const toggleLiveIn = (on: boolean) => {
-    setLiveInOne(on);
-    setDownPct(on ? ASSUMPTIONS.ownerOccupiedDownPct.value : ASSUMPTIONS.investorDownPct.value);
-    setRatePct(on ? SITE.assumedMortgageRate : investorRate());
-  };
+  const toggleLiveIn = (on: boolean) =>
+    set({
+      liveInOne: on,
+      loan: {
+        ...loan,
+        downPct: on ? ASSUMPTIONS.ownerOccupiedDownPct.value : ASSUMPTIONS.investorDownPct.value,
+        ratePct: on ? SITE.assumedMortgageRate : investorRate(),
+      },
+    });
+  const setLoan = (patch: Partial<Scenario['loan']>) => set((cur) => ({ loan: { ...cur.loan, ...patch } }));
 
-  const grossRent = unitRents.reduce((s, r, i) => s + (liveInOne && i === 0 ? 0 : r), 0);
+  const grossRent = sc.rents.reduce((sum, r, i) => sum + (liveInOne && i === 0 ? 0 : r), 0);
 
   const result = holdAnalysis(
     {
       grossMonthlyRent: grossRent,
-      otherMonthlyIncome: otherIncome,
-      vacancyPct,
-      managementPct,
-      annualTaxes,
-      annualInsurance,
-      monthlyHoa,
-      annualMaintenance,
-      capexPct,
-      monthlyOwnerUtilities: ownerUtilities,
-      leasingFeeMonths,
-      turnoversPerYear: turnovers,
+      otherMonthlyIncome: sc.otherIncome,
+      vacancyPct: sc.vacancyPct,
+      managementPct: sc.managementPct,
+      annualTaxes: sc.annualTaxes,
+      annualInsurance: sc.annualInsurance,
+      monthlyHoa: sc.monthlyHoa,
+      annualMaintenance: sc.annualMaintenance,
+      capexPct: sc.capexPct,
+      monthlyOwnerUtilities: sc.ownerUtilities,
+      leasingFeeMonths: sc.leasingFeeMonths,
+      turnoversPerYear: sc.turnovers,
       otherAnnual: 0,
     },
-    { price, downPct, ratePct, termYears, pmiRatePct: SITE.assumedPmiRate, pointsPct },
-    { closingCosts, upfrontRepairs }
+    { price, downPct: loan.downPct, ratePct: loan.ratePct, termYears: loan.termYears, pmiRatePct: SITE.assumedPmiRate, pointsPct: loan.pointsPct },
+    { closingCosts: sc.closingCosts, upfrontRepairs: sc.upfrontRepairs }
   );
   const s = result.statement;
   const f = result.financing;
@@ -112,7 +88,7 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
     if (!est) return 'Not enough leases of this kind in town to estimate it. Enter the rent you expect.';
     return (
       <>
-        {formatPrice(est.rent)} is the {describeRent(est, { town: seed.town, zip: listing.zip })}; the middle half
+        {formatPrice(est.rent)} is the {describeRent(est, { town: ctx.town, zip: listing.zip })}; the middle half
         leased for {formatPrice(est.low)}–{formatPrice(est.high)}. Not adjusted for when each lease was signed.
       </>
     );
@@ -127,7 +103,7 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
           <MoneyField
             label="Purchase price"
             value={price}
-            onChange={setPrice}
+            onChange={(n) => set({ price: n })}
             hint={price === askingPrice ? 'The asking price. Try your offer.' : `Asking is ${formatPrice(askingPrice)}.`}
           />
           {isMulti && (
@@ -148,8 +124,8 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
           )}
           <PercentField
             label="Down payment"
-            value={downPct}
-            onChange={setDownPct}
+            value={loan.downPct}
+            onChange={(n) => setLoan({ downPct: n })}
             hint={
               <SourceHint a={liveInOne ? ASSUMPTIONS.ownerOccupiedDownPct : ASSUMPTIONS.investorDownPct}>
                 {formatPrice(Math.round(f.downPayment))}.
@@ -158,8 +134,8 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
           />
           <PercentField
             label="Interest rate"
-            value={ratePct}
-            onChange={setRatePct}
+            value={loan.ratePct}
+            onChange={(n) => setLoan({ ratePct: n })}
             hint={
               liveInOne ? (
                 `The site's assumed owner-occupied rate, as of ${SITE.assumedMortgageRateAsOf}.`
@@ -178,10 +154,10 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
                 <button
                   key={years}
                   type="button"
-                  onClick={() => setTermYears(years)}
-                  aria-pressed={termYears === years}
+                  onClick={() => setLoan({ termYears: years })}
+                  aria-pressed={loan.termYears === years}
                   className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    termYears === years ? 'bg-ink-deep text-white' : 'border border-gray-300 text-gray-700 hover:border-champagne-ink'
+                    loan.termYears === years ? 'bg-ink-deep text-white' : 'border border-gray-300 text-gray-700 hover:border-champagne-ink'
                   }`}
                 >
                   {years} years
@@ -189,19 +165,19 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
               ))}
             </div>
           </fieldset>
-          <PercentField label="Points" value={pointsPct} onChange={setPointsPct} hint="Paid to the lender at closing, as a share of the loan." />
-          <MoneyField label="Closing costs" value={closingCosts} onChange={setClosingCosts} hint={<SourceHint a={ASSUMPTIONS.buyerClosingPct} />} />
+          <PercentField label="Points" value={loan.pointsPct} onChange={(n) => setLoan({ pointsPct: n })} hint="Paid to the lender at closing, as a share of the loan." />
+          <MoneyField label="Closing costs" value={sc.closingCosts} onChange={(n) => set({ closingCosts: n })} hint={<SourceHint a={ASSUMPTIONS.buyerClosingPct} />} />
           <MoneyField
             label="Work before the first tenant"
-            value={upfrontRepairs}
-            onChange={setUpfrontRepairs}
+            value={sc.upfrontRepairs}
+            onChange={(n) => set({ upfrontRepairs: n })}
             hint="Paint, repairs, deleading — money in before any rent comes back."
           />
         </fieldset>
 
         <fieldset className="space-y-5 border-t border-gray-200 pt-6">
           <legend className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Rent</legend>
-          {unitRents.map((value, i) => {
+          {sc.rents.map((value, i) => {
             const beds = rent.mix?.bedsPerUnit[i] ?? (isMulti ? null : listing.bedrooms);
             return (
               <MoneyField
@@ -212,7 +188,7 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
                     : 'Monthly rent'
                 }
                 value={value}
-                onChange={(n) => setUnitRents((all) => all.map((r, j) => (j === i ? n : r)))}
+                onChange={(n) => set((cur) => ({ rents: cur.rents.map((r, j) => (j === i ? n : r)) }))}
                 hint={rentHint(i)}
               />
             );
@@ -224,61 +200,61 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
               Correct any unit from the listing&rsquo;s photos and remarks.
             </p>
           )}
-          <MoneyField label="Other monthly income" value={otherIncome} onChange={setOtherIncome} hint="Parking, laundry, storage." />
-          <PercentField label="Vacancy" value={vacancyPct} onChange={setVacancyPct} hint={<SourceHint a={ASSUMPTIONS.vacancyPct} />} />
+          <MoneyField label="Other monthly income" value={sc.otherIncome} onChange={(n) => set({ otherIncome: n })} hint="Parking, laundry, storage." />
+          <PercentField label="Vacancy" value={sc.vacancyPct} onChange={(n) => set({ vacancyPct: n })} hint={<SourceHint a={ASSUMPTIONS.vacancyPct} />} />
         </fieldset>
 
         <fieldset className="space-y-5 border-t border-gray-200 pt-6">
           <legend className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Expenses</legend>
           <MoneyField
             label="Property taxes, per year"
-            value={annualTaxes}
-            onChange={setAnnualTaxes}
+            value={sc.annualTaxes}
+            onChange={(n) => set({ annualTaxes: n })}
             hint={
-              seed.taxes !== null
+              ctx.listedTaxes !== null
                 ? `From the listing${listing.tax_year ? `, the ${listing.tax_year} bill` : ''}. The seller’s bill may include a residential exemption an investor would not get.`
                 : 'The listing has no tax bill. Enter it from the town’s assessor.'
             }
           />
           <MoneyField
             label="Insurance, per year"
-            value={annualInsurance}
-            onChange={setAnnualInsurance}
+            value={sc.annualInsurance}
+            onChange={(n) => set({ annualInsurance: n })}
             hint={<SourceHint a={ASSUMPTIONS.landlordInsuranceFactor} />}
           />
           {hasAssociation && (
             <MoneyField
               label="Condo / HOA fee, per month"
-              value={monthlyHoa}
-              onChange={setMonthlyHoa}
+              value={sc.monthlyHoa}
+              onChange={(n) => set({ monthlyHoa: n })}
               hint={listing.hoa_fee !== null ? 'From the listing.' : 'The listing says there is a fee but not what it is. Ask for it.'}
             />
           )}
           <MoneyField
             label="Maintenance, per year"
-            value={annualMaintenance}
-            onChange={setAnnualMaintenance}
+            value={sc.annualMaintenance}
+            onChange={(n) => set({ annualMaintenance: n })}
             hint={<SourceHint a={ASSUMPTIONS.maintenancePctOfPrice} />}
           />
-          <PercentField label="Capital reserve" value={capexPct} onChange={setCapexPct} unit="% of rent" hint={<SourceHint a={ASSUMPTIONS.capexPctOfRent} />} />
-          <PercentField label="Property management" value={managementPct} onChange={setManagementPct} unit="% of rent" hint={<SourceHint a={ASSUMPTIONS.managementPct} />} />
+          <PercentField label="Capital reserve" value={sc.capexPct} onChange={(n) => set({ capexPct: n })} unit="% of rent" hint={<SourceHint a={ASSUMPTIONS.capexPctOfRent} />} />
+          <PercentField label="Property management" value={sc.managementPct} onChange={(n) => set({ managementPct: n })} unit="% of rent" hint={<SourceHint a={ASSUMPTIONS.managementPct} />} />
           <MoneyField
             label="Utilities you pay, per month"
-            value={ownerUtilities}
-            onChange={setOwnerUtilities}
+            value={sc.ownerUtilities}
+            onChange={(n) => set({ ownerUtilities: n })}
             hint={isMulti ? <SourceHint a={ASSUMPTIONS.ownerUtilitiesPerUnit} /> : 'Usually the tenant’s in a single home. Add anything you will pay.'}
           />
           <NumberField
             label="Leasing fee"
-            value={leasingFeeMonths}
-            onChange={setLeasingFeeMonths}
+            value={sc.leasingFeeMonths}
+            onChange={(n) => set({ leasingFeeMonths: n })}
             unit="months' rent"
             hint={<SourceHint a={ASSUMPTIONS.leasingFeeMonths} />}
           />
           <NumberField
             label="New leases"
-            value={turnovers}
-            onChange={setTurnovers}
+            value={sc.turnovers}
+            onChange={(n) => set({ turnovers: n })}
             unit="a year"
             hint={<SourceHint a={ASSUMPTIONS.turnoversPerYear} />}
           />
@@ -335,7 +311,7 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
         <h3 className="mt-8 text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">Monthly statement</h3>
         <dl className="mt-2 divide-y divide-gray-100 border-y border-gray-200">
           <Row label="Gross rent" value={s.gross} strong />
-          <Row label={`Vacancy (${vacancyPct}%)`} value={s.vacancyLoss} minus />
+          <Row label={`Vacancy (${sc.vacancyPct}%)`} value={s.vacancyLoss} minus />
           <Row label="Collected" value={s.effective} />
           {s.lines.map((l) => (
             <Row key={l.key} label={l.label} value={l.monthly} minus />
@@ -348,16 +324,16 @@ const HoldPanel = ({ seed }: { seed: HoldSeed }) => {
 
         <h3 className="mt-8 text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">Cash in</h3>
         <dl className="mt-2 divide-y divide-gray-100 border-y border-gray-200">
-          <Row label={`Down payment (${downPct}%)`} value={f.downPayment} />
-          <Row label="Closing costs" value={closingCosts} />
+          <Row label={`Down payment (${loan.downPct}%)`} value={f.downPayment} />
+          <Row label="Closing costs" value={sc.closingCosts} />
           <Row label="Points" value={f.points} />
-          <Row label="Work before the first tenant" value={upfrontRepairs} />
+          <Row label="Work before the first tenant" value={sc.upfrontRepairs} />
           <Row label="Total" value={result.cashInvested} strong />
         </dl>
         <p className="numeral mt-3 text-xs leading-relaxed text-gray-500">
           {result.grm !== null && <>Price is {result.grm.toFixed(1)} years of gross rent. </>}
           {result.rentToPricePct !== null && <>A month&rsquo;s rent is {result.rentToPricePct.toFixed(2)}% of the price. </>}
-          Loan {formatPrice(Math.round(f.loan))} over {termYears} years.
+          Loan {formatPrice(Math.round(f.loan))} over {loan.termYears} years.
         </p>
       </div>
     </div>

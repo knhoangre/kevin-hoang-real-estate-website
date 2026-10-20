@@ -16,7 +16,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ExternalLink, Eye, Heart, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Eye, Heart, Loader2, TrendingUp } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
 import AdminList from '@/components/admin/AdminList';
 import { useToast } from '@/components/ui/use-toast';
@@ -32,6 +32,8 @@ import {
   type ViewRow,
 } from '@/lib/favorites';
 import { listingPath } from '@/lib/listingUrl';
+import type { SavedAnalysis } from '@/lib/investmentStore';
+import { summarizeScenario } from '@/lib/scenario';
 
 const when = (iso: string | null) =>
   iso
@@ -63,6 +65,20 @@ const ListingLink = ({
   </a>
 );
 
+const STRATEGY: Record<string, string> = { hold: 'Rental', flip: 'Fix and flip', brrrr: 'BRRRR' };
+
+/** What the investor entered, in one line: their price, rent and after-repair value. */
+const analysisLine = (inputs: unknown) => {
+  const s = summarizeScenario(inputs);
+  return [
+    s.price !== null ? `pays ${formatPrice(s.price)}` : null,
+    s.rent !== null ? `rent ${formatPrice(s.rent)}/mo` : null,
+    s.arv !== null ? `ARV ${formatPrice(s.arv)}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+};
+
 const price = (row: { list_price: number | null; prop_type: string | null }) =>
   row.list_price === null
     ? '—'
@@ -76,7 +92,7 @@ export default function AdminActivity() {
 
   const [clients, setClients] = useState<ClientActivity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [detail, setDetail] = useState<{ favorites: FavoriteRow[]; views: ViewRow[] } | null>(null);
+  const [detail, setDetail] = useState<{ favorites: FavoriteRow[]; views: ViewRow[]; analyses: SavedAnalysis[] } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,6 +179,40 @@ export default function AdminActivity() {
               </AdminCard>
             )}
 
+            {detail.analyses.length > 0 && (
+              <section>
+                <h2 className="numeral mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+                  <TrendingUp className="h-4 w-4" aria-hidden />
+                  Investment analyses ({detail.analyses.length})
+                </h2>
+                <AdminCard>
+                  {/* Their numbers, as they left them: what they would pay, what
+                      they think it rents for, and what it is worth done. */}
+                  <AdminList
+                    label="Investment analyses"
+                    columns={[
+                      { label: 'Home', primary: true },
+                      { label: 'Strategy' },
+                      { label: 'Their numbers' },
+                      { label: 'Saved' },
+                      { label: '', end: true },
+                    ]}
+                    grid="md:grid-cols-[minmax(0,1.8fr)_minmax(0,0.8fr)_minmax(0,2fr)_minmax(0,1fr)_auto]"
+                    rows={detail.analyses.map((row) => ({
+                      key: row.id,
+                      cells: [
+                        <span key="h" className="numeral font-medium text-ink">{where(row)}</span>,
+                        STRATEGY[row.strategy] ?? row.strategy,
+                        <span key="n" className="numeral">{analysisLine(row.inputs) || '—'}</span>,
+                        when(row.updated_at),
+                        <ListingLink key="v" row={row} />,
+                      ],
+                    }))}
+                  />
+                </AdminCard>
+              </section>
+            )}
+
             <section>
               <h2 className="numeral mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
                 <Heart className="h-4 w-4" aria-hidden />
@@ -240,7 +290,7 @@ export default function AdminActivity() {
   return (
     <AdminShell
       title="Client activity"
-      description="Who has saved homes on the site, and what they have been looking at."
+      description="Who has saved homes or investment analyses on the site, and what they have been looking at."
     >
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">
@@ -249,7 +299,8 @@ export default function AdminActivity() {
       ) : clients.length === 0 ? (
         <AdminCard>
           <p className="p-6 text-sm leading-relaxed text-gray-600">
-            Nobody yet. A client shows up here once they sign in and save a home or open a listing.
+            Nobody yet. A client shows up here once they sign in and save a home, open a listing or save an
+            investment analysis.
             Your own browsing is never recorded.
           </p>
         </AdminCard>
@@ -261,10 +312,11 @@ export default function AdminActivity() {
               { label: 'Client', primary: true },
               { label: 'Saved' },
               { label: 'Viewed' },
+              { label: 'Analyses' },
               { label: 'Last active' },
               { label: '', end: true },
             ]}
-            grid="md:grid-cols-[minmax(0,2.2fr)_minmax(0,0.6fr)_minmax(0,0.6fr)_minmax(0,1.2fr)_1rem]"
+            grid="md:grid-cols-[minmax(0,2.2fr)_minmax(0,0.6fr)_minmax(0,0.6fr)_minmax(0,0.6fr)_minmax(0,1.2fr)_1rem]"
             rows={clients.map((c) => ({
               key: c.userId,
               to: `?user=${encodeURIComponent(c.userId)}`,
@@ -275,6 +327,7 @@ export default function AdminActivity() {
                 </span>,
                 c.savedCount,
                 c.viewedCount,
+                c.analysisCount,
                 when(c.lastActive),
                 <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
               ],
