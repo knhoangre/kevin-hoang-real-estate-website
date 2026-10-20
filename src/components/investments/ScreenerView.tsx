@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import { Chip, LINK, Panel, Spinner } from '@/components/investments/ui';
 import { useRentEvidence, useScreenerListings, useTownParcels } from '@/hooks/useInvestmentData';
-import { byMetric, fieldFlags, isDwelling, remarkFlags, screenMetrics, usableTaxes, type Flag, type ScreenMetrics } from '@/lib/investment';
+import { aduMaxSqft, byMetric, fieldFlags, isDwelling, remarkFlags, screenMetrics, usableTaxes, type Flag, type ScreenMetrics } from '@/lib/investment';
 import { ASSUMPTIONS, screenDefaults } from '@/lib/investmentAssumptions';
 import { INVESTMENT_TYPES, SCREENER_LIMIT, type ScreenerListing, type ScreenerQuery } from '@/lib/investmentData';
 import { decodeCodes } from '@/lib/idxDecode';
@@ -33,7 +33,7 @@ import { SITE } from '@/lib/siteConfig';
  * the Commonwealth's parcel layer.
  */
 
-export type Sort = 'cash' | 'value' | 'land';
+export type Sort = 'cash' | 'value' | 'land' | 'lot';
 
 const SORTS: { id: Sort; label: string; explain: string }[] = [
   {
@@ -53,6 +53,12 @@ const SORTS: { id: Sort; label: string; explain: string }[] = [
     label: 'Land value',
     explain:
       'Houses whose land is the largest share of their assessed value first. Where the building is worth little next to its lot, the lot is what is being sold — the usual sign of a teardown or a rebuild.',
+  },
+  {
+    id: 'lot',
+    label: 'Large lots',
+    explain:
+      'Houses on the largest lots first, from the assessor\u2019s records: room for an accessory dwelling unit, allowed by right on a single-family lot, and sometimes for more. Open one to see how its lot compares with the typical lot in its zoning district.',
   },
 ];
 
@@ -76,7 +82,7 @@ const queryFrom = (p: URLSearchParams): ScreenerQuery & { sort: Sort } => {
     min: num('min'),
     max: num('max'),
     order: p.get('order') === 'low' ? 'low' : 'high',
-    sort: sort === 'value' || sort === 'land' ? sort : 'cash',
+    sort: sort === 'value' || sort === 'land' || sort === 'lot' ? sort : 'cash',
   };
 };
 
@@ -174,13 +180,15 @@ const ScreenerView = ({
   }, [listings.data, rents.data, parcels.data, defaults]);
 
   const sorted = useMemo(() => {
-    const list = q.sort === 'land' ? rows.filter((r) => r.listing.prop_type !== 'CC') : rows;
+    const list = q.sort === 'land' || q.sort === 'lot' ? rows.filter((r) => r.listing.prop_type !== 'CC') : rows;
     const cmp =
       q.sort === 'value'
         ? byMetric<Row>((r) => r.metrics.priceToAssessed, 'asc')
         : q.sort === 'land'
           ? byMetric<Row>((r) => r.metrics.landShare, 'desc')
-          : byMetric<Row>((r) => r.metrics.capRate, 'desc');
+          : q.sort === 'lot'
+            ? byMetric<Row>((r) => r.parcel?.lotSqft ?? null, 'desc')
+            : byMetric<Row>((r) => r.metrics.capRate, 'desc');
     return [...list].sort(cmp);
   }, [rows, q.sort]);
 
@@ -190,7 +198,7 @@ const ScreenerView = ({
     .map((t) => t.town)
     .sort();
   const sortInfo = SORTS.find((s) => s.id === q.sort) as (typeof SORTS)[number];
-  const waitingOnParcels = (q.sort === 'value' || q.sort === 'land') && parcels.isLoading;
+  const waitingOnParcels = q.sort !== 'cash' && parcels.isLoading;
 
   return (
     <div>
@@ -390,7 +398,11 @@ const InvestmentCard = ({ row, sort, town }: { row: Row; sort: Sort; town: strin
         ? metrics.landShare !== null
           ? { label: 'Land share of assessed value', value: pctText(metrics.landShare) }
           : null
-        : metrics.capRate !== null
+        : sort === 'lot'
+          ? parcel?.lotSqft
+            ? { label: parcel.zoning ? `Lot, zoned ${parcel.zoning}` : 'Lot', value: `${parcel.lotSqft.toLocaleString()} sq ft` }
+            : null
+          : metrics.capRate !== null
           ? { label: 'Cap rate', value: `${metrics.capRate.toFixed(1)}%` }
           : null;
 
@@ -413,6 +425,12 @@ const InvestmentCard = ({ row, sort, town }: { row: Row; sort: Sort; town: strin
         )}
 
         <dl className="numeral mt-3 space-y-1 text-gray-600">
+          {listing.prop_type === 'SF' && (parcel?.grossArea || listing.living_area) ? (
+            <div className="flex justify-between gap-3">
+              <dt title="By right on a lot in a single-family zoning district: 900 sq ft or half the house, whichever is smaller">ADU size cap</dt>
+              <dd className="font-medium text-ink">up to {aduMaxSqft(parcel?.grossArea ?? listing.living_area ?? 0).toLocaleString()} sq ft</dd>
+            </div>
+          ) : null}
           {rent.gross !== null && (
             <div className="flex justify-between gap-3">
               <dt>Rent</dt>
@@ -440,7 +458,7 @@ const InvestmentCard = ({ row, sort, town }: { row: Row; sort: Sort; town: strin
               <dd className="font-medium text-ink">{pctText(parcel.landShare)}</dd>
             </div>
           )}
-          {parcel?.lotSqft && (
+          {parcel?.lotSqft && sort !== 'lot' && (
             <div className="flex justify-between gap-3">
               <dt>Lot{parcel.zoning ? `, zoned ${parcel.zoning}` : ''}</dt>
               <dd className="font-medium text-ink">{parcel.lotSqft.toLocaleString()} sq ft</dd>

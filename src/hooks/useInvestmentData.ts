@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { listingByMls, type IdxListing } from '@/lib/idxSearch';
 import { subjectCoordinate } from '@/lib/idxComps';
-import { rentEvidence, screenerListings, type ScreenerListing, type ScreenerQuery } from '@/lib/investmentData';
-import { parcelForListing, parcelsForListings } from '@/lib/parcelsFetch';
+import { largeHomeSales, rentEvidence, screenerListings, type ScreenerListing, type ScreenerQuery } from '@/lib/investmentData';
+import { lotContext, parcelForListing, parcelsForListings } from '@/lib/parcelsFetch';
 
 /**
  * The react-query side of /investments. Keys are per town (or per listing), so
@@ -66,6 +66,26 @@ export const useDealParcel = (listing: IdxListing | null | undefined, enabled: b
       return parcelForListing(l, await subjectCoordinate(l));
     },
     enabled: enabled && Boolean(listing),
+    staleTime: 24 * HOUR,
+    refetchOnWindowFocus: false,
+  });
+
+/** Recent large single-family sales in a town, for what new houses sell for. */
+export const useLargeHomeSales = (town: string | null, state: string | null, enabled: boolean) =>
+  useQuery({
+    queryKey: ['inv-new-builds', town, state],
+    queryFn: () => largeHomeSales(town as string, state ?? 'MA'),
+    enabled: enabled && Boolean(town),
+    staleTime: HOUR,
+    refetchOnWindowFocus: false,
+  });
+
+/** The typical single-family lot in a district (or the town). */
+export const useLotContext = (town: string | null, zoning: string | null, enabled: boolean) =>
+  useQuery({
+    queryKey: ['inv-lots', town, zoning],
+    queryFn: () => lotContext(town as string, zoning),
+    enabled: enabled && Boolean(town),
     staleTime: 24 * HOUR,
     refetchOnWindowFocus: false,
   });

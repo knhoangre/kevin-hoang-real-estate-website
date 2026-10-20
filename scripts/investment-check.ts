@@ -43,16 +43,19 @@ import {
   numberVariants,
   parcelWhere,
   parseParcel,
+  lotStatsWhere,
   parcelFits,
+  parseLotStats,
   pickRecord,
   PARCEL_FIELDS,
   PARCELS_LAYER,
   type ParcelAttributes,
 } from '../src/lib/parcels.ts';
 import { ASSUMPTIONS, screenDefaults } from '../src/lib/investmentAssumptions.ts';
-import { RULES } from '../src/lib/investmentRules.ts';
 import { COST_BOOK, scopeTotal, seedScope, withOverrides, type Scope } from '../src/lib/rehabCosts.ts';
-import { arvSeed, flipInputs, hydrateScenario, monthlyCarry, operatingFrom, seedScenario, summarizeScenario } from '../src/lib/scenario.ts';
+import { aduOperating, arvSeed, buildInputs, flipInputs, hydrateScenario, monthlyCarry, operatingFrom, seedScenario, summarizeScenario } from '../src/lib/scenario.ts';
+import { newBuildExit, newBuilds, typicalNewSize, type SaleRow } from '../src/lib/newBuild.ts';
+import { demolitionDelayMonths, RULES, rulesFor, TOWN_RULES } from '../src/lib/investmentRules.ts';
 import { decodeCodes } from '../src/lib/idxDecode.ts';
 
 let failures = 0;
@@ -488,7 +491,7 @@ const clean = seedScope({ living_area: 1800, full_baths: 2, bedrooms: 3, year_bu
 eq(clean.lines.filter((l) => l.on).length, 0, 'a newer house with nothing said about its condition starts with no work');
 
 console.log('--- the scenario ---');
-const sc = seedScenario({ price: 900_000, propType: 'MF', hoaFee: null, taxes: 9000, homeInsurance: 4410, units: 2, rents: [3000, 3000], scope: seeded, arv: 1_100_000 });
+const sc = seedScenario({ price: 900_000, propType: 'MF', hoaFee: null, taxes: 9000, homeInsurance: 4410, units: 2, rents: [3000, 3000], scope: seeded, arv: 1_100_000, book: COST_BOOK, newSqft: 4000, exitPrice: 2_400_000, aduMaxSqft: 900, aduRent: 2900 });
 eq([sc.refi.ltvPct, sc.project.flipMonths, sc.ownerUtilities, sc.annualInsurance], [70, 6, 120, 5513], 'a two-family: 70% refinance, six months to sell, water for two units, a landlord policy');
 near(monthlyCarry(sc), 9000 / 12 + 5513 / 12 + 300, 'held empty: taxes, insurance and utilities');
 eq(hydrateScenario('garbage', sc), sc, 'a stored value that is not a document opens as the seed');
@@ -498,6 +501,18 @@ eq([h.scope.contingencyPct, h.scope.lines.find((l) => l.key === 'roof')?.on, h.s
 ok(!h.scope.lines.some((l) => l.key === 'gone-line'), 'a line the book no longer has is dropped');
 eq([h.project.finance, h.project.hm.ratePct, h.project.hm.pointsPct], ['cash', 12, sc.project.hm.pointsPct], 'project fields are kept one by one');
 eq(hydrateScenario(JSON.parse(JSON.stringify(sc)), sc), sc, 'a saved scenario opens as it was saved');
+eq([sc.build.newSqft, sc.build.hardPerSqft, sc.build.exitPrice, sc.adu.sqft, sc.adu.rent], [4000, 300, 2_400_000, 900, 2900], 'the build and ADU seeds come from the comps and the cost book');
+const oldSave = JSON.parse(JSON.stringify(sc));
+delete oldSave.build;
+delete oldSave.adu;
+oldSave.price = 850_000;
+const reopened = hydrateScenario(oldSave, sc);
+eq([reopened.price, reopened.build, reopened.adu], [850_000, sc.build, sc.adu], 'an analysis saved before the build tab existed opens, with today\u2019s build seed');
+eq(hydrateScenario({ ...oldSave, tab: 'build', build: { financeLand: 'yes', newSqft: 3800 } }, sc).build.financeLand, false, 'a damaged boolean falls back to the seed');
+const bi = buildInputs({ ...sc, build: { ...sc.build, delayMonths: 18 } });
+eq([bi.months.delay, bi.exitPrice, bi.newSqft], [18, 2_400_000, 4000], 'the build reads the shared scenario, delay included');
+const ao = aduOperating(sc, 300_000, 0.01);
+eq([ao.grossMonthlyRent, Math.round(ao.annualTaxes), Math.round(ao.annualInsurance), ao.monthlyOwnerUtilities], [2900, 3000, 1838, 0], 'an ADU: its rent, its cost at the town\u2019s rate, and a landlord policy on its cost');
 eq(summarizeScenario({ ...sc, tab: 'flip' }), { price: 900_000, rent: 6000, arv: 1_100_000, tab: 'flip' }, 'Kevin\u2019s summary: price, rent, ARV and strategy');
 eq(summarizeScenario({ price: 'x', rents: 'y' }), { price: null, rent: null, arv: null, tab: 'hold' }, 'and nothing invented from a damaged document');
 const fi = flipInputs(sc, COST_BOOK);
@@ -508,6 +523,42 @@ eq(arvSeed({ withheld: null, high: 1_234_567 }, false), 1_235_000, 'ARV seed: th
 eq(arvSeed({ withheld: 'far-from-asking', high: 900_000 }, false), 900_000, 'a fixer far from its asking price still gets a seed');
 eq(arvSeed({ withheld: 'larger-than-comps', high: 900_000 }, false), null, 'a house larger than every comp gets none');
 eq(arvSeed({ withheld: null, high: 900_000 }, true), null, 'nor does a listing whose estimate is switched off');
+
+console.log('--- new construction ---');
+const soldHouse = (price: number, sqft: number, built: number, sold: string, lot = 10_000): SaleRow => ({ sale_price: price, living_area: sqft, year_built: built, settled_date: sold, lot_size: lot });
+const town: SaleRow[] = [
+  soldHouse(2_400_000, 4000, 2025, '2026-03-01'), soldHouse(2_500_000, 4200, 2026, '2026-06-01'), soldHouse(2_300_000, 3800, 2024, '2026-01-15'),
+  soldHouse(3_600_000, 6200, 2025, '2026-05-01', 20_000), soldHouse(1_100_000, 1800, 1950, '2026-04-01'),
+];
+eq(newBuilds(town).length, 4, 'a 1950 house sold in 2026 is not a new build');
+const ex = newBuildExit(town, 4000);
+eq([ex?.n, ex?.medianPrice, ex?.bandPct, ex?.from, ex?.to], [3, 2_400_000, 25, '2026-01-15', '2026-06-01'], 'a planned 4,000 sq ft house exits at the median of the three new builds near that size');
+eq(newBuildExit(town, 9000), null, 'nothing that size was built: no answer rather than a thin one');
+eq(typicalNewSize(town, 10_500), { sqft: 4000, n: 3, basis: 'similar-lots' }, 'on a 10,500 sq ft lot, what was built on lots like it');
+const tiny = typicalNewSize(town, 1456);
+eq([tiny?.basis, tiny?.ratio, tiny?.sqft], ['ratio', 0.39, 550], 'a 1,456 sq ft lot gets the town’s house-to-lot ratio (0.39 here), not a 4,000 sq ft house');
+eq(typicalNewSize(town, null)?.basis, 'town', 'no lot size known: the town’s new builds, and it says so');
+const acre = typicalNewSize(town, 41_102);
+eq([acre?.basis, acre?.capped, acre?.sqft], ['ratio', true, 6200], 'an acre is not a 16,000 sq ft house: capped at the largest new houses selling in town');
+
+console.log('--- the lots around it ---');
+const lc = parseLotStats([{ attributes: { LOT_UNITS: 'Acres', N: 5695, MEDIAN: 0.1835 } }, { attributes: { LOT_UNITS: 'Sq. Ft.', N: 3, MEDIAN: 9000 } }], 'district', 'SR3');
+eq(lc, { scope: 'district', zoning: 'SR3', n: 5698, medianSqft: 7993 }, 'Newton SR3: the median single-family lot, in the unit most parcels use');
+eq(parseLotStats([{ attributes: { LOT_UNITS: 'Acres', N: 12, MEDIAN: 0.5 } }], 'district', 'X'), null, 'twelve parcels are too few for a median');
+ok(lotStatsWhere('Newton', 'SR3').includes("ZONING = 'SR3'") && !lotStatsWhere('Wellesley', null).includes('ZONING'), 'no zoning on record: the whole town\u2019s single-family lots');
+
+console.log('--- town rules ---');
+eq(Object.keys(TOWN_RULES).length, 17, 'every served town has an entry');
+eq([demolitionDelayMonths('Newton'), demolitionDelayMonths('Quincy'), demolitionDelayMonths('Nowhere')], [18, null, null], 'Newton plans for 18 months; unknown is unknown');
+const needham = rulesFor({ strategy: 'build', propType: 'SF', yearBuilt: 1950, septic: false, units: 1, town: 'Needham' })[0];
+ok(needham.body.includes('could not be confirmed'), 'an unconfirmed delay is said to be unconfirmed');
+ok(rulesFor({ strategy: 'build', propType: 'SF', yearBuilt: 1950, septic: false, units: 1, town: 'Newton' }).some((r) => r.id === 'fossil-free'), 'Newton builds all-electric');
+ok(!rulesFor({ strategy: 'build', propType: 'SF', yearBuilt: 1950, septic: false, units: 1, town: 'Needham' }).some((r) => r.id === 'fossil-free'), 'Needham does not');
+ok(rulesFor({ strategy: 'adu', propType: 'SF', yearBuilt: 1950, septic: true, units: 1, town: 'Dover' }).some((r) => r.id === 'adu-septic'), 'an ADU on septic meets Title V');
+ok(!rulesFor({ strategy: 'flip', propType: 'SF', yearBuilt: 1950, septic: false, units: 1, town: 'Newton' }).some((r) => r.id === 'lead'), 'a flip is not a rental: no lead-law rental card');
+for (const [name, t] of Object.entries(TOWN_RULES)) {
+  if (t.demolition) ok(Boolean(t.demolition.source && t.demolition.url), `${name}: the demolition rule has a source`);
+}
 
 console.log('--- every assumption has a source ---');
 const sd = screenDefaults();

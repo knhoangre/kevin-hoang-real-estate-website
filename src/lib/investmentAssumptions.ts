@@ -224,6 +224,43 @@ export const ASSUMPTIONS = {
     source: 'About a month on the market and a month to closing.',
     asOf: REVIEWED,
   },
+  /** A construction loan, as a share of the cost of building (not of the land, by default). */
+  constructionLtcPct: {
+    value: 80,
+    kind: 'assumption',
+    source: 'Construction lenders commonly fund 75–85% of the cost of building and want the land owned outright or nearly. Ask a lender.',
+    asOf: REVIEWED,
+  },
+  constructionRatePct: {
+    value: 9,
+    kind: 'assumption',
+    source: 'Construction loans are priced above mortgages, usually off the prime rate. Ask a lender for a real quote.',
+    asOf: REVIEWED,
+  },
+  constructionPointsPct: {
+    value: 1,
+    kind: 'assumption',
+    source: 'Origination on a construction loan.',
+    asOf: REVIEWED,
+  },
+  permittingMonths: {
+    value: 4,
+    kind: 'assumption',
+    source: 'Survey, design, the building permit and any zoning review before the house comes down. A demolition delay is separate.',
+    asOf: REVIEWED,
+  },
+  buildMonths: {
+    value: 12,
+    kind: 'assumption',
+    source: 'Demolition to certificate of occupancy for a single-family house.',
+    asOf: REVIEWED,
+  },
+  buildContingencyPct: {
+    value: 10,
+    kind: 'assumption',
+    source: 'On the construction and demolition: for what the ground and the inspections turn up.',
+    asOf: REVIEWED,
+  },
   /** Utilities, insurance and the like while a house is being worked on, per month. */
   rehabUtilitiesMonthly: {
     value: 300,

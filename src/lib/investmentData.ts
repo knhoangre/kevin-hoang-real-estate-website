@@ -20,6 +20,7 @@
  */
 import { supabase } from '@/integrations/supabase/client';
 import { AVAILABLE_STATUSES, CARD_COLUMNS, withRetry, type CardListing, type IdxListing } from '@/lib/idxSearch';
+import type { SaleRow } from '@/lib/newBuild';
 import type { RentRow } from '@/lib/rentComps';
 
 export const SCREENER_LIMIT = 300;
@@ -149,3 +150,31 @@ export const rentEvidence = async (town: string, state: string): Promise<RentEvi
     capped: leased.length >= LEASE_LIMIT,
   };
 };
+
+/**
+ * Single-family sales in the town over the comp pool's window (the archive
+ * and the live sold feed — about thirteen months on 2026-10-20), 2,000 sq ft
+ * and up: the pool newBuild.ts finds new construction in. One request; Newton,
+ * the busiest town, returned 352 rows at 2,500 sq ft and up.
+ */
+export const largeHomeSales = async (town: string, state: string): Promise<SaleRow[]> =>
+  withRetry(async () => {
+    const { data, error } = await supabase.rpc('idx_comparable_sales', {
+      p_prop_type: 'SF',
+      p_town: town,
+      p_state: state,
+      p_months: 18,
+      p_min_sqft: 2000,
+      p_max_sqft: 15000,
+      p_limit: 500,
+    });
+    if (error) throw error;
+    return (data ?? []).map((r) => ({
+      sale_price: r.sale_price,
+      living_area: r.living_area,
+      year_built: r.year_built,
+      settled_date: r.settled_date,
+      lot_size: r.lot_size,
+      acres: r.acres,
+    }));
+  }, 'New construction sales');

@@ -1538,8 +1538,9 @@ Signed-in only (Kevin, 2026-10-19 — the data is the same public IDX data `/sea
 shows, so this is a reason to make an account, not a lock). The screener ranks one
 town's homes for sale; `?mls=<n>` is one home analysed, so it needs no rewrite. The
 listing page's calculator links to it ("Run this as an investment"). Shipped 2026-10-20:
-the screener, and one home run as a rental, a fix-and-flip or a BRRRR, saved per person.
-Teardown/build and ADU are planned; their math is already in investment.ts and checked.
+the screener (cash flow, below assessment, land value, large lots), and one home run as
+a rental, a fix-and-flip, a BRRRR, a teardown and rebuild, or an ADU — saved per person.
+Land (LD) listings are not synced and are the next step; see the plan's Phase 4.
 
 - **Three pure modules decide every number; nothing in a component does.**
   [investment.ts](src/lib/investment.ts) (every strategy, the screener metrics, the
@@ -1604,6 +1605,34 @@ Teardown/build and ADU are planned; their math is already in investment.ts and c
 - **The ARV seed is the top of the comps' range** (`arvSeed`), and none at all when the
   valuation is withheld as larger, smaller or lot-beyond its comps, or the estimate is
   suppressed for the listing. The page says which.
+- **A teardown's exit is what NEW houses sold for, by size** ([newBuild.ts](src/lib/newBuild.ts)):
+  single-family sales within two years of being built, planned size ±25% (then ±40%),
+  because $/sq ft falls with size. **Its planned size comes from the lot**, never the
+  town's median new house: new builds on lots within 35% of this one; else the town's
+  house-to-lot ratio (0.49 in Newton and Needham, 0.38 Wellesley, 0.35 Lexington) times
+  this lot, capped at the largest new houses the town sells. Before those two rules it
+  proposed 6,100 sq ft on a 1,456 sq ft Newton lot and 20,000 sq ft on an acre. When the
+  investor changes the size, the exit does NOT follow silently — the page shows what
+  new houses of the new size sold for and offers it.
+- **New construction is $225/$300/$425 a sq ft, labelled an assumption**, anchored on
+  NAHB's 2024 $162 national hard cost. The first cut used custom-home guides' $350–650,
+  which made every Newton teardown lose money against new houses selling at $540 a sq
+  ft — the cost book is where Kevin's builder figure belongs.
+- **The lot is set beside its own zoning district** (`lotContext`): the layer computes
+  the median single-family lot per district server-side (`PERCENTILE_CONT`, grouped by
+  LOT_UNITS, since towns record acres or square feet). Twice the typical lot gets
+  "worth a surveyor's look"; nothing is ever called buildable, because frontage and the
+  district minimum decide that and neither is in any free dataset. Wellesley's records
+  carry no zoning code, so its lots are compared town-wide, and the page says so.
+- **Per-town rules are a hand-kept, dated table** (`TOWN_RULES` in investmentRules.ts):
+  demolition delay, the fossil-fuel-free pilot (Newton, Brookline, Lexington, Concord,
+  Cambridge — DOER's 2025 roster) and the residential exemption. A delay whose CURRENT
+  length could not be confirmed is `confirmed: false` and the page says exactly that
+  rather than printing an old figure as fact (Needham, Dover, Lexington, Waltham,
+  Belmont, Braintree; Malden and Quincy have none recorded). Re-check before relying
+  on one; towns amend these.
+- **The ADU and teardown tabs are for houses** (build: SF and MF; ADU: SF only, since
+  the by-right rule is for single-family districts). A condo never sees them.
 
 ### Showing tours (`/admin/showings`)
 

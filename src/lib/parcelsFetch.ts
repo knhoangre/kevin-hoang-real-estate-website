@@ -10,13 +10,17 @@
  * seventeen served towns were found.
  */
 import {
+  LOT_STATS,
   PARCELS_LAYER,
   PARCEL_FIELDS,
   addressParts,
   batches,
+  lotStatsWhere,
   matchParcel,
   parcelWhere,
+  parseLotStats,
   parseParcel,
+  type LotContext,
   type Parcel,
   type ParcelAttributes,
 } from '@/lib/parcels';
@@ -107,6 +111,27 @@ export const parcelForListing = async (
     });
     const hit = matchParcel(parts, candidates);
     return hit ? parseParcel(hit.record, hit.unitMatched) : null;
+  } catch {
+    return null;
+  }
+};
+
+/** The typical single-family lot in this lot's district (or town), or null. Never throws. */
+export const lotContext = async (town: string, zoning: string | null): Promise<LotContext | null> => {
+  try {
+    const response = await fetch(`${PARCELS_LAYER}/query`, {
+      method: 'POST',
+      body: new URLSearchParams({
+        where: lotStatsWhere(town, zoning),
+        groupByFieldsForStatistics: 'LOT_UNITS',
+        outStatistics: LOT_STATS,
+        f: 'json',
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as { features?: { attributes: Record<string, unknown> }[] };
+    return parseLotStats(data.features ?? [], zoning ? 'district' : 'town', zoning);
   } catch {
     return null;
   }

@@ -5,14 +5,16 @@ import { useQuery } from '@tanstack/react-query';
 import DealWorkspace, { ArvNote } from '@/components/investments/DealWorkspace';
 import { Chip, LINK, Panel, Spinner } from '@/components/investments/ui';
 import { VALUATION_ANCHOR } from '@/components/listing/ValuationSummary';
-import { useDealListing, useDealParcel, useRentEvidence } from '@/hooks/useInvestmentData';
+import { useDealListing, useDealParcel, useLargeHomeSales, useLotContext, useRentEvidence } from '@/hooks/useInvestmentData';
 import { useListingValuation } from '@/hooks/useListingValuation';
 import { useOfficeName } from '@/hooks/useOfficeName';
 import { useAuth } from '@/contexts/AuthContext';
 import { estimateSuppressed } from '@/lib/idxComps';
 import { decodeCodes } from '@/lib/idxDecode';
 import { isAvailable, photoUrl, propTypeLabel, statusLabel, type IdxListing } from '@/lib/idxSearch';
-import { fieldFlags, isDwelling, remarkFlags, usableTaxes } from '@/lib/investment';
+import { aduMaxSqft, fieldFlags, isDwelling, remarkFlags, usableTaxes } from '@/lib/investment';
+import { townRules } from '@/lib/investmentRules';
+import { newBuildExit, typicalNewSize } from '@/lib/newBuild';
 import { costOverrides, loadAnalysis } from '@/lib/investmentStore';
 import { formatBaths, formatPrice } from '@/lib/listings';
 import { estimateInsurance } from '@/lib/mortgage';
@@ -20,7 +22,7 @@ import { CONDITION_FLAGS, seedScope, withOverrides } from '@/lib/rehabCosts';
 import { arvSeed, seedScenario } from '@/lib/scenario';
 import { listingPath } from '@/lib/listingUrl';
 import { parcelFits, type Parcel } from '@/lib/parcels';
-import { rentForListing } from '@/lib/rentComps';
+import { describeRent, estimateRent, rentForListing } from '@/lib/rentComps';
 import type { Valuation } from '@/lib/valuation';
 
 /**
@@ -192,6 +194,11 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
+  const canBuild = investable && (listing?.prop_type === 'SF' || listing?.prop_type === 'MF');
+  const canAdu = investable && listing?.prop_type === 'SF';
+  const sales = useLargeHomeSales(listing?.town ?? null, listing?.state ?? 'MA', enabled && canBuild);
+  const zoning = parcelFits(listing?.prop_type ?? null, parcel.data)?.zoning ?? null;
+  const lots = useLotContext(listing?.town ?? null, zoning, enabled && (canBuild || canAdu) && !parcel.isLoading);
   const overrides = useQuery({
     queryKey: ['inv-costs'],
     queryFn: costOverrides,
@@ -255,6 +262,43 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
   const units = listing.prop_type === 'MF' ? rent.mix?.units ?? 2 : 1;
   const septic = flags.some((f) => f.key === 'septic');
   const conditionFlags = flags.filter((f) => CONDITION_FLAGS.has(f.key));
+
+  /* ---- the build and ADU tabs ---- */
+  const town = listing.town ?? '';
+  const listingLot =
+    listing.lot_size && listing.lot_size > 100 ? listing.lot_size : listing.acres ? Math.round(listing.acres * 43_560) : null;
+  const lotSqft = fittingParcel?.lotSqft ?? listingLot;
+  const lotNote = fittingParcel?.lotSqft
+    ? fittingParcel.lotSource === 'polygon'
+      ? 'Measured from the parcel map; the assessor recorded no lot size.'
+      : `From the assessor${fittingParcel.fy ? `, FY${fittingParcel.fy}` : ''}${listingLot && Math.abs(listingLot - fittingParcel.lotSqft) / fittingParcel.lotSqft > 0.1 ? `; the listing says ${listingLot.toLocaleString()} sq ft` : ''}.`
+    : listingLot
+      ? 'From the listing; the assessor\u2019s record was not found.'
+      : null;
+  const saleRows = sales.data ?? [];
+  const typical = typicalNewSize(saleRows, lotSqft);
+  const newSqft = typical?.sqft ?? listing.living_area ?? 0;
+  const sizeNote = !typical
+    ? `The size of the house there now. Too few new houses sold in ${town} to say what gets built.`
+    : typical.basis === 'similar-lots'
+      ? `${typical.n} new houses on lots within 35% of this one were built at a median of ${typical.sqft.toLocaleString()} sq ft.`
+      : typical.basis === 'ratio'
+        ? typical.capped
+          ? `Too few new houses on lots like this one. At ${town}’s ratio (${typical.ratio} sq ft of house per sq ft of lot, from ${typical.n} new houses) this lot would carry more than any new house selling in town, so this is the size of the largest of them. A lot this size may be worth more divided — see the ADU and lot tab. What zoning allows is not checked.`
+          : `Too few new houses on lots like this one, so the town’s ratio: ${typical.n} new houses in ${town} have a median ${typical.ratio} sq ft of house per sq ft of lot, which on this ${lotSqft?.toLocaleString()} sq ft lot is about ${typical.sqft.toLocaleString()} sq ft. What zoning allows is not checked.`
+        : `${typical.n} new houses in ${town} were built at a median of ${typical.sqft.toLocaleString()} sq ft; this lot’s size is unknown.`;
+  const mainGrossArea = fittingParcel?.grossArea ?? listing.living_area ?? 0;
+  const gfaNote = fittingParcel?.grossArea
+    ? `the assessor\u2019s gross building area, ${fittingParcel.grossArea.toLocaleString()} sq ft`
+    : `the listing\u2019s living area, ${(listing.living_area ?? 0).toLocaleString()} sq ft, as the assessor\u2019s gross area was not found`;
+  const aduMax = aduMaxSqft(mainGrossArea);
+  const aduBeds = aduMax >= 700 ? 2 : 1;
+  const aduEstimate = estimateRent(ev.leases, ev.asking, { kind: 'apartment', beds: aduBeds, zip: listing.zip }, ev.capped);
+  const aduRentNote = aduEstimate
+    ? `${formatPrice(aduEstimate.rent)} is the ${describeRent(aduEstimate, { town, zip: listing.zip })}.`
+    : `Not enough ${aduBeds}-bed leases in ${town} to suggest a rent. Enter what you expect.`;
+  const effectiveTaxRate =
+    usableTaxes(listing) !== null && fittingParcel?.total ? (usableTaxes(listing) as number) / fittingParcel.total : null;
 
   return (
     <div>
@@ -321,7 +365,7 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
           home to rent. The figures below start with no rent.
         </Panel>
       )}
-      {rents.isLoading || saved.isLoading || overrides.isLoading || valuation.isLoading ? (
+      {rents.isLoading || saved.isLoading || overrides.isLoading || valuation.isLoading || (canBuild && sales.isLoading) ? (
         <Spinner label={`Reading leases in ${listing.town} and nearby sales…`} />
       ) : (
         <DealWorkspace
@@ -348,11 +392,31 @@ const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
               conditionWords: conditionFlags.length ? conditionFlags.map((f) => f.detail.replace(/^Remarks: /, '')).join(', ') : null,
             }),
             arv: arvSeed(valuation.data, estimateSuppressed(listing.mls_number)),
+            book: withOverrides(overrides.data),
+            newSqft,
+            exitPrice: newBuildExit(saleRows, newSqft)?.medianPrice ?? null,
+            aduMaxSqft: aduMax,
+            aduRent: aduEstimate?.rent ?? null,
           })}
           saved={saved.data ?? null}
           book={withOverrides(overrides.data)}
           arv={<ArvNote v={valuation.data} mls={listing.mls_number} />}
-          rules={{ propType: listing.prop_type, yearBuilt: listing.year_built, septic, units }}
+          rules={{ propType: listing.prop_type, yearBuilt: listing.year_built, septic, units, town: listing.town }}
+          dev={{
+            canBuild,
+            canAdu,
+            town,
+            townRules: townRules(listing.town),
+            sales: saleRows,
+            sizeNote,
+            mainGrossArea,
+            gfaNote,
+            aduRentNote,
+            effectiveTaxRate,
+            lotSqft,
+            lotNote,
+            lots: lots.data ?? null,
+          }}
         />
       )}
     </div>

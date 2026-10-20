@@ -465,3 +465,61 @@ export const matchParcel = (parts: AddressParts, candidates: ParcelAttributes[])
   }
   return null;
 };
+
+/* -------------------------------------------------------------------------- */
+/* The lots around it                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The typical single-family lot in a zoning district — what "big" means for
+ * THIS lot. Computed by the layer itself (a median per lot unit), so it is one
+ * small request however many parcels the district has: Newton's SR3 is 5,695
+ * single-family parcels, median 0.1835 acres (2026-10-20).
+ *
+ * Zoning is null in some towns' records (all of Wellesley's), and then the
+ * comparison is with every single-family lot in town, and says so.
+ */
+export interface LotContext {
+  scope: 'district' | 'town';
+  zoning: string | null;
+  n: number;
+  medianSqft: number;
+}
+
+export const lotStatsWhere = (town: string, zoning: string | null): string =>
+  `CITY = ${sqlString(parcelCity(town))}${zoning ? ` AND ZONING = ${sqlString(zoning)}` : ''} AND USE_CODE LIKE '101%' AND LOT_SIZE > 0`;
+
+export const LOT_STATS = JSON.stringify([
+  { statisticType: 'count', onStatisticField: 'LOT_SIZE', outStatisticFieldName: 'n' },
+  {
+    statisticType: 'PERCENTILE_CONT',
+    onStatisticField: 'LOT_SIZE',
+    statisticParameters: { value: 0.5 },
+    outStatisticFieldName: 'median',
+  },
+]);
+
+/**
+ * The layer answers one row per LOT_UNITS ("Acres", "Sq. Ft."); the unit most
+ * of the district's parcels use is the one read. Too few parcels to call a
+ * median a median gives null.
+ */
+export const parseLotStats = (
+  rows: { attributes: Record<string, unknown> }[],
+  scope: LotContext['scope'],
+  zoning: string | null
+): LotContext | null => {
+  const groups = rows
+    .map((r) => {
+      const a = r.attributes;
+      const n = Number(a.N ?? a.n);
+      const med = Number(a.MEDIAN ?? a.median);
+      const lot = lotSquareFeet({ LOT_SIZE: med, LOT_UNITS: (a.LOT_UNITS as string) ?? null });
+      return { n, sqft: lot?.sqft ?? null };
+    })
+    .filter((g): g is { n: number; sqft: number } => Number.isFinite(g.n) && g.n > 0 && g.sqft !== null)
+    .sort((a, b) => b.n - a.n);
+  const top = groups[0];
+  if (!top || top.n < 20) return null;
+  return { scope, zoning, n: groups.reduce((s, g) => s + g.n, 0), medianSqft: top.sqft };
+};

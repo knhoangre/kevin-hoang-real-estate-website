@@ -13,13 +13,14 @@
  * saved before a field existed still opens, and the new field takes today's
  * seed rather than nothing.
  */
-import type { FlipInputs, HardMoney, OperatingInputs } from './investment.ts';
+import type { BuildInputs, FlipInputs, HardMoney, OperatingInputs } from './investment.ts';
+import { INSURANCE } from './mortgage.ts';
 import { ASSUMPTIONS, investorRate } from './investmentAssumptions.ts';
 import { scopeTotal, type CostItem, type Scope, type ScopeLine, type Tier } from './rehabCosts.ts';
 import { SITE } from './siteConfig.ts';
 import type { Valuation } from './valuation.ts';
 
-export type DealTab = 'hold' | 'flip' | 'brrrr';
+export type DealTab = 'hold' | 'flip' | 'brrrr' | 'build' | 'adu';
 
 export interface Scenario {
   version: 1;
@@ -58,6 +59,28 @@ export interface Scenario {
   };
   sale: { commissionPct: number; otherClosing: number; sellerCredits: number };
   refi: { program: 'conventional' | 'dscr'; ltvPct: number; ratePct: number; termYears: number; closingPct: number };
+  /** Tear it down and build a new house. */
+  build: {
+    newSqft: number;
+    hardPerSqft: number;
+    siteWork: number;
+    softPct: number;
+    contingencyPct: number;
+    demolition: number;
+    demoExtras: number;
+    ltcPct: number;
+    ratePct: number;
+    pointsPct: number;
+    financeLand: boolean;
+    permittingMonths: number;
+    /** The demolition delay planned for — zero, or the town's longest. */
+    delayMonths: number;
+    buildMonths: number;
+    saleMonths: number;
+    exitPrice: number;
+  };
+  /** Add an accessory dwelling unit. */
+  adu: { sqft: number; perSqft: number; fixed: number; rent: number };
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -111,7 +134,7 @@ export const hydrateScenario = (stored: unknown, seed: Scenario): Scenario => {
       : seed.rents;
   return {
     version: 1,
-    tab: oneOf(stored.tab, ['hold', 'flip', 'brrrr'] as const, seed.tab),
+    tab: oneOf(stored.tab, ['hold', 'flip', 'brrrr', 'build', 'adu'] as const, seed.tab),
     price: num(stored.price, seed.price),
     closingCosts: num(stored.closingCosts, seed.closingCosts),
     loan: numbers(stored.loan, seed.loan),
@@ -161,6 +184,14 @@ export const hydrateScenario = (stored: unknown, seed: Scenario): Scenario => {
         closingPct: seed.refi.closingPct,
       }),
     },
+    build: (() => {
+      // Field by field in the seed's own order, numbers and the one boolean alike.
+      const sb = isObject(stored.build) ? stored.build : {};
+      return Object.fromEntries(
+        Object.entries(seed.build).map(([k, v]) => [k, typeof v === 'boolean' ? bool(sb[k], v) : num(sb[k], v)])
+      ) as Scenario['build'];
+    })(),
+    adu: numbers(stored.adu, seed.adu),
   };
 };
 
@@ -181,10 +212,20 @@ export const seedScenario = (x: {
   rents: number[];
   scope: Scope;
   arv: number | null;
+  /** The cost book (with Kevin's prices), for the build and ADU figures. */
+  book: CostItem[];
+  /** What new houses on lots like this one are built at, if known. */
+  newSqft: number | null;
+  /** What a new house of that size sells for in town, if known. */
+  exitPrice: number | null;
+  /** The ADU size cap, and the rent a unit that size would let for. */
+  aduMaxSqft: number;
+  aduRent: number | null;
 }): Scenario => {
   const a = ASSUMPTIONS;
   const rate = investorRate();
   const rehabMonths = a.rehabMonths.value;
+  const mid = (key: string) => x.book.find((c) => c.key === key)?.mid ?? 0;
   return {
     version: 1,
     tab: 'hold',
@@ -230,6 +271,25 @@ export const seedScenario = (x: {
       termYears: 30,
       closingPct: a.refiClosingPct.value,
     },
+    build: {
+      newSqft: x.newSqft ?? 0,
+      hardPerSqft: mid('new-build'),
+      siteWork: mid('site-work'),
+      softPct: mid('soft-costs'),
+      contingencyPct: a.buildContingencyPct.value,
+      demolition: mid('demolition'),
+      demoExtras: mid('disconnects') + mid('asbestos'),
+      ltcPct: a.constructionLtcPct.value,
+      ratePct: a.constructionRatePct.value,
+      pointsPct: a.constructionPointsPct.value,
+      financeLand: false,
+      permittingMonths: a.permittingMonths.value,
+      delayMonths: 0,
+      buildMonths: a.buildMonths.value,
+      saleMonths: a.saleMonths.value,
+      exitPrice: x.exitPrice ?? 0,
+    },
+    adu: { sqft: x.aduMaxSqft, perSqft: mid('adu'), fixed: mid('adu-site'), rent: x.aduRent ?? 0 },
   };
 };
 
@@ -253,7 +313,7 @@ export const summarizeScenario = (
     price: n(stored.price),
     rent: rent > 0 ? rent : null,
     arv: n(stored.arv),
-    tab: oneOf(stored.tab, ['hold', 'flip', 'brrrr'] as const, 'hold'),
+    tab: oneOf(stored.tab, ['hold', 'flip', 'brrrr', 'build', 'adu'] as const, 'hold'),
   };
 };
 
@@ -303,3 +363,47 @@ export const arvSeed = (v: Pick<Valuation, 'withheld' | 'high'> | null | undefin
   if (v.withheld === 'larger-than-comps' || v.withheld === 'smaller-than-comps' || v.withheld === 'lot-beyond-comps') return null;
   return Math.round(v.high / 1000) * 1000;
 };
+
+/** The teardown as investment.ts takes it. */
+export const buildInputs = (s: Scenario): BuildInputs => ({
+  price: s.price,
+  buyerClosing: s.closingCosts,
+  demolition: s.build.demolition,
+  demoExtras: s.build.demoExtras,
+  newSqft: s.build.newSqft,
+  hardPerSqft: s.build.hardPerSqft,
+  siteWork: s.build.siteWork,
+  softPct: s.build.softPct,
+  contingencyPct: s.build.contingencyPct,
+  loan: { ltcPct: s.build.ltcPct, ratePct: s.build.ratePct, pointsPct: s.build.pointsPct, financeLand: s.build.financeLand },
+  months: {
+    permitting: s.build.permittingMonths,
+    delay: s.build.delayMonths,
+    build: s.build.buildMonths,
+    sale: s.build.saleMonths,
+  },
+  monthlyCarry: monthlyCarry(s),
+  exitPrice: s.build.exitPrice,
+  sale: s.sale,
+});
+
+/**
+ * The ADU as a rental of its own. Its tax is its cost at the town's effective
+ * rate — this house's tax bill over its assessed value, when both are known —
+ * and its insurance the homeowner rate on its cost, as a landlord policy.
+ */
+export const aduOperating = (s: Scenario, cost: number, effectiveTaxRate: number | null): OperatingInputs => ({
+  grossMonthlyRent: s.adu.rent,
+  otherMonthlyIncome: 0,
+  vacancyPct: s.vacancyPct,
+  managementPct: s.managementPct,
+  annualTaxes: effectiveTaxRate !== null ? cost * effectiveTaxRate : 0,
+  annualInsurance: cost * INSURANCE.houseRateOfPrice * ASSUMPTIONS.landlordInsuranceFactor.value,
+  monthlyHoa: 0,
+  annualMaintenance: (cost * ASSUMPTIONS.maintenancePctOfPrice.value) / 100,
+  capexPct: s.capexPct,
+  monthlyOwnerUtilities: 0,
+  leasingFeeMonths: s.leasingFeeMonths,
+  turnoversPerYear: s.turnovers,
+  otherAnnual: 0,
+});

@@ -2,7 +2,9 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, Trash2 } from 'lucide-react';
+import AduPanel from '@/components/investments/AduPanel';
 import BrrrrPanel from '@/components/investments/BrrrrPanel';
+import BuildPanel from '@/components/investments/BuildPanel';
 import FlipPanel from '@/components/investments/FlipPanel';
 import HoldPanel, { type HoldContext } from '@/components/investments/HoldPanel';
 import RulesPanel from '@/components/investments/RulesPanel';
@@ -10,6 +12,9 @@ import { BUTTON, LINK } from '@/components/investments/ui';
 import { estimateSuppressed } from '@/lib/idxComps';
 import { deleteAnalysis, saveAnalysis, type SavedAnalysis } from '@/lib/investmentStore';
 import { formatPrice } from '@/lib/listings';
+import type { TownRules } from '@/lib/investmentRules';
+import type { SaleRow } from '@/lib/newBuild';
+import type { LotContext } from '@/lib/parcels';
 import type { CostItem } from '@/lib/rehabCosts';
 import { hydrateScenario, type DealTab, type Scenario } from '@/lib/scenario';
 import type { Valuation } from '@/lib/valuation';
@@ -38,7 +43,34 @@ const TABS: { id: DealTab; label: string; lede: string }[] = [
     label: 'BRRRR',
     lede: 'Buy it, renovate it, rent it, then refinance on the new value: how much of your money comes back out, and what it earns after.',
   },
+  {
+    id: 'build',
+    label: 'Tear down and build',
+    lede: 'Buy it for the land, take the house down and build new: what is left after the land, the demolition, the new house, the loan, the months and the cost of selling.',
+  },
+  {
+    id: 'adu',
+    label: 'ADU and lot',
+    lede: 'Add an accessory dwelling unit, allowed by right on a single-family lot, and see how the lot compares with its neighbours.',
+  },
 ];
+
+/** What the build and ADU tabs need beyond the scenario. */
+export interface DevelopmentContext {
+  canBuild: boolean;
+  canAdu: boolean;
+  town: string;
+  townRules: TownRules | null;
+  sales: SaleRow[];
+  sizeNote: string;
+  mainGrossArea: number;
+  gfaNote: string;
+  aduRentNote: ReactNode;
+  effectiveTaxRate: number | null;
+  lotSqft: number | null;
+  lotNote: string | null;
+  lots: LotContext | null;
+}
 
 /** Where the after-repair value's suggestion came from — or why there is none. */
 export const ArvNote = ({ v, mls }: { v: Valuation | null | undefined; mls: string }) => {
@@ -68,13 +100,15 @@ const DealWorkspace = ({
   book,
   arv,
   rules,
+  dev,
 }: {
   ctx: HoldContext;
   seed: Scenario;
   saved: SavedAnalysis | null;
   book: CostItem[];
   arv: ReactNode;
-  rules: { propType: string | null; yearBuilt: number | null; septic: boolean; units: number };
+  rules: { propType: string | null; yearBuilt: number | null; septic: boolean; units: number; town: string | null };
+  dev: DevelopmentContext;
 }) => {
   const units = rules.units;
   const queryClient = useQueryClient();
@@ -108,7 +142,8 @@ const DealWorkspace = ({
     onError: () => setError('The saved analysis could not be removed. Try again.'),
   });
 
-  const tab = TABS.find((t) => t.id === s.tab) ?? TABS[0];
+  const tabs = TABS.filter((t) => (t.id === 'build' ? dev.canBuild : t.id === 'adu' ? dev.canAdu : true));
+  const tab = tabs.find((t) => t.id === s.tab) ?? tabs[0];
   const askingPrice = ctx.listing.list_price ?? 0;
 
   return (
@@ -119,15 +154,15 @@ const DealWorkspace = ({
           Run the numbers
         </h2>
         <div className="inline-flex flex-wrap rounded-full border border-gray-300 p-1" role="tablist" aria-label="Strategy">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
               role="tab"
-              aria-selected={s.tab === t.id}
+              aria-selected={tab.id === t.id}
               onClick={() => set({ tab: t.id })}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:px-5 ${
-                s.tab === t.id ? 'bg-ink-deep text-white' : 'text-gray-700 hover:text-champagne-ink'
+                tab.id === t.id ? 'bg-ink-deep text-white' : 'text-gray-700 hover:text-champagne-ink'
               }`}
             >
               {t.label}
@@ -136,13 +171,31 @@ const DealWorkspace = ({
         </div>
       </div>
       <p className="mt-3 mb-8 max-w-3xl text-sm text-gray-600">
-        {tab.lede} Every figure can be changed, and the tabs share them: a price or a renovation entered on one is used by
-        all three.
+        {tab.lede} Every figure can be changed, and the tabs share them: a price entered on one is used by all of
+        them.
       </p>
 
-      {s.tab === 'hold' && <HoldPanel ctx={ctx} s={s} set={set} />}
-      {s.tab === 'flip' && <FlipPanel s={s} set={set} book={book} askingPrice={askingPrice} arvNote={arv} />}
-      {s.tab === 'brrrr' && <BrrrrPanel s={s} set={set} book={book} askingPrice={askingPrice} arvNote={arv} units={units} />}
+      {tab.id === 'hold' && <HoldPanel ctx={ctx} s={s} set={set} />}
+      {tab.id === 'flip' && <FlipPanel s={s} set={set} book={book} askingPrice={askingPrice} arvNote={arv} />}
+      {tab.id === 'brrrr' && <BrrrrPanel s={s} set={set} book={book} askingPrice={askingPrice} arvNote={arv} units={units} />}
+      {tab.id === 'build' && (
+        <BuildPanel s={s} set={set} book={book} sales={dev.sales} sizeNote={dev.sizeNote} town={dev.town} rules={dev.townRules} />
+      )}
+      {tab.id === 'adu' && (
+        <AduPanel
+          s={s}
+          set={set}
+          book={book}
+          mainGrossArea={dev.mainGrossArea}
+          gfaNote={dev.gfaNote}
+          rentNote={dev.aduRentNote}
+          effectiveTaxRate={dev.effectiveTaxRate}
+          lotSqft={dev.lotSqft}
+          lotNote={dev.lotNote}
+          lots={dev.lots}
+          town={dev.town}
+        />
+      )}
 
       {/* ---------------- Save ---------------- */}
       <div className="mt-12 rounded-2xl border border-gray-200 bg-bone p-6">
@@ -192,7 +245,7 @@ const DealWorkspace = ({
         </p>
       </div>
     </section>
-    <RulesPanel context={{ strategy: s.tab, ...rules }} />
+    <RulesPanel context={{ strategy: tab.id, ...rules }} />
     </>
   );
 };
