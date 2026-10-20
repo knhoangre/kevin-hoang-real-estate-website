@@ -1,4 +1,5 @@
-import { Calculator } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Calculator } from 'lucide-react';
 import HomeCalculator, { type CalculatorSeed } from '@/components/calculator/HomeCalculator';
 import { canBeInvestment } from '@/lib/mortgage';
 import { headlinePrice, type IdxListing } from '@/lib/idxSearch';
@@ -34,7 +35,7 @@ const ListingPayment = ({ listing }: { listing: IdxListing }) => {
     // not asked about a fee it does not have.
     hoaSource: !hasAssociation ? null : listing.hoa_fee !== null ? 'listing' : 'listing-no-amount',
     propType: listing.prop_type,
-    rentLookup: { town: listing.town, bedrooms: listing.bedrooms },
+    rentLookup: { town: listing.town, bedrooms: listing.bedrooms, state: listing.state },
     exampleRent: 0,
     views: canBeInvestment(listing.prop_type) ? ['live', 'invest', 'sell'] : ['live', 'sell'],
   };
@@ -54,6 +55,24 @@ const ListingPayment = ({ listing }: { listing: IdxListing }) => {
             two listings never emit the same <h2>. */}
         <span>Running the numbers on {listing.address ?? `MLS ${listing.mls_number}`}</span>
       </h2>
+
+      {/*
+        The way into /investments from the house somebody is already looking
+        at. A signed-out visitor lands on its sign-in panel and, once signed
+        in, on this home's analysis (authReturn keeps the ?mls=). Rentals and
+        sold listings never reach this component.
+      */}
+      {canBeInvestment(listing.prop_type) && (
+        <p className="mt-3">
+          <Link
+            to={`/investments?mls=${encodeURIComponent(listing.mls_number)}`}
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-champagne-ink underline decoration-champagne underline-offset-4 hover:decoration-2"
+          >
+            Run this as an investment: rent, expenses and cash flow
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </p>
+      )}
 
       <div className="mt-5">
         {/* English whatever the toggle says: the rest of this page is English,

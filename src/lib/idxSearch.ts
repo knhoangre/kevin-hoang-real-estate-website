@@ -10,7 +10,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { soldByMls, soldCount, soldOnCockroach, soldSearch, soldSimilar } from '@/lib/soldApi';
-import { IDX_CODES, type IdxPropType } from '@/lib/idx-codes';
 
 /**
  * The three price-tracking columns added by
@@ -33,6 +32,36 @@ interface IdxPriceTracking {
 
 export type IdxListing = Database['public']['Tables']['idx_listings']['Row'] &
   Partial<IdxPriceTracking>;
+
+/**
+ * The columns a ListingCard reads, for a query that does not need the other
+ * seventy. The investment screener reads up to 300 listings a town, and the
+ * coded feature columns it would otherwise download are never shown on a card.
+ */
+export const CARD_COLUMNS = [
+  'mls_number',
+  'address',
+  'unit_no',
+  'town',
+  'state',
+  'zip',
+  'prop_type',
+  'status',
+  'feed',
+  'list_price',
+  'sale_price',
+  'previous_list_price',
+  'price_change_at',
+  'settled_date',
+  'bedrooms',
+  'full_baths',
+  'half_baths',
+  'living_area',
+  'photo_count',
+  'list_office_id',
+] as const;
+
+export type CardListing = Pick<IdxListing, (typeof CARD_COLUMNS)[number]>;
 
 /** How many results one page of /search shows. */
 export const PAGE_SIZE = 24;
@@ -449,7 +478,7 @@ export const countListings = async (f: SearchFilters): Promise<number> => {
 };
 
 /** What a listing's headline price is, given which list it appears in. */
-export const headlinePrice = (listing: IdxListing) =>
+export const headlinePrice = (listing: Pick<IdxListing, 'feed' | 'sale_price' | 'list_price'>) =>
   listing.feed === 'sold' ? listing.sale_price ?? listing.list_price : listing.list_price;
 
 /** One listing by MLS number, for /search/<mls>. */
@@ -631,43 +660,9 @@ export const lastSyncedAt = async (): Promise<string | null> => {
   return data?.finished_at ?? null;
 };
 
-/**
- * Expand one coded feed field into readable labels.
- *
- * The feed stores these as comma-separated letter codes — HEATING "B,N",
- * APPLIANCES "A,C,F,I,K,L". THE PROPERTY TYPE IS REQUIRED, not optional:
- * HEATING "C" is "Gas" on a rental, "Hot Air Gravity" on a single-family and
- * "Hot Water Baseboard" on a condo. A lookup that ignored it would mislabel
- * thousands of listings while looking entirely plausible.
- *
- * A code with no entry in the codebook is DROPPED rather than shown raw. The
- * reference is regenerated from MLS PIN, so an unknown code means the reference
- * is behind — and "Heating: Forced Air, N" is worse than "Heating: Forced Air".
- * If every code is unknown the field renders as nothing at all, which is the
- * same honest silence the rest of the site uses for data it does not have.
- */
-export const decodeCodes = (
-  field: string,
-  value: string | null,
-  propType: string | null
-): string | null => {
-  if (!value) return null;
-
-  const byType = IDX_CODES[field];
-  if (!byType) return null;
-
-  const table = byType[(propType ?? '') as IdxPropType];
-  if (!table) return null;
-
-  const labels = value
-    .split(',')
-    .map((code) => table[code.trim()])
-    .filter(Boolean);
-
-  // De-duplicated: several codes can map to the same label across a revision
-  // of the reference, and "Other (See Remarks), Other (See Remarks)" is noise.
-  return labels.length ? [...new Set(labels)].join(', ') : null;
-};
+// decodeCodes moved to idxDecode.ts so pure modules (investment.ts) can read
+// the codebook without pulling Supabase in. Re-exported, so callers are unchanged.
+export { decodeCodes } from '@/lib/idxDecode';
 
 /**
  * The towns that have listings, each with how many homes are for sale there
@@ -709,7 +704,9 @@ export interface PriceChange {
   at: string | null;
 }
 
-export const priceChange = (listing: IdxListing): PriceChange | null => {
+export const priceChange = (
+  listing: Pick<IdxListing, 'feed' | 'previous_list_price' | 'list_price' | 'price_change_at'>
+): PriceChange | null => {
   if (listing.feed === 'sold') return null;
   const from = listing.previous_list_price ?? null;
   const to = listing.list_price;
@@ -919,7 +916,11 @@ export const similarListings = async (
  */
 export const medianAskingRent = async (
   town: string | null,
-  bedrooms: number | null
+  bedrooms: number | null,
+  // Town names are not unique in the feed — Dover is in Massachusetts and New
+  // Hampshire — so the state is part of where a rental is. It was missing here
+  // until 2026-10-20.
+  state: string | null = 'MA'
 ): Promise<{ rent: number; sampleSize: number } | null> => {
   if (!town) return null;
 
@@ -930,6 +931,7 @@ export const medianAskingRent = async (
       .eq('feed', 'active')
       .eq('prop_type', 'RN')
       .eq('town', town)
+      .eq('state', state ?? 'MA')
       .not('list_price', 'is', null)
       .gt('list_price', 0);
 
@@ -939,15 +941,15 @@ export const medianAskingRent = async (
 
     /*
      * Capped at 200 rows, which in a big rental market (Boston runs well past
-     * it) makes this the median of a SAMPLE rather than of the whole town. That
-     * is acceptable here and would not have been in similarListings: an
-     * unordered LIMIT there systematically returned one end of the price band,
-     * because the caller then picked the extremes of what it fetched. Here the
-     * rows arrive in physical order — which tracks when the sync inserted them,
-     * not what they cost — so the sample is uncorrelated with price and its
-     * median is a fair estimate of the population's.
+     * it) makes this the median of a SAMPLE rather than of the whole town. A
+     * sample is fine; a sample correlated with price is not. This used to rely
+     * on rows arriving in physical order, but with a town filter the planner
+     * may walk idx_listings_active_town_price — (town, list_price DESC) — and
+     * then the first 200 are the 200 DEAREST rentals in town. Ordering by MLS
+     * number, which tracks when a listing was entered and not what it asks,
+     * makes the sample the 200 most recently listed instead.
      */
-    const { data, error } = await query.limit(200);
+    const { data, error } = await query.order('mls_number', { ascending: false }).limit(200);
     if (error) throw error;
 
     const rents = (data ?? [])

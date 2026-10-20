@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { formatPrice } from '@/lib/listings';
 import {
   INSURANCE,
@@ -12,6 +12,7 @@ import {
 import { sellerProceeds } from '@/lib/sellerProceeds';
 import { medianAskingRent } from '@/lib/idxSearch';
 import { SITE } from '@/lib/siteConfig';
+import { LABEL, MoneyField, PercentField, Row, SplitBar, money, pct } from '@/components/calculator/fields';
 import {
   CALCULATOR_COPY,
   type CalcContext,
@@ -57,7 +58,7 @@ export interface CalculatorSeed {
   /** Decides the insurance estimate and its label. */
   propType: string | null;
   /** Seeds the rent from comparable rentals; null on /calculator. */
-  rentLookup: { town: string | null; bedrooms: number | null } | null;
+  rentLookup: { town: string | null; bedrooms: number | null; state?: string | null } | null;
   /** The opening rent when there is nothing to look up. */
   exampleRent: number;
   views: CalcView[];
@@ -68,159 +69,6 @@ interface Props {
   context: CalcContext;
   seed: CalculatorSeed;
 }
-
-/* -------------------------------------------------------------------------- */
-/* Fields                                                                      */
-/* -------------------------------------------------------------------------- */
-
-const LABEL = 'text-xs font-semibold uppercase tracking-[0.12em] text-gray-500';
-
-/** A dollar input that shows thousands separators without fighting the caret. */
-const MoneyField = ({
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  label: string;
-  hint?: ReactNode;
-  value: number;
-  onChange: (n: number) => void;
-}) => (
-  <label className="block">
-    {label && <span className={LABEL}>{label}</span>}
-    <span className="mt-1 flex items-center rounded-lg border border-gray-300 bg-white focus-within:border-champagne-ink">
-      <span className="pl-3 text-sm text-gray-500">$</span>
-      <input
-        type="text"
-        inputMode="numeric"
-        value={value.toLocaleString('en-US')}
-        onChange={(e) => {
-          // Strip everything but digits, so a pasted "$1,150,000" works and a
-          // stray letter cannot produce NaN in the total.
-          const digits = e.target.value.replace(/[^\d]/g, '');
-          onChange(digits === '' ? 0 : Number(digits));
-        }}
-        className="numeral w-full bg-transparent px-2 py-2 text-sm font-medium text-ink outline-none"
-      />
-    </span>
-    {hint && <span className="mt-1 block text-xs leading-relaxed text-gray-500">{hint}</span>}
-  </label>
-);
-
-/**
- * A percentage input.
- *
- * Holds the raw text alongside the number so a half-typed "6." survives the
- * keystroke instead of snapping back to "6" and stranding the caret.
- */
-const PercentField = ({
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  label: string;
-  hint?: ReactNode;
-  value: number;
-  onChange: (n: number) => void;
-}) => {
-  const [text, setText] = useState(String(value));
-
-  // Follows the value when something else sets it — the down-payment toggle
-  // writing back a recomputed percentage, for instance.
-  useEffect(() => {
-    if (Number(text) !== value) setText(String(value));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  return (
-    <label className="block">
-      {label && <span className={LABEL}>{label}</span>}
-      <span className="mt-1 flex items-center rounded-lg border border-gray-300 bg-white focus-within:border-champagne-ink">
-        <input
-          type="text"
-          inputMode="decimal"
-          value={text}
-          onChange={(e) => {
-            const raw = e.target.value.replace(/[^\d.]/g, '');
-            if (raw !== '' && !/^\d*\.?\d*$/.test(raw)) return;
-            setText(raw);
-            onChange(raw === '' ? 0 : Number(raw));
-          }}
-          className="numeral w-full bg-transparent px-3 py-2 text-sm font-medium text-ink outline-none"
-        />
-        <span className="pr-3 text-sm text-gray-500">%</span>
-      </span>
-      {hint && <span className="mt-1 block text-xs leading-relaxed text-gray-500">{hint}</span>}
-    </label>
-  );
-};
-
-/** A dollar figure with a real minus sign, for a cash flow or proceeds below zero. */
-const money = (n: number) =>
-  `${n < 0 ? '−' : ''}${formatPrice(Math.round(Math.abs(n)))}`;
-
-/** One line of a breakdown. Hidden at zero, so a single-family has no HOA row. */
-const Row = ({
-  label,
-  value,
-  minus = false,
-  strong = false,
-}: {
-  label: string;
-  value: number;
-  minus?: boolean;
-  strong?: boolean;
-}) =>
-  value <= 0 && !strong ? null : (
-    <div className="flex items-baseline justify-between gap-4 py-2.5 text-sm">
-      <dt className={strong ? 'font-semibold text-ink' : 'text-gray-600'}>{label}</dt>
-      <dd className={`numeral ${strong ? 'font-semibold' : 'font-medium'} text-ink`}>
-        {minus ? '−' : ''}
-        {money(value)}
-      </dd>
-    </div>
-  );
-
-/**
- * A stacked bar with its legend.
- *
- * A tonal ramp rather than five hues. The design system allows champagne as a
- * NON-TEXT MARK on a light surface — which a chart segment is — but it has no
- * third or fourth accent, and inventing them here would start a third palette
- * on a site that was unified out of two.
- */
-const SplitBar = ({
-  parts,
-}: {
-  parts: { key: string; label: string; value: number; className: string }[];
-}) => {
-  const shown = parts.filter((p) => p.value > 0);
-  const total = shown.reduce((sum, p) => sum + p.value, 0);
-  if (total <= 0) return null;
-  return (
-    <>
-      <div
-        className="mt-6 flex h-3 overflow-hidden rounded-full bg-gray-100"
-        role="img"
-        aria-label={shown.map((p) => `${p.label} ${Math.round((p.value / total) * 100)}%`).join(', ')}
-      >
-        {shown.map((p) => (
-          <span key={p.key} className={p.className} style={{ width: `${(p.value / total) * 100}%` }} />
-        ))}
-      </div>
-      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
-        {shown.map((p) => (
-          <span key={p.key} className="flex items-center gap-2 text-xs text-gray-600">
-            <span className={`h-2.5 w-2.5 rounded-full ${p.className}`} aria-hidden />
-            {p.label}
-          </span>
-        ))}
-      </div>
-    </>
-  );
-};
 
 /* -------------------------------------------------------------------------- */
 
@@ -296,11 +144,12 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
 
   const lookupTown = seed.rentLookup?.town ?? null;
   const lookupBeds = seed.rentLookup?.bedrooms ?? null;
+  const lookupState = seed.rentLookup?.state ?? 'MA';
   const canLookUpRent = seed.rentLookup !== null && views.includes('invest');
   useEffect(() => {
     if (!canLookUpRent) return;
     let cancelled = false;
-    medianAskingRent(lookupTown, lookupBeds).then((found) => {
+    medianAskingRent(lookupTown, lookupBeds, lookupState).then((found) => {
       if (cancelled || !found) return;
       setRentSource(found);
       // Seeds only while untouched, so a reader's own figure is never
@@ -310,7 +159,7 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
     return () => {
       cancelled = true;
     };
-  }, [canLookUpRent, lookupTown, lookupBeds]);
+  }, [canLookUpRent, lookupTown, lookupBeds, lookupState]);
 
   const returns = investmentReturns(
     {
@@ -342,7 +191,6 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
     sellerCredits,
   });
 
-  const pct = (n: number | null) => (n === null ? '—' : `${n.toFixed(1)}%`);
   const taxYear = seed.taxSource.from === 'listing' ? seed.taxSource.year : null;
 
   // ---- Hints that depend on where a number came from -------------------------
@@ -718,7 +566,9 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
               <dl className="mt-6 divide-y divide-gray-100 border-y border-gray-200">
                 <Row label={c.effectiveRent} value={returns.effectiveRent} />
                 <Row label={c.operatingExpenses} value={returns.operatingExpenses} />
-                <Row label={c.noi} value={returns.noi} />
+                {/* Signed: a property that loses money before the mortgage has a
+                    NEGATIVE NOI, and until 2026-10-20 this row simply vanished. */}
+                <Row label={c.noi} value={returns.noi} signed />
                 <Row label={c.mortgagePi} value={b.principalAndInterest} />
                 {/* Disappears at 20% down and above, on its own. */}
                 <Row label={c.pmiRow} value={b.pmi} />

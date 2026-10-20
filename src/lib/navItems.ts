@@ -84,6 +84,7 @@ const DARK_HERO_EXACT = new Set([
   '/search',
   '/rentals',
   '/saved',
+  '/investments',
   '/videos',
 ]);
 

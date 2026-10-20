@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Bed, Bath, Square, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatPrice, formatBathsShort, formatSoldMonth } from '@/lib/listings';
 import SaveButton from '@/components/listing/SaveButton';
+import { useOfficeName } from '@/hooks/useOfficeName';
 import {
   headlinePrice,
   photoUrl,
@@ -9,7 +10,7 @@ import {
   propTypeLabel,
   statusLabel,
   isAvailable,
-  type IdxListing,
+  type CardListing,
 } from '@/lib/idxSearch';
 import { listingPath } from '@/lib/listingUrl';
 
@@ -28,8 +29,17 @@ import { listingPath } from '@/lib/listingUrl';
  * page — its filter state, its town dropdown, its pager — into its chunk.
  */
 
-const ListingCard = ({ listing }: { listing: IdxListing }) => {
+/**
+ * Takes only the columns it reads (CARD_COLUMNS), so a lighter query — the
+ * investment screener's — can feed it. A full IdxListing is one of those too.
+ *
+ * Names the listing office under the specs, as IdxDisclosure says every
+ * listing from another firm is marked. The name arrives a moment after the
+ * card; it is batched across the grid in offices.ts.
+ */
+const ListingCard = ({ listing }: { listing: CardListing }) => {
   const hasPhoto = (listing.photo_count ?? 0) > 0;
+  const office = useOfficeName(listing.list_office_id);
 
   return (
     /*
@@ -165,6 +175,7 @@ const ListingCard = ({ listing }: { listing: IdxListing }) => {
             </span>
           )}
         </div>
+        {office && <p className="mt-2 truncate text-xs text-gray-500">Courtesy of {office}</p>}
       </div>
     </Link>
       {/* The same 4:3 box as the photograph, laid over it and transparent to

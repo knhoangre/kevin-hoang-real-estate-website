@@ -125,6 +125,8 @@ export const PRIVATE_PREFIXES = [
   '/rentals',
   // One signed-in visitor's saved homes. Their own list, of IDX listings.
   '/saved',
+  // Investment analysis of IDX listings, for signed-in accounts.
+  '/investments',
   // The IDX search. Not "private" in the gated sense — anyone may use it — but
   // it belongs here for the same reason: noindex, never in the sitemap. MLS PIN
   // requires IDX displays be non-indexable.

@@ -31,6 +31,7 @@ node scripts/listing-url-check.ts      # a listing's URL: old number-only links,
 node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203) 379-8682" is 203-379-8682
 node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
+node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, the people on a showing tour AND the marketing documents (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -63,7 +64,7 @@ There is no test framework configured. The closest thing to one is the SEO audit
 ```bash
 docker run --rm -v "$PWD":/app -v "$HOME/.claude/skills/seo-web/scripts":/skill:ro -w /app \
   node:20-alpine node /skill/seo-audit.mjs ./dist --origin https://kevinhoang.co \
-  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,saved,search
+  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,saved,search,investments
 ```
 
 The `--private` list must match `PRIVATE_PREFIXES` in [scripts/routes.mjs](scripts/routes.mjs).
@@ -956,6 +957,11 @@ describes what is LIVE. This section is what replaces the sold half of it.
    find there, and since 2026-10-09 a sold home can be saved — so with the sold
    rows gone, the heart on every sold listing would answer "That listing is no
    longer available to save".
+   **So does `/investments`' rent**: it reads LEASED rents from the sold RN rows
+   in `idx_listings` (`rentEvidence()` in investmentData.ts), and the sold-api
+   has no rentals question. Add a `rentComps` op — town, state, twelve months,
+   the same columns — and route that read through it first, or every rent on
+   the page falls back to asking rents.
 
 ### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
 
@@ -1525,6 +1531,54 @@ data per client at `/admin/activity`.
   validated on the way out regardless.
 - **A saved home that has left the feed is drawn from its snapshot and says so.**
   It is not a link — there is no page behind it — and it keeps "Remove".
+
+### Investments (`/investments`)
+
+Signed-in only (Kevin, 2026-10-19 — the data is the same public IDX data `/search`
+shows, so this is a reason to make an account, not a lock). The screener ranks one
+town's homes for sale; `?mls=<n>` is one home analysed, so it needs no rewrite. The
+listing page's calculator links to it ("Run this as an investment"). Phase 1 shipped
+2026-10-20: the screener and buy-and-hold. Flip, BRRRR, teardown/build and ADU are in
+the plan, with the math for all of them already in investment.ts and checked.
+
+- **Three pure modules decide every number; nothing in a component does.**
+  [investment.ts](src/lib/investment.ts) (every strategy, the screener metrics, the
+  flags), [rentComps.ts](src/lib/rentComps.ts) (the rent ladder, the multi-family unit
+  split) and [parcels.ts](src/lib/parcels.ts) (assessor records). `node
+  scripts/investment-check.ts` runs them against hand-worked answers. Buy-and-hold
+  with its extra lines at zero must equal `investmentReturns()` exactly, so the
+  listing calculator and this page cannot disagree about a house.
+- **Rent is LEASED rent**, from the sold RN rows (`sale_price` is what the unit went
+  for — 624 in Newton in twelve months), by ZIP then town, same bedrooms, same kind
+  (`RN_TYPE`), widening one step at a time, then asking rents, then nothing. Every rung
+  says what it is on the page. The query uses `idx_listings_sold_comps` and must order
+  `settled_date` DESC with NO nulls modifier — that index is DESC, which Postgres keeps
+  NULLS FIRST, the opposite of the `/search` rule.
+- **Every default is `{source, kind, asOf}`** in
+  [investmentAssumptions.ts](src/lib/investmentAssumptions.ts), and the page prints
+  "Law", "Published" or "Assumption" beside it. A planning figure labelled as one is a
+  starting point; the same number unlabelled is a claim about somebody's house.
+- **Assessor data is MassGIS's Level 3 parcels**, on the same server as the address
+  suggestions, CORS open to the site. Matching is the hard part: towns spell streets
+  their own way ("MYSTIC AV", "90 -96", no suffix at all), and an exact address match
+  found 7 of 45 Medford houses. `canonicalStreet`/`normalNumber` bring both sides to
+  one form; measured 2026-10-20 the match is 92% of single-family listings across the
+  17 towns. **A guess between two records is never made**: a suffix-less street that
+  fits two streets, or a condo unit not among several records, gets NO parcel — the
+  neighbour's land value beside a listing is the failure this exists to prevent. A
+  condo only ever shows its OWN unit's record (`parcelFits`). The owner fields are
+  never requested.
+- **No composite "deal score" and no value estimate on a card.** Each tab sorts by
+  one named metric; the comps engine runs only in the one-home view, under the same
+  `SITE.valuation` / `estimateSuppressed()` rules as the listing page.
+- **A listing with no bathroom and no floor area is not a home** (`isDwelling`). A
+  Newton parking space ranked first with a studio's rent and a 6% cap rate until it was
+  excluded.
+- **The lead-law cost is budgeted on every pre-1978 rental**, not only where a family
+  applies, because refusing a family to avoid it is illegal. The rules panel
+  ([investmentRules.ts](src/lib/investmentRules.ts)) says so; keep that framing.
+- **Every listing card now names its listing office**, batched across a grid in
+  [offices.ts](src/lib/offices.ts) — `IdxDisclosure` had always said they were marked.
 
 ### Showing tours (`/admin/showings`)
 

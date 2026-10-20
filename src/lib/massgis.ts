@@ -74,8 +74,12 @@ export interface AddressSuggestion {
  * in Massachusetts addresses. MassGIS spells them inconsistently — "WASHINGTON
  * ST" and "WASHINGTON STREET" both appear in the same result list — so without
  * this the one-canonical-spelling argument above would be false.
+ *
+ * Exported for parcels.ts, which matches a listing to its assessor's parcel and
+ * meets the same problem from the other side: Medford writes "MYSTIC AV" where
+ * the feed says "Mystic Ave".
  */
-const SUFFIXES: Record<string, string> = {
+export const USPS_SUFFIXES: Record<string, string> = {
   STREET: 'St', ST: 'St',
   AVENUE: 'Ave', AVE: 'Ave', AV: 'Ave',
   ROAD: 'Rd', RD: 'Rd',
@@ -119,7 +123,7 @@ export const formatStreet = (raw: string): string => {
     .map((w, i) => {
       const upper = w.toUpperCase();
       // Only the LAST word is a suffix. "Court St" must not become "Ct St".
-      if (i === words.length - 1 && i > 0 && SUFFIXES[upper]) return SUFFIXES[upper];
+      if (i === words.length - 1 && i > 0 && USPS_SUFFIXES[upper]) return USPS_SUFFIXES[upper];
       if (DIRECTIONALS.has(upper) && i > 0) return upper;
       return titleWord(w);
     })

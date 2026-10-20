@@ -281,6 +281,10 @@ export const routes: RouteRecord[] = [
       // shell and noindex: it is one person's own list, and the listings on it
       // are IDX content.
       privatePage('saved', 'Your Saved Homes', () => import('./pages/Saved'), 'src/pages/Saved.tsx'),
+      // Homes for sale run as investments, for signed-in accounts. One home is
+      // `?mls=` on this route rather than /investments/:mls, so it needs no
+      // rewrite of its own. Prerendered as a shell and noindex, like /saved.
+      privatePage('investments', 'Investment Analysis', () => import('./pages/Investments'), 'src/pages/Investments.tsx'),
 
       privatePage('admin', 'Admin', () => import('./pages/AdminHome'), 'src/pages/AdminHome.tsx'),
       privatePage('admin/follow-up', 'Follow Up', () => import('./pages/FollowUp'), 'src/pages/FollowUp.tsx'),
