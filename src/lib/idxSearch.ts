@@ -134,17 +134,11 @@ const STATUS_LABELS: Record<string, string> = {
 export const statusLabel = (code: string | null) =>
   code ? STATUS_LABELS[code.trim().toUpperCase()] ?? code : null;
 
-/**
- * Whether a status still means "you can buy this".
- *
- * Contingent and under-agreement listings are still shown — they fall through
- * often enough to matter — but they are marked, because presenting one as
- * simply available wastes a buyer's afternoon.
- */
-export const AVAILABLE_STATUSES = ['ACT', 'NEW', 'BOM', 'PCG', 'EXT', 'RAC'];
-
-export const isAvailable = (code: string | null) =>
-  AVAILABLE_STATUSES.includes((code ?? '').trim().toUpperCase());
+// AVAILABLE_STATUSES and isAvailable moved to idxDecode.ts so pure modules
+// (market.ts, run by scripts/market-check.ts with plain Node) count "for sale"
+// by the same list /search filters on.
+import { AVAILABLE_STATUSES, isAvailable } from '@/lib/idxDecode';
+export { AVAILABLE_STATUSES, isAvailable };
 
 /**
  * The filter state, which lives entirely in the URL query string.

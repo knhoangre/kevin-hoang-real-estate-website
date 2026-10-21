@@ -45,7 +45,7 @@ const AuthorCard = ({ className = '' }: { className?: string }) => (
           {SITE.agentName}
         </p>
         <p className="mt-3 text-base leading-relaxed text-gray-700">
-          Licensed Massachusetts real estate broker with {SITE.brokerage}, based in
+          Licensed Massachusetts real estate broker with {SITE.brokerage}, based in{' '}
           {SITE.address.addressLocality}. He represents buyers and sellers across{' '}
           {SITE.areaServed.length} towns in MetroWest and Greater Boston, and works
           in English and Vietnamese.

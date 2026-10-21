@@ -219,6 +219,8 @@ export interface BlogPostLike {
   description: string;
   image?: string | null;
   author?: string | null;
+  /** Where the post lives, when it is not /blog/<slug> — the monthly market reports. */
+  path?: string;
 }
 
 export const blogPosting = (post: BlogPostLike) =>
@@ -243,7 +245,7 @@ export const blogPosting = (post: BlogPostLike) =>
     inLanguage: 'en-US',
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': absoluteUrl(`/blog/${post.slug}`),
+      '@id': absoluteUrl(post.path ?? `/blog/${post.slug}`),
     },
   });
 

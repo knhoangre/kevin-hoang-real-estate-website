@@ -12,6 +12,7 @@ import {
   Users,
   Briefcase,
   Hammer,
+  TrendingUp,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -129,6 +130,14 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/marketing',
     icon: BookOpen,
     blurb: 'Listing booklets, and home expense and upgrade sheets, ready to print.',
+    group: 'listings',
+  },
+  {
+    to: '/admin/market',
+    label: 'Market reports',
+    match: '/admin/market',
+    icon: TrendingUp,
+    blurb: 'Any town\u2019s market as of today — prices, sale-to-asking, supply and rents — with a summary to send a client.',
     group: 'listings',
   },
   {

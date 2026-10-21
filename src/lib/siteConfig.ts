@@ -293,6 +293,23 @@ export const SITE = {
   },
 
   /**
+   * The towns with a market report at /market/<slug> and a post for every month
+   * with enough closings to say something (Kevin's choice, 2026-10-20: every
+   * town served but Dover, whose ~6 closings a month cannot carry a post).
+   * Names as in `areaServed`, which supplies the slug.
+   *
+   * Adding a town here adds it on the next monthly run (the 3rd, from
+   * .github/workflows/market-reports.yml). Removing one stops new posts; the
+   * published ones stay, since other sites may link to them.
+   */
+  marketTowns: [
+    'Newton', 'Needham', 'Wellesley', 'Waltham', 'Brookline', 'Weston',
+    'Lexington', 'Belmont', 'Winchester', 'Concord',
+    'Cambridge', 'Somerville', 'Medford', 'Malden',
+    'Quincy', 'Braintree',
+  ] as string[],
+
+  /**
    * Towns served, used for schema `areaServed`, the sitemap, and the nearby-
    * towns cross-links. Slugs match the keys in src/data/neighborhoodData.ts
    * and the /neighborhoods/:slug route.

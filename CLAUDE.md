@@ -19,6 +19,7 @@ node scripts/generate-blog-redirects.mjs # rewrite the blog 301s in vercel.json
 node scripts/sync-listings.mjs           # refresh src/data/soldListings.ts from Supabase
 node scripts/generate-video-posters.mjs   # build public/videos/ posters from public/videos/_src/
 node scripts/geocode-listings.ts         # backfill idx_geocodes from the US Census geocoder
+node scripts/sync-market.ts              # this month's market reports into src/data/market (a GitHub Action runs it on the 3rd)
 ```
 
 Two things here are checks rather than generators, and both exit non-zero on failure:
@@ -32,6 +33,7 @@ node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203)
 node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
+node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour AND the marketing documents (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -962,6 +964,12 @@ describes what is LIVE. This section is what replaces the sold half of it.
    has no rentals question. Add a `rentComps` op — town, state, twelve months,
    the same columns — and route that read through it first, or every rent on
    the page falls back to asking rents.
+   **And the monthly market reports**: [marketFetch.ts](src/lib/marketFetch.ts)
+   reads closings, homes under agreement and signed leases from the sold rows
+   of `idx_listings` and from `idx_sold_archive`. Move those reads to the
+   sold-api (it needs a by-town question for all three) before the deletion, or
+   the next report after it is built from an empty year — sync-market refuses
+   an empty year, so it fails red rather than publishing zeros.
 
 ### Rental applications (`/apply`, `/rentals`, `/admin/applications`)
 
@@ -1634,6 +1642,96 @@ Land (LD) listings are not synced and are the next step; see the plan's Phase 4.
 - **The ADU and teardown tabs are for houses** (build: SF and MF; ADU: SF only, since
   the by-right rule is for single-family districts). A condo never sees them.
 
+### Market reports (`/market`, `/admin/market`)
+
+Kevin asked on 2026-10-20 for a market analysis per town over 12, 6 and 3
+months, and a post every month, for the towns around him: `SITE.marketTowns`,
+sixteen of the seventeen (not Dover). `/market` compares them,
+`/market/<slug>` is one town's full analysis, `/market/<slug>/<yyyy-mm>` is the
+monthly post, and `/admin/market` builds the same report live for ANY town in
+the feed, with a "Copy for a client" button.
+
+- **Three modules, split the way the estimate is.** [market.ts](src/lib/market.ts)
+  is pure and decides every number; [marketText.ts](src/lib/marketText.ts) is
+  pure and turns them into sentences; [marketFetch.ts](src/lib/marketFetch.ts)
+  only asks, and takes the Supabase client as a parameter because the sync
+  script (plain Node) and `/admin/market` (the browser) both call it.
+  `node scripts/market-check.ts` builds a market whose answers are known, then
+  runs every sentence generator over every committed report looking for
+  "undefined", "NaN" and blanks.
+- **A report is committed data, written once.** `scripts/sync-market.ts` writes
+  `src/data/market/<slug>/<yyyy-mm>.json` plus `index.json` (which pages exist —
+  AppRoutes imports it, so it stays small) and `summary.json` (the headline
+  figures `/market`, the blog and the town guides show). It is run on the 3rd
+  by [.github/workflows/market-reports.yml](.github/workflows/market-reports.yml),
+  which commits to `main`; Vercel deploys that push. A report that exists is
+  never rewritten without `--force`: MLS PIN's sold feed is a rolling twelve
+  months, so the report is the only copy of a month's numbers that outlives it,
+  and next year's report for the same month reads its year-ago figures out of it.
+  The text is generated at RENDER time, so a wording fix reaches every report
+  and the numbers never move.
+- **The workflow carries the public anon key in plain text, on purpose**
+  (Kevin's choice, 2026-10-20): the knhoang10 account that pushes here is not an
+  admin of the repo and cannot set secrets, and the key is the one every visitor
+  downloads. Never put the service-role key there. Its commits are AUTHORED as
+  knhoang10, because that is the identity every deployed commit carries and
+  Vercel can refuse a push from an author it does not know.
+- **Each page loads only its own report.** AppRoutes builds one route record
+  per town page and per post from `index.json`, each lazy-loading its JSON
+  through `import.meta.glob` — not one `market/:slug/:month` route with a
+  loader, because vite-react-ssg puts every page's loader data in ONE manifest.
+  The page is handed the report as a prop, so its first render is the whole page.
+- **What the feed can and cannot say**, each decided against the live data:
+  - Windows are WHOLE calendar months ending with the report month. A closing
+    reaches the feed days late, so a window ending today reads its last week as
+    a slowdown.
+  - **Under agreement is in the SOLD feed** (status UAG, no price, no date);
+    contingent (CTG) is in the active feed. Both are "pending". Measured: 111 of
+    Newton's sold-feed rows were UAG on 2026-10-20 and none of its active rows.
+  - Sale-to-asking is against the FINAL asking price, the only one the IDX feed
+    has, and every page says so where the number appears.
+  - **There is no days-on-market.** The IDX export has no list date.
+    `first_seen_at` is when OUR sync first saw a listing, exact only after
+    `TRACKING_SINCE` (2026-09-02, the first run, which stamped every listing
+    then on the market). "Listed in the last 30 days" is shown; "time to sell"
+    is not.
+  - Months of supply divides by the TWELVE-month pace, so one closing does not
+    swing a small town from 2 months to 6.
+  - Rents are signed leases through `cleanRents()` from rentComps.ts — the
+    same $500–$30,000 band and the same parking exclusion as /investments.
+  - A median needs five sales; a monthly post needs eight closings
+    (`MIN_MONTH_SALES`), or the month gets a report file (the town page needs
+    it) but no post — a post about four sales is the thin page this corpus was
+    cleaned of.
+- **There is no fitted price trend, and that is deliberate.** A regression of
+  price on time at constant size was built and found "significant" rises in four
+  towns (Somerville multi-family +19% a year). The twelve months run from late
+  fall to late summer, so the low season sits at one end and the high at the
+  other: the slope was measuring the calendar. The trend is YEAR-ON-YEAR instead
+  (`yearAgo`): the same month a year earlier from the October 2026 report on
+  (the archive holds sales from 2025-09-17), the same 3/6/12-month windows as
+  the archive deepens, and inventory a year earlier only from the report
+  published then, since inventory has no archive.
+- **"Who has the edge" is read from what happened, not from a rule of thumb**
+  about inventory: sellers when half or more sold over asking or the median
+  was above 101% of it, buyers when the median was at or under 98% with fewer
+  than a quarter over. `EDGE_RULE_TEXT` prints that rule beside every verdict.
+- **The attribution reads "Based on information from MLS Property Information
+  Network, Inc. … for the period …", says Kevin calculated the figures and MLS
+  PIN did not, and is NOT YET CHECKED against MLS PIN's rules for published
+  statistics** — the same open caveat IdxDisclosure carries. No individual
+  listing appears on these pages, only aggregates, which is why they are
+  indexable when `/search` is not.
+- **Every heading interpolates the town (and the month in a post)**, so the
+  sixteen town pages and their posts never share an `<h2>`. The town page owns
+  the numbers; `/neighborhoods/<slug>` stays descriptive and links to it through
+  [TownMarketLink](src/components/market/TownMarketLink.tsx).
+- **`/admin/market` covers towns with no archive.** Outside `SITE.areaServed`
+  its twelve months start where the live feed does, and the window labels say
+  so. It is the same [MarketAnalysis](src/components/market/MarketAnalysis.tsx)
+  the public page renders, so the two cannot describe the same numbers
+  differently.
+
 ### Showing tours (`/admin/showings`)
 
 Admin only. Kevin types each MLS number (or address) and the time he booked;
@@ -2211,6 +2309,10 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
 
 ## Gotchas
 
+- **`main` moves by itself on the 3rd of every month**, when the market-reports
+  workflow commits that month's reports. Fetch and rebase before pushing, and
+  build the commit-on-no-branch recipe on top of `origin/main`, not on a local
+  `main` that is a month behind.
 - **Adding an npm dependency means rebuilding the dev container.**
   [docker-compose.yml](docker-compose.yml) mounts `- /app/node_modules` as an
   anonymous volume, which deliberately MASKS the host's `node_modules` so a macOS

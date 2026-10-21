@@ -2,6 +2,8 @@ import type { RouteRecord } from 'vite-react-ssg';
 import App from './App';
 import PrivatePage from './components/PrivatePage';
 import RouteError from './components/RouteError';
+import type { MarketIndex, MarketIndexTown, MarketReport } from './lib/market';
+import marketIndexJson from './data/market/index.json';
 
 /**
  * Route table for vite-react-ssg.
@@ -47,6 +49,47 @@ const privatePage = (
   },
   entry,
 });
+
+/**
+ * The market reports: one route per town page and one per monthly post, read
+ * from the index scripts/sync-market.ts writes.
+ *
+ * Each report is its own lazily loaded module, and each route loads only its
+ * own — sixteen towns times a growing number of months would otherwise ride in
+ * one chunk to every market page. That is also why these are explicit records
+ * and not one `market/:slug/:month` route with a loader: vite-react-ssg ships
+ * every page's loader data in ONE manifest file.
+ *
+ * The page is handed its report as a prop, so its first render is the whole
+ * page, on the server and in the hydrating browser alike.
+ */
+const marketIndex = marketIndexJson as MarketIndex;
+const marketReports = import.meta.glob<{ default: MarketReport }>('./data/market/*/*.json');
+
+const marketPage = (
+  path: string,
+  entry: MarketIndexTown,
+  month: string,
+  importer: () => Promise<{ default: React.ComponentType<{ report: MarketReport; entry: MarketIndexTown }> }>,
+  source: string
+): RouteRecord => ({
+  path,
+  lazy: async () => {
+    const [{ default: Page }, { default: report }] = await Promise.all([
+      importer(),
+      marketReports[`./data/market/${entry.slug}/${month}.json`](),
+    ]);
+    return { Component: () => <Page report={report} entry={entry} /> };
+  },
+  entry: source,
+});
+
+const marketRoutes: RouteRecord[] = marketIndex.towns.flatMap((entry) => [
+  marketPage(`market/${entry.slug}`, entry, entry.latest, () => import('./pages/MarketTown'), 'src/pages/MarketTown.tsx'),
+  ...entry.posts.map((p) =>
+    marketPage(`market/${entry.slug}/${p.month}`, entry, p.month, () => import('./pages/MarketMonth'), 'src/pages/MarketMonth.tsx')
+  ),
+]);
 
 export const routes: RouteRecord[] = [
   {
@@ -134,6 +177,11 @@ export const routes: RouteRecord[] = [
           return neighborhoods.map((n) => `/neighborhoods/${n.slug}`);
         },
       },
+
+      // --- Market reports --------------------------------------------------
+      // What homes sell for, town by town, month by month. See marketRoutes.
+      page('market', () => import('./pages/Market'), 'src/pages/Market.tsx'),
+      ...marketRoutes,
 
       // --- Blog ----------------------------------------------------------
       page('blog', () => import('./pages/Blog'), 'src/pages/Blog.tsx'),
@@ -344,6 +392,9 @@ export const routes: RouteRecord[] = [
         () => import('./pages/AdminMarketing'),
         'src/pages/AdminMarketing.tsx'
       ),
+      // Any town's market report, built live — the public ones cover sixteen
+      // towns and change monthly. `?town=` on this route, so no rewrite.
+      privatePage('admin/market', 'Market Reports', () => import('./pages/AdminMarket'), 'src/pages/AdminMarket.tsx'),
       // Kevin's own renovation and building prices, which every investment
       // analysis on /investments starts from.
       privatePage('admin/costs', 'Renovation Prices', () => import('./pages/AdminCosts'), 'src/pages/AdminCosts.tsx'),

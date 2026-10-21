@@ -1,0 +1,81 @@
+# Publishes the monthly market reports: /market/<town> and /market/<town>/<yyyy-mm>.
+#
+# On the 3rd of each month this builds the month just ended for every town in
+# SITE.marketTowns (src/lib/siteConfig.ts), commits src/data/market/ to main,
+# and Vercel deploys that push like any other. Run it by hand from the Actions
+# tab ("Run workflow") to fill in a town that failed; a report already
+# published is never rewritten, so re-running is always safe.
+#
+# THE KEY BELOW IS THE PUBLIC ANON KEY, on purpose (Kevin, 2026-10-20). It is
+# the key every visitor's browser downloads from kevinhoang.co, row-level
+# security limits it to what the site shows anyone, and every table this job
+# reads is public-read. Never put the service-role key here.
+#
+# The commit is AUTHORED as knhoang10, the identity every deployed commit on
+# this repo carries: Vercel can refuse to deploy a push whose author it does not
+# recognise. GitHub's bot is the committer.
+name: Market reports
+
+on:
+  schedule:
+    # 14:00 UTC on the 3rd: 10am in the summer, 9am in the winter, here. Why
+    # the 3rd and not the 1st is in scripts/sync-market.ts.
+    - cron: '0 14 3 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-reports
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_SUPABASE_URL: https://zvipgykolpoxukyjgffx.supabase.co
+      VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2aXBneWtvbHBveHVreWpnZmZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDUyOTQzMjQsImV4cCI6MjA2MDg3MDMyNH0.Ha_66KXsyvH5bbhXMUaxLZzPNrTIE7XEupV1Ndb_htc
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 24 runs the .ts scripts directly (type stripping), as on a laptop.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      # The arithmetic first: a broken estimator must not publish.
+      - run: node scripts/market-check.ts
+
+      # A town that fails is reported and the rest are still written, so this
+      # step may fail and the commit below still runs. The last step turns the
+      # run red if it did.
+      - id: sync
+        run: node scripts/sync-market.ts
+        continue-on-error: true
+
+      # The sentence check runs again over the new reports: a report whose text
+      # reads "NaN" or "undefined" is not committed.
+      - run: node scripts/market-check.ts
+
+      - name: Commit and push
+        run: |
+          git add src/data/market
+          if git diff --cached --quiet; then
+            echo "No new reports."
+            exit 0
+          fi
+          month=$(node -e "const i=require('./src/data/market/index.json');console.log(i.towns.map(t=>t.latest).sort().pop())")
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --author="knhoang10 <knhoang10@gmail.com>" -m "Market reports for $month"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - if: steps.sync.outcome == 'failure'
+        run: |
+          echo "Some towns failed; the rest were published. Re-run this workflow to fill them in."
+          exit 1

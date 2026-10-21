@@ -9,6 +9,7 @@ import { breadcrumbs, faqPage } from "@/lib/schema";
 import { ogVariant } from "@/lib/images";
 import TownFactsPanel from "@/components/TownFactsPanel";
 import TownSoldListings from "@/components/TownSoldListings";
+import TownMarketLink from "@/components/market/TownMarketLink";
 import FaqAccordion from "@/components/FaqAccordion";
 import { TOWN_FACTS } from "@/data/townFacts";
 import { townFaqs } from "@/lib/townFaqs";
@@ -2727,6 +2728,9 @@ const NeighborhoodDetail = () => {
             </div>
 
             {facts && <TownFactsPanel town={shortName} facts={facts} />}
+
+            {/* What homes sell for here, from the monthly market report. */}
+            <TownMarketLink slug={slug || ""} />
 
             {/* First-party transaction evidence for this town. Renders nothing
                 where there are no closings — see the component's header. */}

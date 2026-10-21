@@ -1,5 +1,5 @@
 import { Phone, CalendarDays, MessageSquare } from 'lucide-react';
-import Seo from '@/components/Seo';
+import Seo, { type SeoProps } from '@/components/Seo';
 import BreadcrumbBar from '@/components/BreadcrumbBar';
 import CtaBand from '@/components/CtaBand';
 import { breadcrumbs, type Crumb } from '@/lib/schema';
@@ -50,6 +50,8 @@ export interface PageShellProps {
      * nothing to gain by indexing it either.
      */
     noindex?: boolean;
+    /** Published and modified dates and the author, for a page that is an article. */
+    article?: SeoProps['article'];
   };
   /**
    * Page-specific schema. `breadcrumbs(crumbs)` is MERGED into this, never
@@ -184,6 +186,7 @@ const PageShell = ({
         ogType={seo.ogType}
         locale={seo.locale}
         noindex={seo.noindex}
+        article={seo.article}
         // Reciprocal with the /vi counterpart where one exists, undefined where
         // it does not. hreflang only counts when both sides declare the set.
         alternates={alternatesFor(path)}

@@ -12,7 +12,7 @@
  * .ts-vs-.mjs reason.
  */
 import { writeFileSync } from 'node:fs';
-import { ORIGIN, TOWN_SLUGS, LISTING_ENTRIES } from './routes.mjs';
+import { ORIGIN, TOWN_SLUGS, LISTING_ENTRIES, MARKET_ENTRIES } from './routes.mjs';
 
 const NAME = 'Kevin Hoang | Greater Boston Realtor';
 const AGENT = 'Kevin Hoang';
@@ -104,6 +104,19 @@ const LISTING_PAGES = LISTING_ENTRIES.map(({ slug, address, town, lastmod }) =>
   )
 );
 
+/*
+ * The town pages only, not every monthly post: this file is an editorial pick,
+ * and the town page is the one that is always current and links to the posts.
+ */
+const MARKET_PAGES = [
+  ...(MARKET_ENTRIES.length
+    ? [line('/market', 'Housing market reports by town — prices, sale-to-asking, inventory and rents from MLS data, updated monthly')]
+    : []),
+  ...MARKET_ENTRIES.filter((e) => !e.month).map((e) =>
+    line(e.path, `${e.town}, MA housing market — sales over 12, 6 and 3 months, homes for sale, price ranges and rents (as of ${e.lastmod})`)
+  ),
+];
+
 const TOWN_PAGES = TOWN_SLUGS.map((slug) =>
   line(`/neighborhoods/${slug}`, `${townName(slug)} area guide — neighborhoods, schools, transit, and housing market`)
 );
@@ -155,6 +168,10 @@ ${VI_PAGES.join('\n')}
 
 ${TOWN_PAGES.join('\n')}
 
+## Market reports
+
+${MARKET_PAGES.join('\n')}
+
 ## Homes sold
 
 Recorded closings ${AGENT} represented. First-party and independently
@@ -166,7 +183,7 @@ ${LISTING_PAGES.join('\n')}
 writeFileSync('dist/llms.txt', body);
 console.log(
   `llms.txt: wrote dist/llms.txt — ` +
-  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length + LISTING_PAGES.length} pages ` +
-  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns, ` +
+  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length + MARKET_PAGES.length + LISTING_PAGES.length} pages ` +
+  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns, ${MARKET_PAGES.length} market, ` +
   `${LISTING_PAGES.length} listings)`
 );

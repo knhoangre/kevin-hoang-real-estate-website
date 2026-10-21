@@ -1,0 +1,180 @@
+{
+ "towns": [
+  {
+   "town": "Newton",
+   "slug": "newton-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Needham",
+   "slug": "needham-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Wellesley",
+   "slug": "wellesley-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Waltham",
+   "slug": "waltham-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Brookline",
+   "slug": "brookline-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Weston",
+   "slug": "weston-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Lexington",
+   "slug": "lexington-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Belmont",
+   "slug": "belmont-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Winchester",
+   "slug": "winchester-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Concord",
+   "slug": "concord-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Cambridge",
+   "slug": "cambridge-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Somerville",
+   "slug": "somerville-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Medford",
+   "slug": "medford-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Malden",
+   "slug": "malden-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Quincy",
+   "slug": "quincy-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  },
+  {
+   "town": "Braintree",
+   "slug": "braintree-ma",
+   "latest": "2026-09",
+   "posts": [
+    {
+     "month": "2026-09",
+     "published": "2026-10-20"
+    }
+   ]
+  }
+ ]
+}

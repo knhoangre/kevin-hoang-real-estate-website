@@ -22,7 +22,7 @@
  * deploy would be that claim made falsely, so this sends only URLs whose
  * lastmod is within RECENT_DAYS, and does nothing when that set is empty.
  */
-import { ORIGIN, STATIC_ROUTES, BLOG_ROUTES, isPrivate } from './routes.mjs';
+import { ORIGIN, STATIC_ROUTES, BLOG_ROUTES, MARKET_ROUTES, isPrivate } from './routes.mjs';
 
 const KEY = process.env.INDEXNOW_KEY;
 const HOST = new URL(ORIGIN).host;
@@ -43,7 +43,7 @@ if (!/^[a-zA-Z0-9-]{8,128}$/.test(KEY)) {
 
 const cutoff = new Date(Date.now() - RECENT_DAYS * 86400_000).toISOString().slice(0, 10);
 
-const urlList = [...STATIC_ROUTES, ...BLOG_ROUTES]
+const urlList = [...STATIC_ROUTES, ...MARKET_ROUTES, ...BLOG_ROUTES]
   .filter((r) => !isPrivate(r.path))
   // A route with no lastmod has no evidence it changed, so it is not claimed.
   // Those pages are found through the sitemap like any other.

@@ -11,7 +11,7 @@
  * duplicated here, so they cannot drift. These are .ts files and this is a
  * plain .mjs build script, so they are parsed rather than imported.
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 export const ORIGIN = 'https://kevinhoang.co';
 
@@ -104,7 +104,27 @@ const listingEntries = () => {
   return entries;
 };
 
+/**
+ * Every market page as `{ path, lastmod }`, read out of the index
+ * scripts/sync-market.ts writes. A town page's lastmod is the day its newest
+ * report was written, and a monthly post's is the day it was published — the
+ * post is never revised, so that date stays true.
+ */
+const marketEntries = () => {
+  const file = 'src/data/market/index.json';
+  if (!existsSync(file)) return [];
+  const { towns } = JSON.parse(readFileSync(file, 'utf8'));
+  return towns.flatMap((t) => {
+    const latest = JSON.parse(readFileSync(`src/data/market/${t.slug}/${t.latest}.json`, 'utf8'));
+    return [
+      { path: `/market/${t.slug}`, lastmod: latest.asOf, town: t.town },
+      ...t.posts.map((p) => ({ path: `/market/${t.slug}/${p.month}`, lastmod: p.published, town: t.town, month: p.month })),
+    ];
+  });
+};
+
 export const TOWN_SLUGS = slugsFrom('src/data/neighborhoodData.ts');
+export const MARKET_ENTRIES = marketEntries();
 export const LISTING_ENTRIES = listingEntries();
 export const BLOG_ENTRIES = blogEntries();
 export const BLOG_SLUGS = BLOG_ENTRIES.map((e) => e.slug);
@@ -192,6 +212,23 @@ export const STATIC_ROUTES = [
   { path: '/privacy-policy', priority: 0.2, changefreq: 'yearly' },
   { path: '/terms-of-service', priority: 0.2, changefreq: 'yearly' },
   { path: '/disclaimer', priority: 0.2, changefreq: 'yearly' },
+];
+
+/**
+ * The market reports. A town's page changes every month, so it carries the
+ * month's date; a monthly post is a record and does not change, so it is
+ * `yearly` like a closing.
+ */
+export const MARKET_ROUTES = [
+  ...(MARKET_ENTRIES.length
+    ? [{ path: '/market', priority: 0.7, changefreq: 'monthly', lastmod: MARKET_ENTRIES.map((e) => e.lastmod).sort().pop() }]
+    : []),
+  ...MARKET_ENTRIES.map(({ path, lastmod, month }) => ({
+    path,
+    priority: month ? 0.6 : 0.7,
+    changefreq: month ? 'yearly' : 'monthly',
+    lastmod,
+  })),
 ];
 
 export const BLOG_ROUTES = BLOG_ENTRIES.map(({ slug, lastmod }) => ({

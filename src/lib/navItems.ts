@@ -44,6 +44,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { to: '/relocation', labelKey: 'nav.relocation' },
   { to: '/testimonials', labelKey: 'nav.testimonials' },
   { to: '/neighborhoods', labelKey: 'nav.neighborhoods' },
+  { to: '/market', labelKey: 'nav.market' },
   { to: '/blog', labelKey: 'nav.blog' },
   { to: '/calculator', labelKey: 'nav.calculator' },
   // Last on purpose. It is the service page ABOUT Vietnamese-language help,
@@ -96,9 +97,10 @@ const DARK_HERO_EXACT = new Set([
  * `/properties` is a PREFIX and not an exact entry because each closing has had
  * its own page since 2026-08-31 and every one of them has the same dark hero —
  * listed exactly, all ten detail pages showed a white bar over it. `/apply`
- * likewise, since the page anyone actually opens is `/apply/<token>`.
+ * likewise, since the page anyone actually opens is `/apply/<token>`, and
+ * `/market`, whose town pages and monthly posts all sit on the PageShell hero.
  */
-const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm', '/properties', '/apply'];
+const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm', '/properties', '/apply', '/market'];
 
 /**
  * Prefix-aware, so a detail route lights up its section.

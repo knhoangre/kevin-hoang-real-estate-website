@@ -6,6 +6,17 @@ import { useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { itemList } from "@/lib/schema";
+import { monthName } from "@/lib/marketText";
+import type { MarketIndex } from "@/lib/market";
+import marketIndexJson from "@/data/market/index.json";
+
+const marketIndex = marketIndexJson as MarketIndex;
+
+/** The newest month any town has a market report for. */
+const latestMarketMonth = marketIndex.towns
+  .flatMap((t) => t.posts.map((p) => p.month))
+  .sort()
+  .pop();
 
 
 const Blog = () => {
@@ -68,6 +79,39 @@ const Blog = () => {
           'These posts answer what gets asked most often. Anything specific to your house, your street or your timeline is better answered directly.',
       }}
     >
+      {latestMarketMonth && (
+        <ShellSection width="wide" className="pt-16 md:pt-20 bg-white">
+          {/* The monthly market reports are posts too, but generated from MLS
+              data rather than written, so they live at /market and are listed
+              here rather than mixed into the hand-written corpus below. */}
+          <section aria-labelledby="market-reports" className="rounded-2xl border border-gray-200 bg-bone p-6 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-champagne-ink">Monthly</p>
+            <h2 id="market-reports" className="mt-2 text-2xl font-semibold text-ink">
+              The latest market reports: {monthName(latestMarketMonth)}
+            </h2>
+            <p className="mt-2 max-w-3xl text-gray-700">
+              What sold in each town, what it sold for against asking, and what is on the market now.
+            </p>
+            <ul className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
+              {marketIndex.towns
+                .filter((t) => t.posts.some((p) => p.month === latestMarketMonth))
+                .map((t) => (
+                  <li key={t.slug}>
+                    <Link
+                      to={`/market/${t.slug}/${latestMarketMonth}`}
+                      className="font-medium text-ink underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
+                    >
+                      {t.town}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+            <Link to="/market" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ink group">
+              Every town and month <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+            </Link>
+          </section>
+        </ShellSection>
+      )}
       <ShellSection width="wide">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {blogPosts.map((post) => (

@@ -162,6 +162,7 @@ const Footer = () => {
               { to: '/contact', label: t('footer.contact') },
               { to: '/needham-real-estate-agent', label: 'Needham Real Estate' },
               { to: '/neighborhoods', label: 'Areas Served' },
+              { to: '/market', label: 'Market Reports' },
               { to: '/blog', label: t('nav.blog') },
               { to: '/testimonials', label: 'Reviews' },
               { to: '/videos', label: 'Videos' },

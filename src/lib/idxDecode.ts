@@ -45,3 +45,15 @@ export const decodeCodes = (
   // of the reference, and "Other (See Remarks), Other (See Remarks)" is noise.
   return labels.length ? [...new Set(labels)].join(', ') : null;
 };
+
+/**
+ * Whether a status still means "you can buy this".
+ *
+ * Contingent and under-agreement listings are still shown — they fall through
+ * often enough to matter — but they are marked, because presenting one as
+ * simply available wastes a buyer's afternoon.
+ */
+export const AVAILABLE_STATUSES = ['ACT', 'NEW', 'BOM', 'PCG', 'EXT', 'RAC'];
+
+export const isAvailable = (code: string | null) =>
+  AVAILABLE_STATUSES.includes((code ?? '').trim().toUpperCase());
