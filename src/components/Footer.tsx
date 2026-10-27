@@ -165,7 +165,6 @@ const Footer = () => {
               { to: '/market', label: 'Market Reports' },
               { to: '/blog', label: t('nav.blog') },
               { to: '/testimonials', label: 'Reviews' },
-              { to: '/videos', label: 'Videos' },
             ]}
           />
 

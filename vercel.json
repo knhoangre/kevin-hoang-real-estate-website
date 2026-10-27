@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/videos",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
       "source": "/blog/metro-boston-real-estate-2026-01-11",
       "destination": "/blog/multiple-offers-boston-market",
       "permanent": true

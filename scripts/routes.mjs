@@ -187,7 +187,6 @@ export const STATIC_ROUTES = [
   { path: '/calculator', priority: 0.6, changefreq: 'yearly' },
   { path: '/properties', priority: 0.6, changefreq: 'weekly' },
   { path: '/testimonials', priority: 0.5, changefreq: 'monthly' },
-  { path: '/videos', priority: 0.6, changefreq: 'weekly' },
 
   // Vietnamese. Real prerendered documents, paired with their English
   // counterparts by src/lib/viRoutes.ts. Kept in sync with AppRoutes.tsx by

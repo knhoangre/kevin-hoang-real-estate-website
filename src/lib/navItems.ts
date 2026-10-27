@@ -77,16 +77,15 @@ const DARK_HERO_EXACT = new Set([
   '/contact',
   '/calculator',
   '/first-time-buyers',
-  // The IDX search, the rental portal and the reels all render a PageShell dark
-  // hero, and none of them was listed — so the bar stayed white over a
-  // near-black band on every one of them. Verified against the BUILT html
-  // rather than by eye: a script compared `bg-ink-deep` in each prerendered
-  // page's <main> with what this function claims, and these were the misses.
+  // The IDX search and the rental portal both render a PageShell dark hero, and
+  // neither was listed — so the bar stayed white over a near-black band on both
+  // of them. Verified against the BUILT html rather than by eye: a script
+  // compared `bg-ink-deep` in each prerendered page's <main> with what this
+  // function claims, and these were the misses.
   '/search',
   '/rentals',
   '/saved',
   '/investments',
-  '/videos',
 ]);
 
 /**

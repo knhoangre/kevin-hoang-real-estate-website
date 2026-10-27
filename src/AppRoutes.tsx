@@ -148,7 +148,6 @@ export const routes: RouteRecord[] = [
       page('faq', () => import('./pages/FAQPage'), 'src/pages/FAQPage.tsx'),
       page('calculator', () => import('./pages/Calculator'), 'src/pages/Calculator.tsx'),
       page('testimonials', () => import('./pages/Testimonials'), 'src/pages/Testimonials.tsx'),
-      page('videos', () => import('./pages/Videos'), 'src/pages/Videos.tsx'),
       page('properties', () => import('./pages/PropertiesList'), 'src/pages/PropertiesList.tsx'),
       {
         // One page per closing, expanded from the committed snapshot. These
