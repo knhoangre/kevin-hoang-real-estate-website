@@ -101,6 +101,13 @@ export const SITE = {
   appointmentUrl: 'https://calendar.app.google/P297MnAu7ei6turA6',
 
   /**
+   * Kevin's software-engineering portfolio, credited in the footer as the
+   * site's builder. A link, not a sameAs: the portfolio is about the engineer,
+   * and this site's Person schema stays about the agent.
+   */
+  developerSite: 'https://www.kevinhoang.dev',
+
+  /**
    * Latitude/longitude of the place of business. NULL, and it must stay null
    * until there is a real one.
    *

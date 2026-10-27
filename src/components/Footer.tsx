@@ -221,7 +221,10 @@ const Footer = () => {
             <span className="font-semibold text-gray-300">{SITE.brokerage}</span>.
           </p>
           <p className="text-gray-400 text-sm">
-            Created by <span className="font-semibold">Kevin Hoang</span>
+            Created by{' '}
+            <a href={SITE.developerSite} className="font-semibold hover:text-white transition-colors">
+              Kevin Hoang
+            </a>
           </p>
         </div>
       </div>
