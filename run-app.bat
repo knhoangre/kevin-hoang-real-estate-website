@@ -12,7 +12,7 @@ echo Building and starting the application...
 docker-compose up --build
 
 echo.
-echo Application should be available at: http://localhost:5173
+echo Application should be available at: http://localhost:5174
 echo.
 echo Press any key to exit...
 pause

@@ -12,12 +12,11 @@ npm run build:spa  # plain vite build — NOT what ships; skips prerendering
 npm run preview    # serve the built bundle
 npm run lint       # eslint
 
-docker compose up app   # same dev server in a container — but on :5173, NOT :8080
+docker compose up app   # same dev server in a container — but on :5174, NOT :8080
 
 node scripts/generate-icons.mjs          # regenerate favicons + og-image.jpg + og-about.jpg
 node scripts/generate-blog-redirects.mjs # rewrite the blog 301s in vercel.json
 node scripts/sync-listings.mjs           # refresh src/data/soldListings.ts from Supabase
-node scripts/generate-video-posters.mjs   # build public/videos/ posters from public/videos/_src/
 node scripts/geocode-listings.ts         # backfill idx_geocodes from the US Census geocoder
 node scripts/sync-market.ts              # this month's market reports into src/data/market (a GitHub Action runs it on the 3rd)
 ```
@@ -45,8 +44,8 @@ it removes a mirror rather than documenting one.
 
 **The two dev servers listen on different ports, and the config does not say so.**
 `vite.config.ts` sets `server.port: 8080`, which is what a host `npm run dev` uses —
-but the container overrides it and `docker-compose.yml` publishes `5173:5173`, so
-the Docker path is **http://localhost:5173**. Curling :8080 against a running
+but the container overrides it and `docker-compose.yml` publishes `5174:5173` (host 5174, since 5173 collided with another local project), so
+the Docker path is **http://localhost:5174**. Curling :8080 against a running
 container gets nothing and looks like a broken app.
 
 **On a Mac the Docker path is usually the only one that works.** `node_modules` is
@@ -236,8 +235,8 @@ even though in-app navigation to it works. Adding a route means all three of:
 drifts silently.** The navbar starts transparent only over a page this function
 claims has a dark hero; a page with one that is not listed shows a white bar over
 a near-black band, which is invisible in review because nothing errors. `/search`,
-`/rentals`, `/videos`, `/apply` and all ten `/properties/<slug>` pages had that
-bug until 2026-09-13. Verify against the BUILT output rather than by eye — compare
+`/rentals`, `/apply` and all ten `/properties/<slug>` pages had that bug until
+2026-09-13. Verify against the BUILT output rather than by eye — compare
 `bg-ink-deep` inside each prerendered page's `<main>` with what the function
 returns, and the mismatches are the list. Sections with detail routes belong in
 `DARK_HERO_PREFIX`, not `DARK_HERO_EXACT`.
@@ -2027,49 +2026,6 @@ Two senders, and only one of them is ours today.
   there, so SPF and DKIM align — and it also lifts the rate limit. It is
   configured under Authentication → SMTP Settings, host `smtp.resend.com`, user
   `resend`, password the same API key. Do not put the API key in `config.toml`.
-
-### Videos (`/videos`)
-
-The Instagram reels, watchable in a modal without leaving the site.
-
-- **The reels are never hosted here.** They stay on Instagram — their
-  bandwidth — and the site holds only a committed 720px poster frame plus our
-  own title and description per video. Supabase Storage is deliberately not
-  involved: video is orders of magnitude heavier than photographs, and hosting
-  it there would repeat at far greater cost the egress mistake `/properties`
-  made with 339 full-resolution PNGs.
-- **Instagram's player loads on CLICK, never on page load.** Radix unmounts
-  closed dialog content, which is a problem for FAQ answers and exactly the
-  behaviour wanted in [VideoLightbox.tsx](src/components/VideoLightbox.tsx):
-  until someone opens a video, `/videos` has made no request to instagram.com at
-  all. That is the whole trade that makes the one third-party embed on an
-  otherwise first-party site affordable — the site links out to Google Maps
-  rather than embedding it for the same reason. Verify it in DevTools after any
-  change here.
-- **Thumbnails cannot be hotlinked.** An Instagram permalink carries no image,
-  and the real thumbnail is a signed `scontent.cdninstagram.com` URL that expires
-  within days. `public/videos/` is generated output built by
-  `scripts/generate-video-posters.mjs` from hand-saved screenshots in
-  `public/videos/_src/` — never hand-edit it, and re-run the script after adding
-  a reel. It is not in `npm run build`, for the same reason `sync-listings.mjs`
-  is not. It reads ids out of `videos.ts` by regex and strips **both** comment
-  styles first: stripping only `//` picked the example id out of that file's own
-  doc block and reported a missing screenshot for a video that does not exist.
-  Posters are 720px WebP and the social card is cropped `position: 'top'` —
-  a centre crop of a 9:16 frame lands on somebody's torso.
-- **`title` and `description` are ours, not the Instagram caption.** A pasted
-  caption is emoji and hashtags — not indexable text, and it reads badly on a
-  light page. This copy is the only prose on the page and the content rules
-  apply to it in full.
-- **The card is a real `<a>` to the reel**, upgraded to the modal by a click
-  handler that leaves modified clicks alone. With JS off, or for a crawler, it
-  is still a working link. Nothing may nest inside it — see the no-nested-`<a>`
-  rule above.
-- **The page emits `person()` as well as `agentIdentity()`**, because
-  `videoObject().creator` references `#kevin`, and an `@id` only resolves
-  against a node declared in the same document.
-- **An empty `videos` array renders an honest empty state**, not placeholder
-  cards, and the poster script refuses to prune when it reads no entries.
 
 ### The Vietnamese tree (`/vi`)
 

@@ -53,7 +53,7 @@ The application will automatically reload when you make changes to:
 
 1. The first build might take a few minutes as it installs all dependencies
 2. Subsequent starts will be much faster due to Docker layer caching
-3. The application will be available at `http://localhost:5173`
+3. The application will be available at `http://localhost:5174`
 4. Changes to the Dockerfile or docker-compose.yml require a rebuild:
    ```bash
    docker-compose up --build
@@ -67,7 +67,7 @@ The application will automatically reload when you make changes to:
    - Check Docker logs for any errors
 
 2. If the container fails to start:
-   - Check if port 5173 is available
+   - Check if port 5174 is available on the host
    - Ensure Docker Desktop is running
    - Try rebuilding the container:
      ```bash

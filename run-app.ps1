@@ -11,7 +11,7 @@ Write-Host "Building and starting the application..." -ForegroundColor Green
 docker-compose up --build
 
 Write-Host ""
-Write-Host "Application should be available at: http://localhost:5173" -ForegroundColor Green
+Write-Host "Application should be available at: http://localhost:5174" -ForegroundColor Green
 Write-Host ""
 Write-Host "Press any key to exit..." -ForegroundColor Cyan
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
