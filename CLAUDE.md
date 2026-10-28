@@ -33,7 +33,7 @@ node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour AND the marketing documents (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -2277,6 +2277,30 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `Failed to resolve import "<pkg>"` from a file that is plainly correct, with a
   `/app/...` path in the trace. `docker compose up --build` (the Dockerfile runs
   `npm install` at build time) or `docker compose exec app npm install`.
+- **The CRM was readable — and writable — with the public key until
+  2026-10-28.** Contacts, their emails and phones, the contact-form messages,
+  the open-house sign-ins and the nine `pm_*` property-management tables
+  (`pm_users` has a `password_hash`, `pm_owners` a `tax_id`). Closed by
+  `20261028100000_close_public_crm_reads`. Three things to keep true, because
+  each was one of the holes:
+  - **The live database had drifted from the migrations.** "Allow all
+    operations on contact_<x>" TO anon, RLS off on `contact_sources` and every
+    `pm_*` table, and the `pm_*` tables themselves — none of it is in any
+    migration; it was made in the dashboard. So reading migrations says nothing
+    about what is live: `SUPABASE_ACCESS_TOKEN= npx --no-install supabase db
+    dump --linked --schema public` does, and a count with the anon key
+    (`select=id`, `Range: 0-0`, `Prefer: count=exact`, no fields) is the check.
+    `supabase/tests/04_crm_live_state.sql` is that dump's version of these
+    tables, and `crm_privacy_before.sql` proves it reproduces the leak.
+  - **A view runs as its owner and the owner skips RLS.** `contacts_view` and
+    both message views are `security_invoker` now; without it they hand every
+    row to anyone with SELECT on the view, whatever the tables' policies say.
+    **A `CREATE OR REPLACE VIEW` of them must restate
+    `WITH (security_invoker = true)`**, and the test asserts it.
+  - **Nothing public may read or write these tables.** The three forms post
+    to edge functions on the service-role key, and the two kiosks fetch their
+    previous-address lists only once `isAdmin` is true. A new public feature
+    that needs CRM data goes through an edge function, never a policy for anon.
 - **A migration version must be UNIQUE, or `supabase db push` is permanently
   blocked.** Two files shared `20240320000000` until 2026-09-13. The remote
   history records one row per version, so the second file could never pair with

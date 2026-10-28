@@ -53,9 +53,12 @@ while [ $i -lt 40 ]; do
   sleep 1
 done
 
+# DB is which database a file runs in; everything but the CRM privacy tests
+# shares the default one.
+DB=postgres
 psql_file() {
   docker cp "$1" "$CONTAINER:/tmp/run.sql" >/dev/null
-  docker exec "$CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 "$2" -f /tmp/run.sql
+  docker exec "$CONTAINER" psql -U postgres -d "$DB" -v ON_ERROR_STOP=1 "$2" -f /tmp/run.sql
 }
 
 # One file of assertions. Its output is filtered to the ok/FAIL lines for
@@ -132,6 +135,25 @@ psql_file "$REPO/supabase/migrations/20261010100000_marketing_documents.sql" -q 
   | grep -v 'NOTICE.*skipping' || true
 echo
 run_tests "$TESTS/marketing_documents_test.sql"
+
+# Who can read the CRM. Its own database, over the LIVE state of the CRM,
+# sign-in and property-management tables (04_crm_live_state.sql, from a dump)
+# rather than the stand-ins above: the leak this closes was in policies no
+# migration created. The "before" file proves the fixture reproduces the leak,
+# which is what makes the test after the migration mean anything.
+echo
+docker exec "$CONTAINER" createdb -U postgres crm_privacy
+DB=crm_privacy
+psql_file "$TESTS/01_auth_bootstrap.sql" -q
+psql_file "$TESTS/04_crm_live_state.sql" -q
+psql_file "$TESTS/crm_privacy_seed.sql" -q
+run_tests "$TESTS/crm_privacy_before.sql"
+echo "Applying 20261028100000_close_public_crm_reads"
+psql_file "$REPO/supabase/migrations/20261028100000_close_public_crm_reads.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/crm_privacy_test.sql"
+DB=postgres
 
 echo
 echo "All assertions passed."
