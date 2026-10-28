@@ -33,7 +33,8 @@ node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents AND who can read the CRM (needs Docker)
+node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -1812,6 +1813,54 @@ client, with a link to each home on this site.
   when it has unsaved edits. The worst outcome on this page is texting a schedule
   that describes the tour as it was two edits ago.
 
+### Showing reminders (top of `/admin/showings`, and an email at 8 AM)
+
+Kevin books most showings in Zillow chat or by text and puts them on his Google
+Calendar by hand; he asked on 2026-10-28 for a reminder he cannot forget to
+send. Every morning at 8 the `showing-reminders` edge function reads that day's
+showings and (a) emails each client who is a GUEST on Kevin's own event, (b)
+emails Kevin one summary with every message written out. The panel at the top
+of `/admin/showings` is the same day, with Copy / Text / Email on each.
+[_shared/showingReminders.ts](supabase/functions/_shared/showingReminders.ts) is
+pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
+
+- **A showing is an event with "showing" in its title.** The client's name is
+  the rest of the title ("Showing - Sarah Lee", "Zillow showing w/ Marcus"); a
+  part starting with a digit is an address, not a name. All-day showings are
+  reported ("no time to remind about"), repeating events and cancelled ones are
+  skipped, and UIDs ending `@kevinhoang.co` are skipped because they are stops
+  from a showing tour's calendar file — tours are read from the database instead,
+  one reminder per tour, everyone on it greeted and emailed.
+- **Only guests are emailed, and only on Kevin's OWN events.** An address in the
+  notes is offered as a tap, never mailed: notes are where the listing agent's
+  email goes, and a "friendly reminder about our showing" sent to them is the
+  failure this prevents. An event someone else organised (a ShowingTime
+  confirmation) mails nobody. Declined guests, rooms and Kevin's own addresses —
+  including the calendar's owner, read from its iCal URL — are never recipients.
+- **Texts are never sent by the site.** A server cannot text from Kevin's number;
+  Twilio would mean a new number, carrier registration and a monthly bill (Kevin
+  prefers free). And most of these clients are on Zillow chat, which no software
+  can post into. So a text is an `sms:` link and the Zillow case is the message to
+  paste — the same choice the showing-tour schedule made.
+- **The calendar is its "Secret address in iCal format"**, in the
+  `SHOWING_CALENDAR_ICS_URL` function secret: no Google Cloud project, no OAuth.
+  It is Kevin's whole calendar, so it is never logged or returned. If Google's
+  export ever proves hours stale, the replacement is the Calendar API with
+  `calendar.readonly` — publish the OAuth app "In production" first, or the
+  refresh token dies after seven days.
+- **Times are read on Boston's clock, never off the string.** Google exports a
+  one-off event in UTC, so a 9:30 PM showing is the NEXT day in the file.
+- **pg_cron fires at 12:00 AND 13:00 UTC** and the function proceeds only on the
+  one that is 8 AM in Boston, so daylight saving needs no migration. Each email
+  is claimed in `showing_reminders` (UNIQUE day, kind, key) before it is sent, so
+  the second run, a retry or a forced run sends nothing twice. The table has no
+  policy and no browser grant; the panel asks the function.
+- **A calendar that cannot be read is in Kevin's summary**, never silent: a
+  morning with no email has to mean a morning with no showings. A morning with no
+  showings and no problems sends nothing.
+- `run` takes `dryRun` (says what it would send) and `force` (skips the hour
+  check); both still need the service-role key. `list` is admin-only.
+
 ### Marketing documents (`/admin/marketing`)
 
 Admin only. The three things Kevin hands out for a listing and used to lay out
@@ -2277,6 +2326,14 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `Failed to resolve import "<pkg>"` from a file that is plainly correct, with a
   `/app/...` path in the trace. `docker compose up --build` (the Dockerfile runs
   `npm install` at build time) or `docker compose exec app npm install`.
+- **resend@3.1.0 takes `reply_to`, not `replyTo`.** That version posts the
+  options to Resend's API unchanged, and the API knows only `reply_to`, so a
+  `replyTo` is silently dropped and replies go to the From address
+  (contact@kevinhoang.co). Deno's type check says so (`deno check`, with only
+  `supabase/functions` mounted — the repo's package.json confuses it).
+  `showing-reminders` uses `reply_to`; as of 2026-10-28 `showing-schedule`,
+  `rental-application-submitted` and `rental-application-invite` still pass
+  `replyTo`, so a reply to an application notice does not reach the applicant.
 - **The CRM was readable — and writable — with the public key until
   2026-10-28.** Contacts, their emails and phones, the contact-form messages,
   the open-house sign-ins and the nine `pm_*` property-management tables

@@ -44,6 +44,7 @@ import {
 import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
 import AdminList from '@/components/admin/AdminList';
 import ListingLookup from '@/components/admin/ListingLookup';
+import ShowingReminders from '@/components/admin/ShowingReminders';
 import SuggestInput from '@/components/admin/SuggestInput';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -1033,6 +1034,8 @@ export default function AdminShowings() {
           </form>
         </AdminCard>
       )}
+
+      <ShowingReminders />
 
       {loading ? (
         <div className="flex min-h-[30vh] items-center justify-center">

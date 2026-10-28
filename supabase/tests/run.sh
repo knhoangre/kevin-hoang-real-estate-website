@@ -136,6 +136,17 @@ psql_file "$REPO/supabase/migrations/20261010100000_marketing_documents.sql" -q 
 echo
 run_tests "$TESTS/marketing_documents_test.sql"
 
+# The morning showing reminders: the claim that sends each one once. Applied
+# twice, because the schedule must survive the migration being re-run.
+echo
+for pass in 1 2; do
+  echo "Applying 20261028110000_showing_reminders (pass $pass)"
+  psql_file "$REPO/supabase/migrations/20261028110000_showing_reminders.sql" -q 2>&1 \
+    | grep -v 'NOTICE.*skipping' || true
+done
+echo
+run_tests "$TESTS/showing_reminders_test.sql"
+
 # Who can read the CRM. Its own database, over the LIVE state of the CRM,
 # sign-in and property-management tables (04_crm_live_state.sql, from a dump)
 # rather than the stand-ins above: the leak this closes was in policies no

@@ -384,7 +384,7 @@ export const suggestClients = async (
  * admin to read ("Add at least one stop…"), so they are worth digging out
  * rather than replacing with "Edge Function returned a non-2xx status code".
  */
-const functionMessage = async (error: unknown, fallback: string): Promise<string> => {
+export const functionMessage = async (error: unknown, fallback: string): Promise<string> => {
   const context = (error as { context?: unknown } | null)?.context;
   if (context instanceof Response) {
     try {
