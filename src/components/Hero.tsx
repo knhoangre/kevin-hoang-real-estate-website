@@ -33,8 +33,11 @@ const Hero = () => {
       </div>
 
       {/* The copy takes whatever height the skyline leaves and centres in it;
-          the skyline is in the flow below, so the two can never overlap. */}
-      <div className="container relative z-10 flex flex-1 items-center justify-center px-4 pt-28 pb-6 text-center text-white">
+          the skyline is in the flow below, so the two can never overlap.
+          From sm up the padding is weighted to the top, which sets the copy
+          40px lower than true centre (Kevin, 2026-10-29) without making the
+          hero any taller. Phones keep the even split: they have no room. */}
+      <div className="container relative z-10 flex flex-1 items-center justify-center px-4 pt-28 pb-6 sm:pt-44 sm:pb-2 text-center text-white">
         <div className="mx-auto max-w-4xl">
           <div className="mb-6 flex items-center justify-center gap-4">
             <span className="h-px w-10 bg-champagne" aria-hidden />
