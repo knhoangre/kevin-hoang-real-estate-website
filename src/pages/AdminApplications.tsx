@@ -41,7 +41,6 @@ import AdminList, { type AdminColumn } from '@/components/admin/AdminList';
 import RentalApplicationForm from '@/components/rental/RentalApplicationForm';
 import StatusBadge from '@/components/rental/StatusBadge';
 import DownloadPdfButton from '@/components/rental/DownloadPdfButton';
-import LeaseEditor from '@/components/rental/lease/LeaseEditor';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import AddressAutocomplete from '@/components/admin/AddressAutocomplete';
@@ -50,8 +49,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useViewScroll } from '@/hooks/useViewScroll';
 import { sentenceList } from '@/lib/utils';
-import { applicantName, formatLeaseDate, leasesForProperty, type LeaseSummary } from '@/lib/lease';
-import { listLeases, startLease } from '@/lib/leaseStore';
+import { SITE } from '@/lib/siteConfig';
 import {
   APPLICATION_FORMS,
   APPLICATION_STATUSES,
@@ -85,6 +83,18 @@ import {
 
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+/** "Nov 1, 2026" from the "2026-11-01" a date field stores, read in UTC so it never slips a day. */
+const shortDay = (ymd: string) => {
+  const [y, m, d] = ymd.split('-').map(Number);
+  if (!y || !m || !d) return ymd;
+  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+};
 
 const STATE_TONE: Record<string, string> = {
   live: 'bg-emerald-50 text-emerald-800 border-emerald-200',
@@ -898,7 +908,13 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 /* ------------------------------------------------------------------ */
 
 /**
- * Choose who signs, and the lease is made and opened.
+ * Choose who signs, and the lease is made in Kevin's paperwork app.
+ *
+ * The lease is the GBREB packet that app fills in and sends for signature, not
+ * a document of this site's (Kevin, 2026-10-30). This page only says WHO: the
+ * link carries the chosen application ids, and the app reads the address, the
+ * rent and the applicants out of the database itself, under its own key — the
+ * same way the site's functions take an id rather than the values.
  *
  * A list of checkboxes rather than a checkbox on each application's row: a row
  * in that list is one link, the whole row, and can hold no other control (see
@@ -911,17 +927,14 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
  */
 const LeasePicker = ({
   applications,
-  onCreate,
   onCancel,
 }: {
   applications: RentalApplicationRecord[];
-  onCreate: (chosen: RentalApplicationRecord[]) => Promise<void>;
   onCancel: () => void;
 }) => {
   const [chosen, setChosen] = useState<Set<string>>(
     () => new Set(applications.filter((a) => a.status === 'approved').map((a) => a.id))
   );
-  const [busy, setBusy] = useState(false);
 
   const toggle = (id: string) =>
     setChosen((was) => {
@@ -931,24 +944,17 @@ const LeasePicker = ({
       return next;
     });
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (busy || chosen.size === 0) return;
-    setBusy(true);
-    try {
-      // In the order they are listed, which is the order they sign in.
-      await onCreate(applications.filter((a) => chosen.has(a.id)));
-    } finally {
-      setBusy(false);
-    }
-  };
+  // In the order they are listed, which is the order they sign in.
+  const ids = applications.filter((a) => chosen.has(a.id)).map((a) => a.id);
+  const href = `${SITE.paperworkUrl}/#/from-website?apps=${ids.join(',')}`;
 
   return (
-    <form onSubmit={submit} className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.25em] text-champagne-ink">New lease</p>
       <p className="mt-2 text-sm leading-relaxed text-gray-600">
-        Choose who signs it. The lease is filled in from this property and their applications — the
-        address, the rent, the people, the move-in date — and opens for you to finish.
+        Choose who signs it. The lease is made in your paperwork app — the address and rent from this
+        property’s link, the people and the move-in date from their applications — and opens there
+        for you to finish. The paperwork app has to be running on your Mac.
       </p>
       <fieldset className="mt-4 space-y-2">
         <legend className="sr-only">Applicants on the lease</legend>
@@ -966,12 +972,12 @@ const LeasePicker = ({
               onChange={() => toggle(a.id)}
             />
             <span className="min-w-0 flex-1">
-              <span className="block font-medium text-ink">{applicantName(a) || 'No name yet'}</span>
+              <span className="block font-medium text-ink">{fullName(a) || 'No name yet'}</span>
               <span className="block break-words text-xs text-gray-500">
                 {[
                   a.applicantEmail,
                   a.data.tenancy.desiredOccupancyDate &&
-                    `moving in ${formatLeaseDate(a.data.tenancy.desiredOccupancyDate)}`,
+                    `moving in ${shortDay(a.data.tenancy.desiredOccupancyDate)}`,
                 ]
                   .filter(Boolean)
                   .join(' · ')}
@@ -982,21 +988,23 @@ const LeasePicker = ({
         ))}
       </fieldset>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <button type="submit" className={ADMIN_BUTTON} disabled={busy || chosen.size === 0}>
-          {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
+        {ids.length === 0 ? (
+          <button type="button" className={ADMIN_BUTTON} disabled>
             <FileSignature className="h-4 w-4" aria-hidden />
-          )}
-          {chosen.size === 0
-            ? 'Choose who signs'
-            : `Make the lease for ${chosen.size} ${chosen.size === 1 ? 'person' : 'people'}`}
-        </button>
+            Choose who signs
+          </button>
+        ) : (
+          // A new tab, so this page is still here when the lease is done.
+          <a href={href} target="_blank" rel="noreferrer" className={ADMIN_BUTTON}>
+            <FileSignature className="h-4 w-4" aria-hidden />
+            {`Make the lease for ${ids.length} ${ids.length === 1 ? 'person' : 'people'}`}
+          </a>
+        )}
         <button type="button" onClick={onCancel} className={adminActionClass('ghost')}>
           Cancel
         </button>
       </div>
-    </form>
+    </div>
   );
 };
 
@@ -1009,8 +1017,7 @@ export default function AdminApplications() {
   const [params, setParams] = useSearchParams();
   const openId = params.get('id');
   const openProperty = params.get('property');
-  const openLease = params.get('lease');
-  useViewScroll(`${openId ?? ''}|${openProperty ?? ''}|${openLease ?? ''}`);
+  useViewScroll(`${openId ?? ''}|${openProperty ?? ''}`);
 
   const [invites, setInvites] = useState<RentalInviteRecord[]>([]);
   const [apps, setApps] = useState<RentalApplicationRecord[]>([]);
@@ -1053,32 +1060,12 @@ export default function AdminApplications() {
     void load();
   }, [load]);
 
-  /*
-   * The leases, read on their own: a failure here is said on the property's
-   * page, under Leases, rather than refusing to show the applications too.
-   */
-  const [leases, setLeases] = useState<LeaseSummary[]>([]);
-  const [leasesFailed, setLeasesFailed] = useState(false);
-  const loadLeases = useCallback(async () => {
-    try {
-      setLeases(await listLeases());
-      setLeasesFailed(false);
-    } catch (err) {
-      console.error('Could not load leases:', err);
-      setLeasesFailed(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadLeases();
-  }, [loadLeases]);
-
   // An open form belongs to the view it was opened on.
   useEffect(() => {
     setShowNew(false);
     setFixing(null);
     setChoosingLease(false);
-  }, [openId, openProperty, openLease]);
+  }, [openId, openProperty]);
 
   /** Which invites have an application against them. */
   const claimedInvites = useMemo(
@@ -1161,33 +1148,6 @@ export default function AdminApplications() {
     // application opened — would render the copy read before the edit.
     void load();
   };
-
-  /* ---- One lease --------------------------------------------------- */
-  if (openLease) {
-    const summary = leases.find((l) => l.id === openLease);
-    const home = summary ? groups.find((g) => leasesForProperty(g, [summary]).length > 0) : undefined;
-    const back = () => {
-      setParams(home ? { property: home.key } : {}, { replace: true });
-      // The tenants' names and the address in the list are copies the lease
-      // has been writing as it saved.
-      void loadLeases();
-    };
-    return (
-      <AdminShell
-        title="Lease"
-        description={home?.label}
-        actions={
-          <button type="button" onClick={back} className={adminActionClass('ghost')}>
-            <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
-            {home ? 'Back to the property' : 'All properties'}
-          </button>
-        }
-      >
-        {/* Keyed on the lease, so opening another starts from its own state. */}
-        <LeaseEditor key={openLease} id={openLease} onDeleted={back} />
-      </AdminShell>
-    );
-  }
 
   /* ---- One application --------------------------------------------- */
   if (openId) {
@@ -1330,32 +1290,6 @@ export default function AdminApplications() {
     const rent = group?.invites.find((i) => i.monthlyRent != null)?.monthlyRent ?? null;
     // Picking the property itself would change nothing.
     const others = previous.filter((p) => p.key !== openProperty);
-    const propertyLeases = group ? leasesForProperty(group, leases) : [];
-
-    const makeLease = async (chosen: RentalApplicationRecord[]) => {
-      if (!group) return;
-      try {
-        const id = await startLease({
-          // The link's own address, structured — the same record the property
-          // is filed under. The newest link wins, as it does for the heading.
-          // A link from before the address had fields has only its label.
-          property: newest?.propertyAddress?.trim()
-            ? propertyOfInvite(newest)
-            : { propertyAddress: newest?.label || formatTenancyAddress(chosen[0]?.data.tenancy ?? {}) },
-          rent,
-          applications: chosen,
-        });
-        void loadLeases();
-        setParams({ lease: id });
-      } catch (err) {
-        console.error('Could not make the lease:', err);
-        toast({
-          variant: 'destructive',
-          title: 'Could not make the lease',
-          description: 'Nothing was created. Please try again.',
-        });
-      }
-    };
 
     return (
       <AdminShell
@@ -1470,7 +1404,6 @@ export default function AdminApplications() {
               <AdminCard>
                 <LeasePicker
                   applications={group.applications}
-                  onCreate={makeLease}
                   onCancel={() => setChoosingLease(false)}
                 />
               </AdminCard>
@@ -1513,37 +1446,6 @@ export default function AdminApplications() {
                 )}
               </AdminCard>
             </section>
-
-            {(propertyLeases.length > 0 || leasesFailed) && (
-              <section>
-                <SectionHeading>Leases ({propertyLeases.length})</SectionHeading>
-                <AdminCard>
-                  {leasesFailed ? (
-                    <p className="px-4 py-4 text-sm text-gray-600 sm:px-6">
-                      The leases could not be loaded. Refresh the page to try again.
-                    </p>
-                  ) : (
-                    <AdminList
-                      label="Leases"
-                      columns={[{ label: 'Tenants', primary: true }, { label: 'Last changed' }, { label: '', end: true }]}
-                      grid="md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_1rem]"
-                      rows={propertyLeases.map((l) => ({
-                        key: l.id,
-                        to: `?lease=${encodeURIComponent(l.id)}`,
-                        cells: [
-                          <span key="t" className="block min-w-0">
-                            <span className="block font-medium text-ink">{l.tenantNames || 'No tenants named'}</span>
-                            <span className="block break-words text-xs text-gray-500">{l.title}</span>
-                          </span>,
-                          shortDate(l.updatedAt),
-                          <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
-                        ],
-                      }))}
-                    />
-                  )}
-                </AdminCard>
-              </section>
-            )}
 
             {group.invites.length > 0 && (
               <section>

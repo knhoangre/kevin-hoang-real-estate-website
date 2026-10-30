@@ -158,14 +158,6 @@ done
 echo
 run_tests "$TESTS/showing_reminders_test.sql"
 
-# Leases made from a property's applicants: the admin's alone.
-echo
-echo "Applying 20261030120000_rental_leases"
-psql_file "$REPO/supabase/migrations/20261030120000_rental_leases.sql" -q 2>&1 \
-  | grep -v 'NOTICE.*skipping' || true
-echo
-run_tests "$TESTS/rental_leases_test.sql"
-
 # Which form an application link asks for, over the stand-in rental tables
 # from 02_crm_bootstrap.sql.
 echo

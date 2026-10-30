@@ -31,11 +31,10 @@ node scripts/listing-url-check.ts      # a listing's URL: old number-only links,
 node scripts/phone-check.ts            # the phone formatter: a pasted "+1 (203) 379-8682" is 203-379-8682
 node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills in, the crop, the total, the page breaks
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
-node scripts/lease-check.ts            # the lease: what it is started with, the term's end date, the deposit limits, old saves opening
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents, the showing reminders, leases AND who can read the CRM (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -1440,55 +1439,48 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   which is the real closed set. Deriving the union from the literal made the
   optional `required`/`steps` fields unreadable on the union of entry types.
 
-#### Leases (`/admin/applications?lease=<id>`)
-
-Kevin asked on 2026-10-29 to pick applicants on a property's page and have the
-lease made from them and opened for him to work on. "New lease" on a property
-lists its applications with checkboxes (the approved ones ticked); the lease is
-made and opens as a document like a booklet — fields on the left, the paper on
-the right, saving itself, printed through the browser's print box from a
-[DocFrame](src/components/DocFrame.tsx). [lease.ts](src/lib/lease.ts) is pure
-and decides everything; [leaseStore.ts](src/lib/leaseStore.ts) only asks;
-`node scripts/lease-check.ts` is the check.
-
-- **It is the site's own lease, not GBREB's Standard Form Lease**, which is
-  copyrighted like RH101. The editor says so above the fields and asks Kevin to
-  have the landlord or their attorney agree to the wording. Do not copy GBREB's
-  text in to "make it standard".
-- **What it is started with, and what it is not.** The premises and the rent
-  come from the property's LINK (the same structured record the property is
-  filed under), the tenants from the chosen applications, the children, pets
-  and vehicles from their households, the start from the earliest move-in asked
-  for. The last month's rent, the deposit, the utilities, the building's age and
-  the landlord are LEFT BLANK — each is the landlord's decision, and a blank
-  field prints as a line to fill in by hand, never as a guess.
-- **The clauses are copied into the lease when it is made**, and edited there.
-  A wording change in `DEFAULT_CLAUSES` reaches the next lease, never one
-  already sent: a signed lease that rewords itself on a deploy is the failure
-  this prevents. Only the numbered sections set out from the fields (parties,
-  rent, money at the start, utilities…) render from code.
-- **The legal sentences follow G.L. c.186 §15B, read 2026-10-29**, and each
-  appears only when its money is asked for: the deposit's separate account in a
-  Massachusetts bank, the receipt within thirty days, interest at 5% or the
-  bank's rate, the statement of condition (on receipt or within ten days of
-  move-in, whichever is later), return within thirty days; interest on last
-  month's rent; a late charge only once rent is thirty days overdue; and entry
-  only to inspect, repair or show (plus court order, abandonment, and the last
-  thirty days). `leaseWarnings` says — never blocks — when a deposit is over a
-  month's rent, last month's rent is at a different rate, or water is billed to
-  the tenant (§22 wants the submetering spelled out in the lease).
-- **A lease is filed by its APPLICATIONS** (`leasesForProperty`), not by its own
-  address: applications move with their link when a property's address is
-  corrected, so the lease follows. `property_key` is the fallback, for a lease
-  whose tenants were all typed in, and is written once at creation.
-- **`rental_leases` is admin-only**, like `marketing_documents`; the test is
-  `rental_leases_test.sql`. **leaseStore.ts carries a scoped `LeaseSchema` cast
-  until types.ts is regenerated** (the `CompsSchema` arrangement) — delete it
-  then.
 - **Every dropdown is [NativeSelect](src/components/ui/native-select.tsx)**, not a
   bare `<select>`: Safari and every iPhone draw the browser's own arrow against
   the right border whatever the padding (Kevin, 2026-10-29). It draws its own
   chevron 12px in.
+
+#### Leases are made in Kevin's paperwork app, not here
+
+Kevin asked on 2026-10-29 to pick applicants on a property's page and have the
+lease made from them. The first version was the site's own plain-English lease,
+kept in `rental_leases`; on 2026-10-30 he asked for "New lease" to connect to
+the paperwork app he built instead, and the site's lease, its table and its
+check were removed (`20261030140000_drop_rental_leases` — it held no rows).
+That app is the `real-estate-automate-paperwork` repo (FastAPI + React, in
+Docker on his Mac at `http://localhost:8000`): it fills GBREB's RH201 lease
+packet — lease, addendum, condition statement, lead paint, receipt — and sends
+it for e-signature.
+
+- **The site sends WHO, never what.** "New lease" lists the property's
+  applications with checkboxes (approved ones ticked, drafts offered) and its
+  button is a plain link, in a new tab: `SITE.paperworkUrl` +
+  `/#/from-website?apps=<id>,<id>`, in the order listed, which is the order they
+  sign. The paperwork app reads each application and its invite out of this
+  project itself, with the secret key it already holds for the CRM (Settings ›
+  CRM there; `backend/applications.py`), and makes the lease: the address,
+  unit and rent from the newest of their links, the tenants, the earliest
+  move-in with that applicant's term, the occupancy. Pets, children and vehicles
+  become notes at the top of the lease — the standard addendum says no pets, and
+  only Kevin changes that.
+- **The same applicants open the same lease.** The lease records
+  `from_website.applications`, so the link opened again (a double tap, Back)
+  opens it rather than making a second. A different set of people is a new lease.
+- **It works only where the browser can reach the app.** On the Mac that is
+  localhost; a phone reaches it only on the same Wi-Fi, at the Mac's address.
+  The Cloudflare tunnel at paperwork.kevinhoang.co serves the signing pages
+  (port 8001) and nothing else. Do not put the editor behind it to "fix" that:
+  the editor has no login.
+- **The application's field names are a contract with that repo.**
+  `applications.py` reads `applicant`, `currentResidence`,
+  `tenancy.desiredOccupancyDate`/`leaseTermMonths`, `household.totalOccupants`/
+  `pets`/`minorChildren` and `vehicle` from `data`, and `property_address`,
+  `unit`, `property_town`, `property_state`, `property_zip`, `monthly_rent` and
+  `created_at` from the invite. Rename one here and change it there.
 
 ### Open house sign-in (`/open-house`)
 

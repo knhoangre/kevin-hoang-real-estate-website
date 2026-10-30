@@ -300,6 +300,17 @@ export const SITE = {
   },
 
   /**
+   * Kevin's lease paperwork app (the real-estate-automate-paperwork repo): the
+   * GBREB lease packet, filled in and e-signed. It runs in Docker on his Mac,
+   * so this is where a browser on that Mac reaches it. "New lease" on a
+   * property's page in /admin/applications opens `#/from-website?apps=<ids>`
+   * there, and the app makes the lease itself, reading those applications out
+   * of this project's database. A phone reaches it only on the same Wi-Fi, at
+   * the Mac's own address.
+   */
+  paperworkUrl: 'http://localhost:8000',
+
+  /**
    * The towns with a market report at /market/<slug> and a post for every month
    * with enough closings to say something (Kevin's choice, 2026-10-20: every
    * town served but Dover, whose ~6 closings a month cannot carry a post).

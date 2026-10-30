@@ -3,17 +3,16 @@ import { createPortal } from 'react-dom';
 
 /**
  * The sheet of paper: a document drawn in a frame of its own, and printed from
- * it. The marketing booklets and sheets, and the lease on /admin/applications.
+ * it: the marketing booklets and sheets.
  *
  * WHY A FRAME. Two reasons, and each alone would be enough.
  *
  *   * The site's print stylesheet is written for the rental application and the
  *     listing sheet: every printed page is 7.5pt, portrait, margins of 10mm,
  *     buttons hidden, dark backgrounds stripped. All of it is `!important`. A
- *     booklet is landscape, edge to edge, and one design is mostly black; a
- *     lease is 10.5pt with an inch of margin. In a frame none of those rules
- *     exist — the document brings its own stylesheet (`css`, as text) and its
- *     own `@page`.
+ *     booklet is landscape, edge to edge, and one design is mostly black.
+ *     In a frame none of those rules exist — the document brings its own
+ *     stylesheet (`css`, as text) and its own `@page`.
  *
  *   * What is on screen IS what prints. The preview is not a second rendering
  *     that resembles the printout; it is the same document, scaled down as a
@@ -53,16 +52,10 @@ interface Props {
   title: string;
   /** The document's own stylesheet, as text (a `?raw` import). */
   css: string;
-  /**
-   * The printed page's margin. None by default: the booklets bleed to the
-   * edge and lay out their own pages. A document whose text flows from page to
-   * page — the lease — needs a margin on every page, which only `@page` gives.
-   */
-  margin?: string;
   children: React.ReactNode;
 }
 
-const DocFrame = forwardRef<DocFrameHandle, Props>(({ family, title, css, margin = '0', children }, ref) => {
+const DocFrame = forwardRef<DocFrameHandle, Props>(({ family, title, css, children }, ref) => {
   const paper = PAPER[family];
   const wrap = useRef<HTMLDivElement>(null);
   const iframe = useRef<HTMLIFrameElement>(null);
@@ -79,10 +72,11 @@ const DocFrame = forwardRef<DocFrameHandle, Props>(({ family, title, css, margin
       `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` +
       `<link rel="stylesheet" href="${FONTS}">` +
       `<style>${css}</style>` +
-      // The paper size and its margin, so the print box opens already set.
-      `<style>@page{size:${paper.size};margin:${margin}}</style>` +
+      // The paper size, and no margin — the designs bleed to the edge and lay
+      // out their own pages — so the print box opens already set.
+      `<style>@page{size:${paper.size};margin:0}</style>` +
       `</head><body></body></html>`,
-    [paper.size, css, margin]
+    [paper.size, css]
   );
 
   // The frame grows with its pages: a long upgrade list is two sheets, three.
