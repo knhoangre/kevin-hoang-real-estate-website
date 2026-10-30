@@ -160,7 +160,7 @@ serve(async (req) => {
         await resend.emails.send({
           from: 'Kevin Hoang <contact@kevinhoang.co>',
           to: [row.invitee_email],
-          replyTo: 'knhoangre@gmail.com',
+          reply_to: 'knhoangre@gmail.com',
           subject: property ? `Rental application — ${property}` : 'Your rental application',
           html: `<!DOCTYPE html>
 <html>

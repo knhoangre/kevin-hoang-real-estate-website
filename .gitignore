@@ -83,3 +83,7 @@ next-env.d.ts
 # Deno lockfile from type-checking the Edge Functions locally.
 # The functions pin their imports by URL, so this adds nothing and only churns.
 deno.lock
+
+# Kevin's own marketing originals (see CLAUDE.md, Marketing documents). The repo
+# is public, so they are ignored rather than merely left uncommitted.
+pdf/

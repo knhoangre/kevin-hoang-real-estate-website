@@ -505,6 +505,22 @@ serve(async (req) => {
         schema: 'public'
       }
     });
+
+    // ADMIN ONLY. The two kiosks (/open-house and /events) are the only callers
+    // and render only for the admin, so a real sign-in carries Kevin's session.
+    // Until 2026-10-28 this took the anon key that ships in every browser, which
+    // let anyone have it email a Kevin Hoang "thanks for visiting" to any
+    // address they typed, and file whatever they liked in the CRM.
+    const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+    const { data: auth, error: authError } = jwt
+      ? await supabase.auth.getUser(jwt)
+      : { data: null, error: null };
+    if (authError || auth?.user?.app_metadata?.is_admin !== true) {
+      return new Response(JSON.stringify({ error: 'Not allowed' }), {
+        headers: corsHeaders,
+        status: 403,
+      });
+    }
     // console.log('Initialized Supabase client with service role key');
     // console.log('Service role key length:', supabaseServiceKey.length);
     // console.log('Supabase URL:', supabaseUrl);

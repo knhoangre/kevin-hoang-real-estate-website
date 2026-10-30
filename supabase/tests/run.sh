@@ -48,7 +48,10 @@ echo "Starting Postgres..."
 docker run -d --name "$CONTAINER" -e POSTGRES_PASSWORD=postgres postgres:15-alpine >/dev/null
 i=0
 while [ $i -lt 40 ]; do
-  docker exec "$CONTAINER" pg_isready -U postgres >/dev/null 2>&1 && break
+  # Over TCP, not the socket: the image's first-run setup starts a temporary
+  # server on the socket only, which answered "ready" and then shut down under
+  # the first psql — an intermittent "No such file or directory" at start-up.
+  docker exec "$CONTAINER" pg_isready -h 127.0.0.1 -U postgres >/dev/null 2>&1 && break
   i=$((i + 1))
   sleep 1
 done
@@ -146,6 +149,15 @@ for pass in 1 2; do
 done
 echo
 run_tests "$TESTS/showing_reminders_test.sql"
+
+# The schema-wide tightening: no table grants the public key a write, now or
+# for tables created later. Last, so it covers everything the suite created.
+echo
+echo "Applying 20261028120000_tighten_access"
+psql_file "$REPO/supabase/migrations/20261028120000_tighten_access.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/access_test.sql"
 
 # Who can read the CRM. Its own database, over the LIVE state of the CRM,
 # sign-in and property-management tables (04_crm_live_state.sql, from a dump)

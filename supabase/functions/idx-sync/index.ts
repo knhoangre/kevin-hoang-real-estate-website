@@ -113,6 +113,12 @@ const KEYS_PER_REQUEST = 100;
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
+  // SERVICE ROLE ONLY. pg_cron is the only caller, with the vault key, which is
+  // the service role's (20261028120000 printed it). Until 2026-10-28 any valid
+  // key would do, so anyone holding the anon key from a browser could start an
+  // MLS PIN login and a full feed rewrite as often as they liked.
+  if (callerRole(req) !== 'service_role') return json({ error: 'Not allowed' }, 403);
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -185,9 +191,6 @@ serve(async (req) => {
 
   // ---- The CockroachDB-only modes ------------------------------------------
   if (importArchive || soldGeocodes) {
-    // These read and write the kept sold data and nothing else calls them, so
-    // unlike the feed sync they refuse the anon key outright.
-    if (callerRole(req) !== 'service_role') return json({ error: 'Not allowed' }, 403);
     if (!soldDbConfigured('rw')) {
       return json({ error: 'The sold database is not configured (SOLD_DB_URL_RW)' }, 500);
     }

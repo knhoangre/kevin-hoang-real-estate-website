@@ -556,7 +556,7 @@ serve(async (req) => {
       // Kevin gets the copy the clients got, so "what did I send them" is
       // answered by his own inbox.
       ...(to.includes(AGENT.email) ? {} : { cc: [AGENT.email] }),
-      replyTo: AGENT.email,
+      reply_to: AGENT.email,
       subject,
       html,
       text,

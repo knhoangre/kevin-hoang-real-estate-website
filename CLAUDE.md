@@ -933,9 +933,11 @@ describes what is LIVE. This section is what replaces the sold half of it.
   function's response, and tomorrow's run offers the same rows again. That has to
   be REVERSED at the last step, when Supabase stops holding sold rows: from then
   a failed write is a lost day and must be a red run.
-- **`importArchive` and `soldGeocodes` refuse anything but the service role.**
-  The feed sync itself still accepts any valid key, as it always has — worth
-  tightening once the role of the vault's `idx_sync_service_key` is confirmed.
+- **`idx-sync` refuses anything but the service role, every mode.** The feed
+  sync accepted any valid key until 2026-10-28, so the anon key in every
+  browser could start an MLS PIN login and a full rewrite. The vault's
+  `idx_sync_service_key` was confirmed to be the service role's that day
+  (`20261028120000_tighten_access` prints the role claim of it, never the key).
 
 **The cutover, in order — only step 5 changes what a visitor sees:**
 
@@ -1354,8 +1356,8 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   id rather than an address. It refuses anything that is not a *submitted*
   application the caller owns (or an admin's), and it returns one refusal for
   "does not exist" and "is not yours" so the endpoint cannot be used to find out
-  which ids are real. `replyTo` is the applicant, because replying is almost
-  always the next thing to do.
+  which ids are real. `reply_to` is the applicant, because replying is almost
+  always the next thing to do (spelled `reply_to` — see the Resend gotcha).
   - **`admin_notified_at` is what separates a re-send from a double-submit.** An
     applicant can edit and re-send until review starts and the updated version IS
     worth a second email; the same email thirty seconds later is a form submitted
@@ -1439,9 +1441,11 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   compliance problem, or cascade it into the sign-in and erase a lead because a
   house sold.
 - **The listing in an email is read on the server, by MLS number, never taken
-  from the request.** `submit-open-house-signin` is callable with the anon key,
-  so a card built from the request body would let anyone send mail under this
-  name with any photo and any link. A number that is not in the feed is neither
+  from the request.** `submit-open-house-signin` took the anon key until
+  2026-10-28 and is admin-only now (both kiosks render only for the admin, so
+  their requests carry his session), but a card built from the request body
+  would still let anyone holding a session send mail under this name with any
+  photo and any link. A number that is not in the feed is neither
   stored nor linked. The same function used to interpolate visitor-typed fields
   raw into Kevin's notification email; they are escaped now.
 - **[listingEmail.ts](supabase/functions/_shared/listingEmail.ts) is the one
@@ -2331,9 +2335,24 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   `replyTo` is silently dropped and replies go to the From address
   (contact@kevinhoang.co). Deno's type check says so (`deno check`, with only
   `supabase/functions` mounted — the repo's package.json confuses it).
-  `showing-reminders` uses `reply_to`; as of 2026-10-28 `showing-schedule`,
-  `rental-application-submitted` and `rental-application-invite` still pass
-  `replyTo`, so a reply to an application notice does not reach the applicant.
+  `showing-schedule`, `rental-application-submitted` and
+  `rental-application-invite` passed `replyTo` until 2026-10-28, so replies to
+  the schedule went to contact@ and a reply to an application notice never
+  reached the applicant.
+- **The anon key writes to NO table, and a new table does not change that.**
+  `20261028120000_tighten_access` revoked INSERT/UPDATE/DELETE/TRUNCATE from
+  anon on every table in public and in postgres's default privileges, so RLS is
+  no longer the only lock. A feature that truly needs a signed-out write must
+  `GRANT` it on purpose — and almost always belongs in an edge function
+  instead, as all three public forms are. Reads are still left to RLS.
+- **`idx_sync_runs.error` is not public.** The table stays readable (MLS PIN
+  requires the "last updated" date) through COLUMN grants that leave `error`
+  out: its messages carried Kevin's MLS PIN user id. `select=*` with the anon
+  key is now refused; select the columns by name.
+- **The site sends `X-Frame-Options: DENY`** (vercel.json), so no page of it
+  can be framed by another site — the admin pages included. The in-page
+  previews are `srcDoc` frames, which the header does not touch; framing one
+  of the site's own URLs would need SAMEORIGIN.
 - **The CRM was readable — and writable — with the public key until
   2026-10-28.** Contacts, their emails and phones, the contact-form messages,
   the open-house sign-ins and the nine `pm_*` property-management tables

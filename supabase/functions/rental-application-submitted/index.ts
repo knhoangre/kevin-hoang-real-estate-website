@@ -181,7 +181,7 @@ serve(async (req) => {
         to: [ADMIN_EMAIL],
         // Replying goes to the applicant, which is almost always the next thing
         // to do. Falls back to the site address when they left it blank.
-        replyTo: app.applicant_email || ADMIN_EMAIL,
+        reply_to: app.applicant_email || ADMIN_EMAIL,
         subject: subjectSafe(
           `${resubmitted ? 'Updated rental application' : 'Rental application submitted'} — ${
             name || 'an applicant'

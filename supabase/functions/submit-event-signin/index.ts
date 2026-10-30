@@ -62,6 +62,21 @@ serve(async (req) => {
       db: { schema: 'public' }
     });
 
+    // ADMIN ONLY. Nothing on the site calls this any more (the /events kiosk
+    // posts to submit-open-house-signin with type 'event'), but it was still
+    // deployed and took the anon key, so anyone could email Kevin and write
+    // into the CRM through it. Closed on 2026-10-28, the same check as there.
+    const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+    const { data: auth, error: authError } = jwt
+      ? await supabase.auth.getUser(jwt)
+      : { data: null, error: null };
+    if (authError || auth?.user?.app_metadata?.is_admin !== true) {
+      return new Response(JSON.stringify({ error: 'Not allowed' }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let formattedPhone = phone;
     if (formattedPhone) {
       const numbers = formattedPhone.replace(/\D/g, "");

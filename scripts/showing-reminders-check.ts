@@ -45,7 +45,7 @@ const is = (actual: unknown, expected: unknown, label: string) => {
 };
 
 const CAL_URL =
-  'https://calendar.google.com/calendar/ical/kevin.cal%40gmail.com/private-0123abcd/basic.ics';
+  'https://calendar.google.com/calendar/ical/kevin.calendar%40example.com/private-0123abcd/basic.ics';
 const own = ownAddresses(CAL_URL);
 
 const ics = [
@@ -59,10 +59,10 @@ const ics = [
   'UID:sarah@google.com',
   'SUMMARY:Showing - Sarah Lee',
   'LOCATION:12 Elm St\\, Newton\\, MA 02459\\, USA',
-  'DESCRIPTION:Sarah cell: <b>(617) 555-0142</b><br>LA: jane@listingbroker.com\\, lockbox 1234',
-  'ORGANIZER;CN=kevin.cal@gmail.com:mailto:kevin.cal@gmail.com',
+  'DESCRIPTION:Sarah cell: <b>(617) 555-0142</b><br>LA: jane@listingbroker.example\\, lockbox 1234',
+  'ORGANIZER;CN=kevin.calendar@example.com:mailto:kevin.calendar@example.com',
   'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=kevin.c',
-  ' al@gmail.com:mailto:kevin.cal@gmail.com',
+  ' alendar@example.com:mailto:kevin.calendar@example.com',
   'ATTENDEE;CUTYPE=INDIVIDUAL;PARTSTAT=NEEDS-ACTION;CN="Lee, Sarah":mailto:Sara',
   ' h@Example.com',
   'ATTENDEE;CUTYPE=RESOURCE;CN=Room:mailto:c_123@resource.calendar.google.com',
@@ -81,11 +81,11 @@ const ics = [
   // Somebody else's invitation: its guests are not Kevin's clients.
   'BEGIN:VEVENT',
   'DTSTART;TZID=America/New_York:20261028T160000',
-  'UID:showingtime-77@showingtime.com',
+  'UID:showingtime-77@showingtime.example',
   'SUMMARY:Showing: 40 Oak Ave',
-  'ORGANIZER:mailto:appointments@showingtime.com',
-  'ATTENDEE;PARTSTAT=ACCEPTED:mailto:kevin.cal@gmail.com',
-  'ATTENDEE;PARTSTAT=ACCEPTED:mailto:listing.agent@broker.com',
+  'ORGANIZER:mailto:appointments@showingtime.example',
+  'ATTENDEE;PARTSTAT=ACCEPTED:mailto:kevin.calendar@example.com',
+  'ATTENDEE;PARTSTAT=ACCEPTED:mailto:listing.agent@broker.example',
   'END:VEVENT',
   // 9:30 PM in Boston is the NEXT day in UTC; it is still the 28th's.
   'BEGIN:VEVENT',
@@ -134,13 +134,13 @@ const ics = [
 
 const events = parseIcs(ics);
 is(events.length, 10, 'every VEVENT is read, and the alarm inside one is not an eleventh');
-is(events[0].description.includes('jane@listingbroker.com, lockbox'), true, 'escaped commas are unescaped');
+is(events[0].description.includes('jane@listingbroker.example, lockbox'), true, 'escaped commas are unescaped');
 is(events[0].description.includes('<b>'), false, 'HTML in the notes is reduced to text');
 
 const { reminders, problems } = calendarReminders(events, '2026-10-28', own);
 is(
   reminders.map((r) => r.key),
-  ['cal:zillow@google.com', 'cal:sarah@google.com', 'cal:showingtime-77@showingtime.com', 'cal:late@google.com'],
+  ['cal:zillow@google.com', 'cal:sarah@google.com', 'cal:showingtime-77@showingtime.example', 'cal:late@google.com'],
   "the 28th's four showings, in time order"
 );
 const [marcus, sarah, invite, late] = reminders;
@@ -150,7 +150,7 @@ is(sarah.time, '2:00 PM', '18:00Z is 2:00 PM in Boston in October');
 is(sarah.name, 'Sarah Lee', '"Showing - Sarah Lee" names Sarah Lee');
 is(sarah.address, '12 Elm St, Newton', 'the address drops the state, ZIP and USA');
 is(sarah.autoEmail, ['sarah@example.com'], 'only Sarah is emailed — not Kevin, not the room');
-is(sarah.emails, ['jane@listingbroker.com'], "the listing agent in the notes is offered, never mailed");
+is(sarah.emails, ['jane@listingbroker.example'], "the listing agent in the notes is offered, never mailed");
 is(sarah.phones, ['617-555-0142'], 'the number in the notes is found inside its HTML');
 is(
   sarah.message,
@@ -164,7 +164,7 @@ is(marcus.autoEmail.length + marcus.phones.length + marcus.emails.length, 0, 'a 
 
 // The ShowingTime invitation.
 is(invite.autoEmail, [], "nobody on somebody else's invitation is emailed");
-is(invite.invitedBy, 'appointments@showingtime.com', 'and the reason is kept');
+is(invite.invitedBy, 'appointments@showingtime.example', 'and the reason is kept');
 is(invite.time, '4:00 PM', 'a TZID=America/New_York time is read as written');
 is(invite.name, null, 'a title that names only the house names nobody');
 is(invite.address, '40 Oak Ave', 'and its address comes from the title');
@@ -211,7 +211,7 @@ for (const typed of ['(617) 555-0142', '617.555.0142', '+1 617 555 0142', '61755
   is(notePhones(`call ${typed} today`), ['617-555-0142'], `"${typed}" is 617-555-0142`);
 }
 is(notePhones('MLS 73568135, lockbox 1234, order 1234567890'), [], 'an MLS number, a code, or a number with a 1 area code is not a phone');
-is([...ownAddresses(CAL_URL)].includes('kevin.cal@gmail.com'), true, "the calendar's own address is Kevin's");
+is([...ownAddresses(CAL_URL)].includes('kevin.calendar@example.com'), true, "the calendar's own address is Kevin's");
 
 // A showing tour.
 const tours = tourReminders(
