@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SITE, telHref } from "@/lib/siteConfig";
 import { HOME_HERO_IMAGE } from "@/lib/images";
+import HeroSkyline from "@/components/HeroSkyline";
 
 const Hero = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="min-h-screen relative flex items-center justify-center overflow-hidden">
+    <section className="min-h-screen relative flex flex-col overflow-hidden">
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -26,9 +27,14 @@ const Hero = () => {
         {/* The same scrim the landing heroes use, so the front door and the
             interior pages are lit the same way. */}
         <div className="absolute inset-0 bg-gradient-to-t from-ink-deep via-ink-deep/80 to-ink-deep/50" />
+        {/* Night behind the skyline: without it the photograph's own lines
+            show through the drawing's sky and compete with it. */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink-deep via-ink-deep/85 to-transparent" />
       </div>
 
-      <div className="container relative z-10 px-4 py-32 text-center text-white">
+      {/* The copy takes whatever height the skyline leaves and centres in it;
+          the skyline is in the flow below, so the two can never overlap. */}
+      <div className="container relative z-10 flex flex-1 items-center justify-center px-4 pt-28 pb-6 text-center text-white">
         <div className="mx-auto max-w-4xl">
           <div className="mb-7 flex items-center justify-center gap-4">
             <span className="h-px w-10 bg-champagne" aria-hidden />
@@ -65,7 +71,7 @@ const Hero = () => {
               href={SITE.appointmentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill"
+              className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill btn-pill-glint"
             >
               <span className="uppercase">{t('hero.cta')}</span>
               <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
@@ -80,6 +86,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
+
+      <HeroSkyline className="relative z-0 block h-[clamp(150px,28vh,300px)] w-full shrink-0" />
     </section>
   );
 };
