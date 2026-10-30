@@ -489,7 +489,8 @@ rows to find 24 rentals.
     to `no-cache` and bills egress on every hit — [Properties.tsx](src/pages/Properties.tsx)
     uses a year (filenames carry a `Date.now()` stamp and are never rewritten),
     [Profile.tsx](src/pages/Profile.tsx) an hour (the avatar path is fixed and
-    upserted in place, so a long TTL would serve a stale picture).
+    upserted in place, so a long TTL would serve a stale picture — and the URL
+    saved for it carries `?v=<time>`, so a new picture is a new URL at once).
   - **`fromRow()` in [PropertiesList.tsx](src/pages/PropertiesList.tsx) maps live
     `image_urls` back onto the local paths.** Without it the post-hydration
     revalidation would swap all 339 photos back to bucket URLs a moment after
@@ -2353,10 +2354,24 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   can be framed by another site — the admin pages included. The in-page
   previews are `srcDoc` frames, which the header does not touch; framing one
   of the site's own URLs would need SAMEORIGIN.
+- **Profile pictures live in the `avatars` bucket, which no migration made
+  until 2026-10-29** — so every upload on `/profile` failed.
+  `20261030100000_avatars_bucket` makes it: public to READ (a picture is a plain
+  `<img src>`), 2 MB, JPEG/PNG/WebP, and every write scoped to the caller's own
+  `<user id>/` folder. Listing is that same scope, so nobody can page through
+  other accounts' folders. The page uploads a 512px JPEG of the crop, drawn from
+  the photo's own pixels with the dialog's zoom and rotation applied (the old
+  canvas took on-screen crop coordinates as photo pixels, and ignored both). It
+  is saved as `user_metadata.custom_avatar_url`, NOT `avatar_url`: Supabase
+  rewrites `avatar_url` with the Google picture on every Google sign-in.
+- **Leaked-password protection (HaveIBeenPwned) is a Pro-plan setting**; this
+  project is on the free tier, so the dashboard has no switch for it.
 - **The CRM was readable — and writable — with the public key until
   2026-10-28.** Contacts, their emails and phones, the contact-form messages,
   the open-house sign-ins and the nine `pm_*` property-management tables
-  (`pm_users` has a `password_hash`, `pm_owners` a `tax_id`). Closed by
+  (`pm_users` has a `password_hash`, `pm_owners` a `tax_id`; they were from a
+  property-management app Kevin stopped, and were dropped on 2026-10-29 by
+  `20261030110000_drop_property_management`). Closed by
   `20261028100000_close_public_crm_reads`. Three things to keep true, because
   each was one of the holes:
   - **The live database had drifted from the migrations.** "Allow all

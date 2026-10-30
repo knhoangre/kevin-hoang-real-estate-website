@@ -139,6 +139,14 @@ psql_file "$REPO/supabase/migrations/20261010100000_marketing_documents.sql" -q 
 echo
 run_tests "$TESTS/marketing_documents_test.sql"
 
+# Profile pictures, on the same Storage stand-in.
+echo
+echo "Applying 20261030100000_avatars_bucket"
+psql_file "$REPO/supabase/migrations/20261030100000_avatars_bucket.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/avatars_test.sql"
+
 # The morning showing reminders: the claim that sends each one once. Applied
 # twice, because the schedule must survive the migration being re-run.
 echo
@@ -176,6 +184,11 @@ psql_file "$REPO/supabase/migrations/20261028100000_close_public_crm_reads.sql" 
   | grep -v 'NOTICE.*skipping' || true
 echo
 run_tests "$TESTS/crm_privacy_test.sql"
+echo "Applying 20261030110000_drop_property_management"
+psql_file "$REPO/supabase/migrations/20261030110000_drop_property_management.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/drop_pm_test.sql"
 DB=postgres
 
 echo

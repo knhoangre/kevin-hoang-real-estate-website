@@ -31,3 +31,17 @@ ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 GRANT USAGE ON SCHEMA storage TO anon, authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON storage.objects TO anon, authenticated, service_role;
 GRANT SELECT ON storage.buckets TO anon, authenticated, service_role;
+
+-- storage.foldername() as Supabase defines it: the path's folders, without the
+-- file. Policies that scope a bucket by its first folder (the avatars bucket,
+-- rental-documents) need it.
+CREATE FUNCTION storage.foldername(name TEXT) RETURNS TEXT[]
+LANGUAGE plpgsql AS $$
+DECLARE
+  _parts TEXT[];
+BEGIN
+  SELECT string_to_array(name, '/') INTO _parts;
+  RETURN _parts[1:array_length(_parts, 1) - 1];
+END;
+$$;
+GRANT EXECUTE ON FUNCTION storage.foldername(TEXT) TO anon, authenticated, service_role;

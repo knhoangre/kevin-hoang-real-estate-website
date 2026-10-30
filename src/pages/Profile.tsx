@@ -10,9 +10,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, Eye, EyeOff, Check, X, Upload, Camera, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop, { Crop, PixelCrop, centerCrop, convertToPixelCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { formatPhoneInput } from '@/lib/phone';
+
+/** The saved picture's longest side. It is shown at 40px; this is 2x a large one. */
+const AVATAR_SIZE = 512;
 
 interface ProfileData {
   first_name: string;
@@ -261,11 +264,13 @@ export default function Profile() {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // The original never leaves the browser — only the 512px crop is uploaded —
+    // so this is only a guard against a file too big to open, not the 5MB a
+    // phone photo routinely exceeds.
+    if (file.size > 25 * 1024 * 1024) {
       toast({
         title: "File too large",
-        description: "Please upload an image smaller than 5MB",
+        description: "Please choose an image smaller than 25MB",
         variant: "destructive",
       });
       return;
@@ -296,6 +301,9 @@ export default function Profile() {
       height
     );
     setCrop(crop);
+    // onComplete fires only once the crop is dragged, so without this an
+    // untouched crop left completedCrop null and "Save" did nothing.
+    setCompletedCrop(convertToPixelCrop(crop, width, height));
   };
 
   const handleZoomIn = () => {
@@ -321,39 +329,52 @@ export default function Profile() {
       return;
     }
 
-    // Set canvas dimensions to the cropped area
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    /*
+      The crop is in the pixels the photo is DRAWN at, and a phone photo is
+      drawn far smaller than it is — so it is scaled up to the photo's own
+      pixels, or the picture saved is the wrong corner of it. The zoom and
+      rotate the dialog shows are applied around the centre, as the CSS
+      transform on the <img> does. Then it is shrunk to at most AVATAR_SIZE:
+      it is shown in a 40px circle, and a full-size crop could be megabytes.
+    */
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const sourceWidth = completedCrop.width * scaleX;
+    const sourceHeight = completedCrop.height * scaleY;
+    const fit = Math.min(1, AVATAR_SIZE / Math.max(sourceWidth, sourceHeight));
 
-    // Draw the cropped image
-    ctx.drawImage(
-      image,
-      completedCrop.x,
-      completedCrop.y,
-      completedCrop.width,
-      completedCrop.height,
-      0,
-      0,
-      completedCrop.width,
-      completedCrop.height
-    );
+    canvas.width = Math.max(1, Math.round(sourceWidth * fit));
+    canvas.height = Math.max(1, Math.round(sourceHeight * fit));
+    // JPEG has no transparency; a transparent PNG would otherwise turn black.
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingQuality = 'high';
+
+    const centerX = image.naturalWidth / 2;
+    const centerY = image.naturalHeight / 2;
+    ctx.scale(fit, fit);
+    ctx.translate(-completedCrop.x * scaleX, -completedCrop.y * scaleY);
+    ctx.translate(centerX, centerY);
+    ctx.rotate((rotate * Math.PI) / 180);
+    ctx.scale(scale, scale);
+    ctx.translate(-centerX, -centerY);
+    ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
 
     // Convert to blob and upload
     canvas.toBlob((blob) => {
       if (!blob) return;
 
-      // Create a file from the blob
-      const file = new File([blob], 'cropped-avatar.png', { type: 'image/png' });
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
 
       // Set preview
-      setAvatarPreview(canvas.toDataURL());
+      setAvatarPreview(canvas.toDataURL('image/jpeg', 0.9));
 
       // Close modal
       setShowCropModal(false);
 
       // Upload the cropped image
       uploadAvatar(file);
-    }, 'image/png');
+    }, 'image/jpeg', 0.9);
   };
 
   const uploadAvatar = async (file: File) => {
@@ -361,9 +382,9 @@ export default function Profile() {
 
     setUploadingAvatar(true);
     try {
-      // Create a unique file path
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
+      // In the person's own folder: the bucket's policies allow writing there
+      // and nowhere else (20261030100000_avatars_bucket).
+      const filePath = `${user.id}/avatar.jpg`;
 
       // Upload the file to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -384,8 +405,9 @@ export default function Profile() {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      // Update the user's avatar URL
-      await updateAvatarUrl(data.publicUrl);
+      // The path never changes, so the address carries when it was saved: a
+      // new picture is a new URL, rather than an hour of the cached old one.
+      await updateAvatarUrl(`${data.publicUrl}?v=${Date.now()}`);
 
       toast({
         title: "Success",

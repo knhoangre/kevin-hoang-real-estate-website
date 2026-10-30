@@ -70,9 +70,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
 
     try {
-      // Update the user's metadata with the new avatar URL
+      // `custom_avatar_url`, not `avatar_url`: for a Google sign-in Supabase
+      // rewrites avatar_url with the Google picture on every sign-in, which
+      // would quietly undo an upload the next time the person signed in.
       const { error } = await supabase.auth.updateUser({
-        data: { avatar_url: url }
+        data: { custom_avatar_url: url }
       });
 
       if (error) throw error;
@@ -137,6 +139,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateUserAvatar = async (user: User) => {
+    // A picture uploaded on /profile wins over the Google one.
+    if (user.user_metadata?.custom_avatar_url) {
+      setAvatarUrl(user.user_metadata.custom_avatar_url);
+      setAvatarInitials(null);
+      return;
+    }
+
     // Check if user has Google avatar
     if (user.app_metadata?.provider === 'google' && user.user_metadata?.avatar_url) {
       setAvatarUrl(user.user_metadata.avatar_url);
