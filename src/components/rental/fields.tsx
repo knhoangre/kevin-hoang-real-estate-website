@@ -9,6 +9,7 @@
  * (src/pages/Contact.tsx) rather than invented, so the application reads as
  * part of this site.
  */
+import { useContext } from 'react';
 import { type Control, type FieldValues, type Path, useFormContext } from 'react-hook-form';
 import {
   FormControl,
@@ -22,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatPhoneInput } from '@/lib/phone';
+import { SectionNumbers } from './sectionNumbers';
 
 /* ------------------------------------------------------------------ */
 /* Section shell                                                       */
@@ -32,6 +34,7 @@ import { formatPhoneInput } from '@/lib/phone';
  *
  * `id` is the jump target for the sticky index, and the heading is a real <h2>
  * so the section list is a document outline rather than a set of styled divs.
+ * Its number, when it has one, is the same one the index shows beside it.
  */
 export const Section = ({
   id,
@@ -46,27 +49,40 @@ export const Section = ({
   children: React.ReactNode;
   /** Stagger, in seconds. CSS `.enter`, never framer-motion. */
   delay?: number;
-}) => (
-  <section
-    id={id}
-    // scroll-mt clears the fixed h-20 navbar, or a jump link lands with the
-    // heading underneath it.
-    className="enter scroll-mt-28 rounded-xl border border-gray-100 bg-white shadow-lg shadow-black/10"
-    style={{ '--enter-delay': `${delay}s` } as React.CSSProperties}
-    aria-labelledby={`${id}-heading`}
-  >
-    <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-5">
-      <h2
-        id={`${id}-heading`}
-        className="text-xl font-semibold uppercase tracking-wide text-ink md:text-2xl"
-      >
-        {title}
-      </h2>
-      {blurb && <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{blurb}</p>}
-    </div>
-    <div className="space-y-6 p-6">{children}</div>
-  </section>
-);
+}) => {
+  const n = useContext(SectionNumbers)[id];
+  return (
+    <section
+      id={id}
+      // scroll-mt clears the fixed h-20 navbar, or a jump link lands with the
+      // heading underneath it.
+      className="enter scroll-mt-28 rounded-xl border border-gray-100 bg-white shadow-lg shadow-black/10"
+      style={{ '--enter-delay': `${delay}s` } as React.CSSProperties}
+      aria-labelledby={`${id}-heading`}
+    >
+      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-5">
+        <h2
+          id={`${id}-heading`}
+          className="flex items-center gap-3 text-xl font-semibold uppercase tracking-wide text-ink md:text-2xl"
+        >
+          {n !== undefined && (
+            // `numeral` for even figures; ink-deep on white, so it reads at any size.
+            <span
+              className="numeral inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-deep text-sm font-semibold tracking-normal text-white"
+              aria-hidden
+            >
+              {n}
+            </span>
+          )}
+          {n !== undefined && <span className="sr-only">Section {n}: </span>}
+          {title}
+        </h2>
+        {blurb && <p className="mt-1.5 text-sm leading-relaxed text-gray-600">{blurb}</p>}
+      </div>
+      <div className="space-y-6 p-6">{children}</div>
+    </section>
+  );
+};
 
 /** Two fields to a row on anything wider than a phone, as /contact does. */
 export const Row = ({

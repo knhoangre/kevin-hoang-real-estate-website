@@ -48,9 +48,23 @@ import {
   listDocuments,
   setDocumentNote,
   uploadDocument,
+  type ApplicationForm,
   type DocumentKind,
   type RentalDocumentRecord,
 } from '@/lib/rentalApplication';
+
+/**
+ * The kinds in the order a form asks for them. On documents only the applicant
+ * has usually filled in an application on another agency's form, and that is
+ * the one file the whole link exists for, so it comes first.
+ */
+const kindsFor = (form: ApplicationForm) =>
+  form === 'documents'
+    ? [
+        ...DOCUMENT_KINDS.filter((k) => k.id === 'rental_application'),
+        ...DOCUMENT_KINDS.filter((k) => k.id !== 'rental_application'),
+      ]
+    : DOCUMENT_KINDS;
 
 const shortDate = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -329,7 +343,10 @@ const KindBlock = ({
   };
 
   return (
-    <div className="border-t border-gray-100 pt-5 first:border-0 first:pt-0">
+    // A gray-300 rule between kinds, not gray-100 (Kevin, 2026-10-29): at 100
+    // the line all but vanished, and Photo ID, Pay stubs and the rest read as
+    // one long paragraph rather than separate things to upload.
+    <div className="border-t border-gray-300 pt-6 first:border-0 first:pt-0">
       {/* No "Required" badge and no alarm over an empty section, even for the
           kind that blocks a submit. A form that labels its own sections as
           demands reads as a gate rather than a request, and the applicant is
@@ -428,8 +445,15 @@ export default function DocumentsPanel({
   admin = false,
   delay = 0,
   onDocsChange,
+  form = 'full',
 }: {
   applicationId: string;
+  /**
+   * Which form the application shows. On documents only, these files ARE the
+   * application, so the panel says so and puts the completed application they
+   * already have first.
+   */
+  form?: ApplicationForm;
   /** False renders the list read-only. Uploads stay open after submit by default. */
   canUpload?: boolean;
   /** Admin view: the per-file note and replace-request controls. */
@@ -487,9 +511,11 @@ export default function DocumentsPanel({
       id="documents"
       title="Documents"
       blurb={
-        canUpload
-          ? 'Upload what you have. You can add more at any time, including after you submit — and you can send documents even if you have not filled in the form.'
-          : 'Everything attached to this application.'
+        !canUpload
+          ? 'Everything attached to this application.'
+          : form === 'documents'
+            ? 'Upload the application you already filled in elsewhere, and the documents below. You can add more at any time, including after you submit.'
+            : 'Upload what you have. You can add more at any time, including after you submit — and you can send documents even if you have not filled in the form.'
       }
       delay={delay}
     >
@@ -504,7 +530,7 @@ export default function DocumentsPanel({
           )}
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {flagged > 0 && !admin && (
             <p className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
@@ -516,7 +542,7 @@ export default function DocumentsPanel({
             </p>
           )}
 
-          {DOCUMENT_KINDS.map((k) => (
+          {kindsFor(form).map((k) => (
             <KindBlock
               key={k.id}
               applicationId={applicationId}

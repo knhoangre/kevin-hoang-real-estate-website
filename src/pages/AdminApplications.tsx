@@ -53,6 +53,7 @@ import { sentenceList } from '@/lib/utils';
 import { applicantName, formatLeaseDate, leasesForProperty, type LeaseSummary } from '@/lib/lease';
 import { listLeases, startLease } from '@/lib/leaseStore';
 import {
+  APPLICATION_FORMS,
   APPLICATION_STATUSES,
   STATUS_TONE,
   createInvite,
@@ -72,6 +73,7 @@ import {
   setApplicationStatus,
   STATUS_LABEL,
   updateInviteProperty,
+  type ApplicationForm,
   type ApplicationStatus,
   type PreviousProperty,
   type PropertyGroup,
@@ -330,6 +332,8 @@ const NewInviteForm = ({
     monthlyRent: initial?.monthlyRent ?? '',
     expiresInDays: '30',
   });
+  /** The full application, or documents only. Every link this press makes asks for the same one. */
+  const [form, setForm] = useState<ApplicationForm>('full');
   /*
    * The addresses, one per applicant. Rows carry a key of their own because
    * they can be removed from the middle: keyed on position, the row after a
@@ -386,6 +390,7 @@ const NewInviteForm = ({
           ...property,
           monthlyRent: terms.monthlyRent,
           inviteeEmail: email,
+          form,
           expiresInDays: Number(terms.expiresInDays) || 0,
         });
       } catch (err) {
@@ -485,6 +490,36 @@ const NewInviteForm = ({
         <p className="text-xs text-gray-500">0 for no expiry.</p>
       </div>
 
+      {/* What the link asks for (Kevin, 2026-10-29). Two cards rather than a
+          dropdown: the difference is a sentence long, and both sentences should
+          be on screen when choosing. */}
+      <fieldset className="sm:col-span-2">
+        <legend className="mb-2 text-sm font-medium leading-none text-ink">What they fill in</legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {APPLICATION_FORMS.map((option) => (
+            <label
+              key={option.id}
+              className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
+                form === option.id ? 'border-champagne bg-bone' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="inv-form"
+                value={option.id}
+                checked={form === option.id}
+                onChange={() => setForm(option.id)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-champagne-ink"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-ink">{option.label}</span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-gray-600">{option.blurb}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       {/* Last and full width: it is the one part of this form that grows. */}
       <fieldset className="space-y-2 sm:col-span-2">
         <legend className="mb-1.5 text-sm font-medium leading-none text-ink">
@@ -528,7 +563,9 @@ const NewInviteForm = ({
         )}
         <p className="text-xs text-gray-500">
           {emails.length > 1
-            ? 'Each person is emailed their own link and fills in their own application. They appear together under this property.'
+            ? form === 'documents'
+              ? 'Each person is emailed their own link and sends their own documents. They appear together under this property.'
+              : 'Each person is emailed their own link and fills in their own application. They appear together under this property.'
             : 'The link is emailed here, and prefills their application.'}
         </p>
       </fieldset>
@@ -1229,6 +1266,7 @@ export default function AdminApplications() {
                     {record.submittedAt
                       ? `Submitted ${shortDate(record.submittedAt)}`
                       : `Started ${shortDate(record.createdAt)}`}
+                    {record.form === 'documents' && ' · Documents only — their details and uploads'}
                   </p>
                 </div>
                 {/* `block` on the label: Radix renders a <label>, which is
@@ -1276,6 +1314,7 @@ export default function AdminApplications() {
               readOnly={!editing}
               showSubmit={false}
               adminDocuments
+              form={record.form}
             />
           </>
         )}
@@ -1459,6 +1498,9 @@ export default function AdminApplications() {
                         <span key="n" className="block min-w-0">
                           <span className="block font-medium text-ink">{fullName(r) || '—'}</span>
                           <span className="block break-words text-xs text-gray-500">
+                            {r.form === 'documents' && (
+                              <span className="font-semibold text-gray-700">Documents only · </span>
+                            )}
                             {r.applicantEmail}
                           </span>
                         </span>,
@@ -1526,6 +1568,9 @@ export default function AdminApplications() {
                               {invite.inviteeEmail || 'No recipient recorded'}
                             </span>
                             <span className="numeral mt-0.5 block text-xs text-gray-500">
+                              {invite.form === 'documents' && (
+                                <span className="font-semibold text-gray-700">Documents only · </span>
+                              )}
                               Created {shortDate(invite.createdAt)}
                               {invite.sentAt
                                 ? ` · emailed ${shortDate(invite.sentAt)}`

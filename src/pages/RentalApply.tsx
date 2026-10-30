@@ -35,7 +35,9 @@ import {
   claimInvite,
   resolveInvite,
   emptyApplication,
+  formOf,
   formatProperty,
+  type ApplicationForm,
   type ResolvedInvite,
   type RentalApplicationData,
 } from '@/lib/rentalApplication';
@@ -116,6 +118,8 @@ export default function RentalApply() {
 
   const [invite, setInvite] = useState<ResolvedInvite | null>(null);
   const [initial, setInitial] = useState<RentalApplicationData | null>(null);
+  /** Which form the application shows: its own copy once claimed, the link's before. */
+  const [form, setForm] = useState<ApplicationForm>('full');
   const [status, setStatus] = useState<'loading' | 'ready' | 'invalid' | 'error'>('loading');
 
   /* ---- Resolve, then (once signed in) claim ------------------------- */
@@ -130,6 +134,7 @@ export default function RentalApply() {
       if (!user) {
         const resolved = await resolveInvite(token);
         setInvite(resolved);
+        setForm(formOf(resolved.form));
         setStatus(resolved.valid ? 'ready' : 'invalid');
         return;
       }
@@ -150,6 +155,7 @@ export default function RentalApply() {
       }
 
       const record = await getApplication(claimed.applicationId);
+      setForm(record?.form ?? formOf(claimed.form));
       setInitial(seedFromInvite(record?.data ?? emptyApplication(), claimed));
       setStatus('ready');
     } catch (err) {
@@ -226,6 +232,7 @@ export default function RentalApply() {
           applicationId={invite?.applicationId ?? ''}
           initial={initial}
           onSubmitted={() => navigate(`/rentals?id=${invite?.applicationId}`)}
+          form={form}
         />
       </>
     );
@@ -247,7 +254,14 @@ export default function RentalApply() {
         alt: 'Keys being handed over on the doorstep of a new home',
       }}
       h1="Your rental application"
-      lede="It takes about ten minutes. Your answers save as you go, so you can stop and come back."
+      // The prerendered lede is the full form's; a documents-only link swaps it
+      // once the link has been read, after hydration, so the first render still
+      // matches the HTML.
+      lede={
+        form === 'documents'
+          ? 'Tell us who you are, then upload your documents — including an application you already filled in elsewhere. Your progress saves as you go.'
+          : 'It takes about ten minutes. Your answers save as you go, so you can stop and come back.'
+      }
       heroSize="compact"
       width="wide"
       strip={false}

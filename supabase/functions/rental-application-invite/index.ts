@@ -121,7 +121,7 @@ serve(async (req) => {
       const { data: row, error: rowError } = await admin
         .from('rental_application_invites')
         .select(
-          'token, label, property_address, unit, property_town, property_state, property_zip, monthly_rent, invitee_email, expires_at, revoked_at'
+          'token, label, property_address, unit, property_town, property_state, property_zip, monthly_rent, invitee_email, expires_at, revoked_at, form'
         )
         .eq('id', inviteId)
         .maybeSingle();
@@ -154,6 +154,24 @@ serve(async (req) => {
       const link = `${base}/apply/${row.token}`;
       const property = row.label || formatProperty(row);
       const rent = row.monthly_rent ? `$${Number(row.monthly_rent).toLocaleString('en-US')}` : '';
+      // A documents-only link asks for no long form, and the email says so: the
+      // person it goes to has usually filled in an application elsewhere, and
+      // "fill it in" is the line that would make them think they must do it again.
+      const documentsOnly = row.form === 'documents';
+      const intro = documentsOnly
+        ? `Here is the link to send your documents${property ? ` for <strong>${property}</strong>` : ''}${rent ? `, listed at ${rent} a month` : ''}.
+      There is no long form to fill in: create an account, add your name and how to reach you, and
+      upload what you have.`
+        : `Here is your application${property ? ` for <strong>${property}</strong>` : ''}${rent ? `, listed at ${rent} a month` : ''}.
+      Use the link below to create an account and fill it in. Your answers save as you go, so you
+      can stop and come back.`;
+      const uploads = documentsOnly
+        ? `Please include the application you already completed on another form, a photo ID, recent
+      pay stubs and a copy of your credit report. Please do not send a Social Security number or a
+      bank account number; neither is asked for or needed.`
+        : `You can also upload documents there — a photo ID, recent pay stubs, or a completed
+      application you already have on another form. Please do not send a Social Security number
+      or a bank account number; neither is asked for or needed.`;
 
       try {
         const resend = new Resend(resendApiKey);
@@ -161,24 +179,26 @@ serve(async (req) => {
           from: 'Kevin Hoang <contact@kevinhoang.co>',
           to: [row.invitee_email],
           reply_to: 'knhoangre@gmail.com',
-          subject: property ? `Rental application — ${property}` : 'Your rental application',
+          subject: documentsOnly
+            ? property
+              ? `Your rental documents — ${property}`
+              : 'Your rental documents'
+            : property
+              ? `Rental application — ${property}`
+              : 'Your rental application',
           html: `<!DOCTYPE html>
 <html>
   <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.6;color:#1a1a1a;max-width:600px;margin:0 auto;padding:24px;background:#faf8f5">
-    <h1 style="font-size:20px;margin:0 0 16px">Your rental application</h1>
+    <h1 style="font-size:20px;margin:0 0 16px">${documentsOnly ? 'Your rental documents' : 'Your rental application'}</h1>
     <p style="margin:0 0 12px">Hello,</p>
     <p style="margin:0 0 12px">
-      Here is your application${property ? ` for <strong>${property}</strong>` : ''}${rent ? `, listed at ${rent} a month` : ''}.
-      Use the link below to create an account and fill it in. Your answers save as you go, so you
-      can stop and come back.
+      ${intro}
     </p>
     <p style="margin:0 0 20px">
-      You can also upload documents there — a photo ID, recent pay stubs, or a completed
-      application you already have on another form. Please do not send a Social Security number
-      or a bank account number; neither is asked for or needed.
+      ${uploads}
     </p>
     <p style="margin:0 0 24px">
-      <a href="${link}" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:4px;font-weight:600">Start your application</a>
+      <a href="${link}" style="display:inline-block;background:#1a1a1a;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:4px;font-weight:600">${documentsOnly ? 'Upload your documents' : 'Start your application'}</a>
     </p>
     <p style="margin:0 0 12px;font-size:13px;color:#555">
       Or paste this into your browser:<br />
@@ -212,7 +232,7 @@ serve(async (req) => {
     const { data: invite, error: inviteError } = await admin
       .from('rental_application_invites')
       .select(
-        'id, label, property_address, unit, property_town, property_state, property_zip, monthly_rent, invitee_email, expires_at, revoked_at'
+        'id, label, property_address, unit, property_town, property_state, property_zip, monthly_rent, invitee_email, expires_at, revoked_at, form'
       )
       .eq('token', token)
       .maybeSingle();
@@ -239,6 +259,9 @@ serve(async (req) => {
       // name and phone. It is the address the admin already mailed this link
       // to, and it leaves here only for a token that resolved.
       inviteeEmail: invite.invitee_email,
+      // Which form the link asks for, so the landing page can say "upload your
+      // documents" rather than "fill in an application" before sign-up.
+      form: invite.form === 'documents' ? 'documents' : 'full',
     };
 
     // Who, if anyone, already claimed it.
@@ -282,6 +305,11 @@ serve(async (req) => {
         applicant_user_id: user.id,
         applicant_email: user.email ?? null,
         status: 'draft',
+        // The link's choice becomes the application's own. From here the
+        // application's copy decides which sections its form shows, and only
+        // the admin (or this function) may change it — see
+        // guard_rental_application_form.
+        form: invite.form === 'documents' ? 'documents' : 'full',
         data: {},
       })
       .select('id, status')

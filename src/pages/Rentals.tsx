@@ -245,6 +245,7 @@ export default function Rentals() {
             documentUploads
             alreadySent={record.status !== 'draft'}
             onSubmitted={load}
+            form={record.form}
           />
         </div>
       );

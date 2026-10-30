@@ -21,8 +21,9 @@
  *     a decision for a broker and counsel, not a default.
  */
 import { z } from 'zod';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import type { Json } from '@/integrations/supabase/types';
+import type { Database, Json } from '@/integrations/supabase/types';
 import { isPhone, isPhoneOrEmpty } from '@/lib/phone';
 import { formatProperty, retargetTenancy, type PropertyParts } from './rentalProperty';
 
@@ -473,6 +474,38 @@ export const SECTION_GROUPS = [
 
 export type SectionGroup = (typeof SECTION_GROUPS)[number]['id'];
 
+/**
+ * Which form a link asks for (Kevin, 2026-10-29).
+ *
+ *   full       every section — the application, with documents beside it.
+ *   documents  who you are, your documents, and the signature. For someone who
+ *              has already filled in an application on another agency's form:
+ *              they upload that instead of typing it all again.
+ *
+ * Chosen on the link, copied onto the application when it is claimed, and
+ * read from the application from then on (20261030130000_rental_application_form).
+ * Nothing the full form adds is required, so the two forms enforce the same
+ * things at submit — the five details, the consents and the credit report.
+ * What differs is what the applicant is shown, and so asked.
+ */
+export type ApplicationForm = 'full' | 'documents';
+
+export const APPLICATION_FORMS: { id: ApplicationForm; label: string; blurb: string }[] = [
+  {
+    id: 'full',
+    label: 'Full application',
+    blurb: 'The whole form — residence, income, references, household — with documents alongside.',
+  },
+  {
+    id: 'documents',
+    label: 'Documents only',
+    blurb:
+      'Their name and how to reach them, then uploads and a signature. For someone who already filled in an application elsewhere.',
+  },
+];
+
+export const formOf = (value: unknown): ApplicationForm => (value === 'documents' ? 'documents' : 'full');
+
 export const APPLICATION_SECTIONS: ApplicationSection[] = [
   {
     id: 'applicant',
@@ -524,6 +557,30 @@ export const APPLICATION_SECTIONS: ApplicationSection[] = [
   },
 ];
 
+/** The sections a form shows, in order. Documents only skips the whole "application" run. */
+export const sectionsFor = (form: ApplicationForm): ApplicationSection[] =>
+  form === 'documents'
+    ? APPLICATION_SECTIONS.filter((s) => s.group !== 'application')
+    : APPLICATION_SECTIONS;
+
+/**
+ * The index's headings for a form. With no full application to offer an
+ * alternative to, "Or upload it" would be a non sequitur: on documents only,
+ * the documents ARE the application.
+ */
+export const sectionGroupsFor = (form: ApplicationForm): { id: SectionGroup; title: string }[] =>
+  SECTION_GROUPS.filter((g) => form === 'full' || g.id !== 'application').map((g) =>
+    form === 'documents' && g.id === 'documents' ? { id: g.id, title: 'Your documents' } : { id: g.id, title: g.title }
+  );
+
+/**
+ * Each section's number: 1, 2, 3… down the form, across the headings (Kevin,
+ * 2026-10-29). The index and the section headings both read it, so "section
+ * 4" means one thing on the page and in the list beside it.
+ */
+export const sectionNumbers = (form: ApplicationForm): Record<string, number> =>
+  Object.fromEntries(sectionsFor(form).map((s, i) => [s.id, i + 1]));
+
 // ---------------------------------------------------------------------------
 // Status
 // ---------------------------------------------------------------------------
@@ -570,6 +627,8 @@ export interface RentalApplicationRecord {
   inviteId: string | null;
   applicantUserId: string;
   status: ApplicationStatus;
+  /** Which form this application shows. Copied from its link when claimed. */
+  form: ApplicationForm;
   data: RentalApplicationData;
   applicantFirstName: string | null;
   applicantLastName: string | null;
@@ -592,6 +651,8 @@ export interface RentalInviteRecord {
   propertyZip: string | null;
   monthlyRent: number | null;
   inviteeEmail: string | null;
+  /** Which form the link asks for. */
+  form: ApplicationForm;
   expiresAt: string | null;
   revokedAt: string | null;
   /** When the `send` action last emailed this link. Null means never. */
@@ -615,6 +676,8 @@ export interface ResolvedInvite {
    * person was already mailed at.
    */
   inviteeEmail?: string | null;
+  /** Which form the link asks for. Absent from a function deployed before it existed: read as full. */
+  form?: ApplicationForm;
   claimed?: boolean;
   applicationId?: string;
   status?: ApplicationStatus;
@@ -630,6 +693,8 @@ const toRecord = (row: any): RentalApplicationRecord => ({
   inviteId: row.invite_id ?? null,
   applicantUserId: row.applicant_user_id,
   status: row.status as ApplicationStatus,
+  // Absent before 20261030130000 is pushed, and every row then was the full form.
+  form: formOf(row.form),
   data: hydrateApplication(row.data),
   applicantFirstName: row.applicant_first_name ?? null,
   applicantLastName: row.applicant_last_name ?? null,
@@ -651,6 +716,7 @@ const toInvite = (row: any): RentalInviteRecord => ({
   propertyZip: row.property_zip ?? null,
   monthlyRent: row.monthly_rent ?? null,
   inviteeEmail: row.invitee_email ?? null,
+  form: formOf(row.form),
   expiresAt: row.expires_at ?? null,
   revokedAt: row.revoked_at ?? null,
   sentAt: row.sent_at ?? null,
@@ -884,9 +950,32 @@ export interface NewInvite {
   propertyZip?: string;
   monthlyRent?: string;
   inviteeEmail?: string;
+  /** Which form the link asks for. The full application when not said. */
+  form?: ApplicationForm;
   /** Days until the link stops working. 0 or undefined for no expiry. */
   expiresInDays?: number;
 }
+
+/**
+ * TEMPORARY: types.ts does not know `rental_application_invites.form` until it
+ * is regenerated after 20261030130000_rental_application_form is pushed. This
+ * is types.ts's own Database with that ONE column added to the invite insert —
+ * the compiler still checks every other column of the call against the
+ * generated types, and it is used for that one insert. Same arrangement as
+ * `CompsSchema` in idxComps.ts and `LeaseSchema` in leaseStore.ts: once
+ * `gen types` has run, delete it and use `supabase`.
+ */
+type InviteTable = Database['public']['Tables']['rental_application_invites'];
+type InviteFormSchema = Omit<Database, 'public'> & {
+  public: Omit<Database['public'], 'Tables'> & {
+    Tables: Omit<Database['public']['Tables'], 'rental_application_invites'> & {
+      rental_application_invites: Omit<InviteTable, 'Insert'> & {
+        Insert: InviteTable['Insert'] & { form?: ApplicationForm };
+      };
+    };
+  };
+};
+const inviteFormDb = supabase as unknown as SupabaseClient<InviteFormSchema>;
 
 /**
  * Creates an invite. The token itself is NOT supplied — the column defaults to
@@ -901,7 +990,7 @@ export const createInvite = async (input: NewInvite): Promise<RentalInviteRecord
 
   const rent = input.monthlyRent?.replace(/[^\d.]/g, '');
 
-  const { data, error } = await supabase
+  const { data, error } = await inviteFormDb
     .from('rental_application_invites')
     .insert({
       label: input.label?.trim() || null,
@@ -913,6 +1002,7 @@ export const createInvite = async (input: NewInvite): Promise<RentalInviteRecord
       property_zip: input.propertyZip?.trim() || null,
       monthly_rent: rent ? Number(rent) : null,
       invitee_email: input.inviteeEmail?.trim().toLowerCase() || null,
+      form: input.form ?? 'full',
       expires_at: expiresAt,
     })
     .select('*')

@@ -166,6 +166,15 @@ psql_file "$REPO/supabase/migrations/20261030120000_rental_leases.sql" -q 2>&1 \
 echo
 run_tests "$TESTS/rental_leases_test.sql"
 
+# Which form an application link asks for, over the stand-in rental tables
+# from 02_crm_bootstrap.sql.
+echo
+echo "Applying 20261030130000_rental_application_form"
+psql_file "$REPO/supabase/migrations/20261030130000_rental_application_form.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/rental_application_form_test.sql"
+
 # The schema-wide tightening: no table grants the public key a write, now or
 # for tables created later. Last, so it covers everything the suite created.
 echo

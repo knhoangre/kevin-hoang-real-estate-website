@@ -1072,6 +1072,28 @@ replaces the Greater Boston Real Estate Board's **RH101** paper form.
   "optional" any more (removed 2026-10-06 at Kevin's request, along with the
   "The rest is optional" box); the sections are still optional in the schema,
   which is what actually decides whether a submit goes through.
+- **A link asks for the full application OR documents only** (Kevin,
+  2026-10-29: some applicants already filled one in elsewhere). `form` on the
+  invite is chosen on "New link"; the invite function copies it onto the
+  application when the link is claimed, and from then on the APPLICATION's
+  copy decides what its form shows — on /apply, /rentals and the admin view
+  alike. Documents only shows three sections: About you, Documents (with "a
+  completed application you already have" first) and the signature, whose
+  certification then covers documents rather than answers. Both forms enforce
+  the same things at submit, because nothing the full form adds is required;
+  only what is shown differs. `guard_rental_application_form` RAISES if anyone
+  but the admin or the service role changes an application's form (RLS is
+  scoped by row, not by column). The email and the /apply lede follow the
+  link's form. **Deploy order matters: the migration, then the
+  rental-application-invite function, then the site** — the function selects
+  the new column and fails on every link without it. `rentalApplication.ts`
+  carries a scoped `InviteFormSchema` for the one insert that writes `form`,
+  until types.ts is regenerated.
+- **Every section is numbered, in the index and on its heading**, from
+  `sectionNumbers(form)` through the `SectionNumbers` context, so the two can
+  never disagree; numbers run 1–12 on the full form and 1–3 on documents only.
+- **The rule between document kinds is gray-300**, not gray-100: at 100 the
+  kinds read as one paragraph (Kevin, 2026-10-29).
 - **The index's current line comes from `useActiveSection`, not an
   IntersectionObserver.** An observer's callback receives the sections whose
   state just CHANGED, not the ones on screen, so "pick the topmost entry" gave a

@@ -22,15 +22,17 @@ import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
 import {
-  APPLICATION_SECTIONS,
   DOCUMENT_KINDS,
   REQUIRED_DOCUMENT_KINDS,
-  SECTION_GROUPS,
   emptyApplication,
   rentalApplicationSchema,
   saveDraft,
+  sectionGroupsFor,
+  sectionNumbers,
+  sectionsFor,
   submitApplication,
   submissionSchema,
+  type ApplicationForm,
   type RentalApplicationData,
   type RentalDocumentRecord,
 } from '@/lib/rentalApplication';
@@ -48,6 +50,7 @@ import {
   useArrayField,
 } from './fields';
 import DocumentsPanel from '@/components/rental/DocumentsPanel';
+import { SectionNumbers } from './sectionNumbers';
 import { useActiveSection } from '@/hooks/useActiveSection';
 
 type Ctl = UseFormReturn<RentalApplicationData>['control'];
@@ -765,7 +768,7 @@ const FairHousingNotice = () => (
   </div>
 );
 
-const ConsentsSection = ({ control, ro }: { control: Ctl; ro: boolean }) => (
+const ConsentsSection = ({ control, ro, form }: { control: Ctl; ro: boolean; form: ApplicationForm }) => (
   <Section id="consents" title="Authorization and signature" delay={0.55}>
     <FairHousingNotice />
 
@@ -780,7 +783,11 @@ const ConsentsSection = ({ control, ro }: { control: Ctl; ro: boolean }) => (
       <CheckboxField
         control={control}
         name="consents.certification"
-        label="I certify that my answers are true and complete"
+        label={
+          form === 'documents'
+            ? 'I certify that the information and documents I have provided are true and complete'
+            : 'I certify that my answers are true and complete'
+        }
         description="I understand that a material misstatement may result in this application being declined, or in a tenancy agreement being terminated. The renting agent is not authorized to make representations about the property and no tenancy exists until a written agreement is signed by the owner."
         disabled={ro}
       />
@@ -815,50 +822,68 @@ const ConsentsSection = ({ control, ro }: { control: Ctl; ro: boolean }) => (
 const SectionIndex = ({
   activeId,
   onJump,
+  form,
 }: {
   activeId: string;
   /** Lights the clicked line at once; see useActiveSection. */
   onJump: (id: string) => void;
-}) => (
-  <nav aria-label="Application sections" className="hidden lg:block print:hidden">
-    <div className="sticky top-28">
-      {SECTION_GROUPS.map((group) => {
-        const sections = APPLICATION_SECTIONS.filter((s) => s.group === group.id);
-        if (sections.length === 0) return null;
-        return (
-          <div key={group.id} className="mb-6 last:mb-0">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-              {group.title}
-            </p>
-            <ol className="space-y-1.5">
-              {sections.map((section) => {
-                const current = section.id === activeId;
-                return (
-                  <li key={section.id}>
-                    <a
-                      href={`#${section.id}`}
-                      // The href still does the scrolling, so the URL carries
-                      // the section and scroll-mt applies. This only marks it.
-                      onClick={() => onJump(section.id)}
-                      aria-current={current ? 'true' : undefined}
-                      className={`block rounded-md px-2 py-1 text-sm transition-colors ${
-                        current
-                          ? 'font-medium text-champagne-ink underline decoration-champagne decoration-2 underline-offset-4'
-                          : 'text-gray-600 hover:text-ink'
-                      }`}
-                    >
-                      {section.title}
-                    </a>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        );
-      })}
-    </div>
-  </nav>
-);
+  form: ApplicationForm;
+}) => {
+  const numbers = sectionNumbers(form);
+  return (
+    <nav aria-label="Application sections" className="hidden lg:block print:hidden">
+      <div className="sticky top-28">
+        {sectionGroupsFor(form).map((group) => {
+          const sections = sectionsFor(form).filter((s) => s.group === group.id);
+          if (sections.length === 0) return null;
+          return (
+            <div key={group.id} className="mb-6 last:mb-0">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
+                {group.title}
+              </p>
+              <ol className="space-y-1.5">
+                {sections.map((section) => {
+                  const current = section.id === activeId;
+                  return (
+                    <li key={section.id}>
+                      <a
+                        href={`#${section.id}`}
+                        // The href still does the scrolling, so the URL carries
+                        // the section and scroll-mt applies. This only marks it.
+                        onClick={() => onJump(section.id)}
+                        aria-current={current ? 'true' : undefined}
+                        className={`group flex items-center gap-2.5 rounded-md px-2 py-1 text-sm transition-colors ${
+                          current
+                            ? 'font-medium text-champagne-ink underline decoration-champagne decoration-2 underline-offset-4'
+                            : 'text-gray-600 hover:text-ink'
+                        }`}
+                      >
+                        {/* The section's number, the same one on its heading.
+                            Filled for the section being read; champagne is a
+                            mark here, behind ink-deep text, never text itself. */}
+                        <span
+                          className={`numeral inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold no-underline transition-colors ${
+                            current
+                              ? 'bg-champagne text-ink-deep'
+                              : 'border border-gray-300 text-gray-500 group-hover:border-gray-400 group-hover:text-ink'
+                          }`}
+                          aria-hidden
+                        >
+                          {numbers[section.id]}
+                        </span>
+                        <span>{section.title}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
 
 /* =================================================================== */
 /* The form                                                            */
@@ -866,8 +891,11 @@ const SectionIndex = ({
 
 const AUTOSAVE_MS = 2000;
 
-/** Module scope so the array is stable: useActiveSection re-subscribes on a new one. */
-const SECTION_IDS = APPLICATION_SECTIONS.map((section) => section.id);
+/** One array per form, made once, so it is stable: useActiveSection re-subscribes on a new one. */
+const SECTION_IDS: Record<ApplicationForm, string[]> = {
+  full: sectionsFor('full').map((section) => section.id),
+  documents: sectionsFor('documents').map((section) => section.id),
+};
 
 const savedAt = (iso: string) =>
   new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
@@ -881,9 +909,16 @@ export default function RentalApplicationForm({
   alreadySent = false,
   showSubmit,
   onSubmitted,
+  form = 'full',
 }: {
   applicationId: string;
   initial: RentalApplicationData;
+  /**
+   * Which form this application shows: every section, or documents only —
+   * who you are, the documents, the signature. The application's own column,
+   * copied from its link; see ApplicationForm.
+   */
+  form?: ApplicationForm;
   /** Renders the same document with every control disabled and no submit. */
   readOnly?: boolean;
   /**
@@ -912,7 +947,7 @@ export default function RentalApplicationForm({
   onSubmitted?: () => void;
 }) {
   const { toast } = useToast();
-  const form = useForm<RentalApplicationData>({
+  const hookForm = useForm<RentalApplicationData>({
     // The draft schema, not `submissionSchema`: validating the submit-only
     // rules on every keystroke would put a half-filled form permanently in an
     // error state. Those rules run once, in submitApplication.
@@ -920,12 +955,13 @@ export default function RentalApplicationForm({
     defaultValues: initial ?? emptyApplication(),
     mode: 'onBlur',
   });
-  const { control } = form;
+  const { control } = hookForm;
 
   const [submitting, setSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
-  const [activeSection, jumpToSection] = useActiveSection(SECTION_IDS);
+  const [activeSection, jumpToSection] = useActiveSection(SECTION_IDS[form]);
+  const numbers = useMemo(() => sectionNumbers(form), [form]);
   // Null until DocumentsPanel has loaded. Distinct from an empty array, so a
   // submit pressed before the list arrives is not refused for a file that is
   // in fact attached.
@@ -949,15 +985,15 @@ export default function RentalApplicationForm({
   // Enter) can have both handlers read submitting === false and each fire.
   const inFlight = useRef(false);
 
-  const showPreviousResidence = form.watch('hasPreviousResidence');
-  const showPreviousEmployment = form.watch('hasPreviousEmployment');
+  const showPreviousResidence = hookForm.watch('hasPreviousResidence');
+  const showPreviousEmployment = hookForm.watch('hasPreviousEmployment');
 
   /* ---- Autosave ---------------------------------------------------- */
   useEffect(() => {
     if (readOnly) return;
     let timer: ReturnType<typeof setTimeout>;
 
-    const subscription = form.watch((values) => {
+    const subscription = hookForm.watch((values) => {
       clearTimeout(timer);
       timer = setTimeout(async () => {
         try {
@@ -977,7 +1013,7 @@ export default function RentalApplicationForm({
       clearTimeout(timer);
       subscription.unsubscribe();
     };
-  }, [form, applicationId, readOnly]);
+  }, [hookForm, applicationId, readOnly]);
 
   /* ---- Submit ------------------------------------------------------ */
   const onSubmit = async (values: RentalApplicationData) => {
@@ -1043,138 +1079,149 @@ export default function RentalApplicationForm({
   };
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <SectionIndex activeId={activeSection} onJump={jumpToSection} />
+    <SectionNumbers.Provider value={numbers}>
+      <div className="grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <SectionIndex activeId={activeSection} onJump={jumpToSection} form={form} />
 
-      <FormProvider {...form}>
-        <Form {...form}>
-          <div className="space-y-6">
-            {/* A plain div, not a <form>: only the element around the submit
-                button needs to be one, and wrapping the required section made
-                Enter in a name field fire a submit of a document the applicant
-                had barely started. */}
-            <div>
-              <ApplicantSection control={control} ro={readOnly} />
-            </div>
+        <FormProvider {...hookForm}>
+          <Form {...hookForm}>
+            <div className="space-y-6">
+              {/* A plain div, not a <form>: only the element around the submit
+                  button needs to be one, and wrapping the required section made
+                  Enter in a name field fire a submit of a document the applicant
+                  had barely started. */}
+              <div>
+                <ApplicantSection control={control} ro={readOnly} />
+              </div>
 
-            {/* Documents come SECOND, immediately after the part we require and
-                before the long optional run. That order is the offer: tell us who
-                you are, hand us what you already have, and only fill in the rest
-                if you want to. Outside a <form> because a file input feeds the
-                watcher that drives autosave. */}
-            <DocumentsPanel
-              applicationId={applicationId}
-              canUpload={documentUploads ?? !readOnly}
-              admin={adminDocuments}
-              onDocsChange={setDocuments}
-            />
-
-            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
-              <ResidenceSection control={control} ro={readOnly} />
-              <PreviousResidenceSection
-                control={control}
-                ro={readOnly}
-                show={Boolean(showPreviousResidence)}
+              {/* Documents come SECOND, immediately after the part we require and
+                  before the long optional run. That order is the offer: tell us who
+                  you are, hand us what you already have, and only fill in the rest
+                  if you want to. Outside a <form> because a file input feeds the
+                  watcher that drives autosave. */}
+              <DocumentsPanel
+                applicationId={applicationId}
+                canUpload={documentUploads ?? !readOnly}
+                admin={adminDocuments}
+                onDocsChange={setDocuments}
+                form={form}
               />
-              <EmploymentSection
-                control={control}
-                ro={readOnly}
-                showPrevious={Boolean(showPreviousEmployment)}
-              />
-              <OtherIncomeSection control={control} ro={readOnly} />
-              <ReferencesSection control={control} ro={readOnly} />
-              <EmergencySection control={control} ro={readOnly} />
-              <HouseholdSection control={control} ro={readOnly} />
-              <VehicleSection control={control} ro={readOnly} />
-              <TenancySection control={control} ro={readOnly} />
-              <ConsentsSection control={control} ro={readOnly} />
-            </form>
 
-            {(showSubmit ?? !readOnly) && (
-              <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
-                <div className="print:hidden">
-                  {/* The submit treatment from /contact, so the application's
-                      primary action looks like every other on the site. */}
-                  {/* The design system's primary action: the champagne pill
-                      from CtaBand, which every other closing CTA on the site
-                      uses. This carried /contact's older treatment until
-                      2026-09-13 — a square near-black bar with a sliding label
-                      and a white rule wiping across the bottom — which made the
-                      one button the applicant has to press look like the
-                      homepage of two redesigns ago. `text-ink-deep` on champagne
-                      is 8.31:1; champagne as TEXT on a light surface would fail
-                      WCAG, which is why the pill is filled and not outlined. */}
-                  {/* The ONE place the credit report is stated as a condition,
-                      and it sits against the button it affects. Named here
-                      rather than only on the refusal, because pressing submit
-                      and being sent back up the page is a worse way to learn it
-                      — and stated calmly rather than in the amber used for a
-                      file Kevin has asked to have replaced, which is a real
-                      problem with something already sent. The button stays
-                      enabled: a disabled control with no explanation is the
-                      thing people write in about. */}
-                  {missingDocuments.length > 0 && (
-                    <p className="mb-3 rounded-lg border border-champagne/40 bg-bone px-4 py-3 text-sm leading-relaxed text-gray-700">
-                      Before you send this, please attach{' '}
-                      <strong className="font-semibold text-ink">
-                        {missingDocuments.join(' and ').toLowerCase()}
-                      </strong>{' '}
-                      —{' '}
-                      <a href="#documents" className="font-medium text-champagne-ink underline">
-                        go to Documents
-                      </a>
-                      , where the steps for getting one are.
-                    </p>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="btn-pill group inline-flex w-full items-center justify-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white disabled:opacity-60"
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-                        {alreadySent ? 'Sending' : 'Submitting'}
-                      </>
-                    ) : (
-                      <>
-                        {alreadySent ? 'Send updated application' : 'Submit application'}
-                        <ArrowRight className="h-4 w-4" aria-hidden />
-                      </>
-                    )}
-                  </button>
-
-                  <p
-                    className="mt-3 text-center text-sm text-gray-500"
-                    aria-live="polite"
-                    role="status"
-                  >
-                    {saveFailed ? (
-                      <span className="text-red-700">
-                        Could not save your progress — check your connection.
-                      </span>
-                    ) : lastSaved ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Check className="h-3.5 w-3.5" aria-hidden />
-                        Saved {savedAt(lastSaved)}
-                      </span>
-                    ) : (
-                      'Your progress saves automatically. You can close this and come back.'
-                    )}
-                  </p>
-
-                  <p className="mt-2 text-center text-xs text-gray-500">
-                    {alreadySent
-                      ? 'Your answers stay editable until Kevin starts reviewing. Documents can be added at any time.'
-                      : 'After you send it you can still make changes, until Kevin starts reviewing it. Documents can be added at any time.'}
-                  </p>
-                </div>
+              <form onSubmit={hookForm.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+                {/* Documents only asks none of this: the applicant has filled it
+                    in on somebody else's form and uploaded that instead. The
+                    answers stay in the document, empty, so switching the
+                    application back to the full form loses nothing. */}
+                {form === 'full' && (
+                  <>
+                    <ResidenceSection control={control} ro={readOnly} />
+                    <PreviousResidenceSection
+                      control={control}
+                      ro={readOnly}
+                      show={Boolean(showPreviousResidence)}
+                    />
+                    <EmploymentSection
+                      control={control}
+                      ro={readOnly}
+                      showPrevious={Boolean(showPreviousEmployment)}
+                    />
+                    <OtherIncomeSection control={control} ro={readOnly} />
+                    <ReferencesSection control={control} ro={readOnly} />
+                    <EmergencySection control={control} ro={readOnly} />
+                    <HouseholdSection control={control} ro={readOnly} />
+                    <VehicleSection control={control} ro={readOnly} />
+                    <TenancySection control={control} ro={readOnly} />
+                  </>
+                )}
+                <ConsentsSection control={control} ro={readOnly} form={form} />
               </form>
-            )}
-          </div>
-        </Form>
-      </FormProvider>
-    </div>
+
+              {(showSubmit ?? !readOnly) && (
+                <form onSubmit={hookForm.handleSubmit(onSubmit, onInvalid)}>
+                  <div className="print:hidden">
+                    {/* The submit treatment from /contact, so the application's
+                        primary action looks like every other on the site. */}
+                    {/* The design system's primary action: the champagne pill
+                        from CtaBand, which every other closing CTA on the site
+                        uses. This carried /contact's older treatment until
+                        2026-09-13 — a square near-black bar with a sliding label
+                        and a white rule wiping across the bottom — which made the
+                        one button the applicant has to press look like the
+                        homepage of two redesigns ago. `text-ink-deep` on champagne
+                        is 8.31:1; champagne as TEXT on a light surface would fail
+                        WCAG, which is why the pill is filled and not outlined. */}
+                    {/* The ONE place the credit report is stated as a condition,
+                        and it sits against the button it affects. Named here
+                        rather than only on the refusal, because pressing submit
+                        and being sent back up the page is a worse way to learn it
+                        — and stated calmly rather than in the amber used for a
+                        file Kevin has asked to have replaced, which is a real
+                        problem with something already sent. The button stays
+                        enabled: a disabled control with no explanation is the
+                        thing people write in about. */}
+                    {missingDocuments.length > 0 && (
+                      <p className="mb-3 rounded-lg border border-champagne/40 bg-bone px-4 py-3 text-sm leading-relaxed text-gray-700">
+                        Before you send this, please attach{' '}
+                        <strong className="font-semibold text-ink">
+                          {missingDocuments.join(' and ').toLowerCase()}
+                        </strong>{' '}
+                        —{' '}
+                        <a href="#documents" className="font-medium text-champagne-ink underline">
+                          go to Documents
+                        </a>
+                        , where the steps for getting one are.
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="btn-pill group inline-flex w-full items-center justify-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white disabled:opacity-60"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                          {alreadySent ? 'Sending' : 'Submitting'}
+                        </>
+                      ) : (
+                        <>
+                          {alreadySent ? 'Send updated application' : 'Submit application'}
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </>
+                      )}
+                    </button>
+
+                    <p
+                      className="mt-3 text-center text-sm text-gray-500"
+                      aria-live="polite"
+                      role="status"
+                    >
+                      {saveFailed ? (
+                        <span className="text-red-700">
+                          Could not save your progress — check your connection.
+                        </span>
+                      ) : lastSaved ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <Check className="h-3.5 w-3.5" aria-hidden />
+                          Saved {savedAt(lastSaved)}
+                        </span>
+                      ) : (
+                        'Your progress saves automatically. You can close this and come back.'
+                      )}
+                    </p>
+
+                    <p className="mt-2 text-center text-xs text-gray-500">
+                      {alreadySent
+                        ? 'Your answers stay editable until Kevin starts reviewing. Documents can be added at any time.'
+                        : 'After you send it you can still make changes, until Kevin starts reviewing it. Documents can be added at any time.'}
+                    </p>
+                  </div>
+                </form>
+              )}
+            </div>
+          </Form>
+        </FormProvider>
+      </div>
+    </SectionNumbers.Provider>
   );
 }
