@@ -2228,6 +2228,37 @@ so the tracking is not applied to mixed-case text in either language.
 Related: `.numeral` in [index.css](src/index.css) exists because Playfair ships
 old-style figures, so no number goes in the display face either.
 
+### The homepage skyline and the button sheen
+
+Kevin asked on 2026-10-29 for the hero animation of his Entry Only and Livo
+sites (`HouseArt`: one house drawn in line, windows lit), "but spectacular".
+[HeroSkyline.tsx](src/components/HeroSkyline.tsx) is Greater Boston at
+nightfall: Boston across the Charles in the middle, his kind of houses on either
+side, drawn stroke by stroke, then lit, then left moving (traffic on the Zakim,
+a sail, twinkling windows, a swaying sign).
+
+- **It is in the flow under the copy, not laid over the photograph.** The copy
+  centres in whatever height the skyline leaves, so the two never collide at
+  any window size; the hero's `min-h-screen` still holds. The extra bottom
+  gradient in [Hero.tsx](src/components/Hero.tsx) is what keeps the photo's
+  own lines out of the drawing's sky.
+- **The viewBox is 2400 wide and sliced from the bottom centre**
+  (`xMidYMax slice`), so a phone sees the river and the towers and a desktop
+  gets the houses too. Anything that matters on a phone goes within ~350 units
+  of x=1200.
+- **Everything is CSS from the prerendered HTML** (`.sk-*` in index.css;
+  timing in inline `--d`/`--t`/`--p`), the same rule as `.enter`. The text is
+  NOT animated: the h1 is the LCP element, and fading it in would delay LCP by
+  the fade.
+- **The windows, stars and reflections come from a seeded generator**, so the
+  server and the browser write the same markup. Swapping it for `Math.random()`
+  is a hydration failure on the homepage.
+- **`.btn-pill` carries the Entry Only sheen** (a band of light on hover and
+  focus), so every primary pill on the site has it; the homepage CTA also
+  glints once at 5.4 s (`btn-pill-glint`), as the drawing finishes. That rule's
+  `transition` shorthand used to REPLACE each button's `transition-colors` —
+  the hover colours snapped until it listed them itself.
+
 ### One chrome
 
 [PageShell.tsx](src/components/PageShell.tsx) owns the dark hero, breadcrumbs, eyebrow,
