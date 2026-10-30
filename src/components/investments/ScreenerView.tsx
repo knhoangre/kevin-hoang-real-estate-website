@@ -17,6 +17,7 @@ import { estimateInsurance } from '@/lib/mortgage';
 import { describeRent, rentForListing, type ListingRent } from '@/lib/rentComps';
 import { parcelFits, type Parcel } from '@/lib/parcels';
 import { SITE } from '@/lib/siteConfig';
+import { NativeSelect } from '@/components/ui/native-select';
 
 /**
  * /investments with no listing open: one town's homes for sale, ranked by what
@@ -97,7 +98,7 @@ interface Row {
 const pctText = (n: number) => `${Math.round(n * 100)}%`;
 
 const SELECT =
-  'mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink focus:border-champagne-ink focus:outline-none';
+  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink focus:border-champagne-ink focus:outline-none';
 const FIELD_LABEL = 'text-xs font-semibold uppercase tracking-[0.12em] text-gray-500';
 
 const ScreenerView = ({
@@ -208,7 +209,7 @@ const ScreenerView = ({
       <div className="grid gap-4 rounded-2xl border border-gray-200 bg-bone p-5 sm:grid-cols-2 lg:grid-cols-5">
         <label className="block lg:col-span-2">
           <span className={FIELD_LABEL}>Town</span>
-          <select className={SELECT} value={q.town} onChange={(e) => set({ town: e.target.value === DEFAULT_TOWN ? null : e.target.value })}>
+          <NativeSelect wrapperClassName="mt-1" className={SELECT} value={q.town} onChange={(e) => set({ town: e.target.value === DEFAULT_TOWN ? null : e.target.value })}>
             <optgroup label="Towns Kevin serves">
               {servedNames.map((t) => (
                 <option key={t} value={t}>
@@ -227,40 +228,40 @@ const ScreenerView = ({
             )}
             {/* A town typed into the URL that is in neither list still shows as chosen. */}
             {!servedNames.includes(q.town) && !otherTowns.includes(q.town) && <option value={q.town}>{q.town}</option>}
-          </select>
+          </NativeSelect>
         </label>
         <label className="block">
           <span className={FIELD_LABEL}>Type</span>
-          <select className={SELECT} value={q.type} onChange={(e) => set({ type: e.target.value || null })}>
+          <NativeSelect wrapperClassName="mt-1" className={SELECT} value={q.type} onChange={(e) => set({ type: e.target.value || null })}>
             <option value="">Any</option>
             {INVESTMENT_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
         <label className="block">
           <span className={FIELD_LABEL}>Price from</span>
-          <select className={SELECT} value={q.min ?? ''} onChange={(e) => set({ min: e.target.value || null })}>
+          <NativeSelect wrapperClassName="mt-1" className={SELECT} value={q.min ?? ''} onChange={(e) => set({ min: e.target.value || null })}>
             <option value="">No minimum</option>
             {PRICE_STEPS.map((p) => (
               <option key={p} value={p}>
                 {formatPrice(p)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
         <label className="block">
           <span className={FIELD_LABEL}>Up to</span>
-          <select className={SELECT} value={q.max ?? ''} onChange={(e) => set({ max: e.target.value || null })}>
+          <NativeSelect wrapperClassName="mt-1" className={SELECT} value={q.max ?? ''} onChange={(e) => set({ max: e.target.value || null })}>
             <option value="">No maximum</option>
             {PRICE_STEPS.map((p) => (
               <option key={p} value={p}>
                 {formatPrice(p)}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </label>
       </div>
 
@@ -283,14 +284,14 @@ const ScreenerView = ({
         </div>
         <label className="flex items-center gap-2 text-sm text-gray-600">
           Fetch
-          <select
+          <NativeSelect
             className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-ink focus:border-champagne-ink focus:outline-none"
             value={q.order}
             onChange={(e) => set({ order: e.target.value === 'low' ? 'low' : null })}
           >
             <option value="high">highest-priced first</option>
             <option value="low">lowest-priced first</option>
-          </select>
+          </NativeSelect>
         </label>
       </div>
       <p className="mt-4 max-w-3xl text-sm leading-relaxed text-gray-600">{sortInfo.explain}</p>

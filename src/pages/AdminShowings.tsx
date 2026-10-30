@@ -47,6 +47,7 @@ import ListingLookup from '@/components/admin/ListingLookup';
 import ShowingReminders from '@/components/admin/ShowingReminders';
 import SuggestInput from '@/components/admin/SuggestInput';
 import { Input } from '@/components/ui/input';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useViewScroll } from '@/hooks/useViewScroll';
@@ -449,7 +450,7 @@ const AddStopForm = ({
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="stop-kind">Type</Label>
-        <select
+        <NativeSelect
           id="stop-kind"
           value={kind}
           onChange={(e) => setKind(e.target.value as StopKind)}
@@ -460,7 +461,7 @@ const AddStopForm = ({
               {k.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       <div className="space-y-1.5 sm:col-span-2">
         <Label htmlFor="stop-note">Note</Label>

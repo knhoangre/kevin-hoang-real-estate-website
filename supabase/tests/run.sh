@@ -158,6 +158,14 @@ done
 echo
 run_tests "$TESTS/showing_reminders_test.sql"
 
+# Leases made from a property's applicants: the admin's alone.
+echo
+echo "Applying 20261030120000_rental_leases"
+psql_file "$REPO/supabase/migrations/20261030120000_rental_leases.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/rental_leases_test.sql"
+
 # The schema-wide tightening: no table grants the public key a write, now or
 # for tables created later. Last, so it covers everything the suite created.
 echo

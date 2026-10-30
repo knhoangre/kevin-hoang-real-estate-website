@@ -1,0 +1,242 @@
+/*
+ * The lease, as it prints. Loaded as text into the lease's DocFrame, so none of
+ * the site's own styles — Tailwind's reset, index.css's print rules — reach it,
+ * and what is on screen is what prints.
+ *
+ * Letter paper. The page margin is DocFrame's `margin` (@page), because the
+ * text flows from page to page and only @page puts a margin on every one; on
+ * screen the same margin is padding, so the preview reads like the page.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  background: #fff;
+  color: #1a1a1a;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 10pt;
+  line-height: 1.55;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media screen {
+  body {
+    min-height: 11in;
+    padding: 0.75in 0.85in 0.9in;
+  }
+}
+
+/* Page numbers and an initials line on every printed page. Chrome draws page
+   margin boxes from version 131; a browser that does not simply leaves the
+   margin empty. */
+@page {
+  @bottom-left {
+    content: 'Tenant initials ________';
+    font-family: Inter, sans-serif;
+    font-size: 8pt;
+    color: #6b6b6b;
+  }
+  @bottom-right {
+    content: 'Page ' counter(page) ' of ' counter(pages);
+    font-family: Inter, sans-serif;
+    font-size: 8pt;
+    color: #6b6b6b;
+  }
+}
+
+/* --- Heading ------------------------------------------------------------ */
+
+.ls-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24pt;
+  margin-bottom: 18pt;
+  padding-bottom: 12pt;
+  /* Champagne as a rule, never as text: it is 2.33:1 on white. */
+  border-bottom: 2pt solid #c5a572;
+}
+
+.ls-title {
+  margin: 0;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24pt;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.ls-address {
+  margin: 5pt 0 0;
+  font-size: 11pt;
+  color: #3a3a3a;
+}
+
+.ls-prepared {
+  flex-shrink: 0;
+  max-width: 2.6in;
+  font-size: 8pt;
+  line-height: 1.45;
+  color: #6b6b6b;
+  text-align: right;
+}
+
+.ls-prepared strong {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* --- Sections ------------------------------------------------------------ */
+
+.ls-section {
+  margin: 0 0 12pt;
+}
+
+.ls-section h2 {
+  margin: 0 0 4pt;
+  font-size: 10pt;
+  font-weight: 700;
+  break-after: avoid;
+}
+
+.ls-section h2 .ls-n {
+  display: inline-block;
+  min-width: 2em;
+  /* champagne-ink: the same hue at 4.92:1 on white. */
+  color: #8c6b35;
+  font-variant-numeric: tabular-nums;
+}
+
+.ls-section p {
+  margin: 0 0 5pt;
+  padding-left: 2em;
+}
+
+.ls-section ul {
+  margin: 2pt 0 6pt;
+  padding-left: 3.4em;
+}
+
+.ls-section li {
+  margin: 0 0 1pt;
+}
+
+/* A field nobody has filled in yet: a line to write on. */
+.ls-blank {
+  display: inline-block;
+  min-width: 1.7in;
+  height: 1.05em;
+  vertical-align: -3pt;
+  border-bottom: 0.75pt solid #1a1a1a;
+}
+
+.ls-blank.ls-short {
+  min-width: 0.85in;
+}
+
+/* --- Tables -------------------------------------------------------------- */
+
+.ls-table {
+  width: calc(100% - 2em);
+  margin: 3pt 0 7pt 2em;
+  border-collapse: collapse;
+  font-size: 9.5pt;
+  break-inside: avoid;
+}
+
+.ls-table th,
+.ls-table td {
+  padding: 3pt 8pt 3pt 0;
+  border-bottom: 0.5pt solid #d9d4cc;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ls-table th {
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+.ls-table .ls-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ls-table tr.ls-total td {
+  border-top: 1pt solid #1a1a1a;
+  border-bottom: none;
+  font-weight: 700;
+}
+
+/* --- Checkboxes (the building's age, when nobody has said) ---------------- */
+
+.ls-choice {
+  display: block;
+}
+
+.ls-box {
+  display: inline-block;
+  width: 9pt;
+  height: 9pt;
+  margin-right: 6pt;
+  vertical-align: -1pt;
+  border: 0.75pt solid #1a1a1a;
+}
+
+/* --- Signatures ---------------------------------------------------------- */
+
+.ls-signatures {
+  margin-top: 20pt;
+  break-inside: avoid;
+}
+
+.ls-signatures > p {
+  margin: 0;
+}
+
+.ls-sign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24pt 30pt;
+  margin-top: 16pt;
+}
+
+.ls-sign {
+  break-inside: avoid;
+}
+
+.ls-sign-row {
+  display: grid;
+  grid-template-columns: 1fr 0.9in;
+  gap: 10pt;
+}
+
+.ls-sign-line {
+  height: 28pt;
+  border-bottom: 0.75pt solid #1a1a1a;
+}
+
+.ls-sign-label {
+  margin-top: 3pt;
+  font-size: 8.5pt;
+}
+
+.ls-sign-role {
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}

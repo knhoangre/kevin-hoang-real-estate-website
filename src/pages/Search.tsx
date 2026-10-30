@@ -5,6 +5,7 @@ import { Search as SearchIcon, X, MapPin, RefreshCw } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
+import { NativeSelect } from '@/components/ui/native-select';
 import { formatPrice } from '@/lib/listings';
 import {
   EMPTY_FILTERS,
@@ -361,7 +362,7 @@ const Search = () => {
               <label htmlFor="town" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                 Town
               </label>
-              <select
+              <NativeSelect
                 id="town"
                 className={inputClass}
                 value={draft.town}
@@ -384,14 +385,14 @@ const Search = () => {
                     {t.listings > 0 ? `${t.town} (${t.listings.toLocaleString()})` : t.town}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             <div>
               <label htmlFor="type" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                 Type
               </label>
-              <select
+              <NativeSelect
                 id="type"
                 className={inputClass}
                 value={draft.propType}
@@ -404,7 +405,7 @@ const Search = () => {
                     {t.label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             <div>
@@ -440,7 +441,7 @@ const Search = () => {
                 <label htmlFor="beds" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                   Beds
                 </label>
-                <select
+                <NativeSelect
                   id="beds"
                   className={inputClass}
                   value={draft.beds}
@@ -450,13 +451,13 @@ const Search = () => {
                   {[1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>{n}+</option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
               <div>
                 <label htmlFor="baths" className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-600">
                   Baths
                 </label>
-                <select
+                <NativeSelect
                   id="baths"
                   className={inputClass}
                   value={draft.baths}
@@ -466,7 +467,7 @@ const Search = () => {
                   {[1, 2, 3, 4].map((n) => (
                     <option key={n} value={n}>{n}+</option>
                   ))}
-                </select>
+                </NativeSelect>
               </div>
             </div>
           </div>

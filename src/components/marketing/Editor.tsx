@@ -57,7 +57,8 @@ import {
   type Stat,
 } from '@/lib/marketing';
 import { loadDoc, saveDoc, sourceUrl, uploadImage } from '@/lib/marketingStore';
-import DocFrame, { type DocFrameHandle } from './DocFrame';
+import DocFrame, { type DocFrameHandle } from '@/components/DocFrame';
+import printCss from './designs/print.css?raw';
 import PhotoPicker from './PhotoPicker';
 import { DocProvider } from './Pic';
 import DocPages from './designs';
@@ -1151,6 +1152,7 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
             <DocFrame
               ref={frame}
               family={design.family}
+              css={printCss}
               title={`${title || 'Untitled'} — ${kind.label}`}
             >
               <DocPages doc={doc} />
