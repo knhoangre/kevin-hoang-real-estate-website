@@ -2204,7 +2204,7 @@ costs no request.
 
 The landing-page heroes are set in the serif. **The homepage is not** — as of
 2026-09-13 there is no `font-display` anywhere on it, verified against the built
-`dist/index.html`. The h1 is full caps at `lg:text-7xl` over a photograph, and
+`dist/index.html`. The h1 is full caps at display size over a photograph, and
 Playfair is a high-contrast transitional serif: at that size its hairlines and
 ball terminals are doing a great deal of work against a moving background, where
 Inter's even weight simply reads. It also takes the LCP element off the serif.
@@ -2217,7 +2217,9 @@ height with flat sidebearings, so a line of them at a text face's default fit
 reads as a wall; the h1 carried `tracking-tight`, which is tuned for mixed-case
 display type and is exactly wrong here. Section h2s take `tracking-widest`
 (0.1em) and the h1 `tracking-wider` (0.05em) — tracking comes DOWN as size goes
-up, and the h1 is twice their size. Both stay well short of the 0.15–0.3em the
+up, and the h1 is half again their size (52px against 36px; it was 7xl until
+2026-10-29, when the skyline took the bottom of the hero and Kevin found the
+copy pressed up against the navbar — at 52px the line sets in two). Both stay well short of the 0.15–0.3em the
 eyebrows use, so the hierarchy between an eyebrow and a heading survives. The
 h1's leading went up alongside it: letterspaced caps need the extra air or the
 block closes back up vertically.

@@ -36,7 +36,7 @@ const Hero = () => {
           the skyline is in the flow below, so the two can never overlap. */}
       <div className="container relative z-10 flex flex-1 items-center justify-center px-4 pt-28 pb-6 text-center text-white">
         <div className="mx-auto max-w-4xl">
-          <div className="mb-7 flex items-center justify-center gap-4">
+          <div className="mb-6 flex items-center justify-center gap-4">
             <span className="h-px w-10 bg-champagne" aria-hidden />
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-champagne">
               {SITE.brokerage}
@@ -45,7 +45,7 @@ const Hero = () => {
           </div>
           {/* Inter, not the Playfair `font-display` face the landing heroes use.
               The line is set in full caps, and Playfair is a high-contrast
-              transitional serif — at 7xl its hairline strokes and its ball
+              transitional serif — at display size its hairlines and its ball
               terminals are doing a great deal of work over a photograph, where
               Inter's even weight simply reads. Both faces are already loaded
               from the same stylesheet, so this costs no extra request, and it
@@ -57,13 +57,19 @@ const Hero = () => {
               `tracking-tight` that was here is tuned for mixed-case display
               type and is exactly wrong for this. Less than the 0.1em the section
               headings take, because tracking should come down as size goes up
-              and this is twice their size. Leading goes up with it: letterspaced
-              caps need the extra air between lines or the block closes back up
-              vertically. */}
-          <h1 className="font-sans text-4xl md:text-6xl lg:text-7xl font-semibold leading-[1.12] tracking-wider mb-6">
+              and this is half again their size. Leading goes up with it:
+              letterspaced caps need the extra air between lines or the block
+              closes back up vertically.
+
+              52px on a desktop, not 7xl (Kevin, 2026-10-29: the copy sat up
+              against the navbar once the skyline took the bottom of the hero).
+              It sets the line in two — "YOUR TRUSTED REAL ESTATE / PARTNER IN
+              GREATER BOSTON" — with 40px to spare at max-w-4xl; 56px goes back
+              to three. */}
+          <h1 className="font-sans text-3xl md:text-5xl lg:text-[3.25rem] font-semibold leading-[1.12] tracking-wider mb-5">
             {t('hero.title')}
           </h1>
-          <p className="text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed text-gray-300">
+          <p className="text-base md:text-lg mb-8 max-w-3xl mx-auto leading-relaxed text-balance text-gray-300">
             {t('hero.subtitle')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
