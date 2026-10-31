@@ -5,18 +5,24 @@
  * says — is in _shared/showingReminders.ts, which is pure and checked by
  * `node scripts/showing-reminders-check.ts`. This file fetches and sends.
  *
- * Two actions:
+ * Three actions:
  *
  *   run   From pg_cron, at 12:00 and 13:00 UTC (20261028110000). SERVICE ROLE
  *         ONLY. Goes ahead only when it is 8 AM in Boston, so exactly one of the
  *         two does anything. Emails each client who is a guest on Kevin's own
  *         event (or on a showing tour), then emails Kevin one summary with every
  *         message written out. Each email is claimed in `showing_reminders`
- *         first, so nothing goes twice. `force` skips the hour check; `dryRun`
- *         returns what it would send and sends nothing.
+ *         first, so nothing goes twice, and a showing Kevin has already completed
+ *         is not emailed at all. `force` skips the hour check; `dryRun` returns
+ *         what it would send and sends nothing, for today or for a `day` it is
+ *         given.
  *
  *   list  From /admin/showings. ADMIN ONLY. Today's or tomorrow's reminders,
  *         read live, with what has already gone out. Sends nothing.
+ *
+ *   mark  From /admin/showings. ADMIN ONLY. Records that Kevin sent one himself,
+ *         or with `how: null` takes that back. Sends nothing, and it is the only
+ *         thing here a browser can write.
  *
  * THE CALENDAR is the "Secret address in iCal format" of Kevin's Google
  * Calendar, in the SHOWING_CALENDAR_ICS_URL secret. It reads his whole
@@ -30,18 +36,23 @@ import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supa
 import {
   AGENT,
   SEND_HOUR,
+  SEND_WAYS,
   addDays,
   byTime,
   calendarReminders,
   clientEmail,
   clientSubject,
   clockAt,
+  completion,
   digestEmail,
   digestSubject,
+  outcomesFrom,
   ownAddresses,
   parseIcs,
+  reminderText,
+  stillToEmail,
   tourReminders,
-  type Outcome,
+  type LogRow,
   type Problem,
   type Reminder,
   type TourRow,
@@ -76,6 +87,24 @@ const callerRole = (req: Request): string | null => {
     return null;
   }
 };
+
+/**
+ * A refusal for anyone but the admin, or null. The caller is resolved from their
+ * JWT against auth, never from the body.
+ */
+const refuseNonAdmin = async (db: Db, req: Request): Promise<Response | null> => {
+  const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  const { data: auth, error: authError } = jwt ? await db.auth.getUser(jwt) : { data: null, error: null };
+  const user = authError ? null : auth?.user ?? null;
+  if (!user) return json({ error: 'Not signed in' }, 401);
+  if (user.app_metadata?.is_admin !== true) {
+    console.warn('Non-admin called showing-reminders:', user.id);
+    return json({ error: 'Not allowed' }, 403);
+  }
+  return null;
+};
+
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /* -------------------------------------------------------------------------- */
 /* Gathering the day                                                           */
@@ -149,21 +178,13 @@ const gather = async (db: Db, day: string): Promise<Day> => {
   };
 };
 
-interface SentRow {
-  kind: string;
-  source_key: string;
-  recipients: string[];
-  sent_at: string | null;
-  error: string | null;
-}
-
-const sentRows = async (db: Db, day: string): Promise<SentRow[]> => {
+const sentRows = async (db: Db, day: string): Promise<LogRow[]> => {
   const { data, error } = await db
     .from('showing_reminders')
-    .select('kind, source_key, recipients, sent_at, error')
+    .select('kind, source_key, recipients, sent_at, error, how')
     .eq('day', day);
   if (error) console.error('Reminder log lookup failed:', error.message);
-  return (data ?? []) as SentRow[];
+  return (data ?? []) as LogRow[];
 };
 
 /**
@@ -211,7 +232,7 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const action = body?.action;
-    if (action !== 'run' && action !== 'list') return json({ error: 'Unknown action' }, 400);
+    if (action !== 'run' && action !== 'list' && action !== 'mark') return json({ error: 'Unknown action' }, 400);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -227,15 +248,8 @@ serve(async (req) => {
 
     // ---- list -------------------------------------------------------------
     if (action === 'list') {
-      // The caller, resolved from their JWT against auth — never from the body.
-      const jwt = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
-      const { data: auth, error: authError } = jwt ? await db.auth.getUser(jwt) : { data: null, error: null };
-      const user = authError ? null : auth?.user ?? null;
-      if (!user) return json({ error: 'Not signed in' }, 401);
-      if (user.app_metadata?.is_admin !== true) {
-        console.warn('Non-admin called showing-reminders:', user.id);
-        return json({ error: 'Not allowed' }, 403);
-      }
+      const refusal = await refuseNonAdmin(db, req);
+      if (refusal) return refusal;
 
       const tomorrow = body?.day === 'tomorrow';
       const day = tomorrow ? addDays(now.day, 1) : now.day;
@@ -252,13 +266,51 @@ serve(async (req) => {
         digestSentAt: digest?.sent_at ?? null,
         reminders: reminders.map((r) => {
           const row = byKey.get(r.key);
+          const when = tomorrow ? 'tomorrow' : 'today';
           return {
             ...r,
-            subject: clientSubject(r),
+            message: reminderText(r, when),
+            subject: clientSubject(r, when),
             sent: row ? { at: row.sent_at, to: row.recipients, error: row.error } : null,
+            completed: completion(rows, r.key),
           };
         }),
       });
+    }
+
+    // ---- mark -------------------------------------------------------------
+    if (action === 'mark') {
+      const refusal = await refuseNonAdmin(db, req);
+      if (refusal) return refusal;
+
+      const { day, key, how, to } = body ?? {};
+      if (typeof day !== 'string' || !DAY.test(day) || typeof key !== 'string' || !/^(?:cal|tour):.{1,500}$/.test(key)) {
+        return json({ error: 'That showing could not be read.' }, 400);
+      }
+      if (how !== null && !(SEND_WAYS as readonly unknown[]).includes(how)) {
+        return json({ error: 'That showing could not be read.' }, 400);
+      }
+
+      const { error } =
+        how === null
+          ? await db.from('showing_reminders').delete().eq('day', day).eq('kind', 'done').eq('source_key', key)
+          : await db.from('showing_reminders').upsert(
+              {
+                day,
+                kind: 'done',
+                source_key: key,
+                how,
+                recipients: Array.isArray(to) ? to.filter((t): t is string => typeof t === 'string').slice(0, 10) : [],
+                sent_at: new Date().toISOString(),
+              },
+              { onConflict: 'day,kind,source_key' }
+            );
+      if (error) {
+        console.error('Could not mark a reminder:', error.message);
+        return json({ error: 'Could not save that.' }, 500);
+      }
+      // Taking back a text can still leave the 8 AM email behind it.
+      return json({ completed: completion(await sentRows(db, day), key) });
     }
 
     // ---- run --------------------------------------------------------------
@@ -268,7 +320,7 @@ serve(async (req) => {
       return json({ skipped: true, hour: now.hour });
     }
 
-    const day = now.day;
+    const day = body?.dryRun && typeof body?.day === 'string' && DAY.test(body.day) ? body.day : now.day;
     const { reminders, problems, connected } = await gather(db, day);
 
     if (body?.dryRun) {
@@ -285,6 +337,8 @@ serve(async (req) => {
           phones: r.phones,
           emails: r.emails,
           invitedBy: r.invitedBy,
+          zillow: r.zillow,
+          noteLinks: r.noteLinks,
           message: r.message,
         })),
         digest: reminders.length || problems.length ? digestSubject(reminders.length, problems.length) : null,
@@ -301,8 +355,7 @@ serve(async (req) => {
     const resend = new Resend(resendApiKey);
 
     let emailed = 0;
-    for (const r of reminders) {
-      if (r.autoEmail.length === 0) continue;
+    for (const r of stillToEmail(reminders, await sentRows(db, day))) {
       const id = await claim(db, day, 'client', r.key, r.autoEmail);
       if (!id) continue;
       const email = clientEmail(r);
@@ -326,14 +379,7 @@ serve(async (req) => {
 
     // The summary reports what the log says, so a forced second run describes
     // the 8 AM emails rather than claiming nothing went.
-    const outcomes = new Map<string, Outcome>(
-      (await sentRows(db, day))
-        .filter((row) => row.kind === 'client')
-        .map((row) => [
-          row.source_key,
-          { sentTo: row.sent_at ? row.recipients : [], error: row.sent_at ? null : row.error ?? 'Not sent.' },
-        ])
-    );
+    const outcomes = outcomesFrom(await sentRows(db, day));
 
     const digestId = await claim(db, day, 'digest', 'digest', [AGENT.email]);
     if (digestId) {

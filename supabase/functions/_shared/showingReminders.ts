@@ -21,8 +21,16 @@
  * his clients and nobody on it is mailed.
  *
  * MOST CLIENTS ARE ON ZILLOW CHAT, with no phone or email anywhere. Zillow has
- * no way for software to post into that chat, so for them the reminder is the
- * message itself, in Kevin's morning email and on /admin/showings, to paste.
+ * no way for software to post into that chat, and its terms forbid driving the
+ * site with a script, so Kevin presses Send there himself. He pastes the
+ * conversation's address into the event's notes (`zillowChat`), and
+ * /admin/showings has one press that copies the message and opens that chat.
+ *
+ * COMPLETED IS HOW A CLIENT IS NOT MESSAGED TWICE (`completion`). A reminder is
+ * completed when the 8 AM email went, or when Kevin opened a text, an email or
+ * the Zillow chat from the page, or marked it himself. Marking one before 8 also
+ * stops its 8 AM email (`stillToEmail`). His morning email carries no send links,
+ * because a text sent from there is one the page would never know about.
  */
 import { SITE_ORIGIN, escapeHtml } from './listingEmail.ts';
 
@@ -63,8 +71,10 @@ export interface CalEvent {
   uid: string;
   summary: string;
   location: string;
-  /** Plain text: Google stores rich-text notes as HTML, and the tags are gone. */
+  /** Plain text, with the tags of Google's rich-text notes and every web address gone. */
   description: string;
+  /** Every web address in the notes, including one behind a link's words. */
+  links: string[];
   status: string;
   /** DTSTART's raw value and the parameters that say how to read it. */
   start: { value: string; tzid: string | null; dateOnly: boolean } | null;
@@ -138,15 +148,74 @@ const ENTITIES: Record<string, string> = {
   nbsp: ' ',
 };
 
+const decodeEntities = (value: string) =>
+  value.replace(/&(#\d+|[a-z]+);/gi, (whole, code: string) =>
+    code.startsWith('#') ? String.fromCharCode(Number(code.slice(1))) : ENTITIES[code.toLowerCase()] ?? whole
+  );
+
 /** Google keeps an event's notes as HTML; a phone number inside a link is still a number. */
 const htmlToText = (value: string) =>
-  value
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|li)>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/&(#\d+|[a-z]+);/gi, (whole, code: string) =>
-      code.startsWith('#') ? String.fromCharCode(Number(code.slice(1))) : ENTITIES[code.toLowerCase()] ?? whole
-    );
+  decodeEntities(
+    value
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/(p|div|li)>/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+  );
+
+/** "https://…", or a bare "zillow.com/x". An email address has no slash, so it is not one. */
+const WEB_ADDRESS = /(?:https?:\/\/)?(?:[a-z0-9-]+\.)+[a-z]{2,}\/[^\s"'<>]*|https?:\/\/[^\s"'<>]+/gi;
+
+/** Every web address in raw notes, including the href of `<a href="…">Zillow chat</a>`. */
+const notesLinks = (notes: string): string[] =>
+  (decodeEntities(notes).match(WEB_ADDRESS) ?? []).map((link) => link.replace(/[.,;:!?)\]]+$/, ''));
+
+const ZILLOW_HOST = /^(?:(?:.+\.)?zillow\.com|zillow\.app\.link)$/i;
+
+/** Pages about a home. A link to the listing is not the conversation. */
+const ZILLOW_LISTING_PAGE = /^\/(?:homedetails|homes|b|apartments)(?:\/|$)/i;
+
+/**
+ * Where the notes' links go, without the rest of each address
+ * ("www.zillow.com/agent-hub"). For the dry run, to say why a link was not taken
+ * for a chat without printing a client's conversation.
+ */
+export const linkedPlaces = (links: string[]): string[] =>
+  links.flatMap((link) => {
+    try {
+      const url = new URL(/^https?:/i.test(link) ? link : `https://${link}`);
+      return [`${url.hostname}/${url.pathname.split('/')[1] ?? ''}`];
+    } catch {
+      return [];
+    }
+  });
+
+/**
+ * The Zillow conversation in an event's notes, or null. Only Zillow's own hosts
+ * pass, over https, because an event's notes can come from a stranger's calendar
+ * invitation and this address becomes a button Kevin presses.
+ */
+export const zillowChat = (links: string[]): string | null => {
+  for (const link of links) {
+    let url: URL;
+    try {
+      url = new URL(/^https?:/i.test(link) ? link : `https://${link}`);
+    } catch {
+      continue;
+    }
+    // Google can store a pasted link behind its own redirect.
+    const wrapped = /(?:^|\.)google\.com$/i.test(url.hostname) && url.pathname === '/url' ? url.searchParams.get('q') : null;
+    if (wrapped) {
+      const inner = zillowChat([wrapped]);
+      if (inner) return inner;
+      continue;
+    }
+    if (ZILLOW_HOST.test(url.hostname) && !ZILLOW_LISTING_PAGE.test(url.pathname)) {
+      url.protocol = 'https:';
+      return url.href;
+    }
+  }
+  return null;
+};
 
 const mailto = (value: string): string | null => {
   const match = /^mailto:(.+)$/i.exec(value.trim());
@@ -170,6 +239,7 @@ export const parseIcs = (text: string): CalEvent[] => {
           summary: '',
           location: '',
           description: '',
+          links: [],
           status: '',
           start: null,
           recurring: false,
@@ -202,9 +272,14 @@ export const parseIcs = (text: string): CalEvent[] => {
       case 'LOCATION':
         current.location = unescapeText(prop.value).trim();
         break;
-      case 'DESCRIPTION':
-        current.description = htmlToText(unescapeText(prop.value)).trim();
+      case 'DESCRIPTION': {
+        const notes = unescapeText(prop.value);
+        // The addresses come out before anything reads the notes for a phone
+        // number: a conversation id in a link can be ten digits.
+        current.description = htmlToText(notes).replace(WEB_ADDRESS, ' ').trim();
+        current.links = notesLinks(notes);
         break;
+      }
       case 'STATUS':
         current.status = prop.value.trim().toUpperCase();
         break;
@@ -491,6 +566,10 @@ export interface Reminder {
   emails: string[];
   /** The organizer, when the event is somebody else's invitation. */
   invitedBy: string | null;
+  /** The Zillow conversation in the event's notes. */
+  zillow: string | null;
+  /** Where every link in the notes goes (`linkedPlaces`). */
+  noteLinks: string[];
   /** The text, ready to send from Kevin's phone or paste into Zillow. */
   message: string;
 }
@@ -498,14 +577,20 @@ export interface Reminder {
 /** It asks rather than tells (Kevin, 2026-10-30): the reminder is also how a no-show is found out. */
 const CONFIRM = 'Will you be able to make it?';
 
+/** A reminder goes the morning of; the page's Tomorrow list can send one the night before. */
+export type ReminderWhen = 'today' | 'tomorrow';
+
 /** The friendly message itself. Leaves out what it does not know rather than printing a blank. */
-export const reminderText = (r: Pick<Reminder, 'greeting' | 'time' | 'address' | 'stops'>): string => {
+export const reminderText = (
+  r: Pick<Reminder, 'greeting' | 'time' | 'address' | 'stops'>,
+  when: ReminderWhen = 'today'
+): string => {
   const hi = r.greeting ? `Hi ${r.greeting}` : 'Hi';
   const where = r.address ? ` at ${r.address}` : '';
   if (r.stops > 1) {
-    return `${hi}, just a friendly reminder about our showings today. We start at ${r.time}${where}. ${CONFIRM}`;
+    return `${hi}, just a friendly reminder about our showings ${when}. We start at ${r.time}${where}. ${CONFIRM}`;
   }
-  return `${hi}, just a friendly reminder about our showing today at ${r.time}${where}. ${CONFIRM}`;
+  return `${hi}, just a friendly reminder about our showing ${when} at ${r.time}${where}. ${CONFIRM}`;
 };
 
 const finish = (r: Omit<Reminder, 'message'>): Reminder => ({ ...r, message: reminderText(r) });
@@ -584,6 +669,8 @@ export const calendarReminders = (
         phones: notePhones(event.description),
         emails: noteEmails(event.description, own).filter((e) => !guests.includes(e)),
         invitedBy: mine ? null : event.organizer,
+        zillow: zillowChat(event.links),
+        noteLinks: linkedPlaces(event.links),
       })
     );
   }
@@ -643,6 +730,8 @@ export const tourReminders = (tours: TourRow[], day: string): Reminder[] =>
         phones: [...new Set(people.flatMap((p) => (p.phone ? [p.phone] : [])))],
         emails: [],
         invitedBy: null,
+        zillow: null,
+        noteLinks: [],
       }),
     ];
   });
@@ -654,13 +743,6 @@ export const tourReminders = (tours: TourRow[], day: string): Reminder[] =>
 export const mapsUrl = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
-/** A mirror of smsHrefTo in src/lib/siteConfig.ts: `?&body=` works on iOS and Android both. */
-export const smsHref = (phone: string, body: string) =>
-  `sms:+1${phone.replace(/\D/g, '')}?&body=${encodeURIComponent(body)}`;
-
-export const mailtoHref = (to: string, subject: string, body: string) =>
-  `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
 export const ADMIN_URL = `${SITE_ORIGIN}/admin/showings`;
 
 /* -------------------------------------------------------------------------- */
@@ -669,8 +751,8 @@ export const ADMIN_URL = `${SITE_ORIGIN}/admin/showings`;
 
 const P = "font-family:Inter,Arial,Helvetica,sans-serif;font-size:15px;line-height:1.65;color:#1a1a1a;";
 
-export const clientSubject = (r: Pick<Reminder, 'stops' | 'time'>) =>
-  r.stops > 1 ? `Reminder: our showings today, starting at ${r.time}` : `Reminder: our showing today at ${r.time}`;
+export const clientSubject = (r: Pick<Reminder, 'stops' | 'time'>, when: ReminderWhen = 'today') =>
+  r.stops > 1 ? `Reminder: our showings ${when}, starting at ${r.time}` : `Reminder: our showing ${when} at ${r.time}`;
 
 const frame = (title: string, eyebrow: string, inner: string) => `<!DOCTYPE html>
 <html lang="en">
@@ -746,6 +828,52 @@ export const clientEmail = (r: Reminder): { subject: string; text: string; html:
 };
 
 /* -------------------------------------------------------------------------- */
+/* Completed                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** A row of the `showing_reminders` log. */
+export interface LogRow {
+  kind: string;
+  source_key: string;
+  recipients: string[];
+  sent_at: string | null;
+  error: string | null;
+  how: string | null;
+}
+
+/** How Kevin sent one himself. A mirror of the `how` CHECK in the table. */
+export const SEND_WAYS = ['zillow', 'text', 'email', 'other'] as const;
+export type SendWay = (typeof SEND_WAYS)[number];
+
+export interface Completion {
+  how: SendWay | 'emailed';
+  to: string[];
+  at: string;
+  /** Kevin's own press can be taken back; an email that went cannot. */
+  undoable: boolean;
+}
+
+/**
+ * Whether a showing's reminder has gone. Kevin's own word first, then the 8 AM
+ * email. An email that failed has not gone, so that showing is still to send.
+ */
+export const completion = (rows: LogRow[], key: string): Completion | null => {
+  const mine = rows.find((row) => row.kind === 'done' && row.source_key === key);
+  if (mine?.sent_at) {
+    const how = (SEND_WAYS as readonly string[]).includes(mine.how ?? '') ? (mine.how as SendWay) : 'other';
+    return { how, to: mine.recipients, at: mine.sent_at, undoable: true };
+  }
+  const auto = rows.find((row) => row.kind === 'client' && row.source_key === key);
+  return auto?.sent_at ? { how: 'emailed', to: auto.recipients, at: auto.sent_at, undoable: false } : null;
+};
+
+/** Who the 8 AM run emails: guests, unless Kevin has already completed that showing. */
+export const stillToEmail = (reminders: Reminder[], rows: LogRow[]): Reminder[] => {
+  const done = new Set(rows.filter((row) => row.kind === 'done').map((row) => row.source_key));
+  return reminders.filter((r) => r.autoEmail.length > 0 && !done.has(r.key));
+};
+
+/* -------------------------------------------------------------------------- */
 /* Kevin's morning email                                                       */
 /* -------------------------------------------------------------------------- */
 
@@ -753,18 +881,39 @@ export const clientEmail = (r: Reminder): { subject: string; text: string; html:
 export interface Outcome {
   sentTo: string[];
   error: string | null;
+  /** Kevin completed it himself before 8. */
+  done?: boolean;
 }
+
+/** The log, as the morning email reads it. */
+export const outcomesFrom = (rows: LogRow[]): Map<string, Outcome> => {
+  const outcomes = new Map<string, Outcome>();
+  for (const row of rows) {
+    if (row.kind === 'client') {
+      outcomes.set(row.source_key, {
+        sentTo: row.sent_at ? row.recipients : [],
+        error: row.sent_at ? null : row.error ?? 'Not sent.',
+      });
+    }
+  }
+  for (const row of rows) {
+    if (row.kind === 'done') outcomes.set(row.source_key, { sentTo: [], error: null, done: true });
+  }
+  return outcomes;
+};
 
 /** The lines under one showing in the morning email, in the order they matter. */
 export const statusLines = (r: Reminder, outcome: Outcome | undefined): string[] => {
+  if (outcome?.done) return ['Already completed. Nothing more to send.'];
   const lines: string[] = [];
   if (outcome?.sentTo.length) lines.push(`Emailed ${outcome.sentTo.join(', ')}.`);
   else if (outcome?.error) lines.push(`Couldn't email ${r.autoEmail.join(', ')}. Text or copy the message instead.`);
   if (r.invitedBy) lines.push(`This came from ${r.invitedBy}'s invitation, so nobody on it was emailed.`);
+  if (r.zillow) lines.push('Send it through the Zillow chat from your showings page.');
   for (const phone of r.phones) lines.push(`Text ${phone}${r.source === 'calendar' ? ' (from the notes)' : ''}.`);
   for (const email of r.emails) lines.push(`Email ${email} (from the notes) — not sent automatically.`);
-  if (!outcome?.sentTo.length && r.phones.length === 0 && r.emails.length === 0) {
-    lines.push('No email or phone on it. If this is a Zillow chat, paste the message there.');
+  if (!outcome?.sentTo.length && !r.zillow && r.phones.length === 0 && r.emails.length === 0) {
+    lines.push('No email, phone or Zillow chat link on it. If this is a Zillow chat, paste the message there.');
   }
   return lines;
 };
@@ -791,34 +940,23 @@ export const digestEmail = (
     ...reminders.flatMap((r) => [
       `${r.time} — ${r.name ?? r.title}${r.address ? `, ${r.address}` : ''}`,
       ...statusLines(r, outcomes.get(r.key)).map((l) => `  ${l}`),
-      `  Message: ${r.message}`,
+      ...(outcomes.get(r.key)?.done ? [] : [`  Message: ${r.message}`]),
       '',
     ]),
     ...(problems.length ? ['Needs a look:', ...problems.map((p) => `  ${p}`), ''] : []),
-    `Copy or text each one: ${ADMIN_URL}`,
+    `Send each one from your showings page, so it is marked completed: ${ADMIN_URL}`,
   ].join('\n');
 
   const rows = reminders
     .map((r) => {
       const outcome = outcomes.get(r.key);
-      const links = [
-        ...r.phones.map(
-          (phone) =>
-            `<a href="${escapeHtml(smsHref(phone, r.message))}" style="color:#8c6b35;font-weight:600;text-decoration:none;">Text ${escapeHtml(phone)}</a>`
-        ),
-        ...r.emails.map(
-          (email) =>
-            `<a href="${escapeHtml(mailtoHref(email, clientSubject(r), r.message))}" style="color:#8c6b35;font-weight:600;text-decoration:none;">Email ${escapeHtml(email)}</a>`
-        ),
-      ];
       return `<tr><td style="padding:20px 0 6px 0;border-top:1px solid #eeeeee;">
               <span style="font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:20px;color:#1a1a1a;">${escapeHtml(r.time)}</span>
               <span style="${P}font-weight:600;padding-left:8px;">${escapeHtml(r.name ?? r.title)}</span>
               ${r.address ? `<br /><span style="${P}font-size:14px;color:#444444;">${escapeHtml(r.address)}</span>` : ''}
             </td></tr>
             <tr><td style="padding:0 0 8px 0;${P}font-size:14px;">${statusLines(r, outcome).map(escapeHtml).join('<br />')}</td></tr>
-            <tr><td style="padding:12px 14px;background-color:#faf8f5;border:1px solid #e5e5e5;${P}font-size:14px;">${escapeHtml(r.message)}</td></tr>
-            ${links.length ? `<tr><td style="padding:10px 0 4px 0;${P}font-size:14px;">${links.join('&nbsp;&nbsp;·&nbsp;&nbsp;')}</td></tr>` : ''}`;
+            ${outcome?.done ? '' : `<tr><td style="padding:12px 14px;background-color:#faf8f5;border:1px solid #e5e5e5;${P}font-size:14px;">${escapeHtml(r.message)}</td></tr>`}`;
     })
     .join('');
 
@@ -832,7 +970,7 @@ export const digestEmail = (
     `Showing reminders · ${dateLabel}`,
     `${rows}${problemRows}
             <tr><td style="padding:26px 0 0 0;">
-              <a href="${escapeHtml(ADMIN_URL)}" style="display:inline-block;background-color:#0d0d0f;color:#ffffff;font-family:Inter,Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 22px;border-radius:999px;">Copy or text each one</a>
+              <a href="${escapeHtml(ADMIN_URL)}" style="display:inline-block;background-color:#0d0d0f;color:#ffffff;font-family:Inter,Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 22px;border-radius:999px;">Send them from your showings page</a>
             </td></tr>`
   );
 

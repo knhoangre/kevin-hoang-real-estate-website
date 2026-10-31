@@ -5,12 +5,25 @@
  * behind it (supabase/functions/_shared/showingReminders.ts): which events on
  * Kevin's Google Calendar are showings, who is emailed at 8, what the message
  * says. This only asks for the day and describes the answer. It sends nothing —
- * the page's buttons open Messages or a mail draft on Kevin's own phone.
+ * the page's buttons open Messages, a mail draft or the Zillow chat, and
+ * `markReminder` records that they were pressed.
  */
 import { supabase } from '@/integrations/supabase/client';
 import { functionMessage } from '@/lib/showingTours';
 
 export type ReminderDay = 'today' | 'tomorrow';
+
+/** How Kevin sent one himself. A mirror of SEND_WAYS in the edge function's module. */
+export type SendWay = 'zillow' | 'text' | 'email' | 'other';
+
+/** Why a showing says Completed. */
+export interface ReminderCompletion {
+  how: SendWay | 'emailed';
+  to: string[];
+  at: string;
+  /** Kevin's own press can be taken back; an email that went cannot. */
+  undoable: boolean;
+}
 
 export interface ShowingReminder {
   key: string;
@@ -30,10 +43,13 @@ export interface ShowingReminder {
   emails: string[];
   /** Set when the event is somebody else's invitation, so nobody on it is emailed. */
   invitedBy: string | null;
+  /** The Zillow conversation in the event's notes. */
+  zillow: string | null;
   message: string;
   subject: string;
   /** What the 8 AM run did, or null when it has not touched this one. */
   sent: { at: string | null; to: string[]; error: string | null } | null;
+  completed: ReminderCompletion | null;
 }
 
 export interface ReminderList {
@@ -53,4 +69,18 @@ export const listReminders = async (day: ReminderDay): Promise<ReminderList> => 
   });
   if (error) throw new Error(await functionMessage(error, 'Could not read the reminders.'));
   return data as ReminderList;
+};
+
+/** Records a send, or with `how` null takes it back. Returns what the showing now says. */
+export const markReminder = async (
+  day: string,
+  key: string,
+  how: SendWay | null,
+  to: string[] = []
+): Promise<ReminderCompletion | null> => {
+  const { data, error } = await supabase.functions.invoke('showing-reminders', {
+    body: { action: 'mark', day, key, how, to },
+  });
+  if (error) throw new Error(await functionMessage(error, 'Could not save that.'));
+  return (data as { completed: ReminderCompletion | null }).completed;
 };

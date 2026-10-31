@@ -161,6 +161,9 @@ for pass in 1 2; do
   echo "Applying 20261028110000_showing_reminders (pass $pass)"
   psql_file "$REPO/supabase/migrations/20261028110000_showing_reminders.sql" -q 2>&1 \
     | grep -v 'NOTICE.*skipping' || true
+  echo "Applying 20261031100000_showing_reminder_completed (pass $pass)"
+  psql_file "$REPO/supabase/migrations/20261031100000_showing_reminder_completed.sql" -q 2>&1 \
+    | grep -v 'NOTICE.*skipping' || true
 done
 echo
 run_tests "$TESTS/showing_reminders_test.sql"

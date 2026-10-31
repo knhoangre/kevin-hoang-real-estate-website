@@ -19,16 +19,22 @@ import {
   bostonClock,
   calendarReminders,
   clientEmail,
+  clientSubject,
+  completion,
   reminderText,
   clientName,
   clockAt,
   digestEmail,
   greetingFor,
   notePhones,
+  outcomesFrom,
   ownAddresses,
   parseIcs,
   shortAddress,
+  stillToEmail,
   tourReminders,
+  zillowChat,
+  type LogRow,
   type Outcome,
   type Reminder,
 } from '../supabase/functions/_shared/showingReminders.ts';
@@ -279,6 +285,109 @@ is(digest.text.includes('Emailed sarah@example.com.'), true, 'and says who was e
 is(digest.text.includes("Couldn't email ana@example.com"), true, 'and whose email failed');
 is(digest.text.includes('paste the message there'), true, 'and what to do for a Zillow chat');
 is(clientEmail(sarah).html.includes('LPT Realty'), true, 'the client email names the brokerage');
+
+// The Zillow chat in an event's notes.
+const CHAT = 'https://www.zillow.com/agent-hub/inbox/conversations/2094857361?x=1&y=2';
+const zillowEvents = parseIcs(
+  [
+    'BEGIN:VCALENDAR',
+    'BEGIN:VEVENT',
+    'DTSTART:20261028T140000Z',
+    'UID:bare@google.com',
+    'SUMMARY:Showing - Bare Link',
+    `DESCRIPTION:Chat: ${CHAT}`,
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART:20261028T150000Z',
+    'UID:worded@google.com',
+    'SUMMARY:Showing - Worded Link',
+    // A link with words on it, folded across two lines, its & written as HTML.
+    'DESCRIPTION:<a href="https://www.zillow.com/agent-hub/inbox/conversations/20948',
+    ' 57361?x=1&amp\;y=2">Zillow chat</a>\, call (617) 555-0142',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'DTSTART:20261028T160000Z',
+    'UID:none@google.com',
+    'SUMMARY:Showing - No Link',
+    'DESCRIPTION:Nothing here',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n')
+);
+const withChat = calendarReminders(zillowEvents, '2026-10-28', own).reminders;
+is(withChat[0].zillow, CHAT, "a link pasted into the notes is that showing's Zillow chat");
+is(withChat[1].zillow, CHAT, 'and so is one with words on it, in Google’s rich text');
+is(withChat[2].zillow, null, 'an event with no link has no chat');
+is(withChat[0].noteLinks, ['www.zillow.com/agent-hub'], 'the dry run sees where a link goes, and not the conversation');
+is(withChat[0].phones, [], 'a ten-digit conversation id in a link is not a phone number');
+is(withChat[1].phones, ['617-555-0142'], 'and a real number beside the link is still found');
+is(tourReminders([{ id: 't', tour_date: '2026-10-28', clients: [], showing_tour_stops: [{ starts_at: '10:00:00', address: '1 A St', town: null, state: null }] }], '2026-10-28')[0].zillow, null, 'a tour has no chat');
+
+for (const [links, expected, label] of [
+  [['https://www.zillow.com/inbox/1'], 'https://www.zillow.com/inbox/1', 'www.zillow.com'],
+  [['https://premieragent.zillow.com/crm/1'], 'https://premieragent.zillow.com/crm/1', 'a Zillow subdomain'],
+  [['zillow.com/inbox/1'], 'https://zillow.com/inbox/1', 'a link typed with no https'],
+  [['http://www.zillow.com/inbox/1'], 'https://www.zillow.com/inbox/1', 'http is made https'],
+  [['https://www.google.com/url?q=https%3A%2F%2Fwww.zillow.com%2Finbox%2F1&sa=D'], 'https://www.zillow.com/inbox/1', "behind Google's redirect"],
+  [['https://www.zillow.com/homedetails/12-Elm-St/123_zpid/', 'https://www.zillow.com/inbox/1'], 'https://www.zillow.com/inbox/1', 'the chat, not the listing beside it'],
+  [['https://www.zillow.com/homedetails/12-Elm-St/123_zpid/'], null, "a listing's page is not a chat"],
+  [['https://zillow.com.evil.example/inbox/1'], null, 'a look-alike address is refused'],
+  [['https://notzillow.com/inbox/1'], null, 'so is one that only ends the same'],
+  [['https://www.google.com/url?q=https%3A%2F%2Fevil.example%2Fx'], null, "and anything else behind Google's redirect"],
+  [['javascript:alert(1)//zillow.com/x'], null, 'a script is not a link'],
+] as const) {
+  is(zillowChat([...links]), expected, `zillowChat: ${label}`);
+}
+
+// Tomorrow's list says tomorrow.
+is(
+  reminderText({ greeting: 'Kevin', time: '6:00 PM', address: null, stops: 1 }, 'tomorrow'),
+  'Hi Kevin, just a friendly reminder about our showing tomorrow at 6:00 PM. Will you be able to make it?',
+  'a message sent the night before says tomorrow'
+);
+is(clientSubject({ stops: 1, time: '6:00 PM' }, 'tomorrow'), 'Reminder: our showing tomorrow at 6:00 PM', 'and so does its subject');
+
+// Completed: what keeps a client from being messaged twice.
+const log = (kind: string, key: string, over: Partial<LogRow> = {}): LogRow => ({
+  kind,
+  source_key: key,
+  recipients: [],
+  sent_at: '2026-10-28T12:00:00Z',
+  error: null,
+  how: null,
+  ...over,
+});
+const emailed = log('client', sarah.key, { recipients: ['sarah@example.com'] });
+const failed = log('client', sarah.key, { recipients: ['sarah@example.com'], sent_at: null, error: 'refused' });
+const pressed = log('done', sarah.key, { how: 'zillow', sent_at: '2026-10-28T13:00:00Z' });
+
+is(completion([], sarah.key), null, 'nothing sent is not completed');
+is(completion([failed], sarah.key), null, 'an email that failed is not completed');
+is(completion([emailed], sarah.key)?.how, 'emailed', 'the 8 AM email going completes it');
+is(completion([emailed], sarah.key)?.undoable, false, 'and an email that went cannot be undone');
+is(completion([pressed], sarah.key)?.how, 'zillow', 'so does opening the Zillow chat');
+is(completion([pressed], sarah.key)?.undoable, true, 'which can be');
+is(completion([emailed, pressed], sarah.key)?.how, 'zillow', "Kevin's own word comes first");
+is(completion([pressed], marcus.key), null, 'one showing being completed says nothing about another');
+is(completion([log('done', sarah.key, { how: 'smoke-signal' })], sarah.key)?.how, 'other', 'a way it does not know is still completed');
+is(completion([log('digest', 'digest')], 'digest'), null, "Kevin's summary is nobody's reminder");
+
+is(stillToEmail([sarah, late], []).map((r) => r.key), [sarah.key, late.key], 'at 8 every guest is emailed');
+is(stillToEmail([sarah, late], [pressed]).map((r) => r.key), [late.key], 'but not one Kevin already completed');
+is(stillToEmail([sarah, late], [failed]).map((r) => r.key), [sarah.key, late.key], 'a failed email does not count against a second try, whose claim decides');
+is(stillToEmail([marcus], []).length, 0, 'and nobody with no address');
+
+const doneDigest = digestEmail('2026-10-28', [sarah, marcus], outcomesFrom([pressed]), []);
+is(doneDigest.text.includes('Already completed.'), true, 'the morning email says one is already done');
+is(doneDigest.text.includes(sarah.message), false, 'and does not write its message out again');
+is(doneDigest.html.includes(sarah.message), false, 'in either form');
+is(doneDigest.text.includes(marcus.message), true, 'the others still have theirs');
+is(/sms:|mailto:/.test(digest.html), false, 'the morning email has no send links: a text from there would never say Completed');
+is(digest.html.includes('/admin/showings'), true, 'it sends him to the page instead');
+
+const chatDigest = digestEmail('2026-10-28', [withChat[0]], new Map(), []);
+is(chatDigest.text.includes('Zillow chat'), true, 'a showing with a chat says to send it there');
+is(chatDigest.text.includes('paste the message there'), false, 'and is not told it has no way to be reached');
 
 if (failures > 0) {
   console.error(`\n${failures} failure(s)`);

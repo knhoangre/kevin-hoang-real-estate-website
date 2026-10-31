@@ -1964,8 +1964,38 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
 - **Texts are never sent by the site.** A server cannot text from Kevin's number;
   Twilio would mean a new number, carrier registration and a monthly bill (Kevin
   prefers free). And most of these clients are on Zillow chat, which no software
-  can post into. So a text is an `sms:` link and the Zillow case is the message to
-  paste — the same choice the showing-tour schedule made.
+  can post into. So a text is an `sms:` link and the Zillow case is one press that
+  copies the message and opens the chat — the same choice the showing-tour
+  schedule made.
+- **Kevin presses Send on Zillow himself, and that is on purpose** (he asked on
+  2026-10-31 whether the site could send it). Zillow has no public way to post a
+  message: Tech Connect and its Zapier trigger only bring new contacts OUT. A
+  script driving his logged-in session would break Zillow's terms on automated
+  access and put the account his leads come through at risk, and "inbox API"
+  services are that same script holding his login. Do not add one. Rental leads'
+  emails may carry a relay address that replies through Zillow; unconfirmed, and
+  it would be the one legitimate way to automate this.
+- **The chat comes from the event's notes** (`zillowChat`). Kevin pastes the
+  conversation's address there. Only Zillow's own hosts pass, because notes can
+  arrive in a stranger's invitation and the address becomes a button; a page about
+  a home (`/homedetails` and the like) is not a chat. Read from the raw notes, so
+  a link with words on it still counts, and web addresses are removed BEFORE the
+  notes are searched for phone numbers, or a ten-digit conversation id is offered
+  as somebody to text.
+- **Completed is how a client is not messaged twice** (`completion`, Kevin,
+  2026-10-31). A `done` row in `showing_reminders`, written by the admin-only
+  `mark` action, so his phone and computer agree, and coming back to the tab reads
+  it again. The 8 AM email going counts; a failed one does not. Opening a text, a
+  draft or the Zillow chat counts, because nothing can see those go, and the row
+  says "You opened…" rather than "Sent" for that reason, with Undo beside it.
+  Copying alone does not; Mark completed is for that. The Zillow button counts only
+  if the copy worked, so a failed copy leaves the message on screen. A completed
+  showing loses its message and buttons. **Marking one before 8 stops its 8 AM
+  email** (`stillToEmail`), and the row says so. **Kevin's morning email has no send
+  links**, because a text sent from it is one the page would never know about.
+- **The Tomorrow list says "tomorrow"**, in the message and the subject, so the
+  night-before send is true. Deploy order: the migration, the function (it selects
+  `how`), then the site.
 - **The calendar is its "Secret address in iCal format"**, in the
   `SHOWING_CALENDAR_ICS_URL` function secret: no Google Cloud project, no OAuth.
   It is Kevin's whole calendar, so it is never logged or returned. If Google's
@@ -1982,8 +2012,9 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
 - **A calendar that cannot be read is in Kevin's summary**, never silent: a
   morning with no email has to mean a morning with no showings. A morning with no
   showings and no problems sends nothing.
-- `run` takes `dryRun` (says what it would send) and `force` (skips the hour
-  check); both still need the service-role key. `list` is admin-only.
+- `run` takes `dryRun` (says what it would send, for today or a given `day`, and
+  where the notes' links go) and `force` (skips the hour check); both still need
+  the service-role key. `list` and `mark` are admin-only.
 
 ### Send listings (`/admin/send-listings`)
 

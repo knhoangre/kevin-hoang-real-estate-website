@@ -43,7 +43,25 @@ SELECT ok(claim('2026-10-29', 'client', 'cal:sarah@google.com') = 1,
 SELECT ok(claim('2026-10-28', 'digest', 'digest') = 1 AND claim('2026-10-28', 'digest', 'digest') = 0,
           'Kevin''s summary is claimed the same way, once a day');
 SELECT ok(raises($$INSERT INTO showing_reminders (day, kind, source_key) VALUES ('2026-10-28', 'sms', 'x')$$, '23514'),
-          'a kind other than client or digest is refused');
+          'a kind other than client, digest or done is refused');
+
+-- Completed (20261031100000): what the page's `mark` does.
+INSERT INTO showing_reminders (day, kind, source_key, how, sent_at)
+VALUES ('2026-10-28', 'done', 'cal:sarah@google.com', 'zillow', now());
+SELECT ok(claim('2026-10-28', 'client', 'cal:other@google.com') = 1,
+          'marking one showing completed claims nothing else');
+SELECT ok((SELECT count(*) FROM showing_reminders WHERE day = '2026-10-28' AND source_key = 'cal:sarah@google.com') = 2,
+          'completed sits beside the 8 AM email''s row, rather than taking its place');
+INSERT INTO showing_reminders (day, kind, source_key, how, sent_at)
+VALUES ('2026-10-28', 'done', 'cal:sarah@google.com', 'text', now())
+ON CONFLICT (day, kind, source_key) DO UPDATE SET how = EXCLUDED.how;
+SELECT ok((SELECT count(*) FROM showing_reminders WHERE kind = 'done' AND source_key = 'cal:sarah@google.com') = 1,
+          'a showing is completed once, however many times it is pressed');
+SELECT ok(raises($$INSERT INTO showing_reminders (day, kind, source_key, how) VALUES ('2026-10-30', 'done', 'x', 'pigeon')$$, '23514'),
+          'a way of sending it that is not on the list is refused');
+SELECT ok(NOT has_column_privilege('authenticated', 'public.showing_reminders', 'how', 'UPDATE')
+          AND NOT has_column_privilege('anon', 'public.showing_reminders', 'how', 'INSERT'),
+          'no browser can write completed directly: only the function''s admin check can');
 
 SELECT ok(NOT has_table_privilege('anon', 'public.showing_reminders', 'SELECT')
           AND NOT has_table_privilege('anon', 'public.showing_reminders', 'INSERT'),
