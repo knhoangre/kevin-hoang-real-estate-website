@@ -495,14 +495,17 @@ export interface Reminder {
   message: string;
 }
 
+/** It asks rather than tells (Kevin, 2026-10-30): the reminder is also how a no-show is found out. */
+const CONFIRM = 'Will you be able to make it?';
+
 /** The friendly message itself. Leaves out what it does not know rather than printing a blank. */
 export const reminderText = (r: Pick<Reminder, 'greeting' | 'time' | 'address' | 'stops'>): string => {
   const hi = r.greeting ? `Hi ${r.greeting}` : 'Hi';
   const where = r.address ? ` at ${r.address}` : '';
   if (r.stops > 1) {
-    return `${hi}, just a friendly reminder about our showings today. We start at ${r.time}${where}. See you there! – Kevin`;
+    return `${hi}, just a friendly reminder about our showings today. We start at ${r.time}${where}. ${CONFIRM}`;
   }
-  return `${hi}, just a friendly reminder about our showing today at ${r.time}${where}. See you there! – Kevin`;
+  return `${hi}, just a friendly reminder about our showing today at ${r.time}${where}. ${CONFIRM}`;
 };
 
 const finish = (r: Omit<Reminder, 'message'>): Reminder => ({ ...r, message: reminderText(r) });
@@ -707,10 +710,10 @@ export const clientEmail = (r: Reminder): { subject: string; text: string; html:
   const where = r.address ? ` at ${r.address}` : '';
   const line =
     r.stops > 1
-      ? `Just a friendly reminder about our showings today. We start at ${r.time}${where}.`
-      : `Just a friendly reminder about our showing today at ${r.time}${where}.`;
+      ? `Just a friendly reminder about our showings today. We start at ${r.time}${where}. ${CONFIRM}`
+      : `Just a friendly reminder about our showing today at ${r.time}${where}. ${CONFIRM}`;
   const directions = r.fullAddress ? mapsUrl(r.fullAddress) : null;
-  const change = `If anything changes, reply to this email or text me at ${AGENT.phone}.`;
+  const change = `You can reply to this email or text me at ${AGENT.phone}.`;
 
   const text = [
     hi,
@@ -719,8 +722,6 @@ export const clientEmail = (r: Reminder): { subject: string; text: string; html:
     ...(directions ? ['', `Directions: ${directions}`] : []),
     '',
     change,
-    '',
-    'See you there!',
     '',
     AGENT.name,
     AGENT.brokerage,
@@ -737,8 +738,7 @@ export const clientEmail = (r: Reminder): { subject: string; text: string; html:
                 ? `<tr><td style="padding:0 0 18px 0;${P}"><a href="${escapeHtml(directions)}" style="color:#1a1a1a;text-decoration:underline;">Directions in Google Maps</a></td></tr>`
                 : ''
             }
-            <tr><td style="padding:0 0 18px 0;${P}">${escapeHtml(change)}</td></tr>
-            <tr><td style="padding:0;${P}">See you there!</td></tr>
+            <tr><td style="padding:0;${P}">${escapeHtml(change)}</td></tr>
             ${signatureHtml}`
   );
 

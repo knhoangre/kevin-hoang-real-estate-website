@@ -1956,6 +1956,10 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
   failure this prevents. An event someone else organised (a ShowingTime
   confirmation) mails nobody. Declined guests, rooms and Kevin's own addresses —
   including the calendar's owner, read from its iCal URL — are never recipients.
+- **The message asks "Will you be able to make it?"** (Kevin's wording, 2026-10-30;
+  it said "See you there! – Kevin"), so the reminder also finds out about a no-show.
+  An email's `reply_to` is Kevin, so an answer reaches him. The address stays in
+  the sentence when the event has one.
 - **Texts are never sent by the site.** A server cannot text from Kevin's number;
   Twilio would mean a new number, carrier registration and a monthly bill (Kevin
   prefers free). And most of these clients are on Zillow chat, which no software

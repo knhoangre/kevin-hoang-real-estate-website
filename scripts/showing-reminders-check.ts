@@ -19,6 +19,7 @@ import {
   bostonClock,
   calendarReminders,
   clientEmail,
+  reminderText,
   clientName,
   clockAt,
   digestEmail,
@@ -154,7 +155,7 @@ is(sarah.emails, ['jane@listingbroker.example'], "the listing agent in the notes
 is(sarah.phones, ['617-555-0142'], 'the number in the notes is found inside its HTML');
 is(
   sarah.message,
-  'Hi Sarah, just a friendly reminder about our showing today at 2:00 PM at 12 Elm St, Newton. See you there! – Kevin',
+  'Hi Sarah, just a friendly reminder about our showing today at 2:00 PM at 12 Elm St, Newton. Will you be able to make it?',
   'the message'
 );
 
@@ -169,6 +170,17 @@ is(invite.time, '4:00 PM', 'a TZID=America/New_York time is read as written');
 is(invite.name, null, 'a title that names only the house names nobody');
 is(invite.address, '40 Oak Ave', 'and its address comes from the title');
 is(invite.message.startsWith('Hi, just a friendly reminder'), true, 'a reminder with no name says "Hi,"');
+is(
+  reminderText({ greeting: 'Kevin', time: '6:00 PM', address: null, stops: 1 }),
+  'Hi Kevin, just a friendly reminder about our showing today at 6:00 PM. Will you be able to make it?',
+  'with no address on the event it reads exactly as Kevin worded it'
+);
+{
+  const email = clientEmail(sarah);
+  is(email.text.includes('Will you be able to make it?'), true, 'the email asks the same question');
+  is(email.html.includes('Will you be able to make it?'), true, 'in both its forms');
+  is(/See you there/.test(email.text + email.html), false, 'and does not then assume the answer');
+}
 
 // Late evening, two people, one declined.
 is(late.time, '9:30 PM', 'a 9:30 PM showing is on its own day, not the next');
@@ -238,7 +250,7 @@ is(tours[0].autoEmail, ['tammy@example.com'], 'the tour people with an email are
 is(tours[0].phones, ['617-555-0199'], 'and their phones are offered');
 is(
   tours[0].message,
-  'Hi Tammy and Matthew, just a friendly reminder about our showings today. We start at 10:00 AM at 3 Maple St, Newton. See you there! – Kevin',
+  'Hi Tammy and Matthew, just a friendly reminder about our showings today. We start at 10:00 AM at 3 Maple St, Newton. Will you be able to make it?',
   'the tour message'
 );
 
