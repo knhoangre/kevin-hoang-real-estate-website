@@ -8,16 +8,13 @@
  * ONE RENDERER FOR BOTH, on the server, for the reason the showing schedule has
  * one: a text and an email built apart are how one client gets two prices.
  *
- * THE ADDRESS, THE MLS NUMBER AND THE LINK ARE ALL IN THE TEXT. Those are the
- * three things Kevin was putting together by hand for each home, and which of
- * them a client wants depends on the client: the link to look at it, the number
- * to quote back to a lender.
- *
- * THE TEXT IS JUST THE HOMES, AT KEVIN'S REQUEST (2026-10-30): no signature and
- * no listing office. It goes from his own phone to somebody who has his number,
- * so they know who it is from, and on a phone every line is one more to scroll
- * past. The email is a different thing, sent from this site's address: it keeps
- * the listing office on each card and LPT Realty in the signature.
+ * THE TEXT IS JUST THE HOMES, AT KEVIN'S REQUEST (2026-10-30): the address, the
+ * facts and the link. No signature, no listing office and no MLS number line. It
+ * goes from his own phone to somebody who has his number, so they know who it is
+ * from, and on a phone every line is one more to scroll past. The number is still
+ * at the end of the link. The email is a different thing, sent from this site's
+ * address: it keeps the number and the listing office on each card, and LPT Realty
+ * in the signature.
  */
 import {
   escapeHtml,
@@ -94,7 +91,6 @@ export const renderText = (names: string[], note: string | null, homes: EmailLis
       '',
       listingAddressLine(home),
       `${listingFactsLine(home)}${unavailable ? ` · ${unavailable}` : ''}`,
-      `MLS ${home.mls_number}`,
       listingUrl(home)
     );
   }

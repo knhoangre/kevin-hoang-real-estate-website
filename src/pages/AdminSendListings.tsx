@@ -84,7 +84,7 @@ import {
 
 const WORDS: MessageWords = {
   textLede:
-    'Writes these homes as a text, with each address, MLS number and link. Copy it into a chat or open it in Messages. Nothing is sent from here.',
+    'Writes these homes as a text, with each address, price and link. Copy it into a chat or open it in Messages. Nothing is sent from here.',
   textLabel: 'The homes as a text message',
   emailLede: (who) => `Sends these homes to ${who}, with a photo of each and a copy to you.`,
   noEmail: 'Nobody here has an email address. Add one above to email it, or send it as a text.',

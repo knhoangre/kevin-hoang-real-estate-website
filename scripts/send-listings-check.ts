@@ -80,7 +80,6 @@ is(
     '',
     '170 Gore St Unit 417, Cambridge, MA 02141',
     '$799,000 · 2 bed · 1 full bath · 900 sq ft',
-    'MLS 73568135',
     'https://www.kevinhoang.co/search/170-Gore-St-Unit-417-Cambridge-MA-02141-73568135',
     '',
     'Let me know if you would like to see it.',
@@ -89,6 +88,7 @@ is(
 );
 lacks(one, 'utm_', 'a text carries no tracking, since every character is on screen');
 lacks(one, 'Listed by', 'a text does not name the listing office (Kevin, 2026-10-30)');
+lacks(one, 'MLS ', 'or carry an MLS number line (the same day)');
 lacks(one, 'LPT Realty', 'and has no signature, since it comes from his own phone');
 
 const two = renderText(

@@ -2041,12 +2041,13 @@ messages, and `node scripts/send-listings-check.ts` runs both.
 - **The form stays folded until a home is on it.** Who and Send it appear with the
   first home, so the list of clients or of a client's messages is right under the
   field, and not a phone's three screens down.
-- **The text is the address, the facts, the number and the link, and stops.** Kevin
-  took out the signature and the listing office on 2026-10-30: it comes from his own
-  phone to somebody who has his number. There is no tracking on its links (every
-  character is on screen). The email is a separate thing sent from this site's
-  address, and keeps both, on the card and in the signature, and in its plain-text
-  part (`renderEmailText`); its links carry `utm_source=send-listings`.
+- **The text is the address, the facts and the link, and stops.** Kevin took out
+  the signature, the listing office and the MLS number line on 2026-10-30: it comes
+  from his own phone to somebody who has his number, and the number is still at the
+  end of the link. There is no tracking on its links (every character is on
+  screen). The email is a separate thing sent from this site's address, and keeps
+  the number, the office and the brokerage, on the card, in the signature and in its
+  plain-text part (`renderEmailText`); its links carry `utm_source=send-listings`.
 - **[emailSignature.ts](supabase/functions/_shared/emailSignature.ts) is the
   signature**: photo, a champagne rule, name, Realtor and LPT Realty, phone, email,
   site, Google and Facebook. Only this email uses it so far; `showing-schedule` and
