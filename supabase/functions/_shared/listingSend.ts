@@ -13,9 +13,11 @@
  * them a client wants depends on the client: the link to look at it, the number
  * to quote back to a lender.
  *
- * THE LISTING OFFICE IS NAMED IN THE TEXT AS WELL AS ON THE EMAIL'S CARD. A
- * message signed "Kevin Hoang, LPT Realty" under somebody else's listing reads as
- * his listing, and the words cost less than the misunderstanding.
+ * THE TEXT IS JUST THE HOMES, AT KEVIN'S REQUEST (2026-10-30): no signature and
+ * no listing office. It goes from his own phone to somebody who has his number,
+ * so they know who it is from, and on a phone every line is one more to scroll
+ * past. The email is a different thing, sent from this site's address: it keeps
+ * the listing office on each card and LPT Realty in the signature.
  */
 import {
   escapeHtml,
@@ -26,7 +28,8 @@ import {
   statusLabel,
   type EmailListing,
 } from './listingEmail.ts';
-import { AGENT, greetingFor } from './showingReminders.ts';
+import { SIGNATURE_STYLE, signatureHtml, signatureText } from './emailSignature.ts';
+import { greetingFor } from './showingReminders.ts';
 
 /** Fixed, never from a request. Becomes utm_source, so GA4 can count who came back. */
 const SOURCE = 'send-listings';
@@ -91,12 +94,35 @@ export const renderText = (names: string[], note: string | null, homes: EmailLis
       '',
       listingAddressLine(home),
       `${listingFactsLine(home)}${unavailable ? ` · ${unavailable}` : ''}`,
-      `MLS ${home.mls_number}${home.office_name ? ` · Listed by ${home.office_name}` : ''}`,
+      `MLS ${home.mls_number}`,
       listingUrl(home)
     );
   }
 
-  lines.push('', closing(homes.length), '', `${AGENT.name}, ${AGENT.brokerage}`, AGENT.phone);
+  lines.push('', closing(homes.length));
+  return lines.join('\n');
+};
+
+/**
+ * The email's plain-text part, for a mail client that will not show the HTML. It
+ * has to say what the HTML says, so the office and the signature come back.
+ */
+export const renderEmailText = (names: string[], note: string | null, homes: EmailListing[]): string => {
+  const lines: string[] = [`${hello(names)}, ${offer(homes.length)}:`];
+  if (note) lines.push('', note);
+
+  for (const home of homes) {
+    const unavailable = availabilityNote(home.status);
+    lines.push(
+      '',
+      listingAddressLine(home),
+      `${listingFactsLine(home)}${unavailable ? ` · ${unavailable}` : ''}`,
+      `MLS ${home.mls_number}${home.office_name ? ` · Listing courtesy of ${home.office_name}` : ''}`,
+      listingUrl(home, SOURCE)
+    );
+  }
+
+  lines.push('', closing(homes.length), '', 'Cheers,', signatureText());
   return lines.join('\n');
 };
 
@@ -123,12 +149,13 @@ export const renderHtml = (names: string[], note: string | null, homes: EmailLis
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${homes.length === 1 ? 'A home' : 'Homes'} you may be interested in</title>
+  <style>@media only screen and (max-width:480px){.pad{padding:24px !important;}}${SIGNATURE_STYLE}</style>
 </head>
 <body style="margin:0;padding:0;background-color:#ffffff;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;">
     <tr><td align="center" style="padding:24px 12px;">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;border:1px solid #2d2d2d;background-color:#ffffff;">
-        <tr><td style="padding:40px;">
+        <tr><td class="pad" style="padding:40px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
             <tr><td style="padding:0 0 26px 0;font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:28px;line-height:1.25;color:#1a1a1a;text-align:center;">
               ${homes.length === 1 ? 'A home' : 'Homes'} you may be interested in
@@ -141,17 +168,12 @@ export const renderHtml = (names: string[], note: string | null, homes: EmailLis
             </td></tr>
             ${note ? `<tr><td style="padding:0 0 22px 0;${P}">${escapeHtml(note)}</td></tr>` : ''}
             ${cards}
-            <tr><td style="padding:0 0 22px 0;${P}">
-              ${escapeHtml(closing(homes.length))} Reply to this email or text me and I will set it up.
+            <tr><td style="padding:0 0 20px 0;${P}">
+              ${escapeHtml(closing(homes.length))}<br /><br />
+              Cheers,
             </td></tr>
-            <tr><td style="padding:22px 0 0 0;border-top:1px solid #eeeeee;${P}">
-              <strong style="font-weight:600;">${escapeHtml(AGENT.name)}</strong><br />
-              ${escapeHtml(AGENT.brokerage)}<br />
-              <a href="tel:+18606822251" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(AGENT.phone)}</a>
-              &nbsp;·&nbsp;
-              <a href="mailto:${escapeHtml(AGENT.email)}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(AGENT.email)}</a>
-            </td></tr>
-            <tr><td style="padding:18px 0 0 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#888888;">
+            <tr><td style="padding:0;">${signatureHtml()}</td></tr>
+            <tr><td style="padding:24px 0 0 0;font-family:Inter,Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#888888;">
               If you would rather not get listings from me, reply and tell me and I will stop.
             </td></tr>
           </table>

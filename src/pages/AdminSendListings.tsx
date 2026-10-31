@@ -9,19 +9,24 @@
  * NOTHING HAS TO BE CREATED FIRST. A tour has a date and stops, so it is made and
  * then filled in; this is a page Kevin opens with three numbers on his clipboard.
  * The form is the page, and the row is saved the first time a message is
- * generated, so typing and walking away leaves nothing behind.
+ * generated, so typing and walking away leaves nothing behind. It stays folded to
+ * the one field until a home is on it, which keeps what is below in reach.
+ *
+ * EACH CLIENT HAS THEIR OWN. The page lists clients; `?client=<key>` is one of
+ * them, with everything they have been sent and a new message already addressed;
+ * `?id=` is one message opened from there. There is no client table to keep: see
+ * clientsFrom() in listingSend.ts.
  *
  * NOBODY HAS TO BE ON IT. A lot of these go into a Zillow chat, with no phone or
  * email to give. The text then opens "Hi," and is there to copy.
  *
- * The URL says which saved message was OPENED (`?id=`), not which is being typed.
- * Saving does not touch the URL: changing it would run this page's view change,
- * and take Kevin back to the top of the page at the moment he pressed a button
- * at the bottom of it.
+ * The URL says what was OPENED, not what is being typed. Saving does not touch it:
+ * changing it would run this page's view change, and take Kevin back to the top of
+ * the page at the moment he pressed a button at the bottom of it.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronRight, ExternalLink, Loader2, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Loader2, Plus, Trash2 } from 'lucide-react';
 import AdminShell, { AdminCard, adminActionClass } from '@/components/AdminShell';
 import AdminList from '@/components/admin/AdminList';
 import ListingLookup from '@/components/admin/ListingLookup';
@@ -42,14 +47,19 @@ import {
 import {
   MAX_HOMES,
   NOT_AVAILABLE,
+  NO_CLIENT,
+  clientContact,
+  clientName,
+  clientsFrom,
   draftKey,
   draftProblem,
   feedIsStale,
   homeFromListing,
   homeLine,
-  homesSummary,
   mlsNumbersIn,
+  nextPeople,
   withHomes,
+  type SendClient,
   type SendHome,
 } from '@/lib/listingSend';
 import {
@@ -68,7 +78,6 @@ import {
   draftOf,
   isBlankPerson,
   sentStamp,
-  tourNames,
   tourSaveMessage,
   type PersonDraft,
 } from '@/lib/showingTours';
@@ -93,11 +102,15 @@ const peopleDrafts = (send: ListingSend): PersonDraft[] =>
 const keyOf = (send: ListingSend): string =>
   draftKey(send.people.map(draftOf), send.homes, send.note ?? '');
 
+const SECTION_HEADING = 'mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500';
+
 export default function AdminSendListings() {
   const { toast } = useToast();
   const [params, setParams] = useSearchParams();
   const openId = params.get('id');
-  useViewScroll(openId ?? '');
+  const clientKey = params.get('client');
+  const view = openId ? `id:${openId}` : clientKey ? `client:${clientKey}` : '';
+  useViewScroll(view);
 
   const [rows, setRows] = useState<ListingSend[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +129,13 @@ export default function AdminSendListings() {
   const [finding, setFinding] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const lookupRef = useRef<HTMLInputElement>(null);
+
+  const clients = useMemo(() => clientsFrom(rows), [rows]);
+  // Whose page this is: the client in the URL, or the one the opened message is for.
+  const client =
+    clients.find((c) =>
+      openId ? c.sends.some((s) => s.id === openId) : clientKey ? c.key === clientKey : false
+    ) ?? null;
 
   useEffect(() => {
     void listSends()
@@ -139,31 +159,57 @@ export default function AdminSendListings() {
     setProblem(null);
   }, []);
 
+  /** A new message to somebody: whoever was on their last one, with row ids of its own. */
+  const startFor = useCallback(
+    (who: SendClient<ListingSend>) => {
+      startBlank();
+      const next = nextPeople(who);
+      if (next.length > 0) {
+        setPeople(next.map((p) => ({ ...draftOf(p), id: blankPerson().id })));
+      }
+    },
+    [startBlank]
+  );
+
   /*
-   * The form follows the URL only when the URL changes: a row opened from the
-   * list, or Back from one. `seen` is what stops a reload of the rows, which
-   * every save does, from re-seeding the form under somebody's typing.
+   * The form follows the URL only when the URL changes: a client or a message
+   * opened from a list, or Back from one. `seen` is what stops a reload of the
+   * rows, which every save does, from re-seeding the form under somebody's typing.
    */
-  const seen = useRef<string | null>(null);
+  const seen = useRef('');
   useEffect(() => {
-    if (openId === seen.current) return;
-    if (!openId) {
-      seen.current = null;
+    if (view === seen.current) return;
+    if (!view) {
+      seen.current = '';
       startBlank();
       return;
     }
-    const row = rows.find((r) => r.id === openId);
-    if (!row) return; // Not loaded yet. This runs again when they are.
-    seen.current = openId;
-    setPeople(peopleDrafts(row));
-    setHomes(row.homes);
-    setNote(row.note ?? '');
-    setCurrentId(row.id);
-    setSavedKey(keyOf(row));
-    setSentAt(row.sentAt);
-    setTerm('');
-    setProblem(null);
-  }, [openId, rows, startBlank]);
+    if (loading) return; // This runs again when they are in.
+    if (openId) {
+      const row = rows.find((r) => r.id === openId);
+      if (!row) {
+        setParams({}, { replace: true });
+        return;
+      }
+      seen.current = view;
+      setPeople(peopleDrafts(row));
+      setHomes(row.homes);
+      setNote(row.note ?? '');
+      setCurrentId(row.id);
+      setSavedKey(keyOf(row));
+      setSentAt(row.sentAt);
+      setTerm('');
+      setProblem(null);
+      return;
+    }
+    const opened = clients.find((c) => c.key === clientKey);
+    if (!opened) {
+      setParams({}, { replace: true });
+      return;
+    }
+    seen.current = view;
+    startFor(opened);
+  }, [view, loading, openId, clientKey, rows, clients, startBlank, startFor, setParams]);
 
   /* ---- Adding homes --------------------------------------------------- */
 
@@ -281,10 +327,15 @@ export default function AdminSendListings() {
     return saving.current;
   };
 
+  /** A clean form, still for the same client if this is their page. */
   const startOver = () => {
-    startBlank();
-    if (openId) setParams({});
-    else window.scrollTo(0, 0);
+    if (openId) {
+      setParams(client ? { client: client.key } : {});
+    } else {
+      if (client) startFor(client);
+      else startBlank();
+      window.scrollTo(0, 0);
+    }
     lookupRef.current?.focus();
   };
 
@@ -293,9 +344,18 @@ export default function AdminSendListings() {
     if (!window.confirm('Delete this message from the list? Anything already sent stays sent.')) return;
     try {
       await deleteSend(currentId);
-      setRows((all) => all.filter((r) => r.id !== currentId));
-      startBlank();
-      if (openId) setParams({}, { replace: true });
+      const left = rows.filter((r) => r.id !== currentId);
+      setRows(left);
+      // Back to whoever it was for, if they have anything else. Their key may have
+      // moved, if this was their oldest message.
+      const other = client?.sends.find((s) => s.id !== currentId);
+      const still = other ? clientsFrom(left).find((c) => c.sends.some((s) => s.id === other.id)) : null;
+      if (still && clientKey === still.key && !openId) {
+        startFor(still);
+      } else {
+        startBlank();
+        if (openId || clientKey) setParams(still ? { client: still.key } : {}, { replace: true });
+      }
     } catch (err) {
       console.error('Could not delete the message:', err);
       toast({ variant: 'destructive', title: 'Could not delete it' });
@@ -314,10 +374,20 @@ export default function AdminSendListings() {
 
   return (
     <AdminShell
-      title="Send listings"
-      description="Put in an address or an MLS number, then press a button for a text or an email with every home’s details and link."
+      title={client ? clientName(client) : 'Send listings'}
+      description={
+        client
+          ? clientContact(client) || 'No email or phone on file.'
+          : 'Put in an address or an MLS number, then press a button for a text or an email with every home’s details and link.'
+      }
       actions={
         <>
+          {view && (
+            <button type="button" onClick={() => setParams({})} className={adminActionClass('ghost')}>
+              <ArrowLeft className="h-4 w-4" aria-hidden />
+              All clients
+            </button>
+          )}
           {(currentId || homes.length > 0) && (
             <button type="button" onClick={startOver} className={adminActionClass('primary')}>
               <Plus className="h-4 w-4" aria-hidden />
@@ -335,7 +405,7 @@ export default function AdminSendListings() {
     >
       <div className="space-y-8">
         <section>
-          <h2 className="numeral mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
+          <h2 className={`numeral ${SECTION_HEADING}`}>
             Homes{homes.length > 0 ? ` (${homes.length})` : ''}
           </h2>
           {/* Not an AdminCard: that is overflow-hidden, and the suggestions drop
@@ -440,90 +510,129 @@ export default function AdminSendListings() {
           </div>
         </section>
 
-        <section>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Who it is for</h2>
-          {/* Not an AdminCard either, for the name field's suggestions. */}
-          <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
-            <PeopleFields
-              idPrefix="send"
-              people={people}
-              onChange={setPeople}
-              removeFrom="this message"
-              filedBy="making the message"
-              hint={(several) =>
-                several
-                  ? 'The email goes to everyone with an address.'
-                  : 'Leave it empty to paste the text into a Zillow chat.'
-              }
-            />
-            <div className="space-y-1.5">
-              <Label htmlFor="send-note">Note to the client</Label>
-              <Input
-                id="send-note"
-                autoComplete="off"
-                placeholder="These just came on. The first has the yard you wanted."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </div>
-          </div>
-        </section>
+        {homes.length > 0 && (
+          <>
+            <section>
+              <h2 className={SECTION_HEADING}>Who it is for</h2>
+              {/* Not an AdminCard either, for the name field's suggestions. */}
+              <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+                <PeopleFields
+                  idPrefix="send"
+                  people={people}
+                  onChange={setPeople}
+                  removeFrom="this message"
+                  filedBy="making the message"
+                  hint={(several) =>
+                    several
+                      ? 'The email goes to everyone with an address.'
+                      : 'Leave it empty to paste the text into a Zillow chat.'
+                  }
+                />
+                <div className="space-y-1.5">
+                  <Label htmlFor="send-note">Note to the client</Label>
+                  <Input
+                    id="send-note"
+                    autoComplete="off"
+                    placeholder="These just came on. The first has the yard you wanted."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                </div>
+              </div>
+            </section>
 
-        <section>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">Send it</h2>
-          <AdminCard>
-            <MessagePanel
-              people={named}
-              sentAt={sentAt}
-              fingerprint={key}
-              ready={homes.length > 0}
-              build={async () => previewSend(await persist())}
-              send={async () => {
-                const id = await persist();
-                const result = await emailSend(id);
-                setRows((all) =>
-                  all.map((r) => (r.id === id ? { ...r, sentAt: result.sentAt } : r))
-                );
-                return result;
-              }}
-              onSent={setSentAt}
-              words={WORDS}
-            />
-          </AdminCard>
-        </section>
+            <section>
+              <h2 className={SECTION_HEADING}>Send it</h2>
+              <AdminCard>
+                <MessagePanel
+                  people={named}
+                  sentAt={sentAt}
+                  fingerprint={key}
+                  ready={homes.length > 0}
+                  build={async () => previewSend(await persist())}
+                  send={async () => {
+                    const id = await persist();
+                    const result = await emailSend(id);
+                    setRows((all) =>
+                      all.map((r) => (r.id === id ? { ...r, sentAt: result.sentAt } : r))
+                    );
+                    return result;
+                  }}
+                  onSent={setSentAt}
+                  words={WORDS}
+                />
+              </AdminCard>
+            </section>
+          </>
+        )}
 
         {loading ? (
           <div className="flex min-h-[10vh] items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-champagne-ink" aria-hidden />
           </div>
+        ) : client ? (
+          <section>
+            <h2 className={SECTION_HEADING}>
+              {client.key === NO_CLIENT ? 'Sent with no client named' : `Sent to ${clientName(client)}`}
+            </h2>
+            <AdminCard>
+              <AdminList
+                label="Messages"
+                columns={[
+                  { label: 'Homes', primary: true },
+                  { label: 'Made' },
+                  { label: 'Email' },
+                  { label: '', end: true },
+                ]}
+                grid="md:grid-cols-[minmax(0,2.6fr)_minmax(0,0.8fr)_minmax(0,1.2fr)_1rem]"
+                rows={client.sends.map((row) => ({
+                  key: row.id,
+                  to: `?id=${encodeURIComponent(row.id)}`,
+                  cells: [
+                    <span key="h" className="block min-w-0">
+                      {row.homes.map((home) => (
+                        <span key={home.mlsNumber} className="numeral block break-words text-ink">
+                          {homeLine(home)}
+                        </span>
+                      ))}
+                      {row.id === currentId && (
+                        <span className="mt-0.5 block text-xs font-semibold text-champagne-ink">On the form above</span>
+                      )}
+                    </span>,
+                    shortDate(row.createdAt),
+                    row.sentAt ? `Sent ${sentStamp(row.sentAt)}` : 'Not emailed',
+                    <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
+                  ],
+                }))}
+              />
+            </AdminCard>
+          </section>
         ) : (
-          rows.length > 0 && (
+          clients.length > 0 && (
             <section>
-              <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-gray-500">
-                Earlier messages
-              </h2>
+              <h2 className={`numeral ${SECTION_HEADING}`}>Clients ({clients.length})</h2>
               <AdminCard>
                 <AdminList
-                  label="Earlier messages"
+                  label="Clients"
                   columns={[
-                    { label: 'Who', primary: true },
-                    { label: 'Made' },
-                    { label: 'Email' },
+                    { label: 'Client', primary: true },
+                    { label: 'Messages' },
+                    { label: 'Homes' },
+                    { label: 'Last' },
                     { label: '', end: true },
                   ]}
-                  grid="md:grid-cols-[minmax(0,2.6fr)_minmax(0,0.8fr)_minmax(0,1.2fr)_1rem]"
-                  rows={rows.map((row) => ({
-                    key: row.id,
-                    to: `?id=${encodeURIComponent(row.id)}`,
+                  grid="md:grid-cols-[minmax(0,2.6fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_1rem]"
+                  rows={clients.map((c) => ({
+                    key: c.key,
+                    to: `?client=${encodeURIComponent(c.key)}`,
                     cells: [
                       <span key="w" className="block min-w-0">
-                        <span className="block font-medium text-ink">{tourNames(row) || 'Nobody named'}</span>
-                        <span className="numeral block break-words text-xs text-gray-500">
-                          {homesSummary(row.homes)}
-                        </span>
+                        <span className="block font-medium text-ink">{clientName(c)}</span>
+                        <span className="numeral block break-words text-xs text-gray-500">{clientContact(c)}</span>
                       </span>,
-                      shortDate(row.createdAt),
-                      row.sentAt ? `Sent ${sentStamp(row.sentAt)}` : 'Not emailed',
+                      c.sends.length,
+                      c.homeCount,
+                      shortDate(c.lastAt),
                       <ChevronRight key="c" className="hidden h-4 w-4 text-gray-400 md:block" aria-hidden />,
                     ],
                   }))}

@@ -109,14 +109,6 @@ export const withHomes = (
 export const homeLine = (home: SendHome): string =>
   [home.address, home.town].filter(Boolean).join(', ') || `MLS ${home.mlsNumber}`;
 
-/** One line for the list of past messages: "12 Elm St, Newton and 2 more". */
-export const homesSummary = (homes: SendHome[]): string => {
-  if (homes.length === 0) return '';
-  return homes.length === 1
-    ? homeLine(homes[0])
-    : `${homeLine(homes[0])} and ${homes.length - 1} more`;
-};
-
 type PersonFields = Pick<PersonDraft, 'id' | 'name' | 'email' | 'phone'>;
 
 const isBlank = (p: PersonFields) => !p.name.trim() && !p.email.trim() && !p.phone.trim();
@@ -149,6 +141,179 @@ export const draftProblem = (people: PersonFields[], homes: SendHome[]): string 
   if (bad) return `Check the email address for ${bad.name.trim()}.`;
   return null;
 };
+
+/* -------------------------------------------------------------------------- */
+/* Each client's own messages                                                  */
+/* -------------------------------------------------------------------------- */
+
+/** A person on a stored message, as far as telling clients apart needs. */
+export interface StoredPerson {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  contactId: number | null;
+}
+
+/** What grouping reads from a stored message. */
+export interface GroupableSend {
+  id: string;
+  people: StoredPerson[];
+  homes: SendHome[];
+  createdAt: string;
+  sentAt: string | null;
+}
+
+export interface SendClient<T extends GroupableSend = GroupableSend> {
+  /**
+   * What `?client=` holds. The id of the first person on their oldest message, so
+   * it stays put as messages are added, and opaque: an address in the URL would
+   * go to Google Analytics with every page view.
+   */
+  key: string;
+  /** Everyone they have been, newest spelling first. Empty for NO_CLIENT. */
+  names: string[];
+  emails: string[];
+  phones: string[];
+  /** Newest first. */
+  sends: T[];
+  /** When the last thing happened: an email going, or else a message being made. */
+  lastAt: string;
+  /** Different homes across all their messages. */
+  homeCount: number;
+}
+
+/** The messages with nobody on them, which are pasted into a chat. */
+export const NO_CLIENT = 'none';
+
+const lastTen = (phone: string | null) => (phone ?? '').replace(/\D/g, '').slice(-10);
+
+/** What says two rows are one person: the CRM's word for it, an email or a phone. */
+const strongKeys = (p: StoredPerson): string[] => [
+  ...(p.contactId !== null ? [`c:${p.contactId}`] : []),
+  ...(p.email ? [`e:${p.email.trim().toLowerCase()}`] : []),
+  ...(lastTen(p.phone).length === 10 ? [`p:${lastTen(p.phone)}`] : []),
+];
+
+const nameKey = (name: string) => name.trim().replace(/\s+/g, ' ').toLowerCase();
+
+const lastActivity = (send: GroupableSend) => send.sentAt ?? send.createdAt;
+
+/** "Tammy" says nothing "Tammy Nguyen" does not, so it is not a second person. */
+const withoutShortForms = (names: string[]): string[] =>
+  names.filter(
+    (name) =>
+      !names.some((other) => other !== name && nameKey(other).startsWith(`${nameKey(name)} `))
+  );
+
+/**
+ * Every message, filed by client.
+ *
+ * Kevin asked that each client have their own, on 2026-10-30. There is no client
+ * table to file them under, and none is needed: the people on a message already
+ * say who it was for. Two messages belong together when they share anyone, by
+ * CRM contact, by email or by phone.
+ *
+ * A COUPLE IS ONE CLIENT. Everyone on one message is one client, so "Tammy and
+ * Matthew" on Tuesday and "Tammy" alone on Friday land together. Keyed on each
+ * person instead, the couple would be two rows holding the same messages.
+ *
+ * A NAME ALONE IS WEAK. Somebody with nothing but a name, as a Zillow client
+ * usually is, is matched by that name, and joins a person with details of the
+ * same name. Two people with the same name and DIFFERENT details stay apart: a
+ * name is not enough to say that two Sam Lees are one.
+ */
+export const clientsFrom = <T extends GroupableSend>(sends: T[]): SendClient<T>[] => {
+  const parent = new Map<string, string>();
+  const find = (key: string): string => {
+    if (!parent.has(key)) parent.set(key, key);
+    let root = key;
+    while (parent.get(root) !== root) root = parent.get(root) as string;
+    parent.set(key, root);
+    return root;
+  };
+  const join = (a: string, b: string) => parent.set(find(a), find(b));
+
+  const oldestFirst = [...sends].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+  // The first person with details to go by each name, for a name alone to join.
+  const firstWithName = new Map<string, string>();
+  for (const send of oldestFirst) {
+    for (const person of send.people) {
+      const [strong] = strongKeys(person);
+      if (strong && !firstWithName.has(nameKey(person.name))) {
+        firstWithName.set(nameKey(person.name), strong);
+      }
+    }
+  }
+
+  for (const send of oldestFirst) {
+    for (const person of send.people) {
+      const keys = strongKeys(person);
+      if (keys.length > 0) {
+        for (const key of keys) join(`m:${send.id}`, key);
+      } else {
+        const weak = `n:${nameKey(person.name)}`;
+        join(`m:${send.id}`, weak);
+        const known = firstWithName.get(nameKey(person.name));
+        if (known) join(weak, known);
+      }
+    }
+  }
+
+  const groups = new Map<string, T[]>();
+  const nobody: T[] = [];
+  for (const send of oldestFirst) {
+    if (send.people.length === 0) {
+      nobody.push(send);
+      continue;
+    }
+    const root = find(`m:${send.id}`);
+    groups.set(root, [...(groups.get(root) ?? []), send]);
+  }
+
+  const build = (key: string, oldest: T[]): SendClient<T> => {
+    const newest = [...oldest].reverse();
+    const everyone = newest.flatMap((s) => s.people);
+    const names = withoutShortForms([
+      ...new Map(everyone.map((p) => [nameKey(p.name), p.name] as const)).values(),
+    ]);
+    return {
+      key,
+      names,
+      emails: [...new Set(everyone.flatMap((p) => (p.email ? [p.email] : [])))],
+      phones: [
+        ...new Map(
+          everyone.flatMap((p) => (p.phone ? [[lastTen(p.phone), p.phone] as const] : []))
+        ).values(),
+      ],
+      sends: newest,
+      lastAt: newest.map(lastActivity).sort().reverse()[0],
+      homeCount: new Set(oldest.flatMap((s) => s.homes.map((h) => h.mlsNumber))).size,
+    };
+  };
+
+  const named = [...groups.values()]
+    .map((oldest) => build(oldest[0].people[0].id, oldest))
+    .sort((a, b) => b.lastAt.localeCompare(a.lastAt));
+  return nobody.length > 0 ? [...named, build(NO_CLIENT, nobody)] : named;
+};
+
+/** "Tammy Nguyen", "Tammy Nguyen & Matthew Nguyen", "A, B & C". */
+export const clientName = (client: Pick<SendClient, 'names'>): string => {
+  const { names } = client;
+  if (names.length === 0) return 'No client named';
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+};
+
+/** Everything there is to reach them by, on one line. */
+export const clientContact = (client: Pick<SendClient, 'emails' | 'phones'>): string =>
+  [...client.emails, ...client.phones].join(' · ');
+
+/** Who the next message to them starts with: whoever was on the last one. */
+export const nextPeople = (client: Pick<SendClient, 'sends'>): StoredPerson[] =>
+  client.sends[0]?.people ?? [];
 
 /** Words for a home that cannot be walked into. Mirrors `availabilityNote` in the function. */
 export const NOT_AVAILABLE = new Set(['CTG', 'UAG', 'SLD', 'RNT']);

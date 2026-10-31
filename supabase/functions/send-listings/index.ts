@@ -26,6 +26,7 @@ import {
   leftOutNotice,
   numbersOf,
   peopleOf,
+  renderEmailText,
   renderHtml,
   renderText,
   savedAddress,
@@ -147,7 +148,7 @@ serve(async (req) => {
       reply_to: AGENT.email,
       subject,
       html,
-      text,
+      text: renderEmailText(names, note, homes),
     });
     // The SDK reports an API refusal in `error` rather than throwing, so a
     // bounced domain or a bad key would otherwise be reported as sent.

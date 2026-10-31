@@ -62,13 +62,17 @@ const columns = (d: SendDraft): SendInsert => ({
   note: d.note.trim() || null,
 });
 
-/** The last fifty messages, newest first. Nothing here needs more. */
+/**
+ * Every message, newest first: the page files them by client, and a client's page
+ * that lacked their oldest message would be wrong about what they have been sent.
+ * A thousand is PostgREST's own ceiling, and far more than one person sends.
+ */
 export const listSends = async (): Promise<ListingSend[]> => {
   const { data, error } = await supabase
     .from('listing_sends')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(1000);
   if (error) throw error;
   return (data ?? []).map(toSend);
 };

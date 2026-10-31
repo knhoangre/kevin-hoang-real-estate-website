@@ -12,6 +12,7 @@ import {
   leftOutNotice,
   numbersOf,
   peopleOf,
+  renderEmailText,
   renderHtml,
   renderText,
   savedAddress,
@@ -21,14 +22,20 @@ import type { EmailListing } from '../supabase/functions/_shared/listingEmail.ts
 import {
   MAX_HOMES,
   NOT_AVAILABLE,
+  NO_CLIENT,
+  clientContact,
+  clientName,
+  clientsFrom,
   draftKey,
   draftProblem,
   feedIsStale,
   homesFrom,
-  homesSummary,
   mlsNumbersIn,
+  nextPeople,
   withHomes,
+  type GroupableSend,
   type SendHome,
+  type StoredPerson,
 } from '../src/lib/listingSend.ts';
 
 let failures = 0;
@@ -73,17 +80,16 @@ is(
     '',
     '170 Gore St Unit 417, Cambridge, MA 02141',
     '$799,000 · 2 bed · 1 full bath · 900 sq ft',
-    'MLS 73568135 · Listed by Compass',
+    'MLS 73568135',
     'https://www.kevinhoang.co/search/170-Gore-St-Unit-417-Cambridge-MA-02141-73568135',
     '',
     'Let me know if you would like to see it.',
-    '',
-    'Kevin Hoang, LPT Realty',
-    '(860) 682-2251',
   ],
   'one home, one person: the whole text, address, number and link'
 );
 lacks(one, 'utm_', 'a text carries no tracking, since every character is on screen');
+lacks(one, 'Listed by', 'a text does not name the listing office (Kevin, 2026-10-30)');
+lacks(one, 'LPT Realty', 'and has no signature, since it comes from his own phone');
 
 const two = renderText(
   ['Tammy Nguyen', 'Matthew Nguyen'],
@@ -103,8 +109,15 @@ is(
 const rental = renderText(['Sam Lee'], null, [home({ prop_type: 'RN', list_price: 3200 })]);
 has(rental, '$3,200/mo', 'a rental reads as a monthly rent');
 
-const noOffice = renderText(['Sam Lee'], null, [home({ office_name: null })]);
-has(noOffice, '\nMLS 73568135\n', 'an unknown office is left out, not printed blank');
+const plain = renderEmailText(['Sam Lee'], null, [home()]);
+has(plain, 'MLS 73568135 · Listing courtesy of Compass', "an email's plain-text part keeps the office, like its card");
+has(plain, 'Cheers,\nKevin Hoang\nRealtor®, LPT Realty\n(860) 682-2251', 'and the signature');
+has(plain, 'utm_source=send-listings', 'and is tracked like the HTML');
+has(
+  renderEmailText(['Sam Lee'], null, [home({ office_name: null })]),
+  '\nMLS 73568135\n',
+  'an unknown office is left out, not printed blank'
+);
 
 const sparse = renderText(['Sam Lee'], null, [
   home({ bedrooms: null, full_baths: null, living_area: null, list_price: null }),
@@ -149,6 +162,14 @@ lacks(email, 'Near <the>', 'and not interpolated raw');
 has(email, 'utm_source=send-listings', 'the email is tracked, so GA4 can count who came back');
 has(email, 'Listing courtesy of Compass', 'the card names the listing office');
 has(email, 'LPT Realty', 'the brokerage is named, as 254 CMR 3.00 asks');
+has(email, 'https://www.kevinhoang.co/email/kevin-hoang.jpg', 'the signature has his photo');
+has(email, 'alt="Kevin Hoang"', 'and a name for it when images are blocked');
+has(email, '(860) 682-2251', 'the phone, as SITE has it');
+has(email, 'tel:+18606822251', 'tappable');
+has(email, 'knhoangre@gmail.com', 'the email');
+has(email, 'https://www.facebook.com/knhoangre/', 'and the profiles');
+has(email, 'Cheers,', 'it signs off the way he does');
+lacks(email, 'Reply to this email or text me', 'and no longer asks them to reply or text (Kevin, 2026-10-30)');
 has(email, 'Here is a home you may be interested in.', 'the sentence starts with a capital');
 has(email, 'If you would rather not get listings from me', 'there is a way to say stop');
 has(renderHtml([], null, [home(), home()]), 'Hi,<br />', 'nobody named in an email still reads properly');
@@ -215,9 +236,6 @@ is(
 );
 const full = Array.from({ length: MAX_HOMES }, (_, i) => sendHome(String(i)));
 is(withHomes(full, [sendHome('new')]).dropped.map((h) => h.mlsNumber), ['new'], 'past the ceiling is reported, not silently lost');
-is(homesSummary([sendHome('1')]), '12 Elm St, Newton', 'one home in the list of past messages');
-is(homesSummary([sendHome('1'), sendHome('2'), sendHome('3')]), '12 Elm St, Newton and 2 more', 'several');
-is(homesSummary([sendHome('1', null, null)]), 'MLS 1', 'a home with no address falls back to its number');
 
 is(
   homesFrom([{ mlsNumber: '73568135', address: ' 12 Elm St ', listPrice: 500000 }, { address: 'no number' }, null, 'x']),
@@ -231,6 +249,124 @@ is(homesFrom({ mlsNumber: '1' }), [], 'a column that is not a list gives nothing
 const NOW = Date.parse('2026-10-30T22:00:00Z');
 is(feedIsStale('2026-10-30T20:00:00Z', NOW), false, 'a feed that loaded two hours ago is fine');
 is(feedIsStale('2026-10-19T12:50:00Z', NOW), true, 'a feed last good eleven days ago says so');
+
+/* ---- Each client's own ---------------------------------------------------- */
+
+const who = (id: string, name: string, more: Partial<StoredPerson> = {}): StoredPerson => ({
+  id,
+  name,
+  email: null,
+  phone: null,
+  contactId: null,
+  ...more,
+});
+let day = 0;
+const sent = (id: string, people: StoredPerson[], homes = ['1']): GroupableSend => {
+  day += 1;
+  return {
+    id,
+    people,
+    homes: homes.map((n) => sendHome(n)),
+    createdAt: `2026-10-${String(day).padStart(2, '0')}T12:00:00Z`,
+    sentAt: null,
+  };
+};
+const ids = (client: { sends: GroupableSend[] }) => client.sends.map((s) => s.id);
+
+const tammy = { email: 'tammy@example.com' };
+let grouped = clientsFrom([
+  sent('a', [who('p1', 'Tammy Nguyen', tammy)]),
+  sent('b', [who('p2', 'Tammy Nguyen', { email: 'TAMMY@example.com ' })]),
+]);
+is(grouped.length, 1, 'two messages to one email are one client');
+is(ids(grouped[0]), ['b', 'a'], 'with the newest message first');
+is(grouped[0].key, 'p1', 'keyed on the first person on the oldest message');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Sam Lee', { contactId: 5, email: 'old@example.com' })]),
+  sent('b', [who('p2', 'Sam Lee', { contactId: 5, email: 'new@example.com' })]),
+]);
+is(grouped.length, 1, 'a corrected email stays one client through their CRM contact');
+is(grouped[0].emails, ['new@example.com', 'old@example.com'], 'and both addresses are shown, newest first');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Sam Lee', { phone: '617-555-0100' })]),
+  sent('b', [who('p2', 'Sam Lee', { phone: '(617) 555-0100' })]),
+  sent('c', [who('p3', 'Sam Lee', { phone: '+1 617 555 0100' })]),
+]);
+is(grouped.length, 1, 'one phone number written three ways is one client');
+is(grouped[0].phones.length, 1, 'and shows once');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Tammy Nguyen', tammy), who('p2', 'Matthew Nguyen', { phone: '617-555-0142' })]),
+  sent('b', [who('p3', 'Matthew Nguyen', { phone: '617-555-0142' })]),
+  sent('c', [who('p4', 'Tammy Nguyen', tammy)]),
+]);
+is(grouped.length, 1, 'a couple is one client, whichever of them a later message is for');
+is(clientName(grouped[0]), 'Tammy Nguyen & Matthew Nguyen', 'named together');
+is(clientContact(grouped[0]), 'tammy@example.com · 617-555-0142', 'with everything that reaches them');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Tammy Nguyen', tammy)]),
+  sent('b', [who('p2', 'Sam Lee', { email: 'sam@example.com' })]),
+]);
+is(grouped.length, 2, 'two different people are two clients');
+is(grouped[0].names, ['Sam Lee'], 'whoever had something happen last comes first');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Linh Tran', { email: 'family@example.com' })]),
+  sent('b', [who('p2', 'David Tran', { email: 'family@example.com' })]),
+]);
+is(grouped.length, 1, 'two people sharing an email are one client');
+is(clientName(grouped[0]), 'David Tran & Linh Tran', 'and neither name is lost');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Marcus')]),
+  sent('b', [who('p2', 'marcus ')]),
+]);
+is(grouped.length, 1, 'a Zillow client with only a name is matched by it');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Sam Lee')]),
+  sent('b', [who('p2', 'Sam Lee', { email: 'sam@example.com' })]),
+]);
+is(grouped.length, 1, 'a name alone joins somebody with details of that name');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Sam Lee', { email: 'one@example.com' })]),
+  sent('b', [who('p2', 'Sam Lee', { email: 'two@example.com' })]),
+]);
+is(grouped.length, 2, 'two people with one name and different details stay apart');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Tammy', tammy)]),
+  sent('b', [who('p2', 'Tammy Nguyen', tammy)]),
+]);
+is(grouped[0].names, ['Tammy Nguyen'], 'a first name is not a second person once the full one is known');
+
+grouped = clientsFrom([
+  sent('a', []),
+  sent('b', [who('p1', 'Tammy Nguyen', tammy)]),
+  sent('c', []),
+]);
+is(grouped.map((c) => c.key), ['p1', NO_CLIENT], 'messages with nobody on them are together, and last');
+is(clientName(grouped[1]), 'No client named', 'and say so');
+is(clientContact(grouped[1]), '', 'with nothing to reach');
+is(nextPeople(grouped[1]), [], 'and nobody to start the next one with');
+
+grouped = clientsFrom([
+  sent('a', [who('p1', 'Tammy Nguyen', tammy), who('p2', 'Matthew Nguyen')], ['1', '2']),
+  sent('b', [who('p3', 'Tammy Nguyen', tammy)], ['2', '3']),
+]);
+is(nextPeople(grouped[0]).map((p) => p.id), ['p3'], 'the next message starts with whoever was on the last');
+is(grouped[0].homeCount, 3, 'a home sent twice counts once');
+
+const early = { ...sent('a', [who('p1', 'Tammy Nguyen', tammy)]), sentAt: '2026-12-25T12:00:00Z' };
+const late = sent('b', [who('p2', 'Sam Lee', { email: 'sam@example.com' })]);
+grouped = clientsFrom([early, late]);
+is(grouped[0].names, ['Tammy Nguyen'], 'an email going counts as something happening');
+is(grouped[0].lastAt, '2026-12-25T12:00:00Z', 'and is what the list shows');
+is(clientsFrom([]), [], 'no messages, no clients');
 
 /* ---- Whether it can be saved, and whether it has changed ------------------ */
 

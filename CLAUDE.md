@@ -2027,11 +2027,34 @@ messages, and `node scripts/send-listings-check.ts` runs both.
 - **The page says when the feed is stale** (`feedIsStale`, a day since the last
   good load). A client is about to be told a price; on 2026-10-30 the feed had been
   failing for eleven days, so a home listed since could not be found at all.
-- **The text carries the address, the number, the link and the listing office.**
-  The first three are what he was typing by hand. The office is there because a
-  message signed "Kevin Hoang, LPT Realty" under someone else's listing reads as
-  his. There is no tracking on a text's links (every character is on screen); the
-  email's carry `utm_source=send-listings`.
+- **Each client has their own page** (`?client=<key>`), and there is no client
+  table: `clientsFrom()` files messages by the people on them, so everything
+  already sent is filed the day this runs. Two messages belong together when they
+  share anyone, by CRM contact, email or phone (last ten digits). Everyone on one
+  message is one client, so a couple is one row even when a later message goes to
+  one of them. A name alone joins a person with details of that name, but two Sam
+  Lees with different details stay apart. Messages with nobody on them are together
+  under "No client named", last. The key is the id of the first person on their
+  oldest message: stable, and opaque because GA4 is on and a URL holding an email
+  address would be sent to Google. Opening a client starts the form with whoever
+  was on their last message.
+- **The form stays folded until a home is on it.** Who and Send it appear with the
+  first home, so the list of clients or of a client's messages is right under the
+  field, and not a phone's three screens down.
+- **The text is the address, the facts, the number and the link, and stops.** Kevin
+  took out the signature and the listing office on 2026-10-30: it comes from his own
+  phone to somebody who has his number. There is no tracking on its links (every
+  character is on screen). The email is a separate thing sent from this site's
+  address, and keeps both, on the card and in the signature, and in its plain-text
+  part (`renderEmailText`); its links carry `utm_source=send-listings`.
+- **[emailSignature.ts](supabase/functions/_shared/emailSignature.ts) is the
+  signature**: photo, a champagne rule, name, Realtor and LPT Realty, phone, email,
+  site, Google and Facebook. Only this email uses it so far; `showing-schedule` and
+  the showing reminders still print the plain name and number. The photo is cropped
+  from the signature Kevin supplied, not `kevin_hoang.jpg` (he is smiling in this
+  one), to `public/email/kevin-hoang.jpg`, 240px square. **Sent emails keep asking
+  for that address, so replace the file and never rename it.** Everything but the
+  photo is text, so the signature still reads with images blocked.
 - **`send-listings` has the shape of `showing-schedule`**: `preview` and `send`,
   an ID and nothing else, `app_metadata.is_admin` checked first. A recipient or a
   body in the request is ignored. The email has one line offering to stop. It has
