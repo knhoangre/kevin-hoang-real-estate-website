@@ -52,6 +52,7 @@ import {
 import DocumentsPanel from '@/components/rental/DocumentsPanel';
 import { SectionNumbers } from './sectionNumbers';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { pill } from '@/lib/pill';
 
 type Ctl = UseFormReturn<RentalApplicationData>['control'];
 
@@ -1176,7 +1177,7 @@ export default function RentalApplicationForm({
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="btn-pill group inline-flex w-full items-center justify-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white disabled:opacity-60"
+                      className={pill('champagne', 'lg', 'group w-full')}
                     >
                       {submitting ? (
                         <>

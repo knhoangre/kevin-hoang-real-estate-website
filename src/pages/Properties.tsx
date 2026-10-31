@@ -754,7 +754,7 @@ const Properties = () => {
                 }}
                 className={adminActionClass()}
               >
-                <Edit className="mr-2 h-4 w-4" aria-hidden />
+                <Edit className="h-4 w-4" aria-hidden />
                 Edit Selected ({selectedPropertyIds.size})
               </button>
               <button
@@ -762,7 +762,7 @@ const Properties = () => {
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className={adminActionClass('danger')}
               >
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                <Trash2 className="h-4 w-4" aria-hidden />
                 Delete Selected ({selectedPropertyIds.size})
               </button>
             </>
@@ -772,7 +772,7 @@ const Properties = () => {
             onClick={() => setIsCsvDialogOpen(true)}
             className={adminActionClass()}
           >
-            <Upload className="mr-2 h-4 w-4" aria-hidden />
+            <Upload className="h-4 w-4" aria-hidden />
             Import CSV
           </button>
           <button
@@ -780,7 +780,7 @@ const Properties = () => {
             onClick={handleAdd}
             className={adminActionClass('primary')}
           >
-            <Plus className="mr-2 h-4 w-4" aria-hidden />
+            <Plus className="h-4 w-4" aria-hidden />
             Add Property
           </button>
         </>

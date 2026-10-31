@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Phone, Mail, ArrowRight } from 'lucide-react';
 import { SITE, telHref } from '@/lib/siteConfig';
+import { pill } from '@/lib/pill';
 
 /**
  * The dark closing band.
@@ -30,21 +31,21 @@ const CtaBand = ({
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
             to="/contact"
-            className="group inline-flex items-center gap-2 rounded-full bg-champagne px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white btn-pill"
+            className={pill('champagne', 'lg', 'group')}
           >
             {button ?? 'Send a message'}
             <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
           <a
             href={telHref}
-            className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:border-champagne hover:text-champagne btn-pill"
+            className={pill('ghost', 'lg', 'group')}
           >
             <Phone className="w-4 h-4" aria-hidden />
             {SITE.phone}
           </a>
           <a
             href={`mailto:${SITE.email}`}
-            className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium text-white transition-colors hover:border-champagne hover:text-champagne btn-pill"
+            className={pill('ghost', 'lg', 'group')}
           >
             <Mail className="w-4 h-4" aria-hidden />
             {SITE.email}

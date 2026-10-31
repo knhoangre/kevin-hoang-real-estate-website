@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { pill } from '@/lib/pill';
 
 /** The same five rules /auth enforces, so one account works on both pages. */
 const RULES = [
@@ -31,8 +32,7 @@ const RULES = [
   { label: 'A special character', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ];
 
-const SUBMIT =
-  'w-full rounded-md bg-ink py-3 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-black/80 disabled:opacity-60';
+const SUBMIT = pill('ink', 'md', 'w-full uppercase tracking-wide');
 
 /**
  * Module scope, NOT nested inside InviteSignIn.
@@ -226,7 +226,7 @@ export default function InviteSignIn() {
       <button
         type="button"
         onClick={() => void signInWithGoogle()}
-        className="flex w-full items-center justify-center gap-2.5 rounded-md border border-gray-300 py-3 text-sm font-semibold text-ink transition-colors hover:border-champagne hover:text-champagne-ink"
+        className={pill('outline', 'md', 'w-full gap-2.5')}
       >
         <FcGoogle className="h-5 w-5" aria-hidden />
         Continue with Google

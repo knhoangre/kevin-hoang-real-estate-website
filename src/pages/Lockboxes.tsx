@@ -249,7 +249,7 @@ const Lockboxes = () => {
       description="Every lockbox in the field, where it is, and the code on it."
       actions={
         <button type="button" onClick={handleAdd} className={adminActionClass('primary')}>
-          <Plus className="mr-2 h-4 w-4" aria-hidden />
+          <Plus className="h-4 w-4" aria-hidden />
           Add Lockbox
         </button>
       }

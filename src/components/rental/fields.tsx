@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { formatPhoneInput } from '@/lib/phone';
 import { SectionNumbers } from './sectionNumbers';
+import { pill } from '@/lib/pill';
 
 /* ------------------------------------------------------------------ */
 /* Section shell                                                       */
@@ -464,7 +465,7 @@ export const Repeatable = ({
       <button
         type="button"
         onClick={onAdd}
-        className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne hover:text-champagne-ink"
+        className={pill('outline')}
       >
         + {addLabel}
       </button>

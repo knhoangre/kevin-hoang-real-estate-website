@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { SITE, telHref } from "@/lib/siteConfig";
 import { HOME_HERO_IMAGE } from "@/lib/images";
 import HeroSkyline from "@/components/HeroSkyline";
+import { pill } from '@/lib/pill';
 
 const Hero = () => {
   const { t } = useTranslation();
@@ -80,14 +81,14 @@ const Hero = () => {
               href={SITE.appointmentUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill btn-pill-glint"
+              className={pill('white', 'lg', 'group btn-pill-glint')}
             >
               <span className="uppercase">{t('hero.cta')}</span>
               <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </a>
             <a
               href={telHref}
-              className="group inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep btn-pill"
+              className={pill('gold', 'lg', 'group')}
             >
               <Phone className="h-4 w-4" aria-hidden />
               {SITE.phone}

@@ -1,9 +1,9 @@
 import type { LucideIcon } from 'lucide-react';
 import { AdminCard } from '@/components/AdminShell';
+import { pill } from '@/lib/pill';
 
 /** The same quiet pill the row actions use, for these one-off retry buttons. */
-const PILL =
-  'mt-6 rounded-full border border-gray-300 px-5 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-champagne hover:bg-champagne hover:text-ink-deep';
+const PILL = pill('outline', 'xs', 'mt-6 px-5 py-2 uppercase tracking-[0.12em]');
 
 /**
  * The loading / error / empty states for the Follow Up lists.

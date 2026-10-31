@@ -61,6 +61,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SITE } from "@/lib/siteConfig";
 import { formatPhoneInput } from "@/lib/phone";
+import { PILL_TONES } from '@/lib/pill';
 
 type Deal = {
   id: number;
@@ -750,7 +751,7 @@ export default function CRMDeals() {
         <div className="mb-8 flex justify-end">
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep">
+              <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 New Deal
               </Button>
@@ -768,7 +769,7 @@ export default function CRMDeals() {
                   <Popover open={contactSearchOpen} onOpenChange={setContactSearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="field"
                         role="combobox"
                         aria-expanded={contactSearchOpen}
                         className="w-full justify-between"
@@ -930,7 +931,6 @@ export default function CRMDeals() {
                         <Button
                           type="button"
                           size="sm"
-                          className="bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
                           onClick={handleCreateContact}
                           disabled={
                             !newContact.first_name.trim() ||
@@ -970,7 +970,7 @@ export default function CRMDeals() {
                 </div>
                 <Button
                   onClick={handleCreateDeal}
-                  className="w-full bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
+                  className="w-full"
                   disabled={createDeal.isPending}
                 >
                   {createDeal.isPending ? 'Creating...' : 'Create Deal'}
@@ -1149,7 +1149,7 @@ export default function CRMDeals() {
                 <Popover open={editContactSearchOpen} onOpenChange={setEditContactSearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
-                      variant="outline"
+                      variant="field"
                       role="combobox"
                       aria-expanded={editContactSearchOpen}
                       className="w-full justify-between"
@@ -1249,7 +1249,7 @@ export default function CRMDeals() {
                 <div className="flex gap-2">
                   <Button
                     onClick={handleSaveEditDeal}
-                    className="flex-1 bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep"
+                    className="flex-1"
                     disabled={updateDeal.isPending}
                   >
                     {updateDeal.isPending ? 'Saving...' : 'Save Changes'}
@@ -1290,7 +1290,7 @@ export default function CRMDeals() {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                className={PILL_TONES.dangerSolid}
                 onClick={() => dealToDelete && deleteDeal.mutate(dealToDelete.id)}
               >
                 {deleteDeal.isPending ? 'Deleting...' : 'Delete'}

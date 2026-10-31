@@ -2321,7 +2321,7 @@ a sail, twinkling windows, a swaying sign).
   server and the browser write the same markup. Swapping it for `Math.random()`
   is a hydration failure on the homepage.
 - **`.btn-pill` carries the Entry Only sheen** (a band of light on hover and
-  focus), so every primary pill on the site has it; the homepage CTA also
+  focus), so every button on the site has it (see "One button"); the homepage CTA also
   glints once at 5.4 s (`btn-pill-glint`), as the drawing finishes. That rule's
   `transition` shorthand used to REPLACE each button's `transition-colors` —
   the hover colours snapped until it listed them itself.
@@ -2355,10 +2355,35 @@ the configured gutter had never applied anywhere. `/faq` still hand-rolls
 **A dark button highlights in champagne, never in a different black.**
 `bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep` is the pair on
 every dark button on a light surface. The admin's body buttons carried
-`hover:bg-black/80` — a hover nobody could see — until 2026-10-08; they read
-`ADMIN_BUTTON` from [AdminShell.tsx](src/components/AdminShell.tsx) now. A few
-public ones still have the old hover (both contact forms, `/auth`, `/rentals`,
-`/saved`, `/apply`, `/first-time-buyers`).
+`hover:bg-black/80` — a hover nobody could see — until 2026-10-08.
+
+### One button
+
+**Every button with words on it is one pill, from `pill()` in
+[src/lib/pill.ts](src/lib/pill.ts) or from [`<Button>`](src/components/ui/button.tsx),
+which reads the same tones.** Kevin found on 2026-10-30 that some buttons shone and
+some did not. A browser walk of the built site put it at 113 of 237: each page had
+its own copy of the class string, so the sheen reached only the ones written after
+it existed, the contact forms had a white bar along the bottom instead, and sign-in,
+the CRM and the kiosks were square-cornered. Never write a button's classes by hand,
+and never pass `<Button>` its own colours: `cn()` lets them win over the tone.
+
+- **A tone must end its hover on a colour a white band shows up on.** The sheen is
+  white, so on an outline over a white page it runs and nobody can see it. That is
+  why an outline fills with champagne on hover rather than only changing its border.
+  Check a new tone by eye, frozen mid-sweep — the `getAnimations()` of a hovered
+  button include the `::after` transition, which can be paused — because a check
+  that the animation RAN passes on a band nobody can see.
+- **`btn-pill-light` means "on a light surface"**: a lighter shadow and a
+  champagne-ink focus ring. `pillTab()` is a tab in a rounded track, which shines
+  but does not lift out of it (`btn-pill-flat`).
+- **Pills are the things pressed to do something, and the options that look like
+  them.** No sheen on: icon-only buttons, text links, tiles (the town and profile
+  links on `/about`, `NearbyTowns`), removable filter chips, small segments of a
+  switch ($ / %, Today / Tomorrow, a rehab line's tier), the FAQ's section index,
+  the `/auth` Sign In / Sign Up tabs, form fields. A `<Button>` that opens a picker
+  among inputs takes `variant="field"`, which is the old square outline, so it still
+  reads as a field.
 
 **An admin list is [AdminList](src/components/admin/AdminList.tsx), never a
 `<table>` in an `AdminCard`.** The card is `overflow-hidden`, so on a phone a

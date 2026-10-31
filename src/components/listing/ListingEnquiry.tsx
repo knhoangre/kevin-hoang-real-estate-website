@@ -17,6 +17,7 @@ import { submitContactMessage } from '@/lib/submitContact';
 import { EVENTS, track } from '@/lib/analytics';
 import type { IdxListing } from '@/lib/idxSearch';
 import { formatPhoneInput } from '@/lib/phone';
+import { pill } from '@/lib/pill';
 
 /**
  * Ask about THIS listing, without picking up the phone.
@@ -221,7 +222,7 @@ const ListingEnquiry = ({ listing }: { listing: IdxListing }) => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-pill btn-pill-light inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep disabled:cursor-not-allowed disabled:opacity-60"
+            className={pill('ink', 'md', 'w-full')}
           >
             <Send className="h-4 w-4" aria-hidden />
             {isSubmitting ? 'Sending…' : 'Send message'}

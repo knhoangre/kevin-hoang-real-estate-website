@@ -107,8 +107,7 @@ export const KioskSuccess = ({
   </KioskStatus>
 );
 
-/** The kiosk's primary button: ink-deep with a champagne hover, full width. */
-export const kioskButtonClass =
-  'w-full bg-ink-deep text-white hover:bg-champagne hover:text-ink-deep transition-colors';
+/** The kiosk's primary button: a default <Button>, full width. */
+export const kioskButtonClass = 'w-full';
 
 export default KioskShell;

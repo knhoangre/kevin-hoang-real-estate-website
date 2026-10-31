@@ -18,6 +18,7 @@ import { describeRent, rentForListing, type ListingRent } from '@/lib/rentComps'
 import { parcelFits, type Parcel } from '@/lib/parcels';
 import { SITE } from '@/lib/siteConfig';
 import { NativeSelect } from '@/components/ui/native-select';
+import { pill, pillTab } from '@/lib/pill';
 
 /**
  * /investments with no listing open: one town's homes for sale, ranked by what
@@ -274,9 +275,7 @@ const ScreenerView = ({
               role="tab"
               aria-selected={q.sort === s.id}
               onClick={() => set({ sort: s.id === 'cash' ? null : s.id })}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:px-5 ${
-                q.sort === s.id ? 'bg-ink-deep text-white' : 'text-gray-700 hover:text-champagne-ink'
-              }`}
+              className={pillTab(q.sort === s.id)}
             >
               {s.label}
             </button>
@@ -327,7 +326,7 @@ const ScreenerView = ({
               <button
                 type="button"
                 onClick={() => setShown((n) => n + PAGE)}
-                className="rounded-full border border-gray-300 px-6 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-champagne-ink hover:text-champagne-ink"
+                className={pill('outline')}
               >
                 Show {Math.min(PAGE, sorted.length - shown)} more
               </button>

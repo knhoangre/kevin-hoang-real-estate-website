@@ -42,6 +42,7 @@ import { useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowLeft, ArrowRight, Images, X } from 'lucide-react';
+import { pill } from '@/lib/pill';
 
 interface ListingGalleryProps {
   photos: string[];
@@ -239,7 +240,7 @@ const ListingGallery = ({ photos, address, className = '', credit }: ListingGall
         <button
           type="button"
           onClick={(e) => openAt(clickedOn(e))}
-          className="numeral absolute bottom-3 right-3 z-20 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-ink shadow-md transition-colors hover:bg-champagne hover:text-ink-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2"
+          className={pill('white', 'xs', 'numeral absolute bottom-3 right-3 z-20 gap-2 bg-white/95 px-4 py-2 text-ink shadow-md hover:text-ink-deep')}
         >
           <Images className="h-4 w-4" aria-hidden />
           {total > 1 ? `View all ${total} photos` : 'View photo'}
@@ -280,7 +281,7 @@ const ListingGallery = ({ photos, address, className = '', credit }: ListingGall
                 </div>
                 <Dialog.Close
                   ref={closeButton}
-                  className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full border border-white/25 px-4 text-sm font-semibold text-white transition-colors hover:border-champagne hover:text-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne"
+                  className={pill('ghost', 'sm', 'h-11 shrink-0 px-4 py-0')}
                 >
                   <X className="h-4 w-4" aria-hidden />
                   Close
@@ -314,7 +315,7 @@ const ListingGallery = ({ photos, address, className = '', credit }: ListingGall
 
               <div className="space-y-5 px-4 pb-8 pt-4 text-center">
                 {credit && <p className="text-xs text-gray-400">{credit}</p>}
-                <Dialog.Close className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-deep transition-colors hover:bg-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2 focus-visible:ring-offset-ink-deep">
+                <Dialog.Close className={pill('white', 'md')}>
                   <ArrowLeft className="h-4 w-4" aria-hidden />
                   Back to the listing
                 </Dialog.Close>

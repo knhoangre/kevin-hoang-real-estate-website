@@ -52,6 +52,7 @@ import {
   type DocumentKind,
   type RentalDocumentRecord,
 } from '@/lib/rentalApplication';
+import { pill, PILL_TONES } from '@/lib/pill';
 
 /**
  * The kinds in the order a form asks for them. On documents only the applicant
@@ -183,7 +184,7 @@ const DocumentRow = ({
           <button
             type="button"
             onClick={open}
-            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-champagne hover:text-champagne-ink"
+            className={pill('outline', 'xs')}
           >
             <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             View
@@ -194,7 +195,7 @@ const DocumentRow = ({
               onClick={() => setConfirming(true)}
               disabled={busy}
               aria-label={`Remove ${doc.fileName}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:border-red-300 hover:text-red-700 disabled:opacity-60"
+              className={pill('danger', 'xs')}
             >
               {busy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
@@ -224,7 +225,7 @@ const DocumentRow = ({
             <AlertDialogCancel>Keep it</AlertDialogCancel>
             <AlertDialogAction
               onClick={remove}
-              className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-600"
+              className={PILL_TONES.dangerSolid}
             >
               Remove file
             </AlertDialogAction>
@@ -259,7 +260,7 @@ const DocumentRow = ({
             type="button"
             onClick={() => saveNote(true)}
             disabled={busy}
-            className="rounded-full border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-50 disabled:opacity-60"
+            className={pill('outline', 'xs', 'border-amber-300 text-amber-800 hover:border-amber-600 hover:bg-amber-600 hover:text-white')}
           >
             Ask to replace
           </button>
@@ -267,7 +268,7 @@ const DocumentRow = ({
             type="button"
             onClick={() => saveNote(false)}
             disabled={busy}
-            className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-champagne disabled:opacity-60"
+            className={pill('outline', 'xs')}
           >
             {doc.needsReplacement ? 'Clear flag' : 'Save note'}
           </button>
@@ -411,7 +412,7 @@ const KindBlock = ({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-champagne hover:text-champagne-ink disabled:opacity-60"
+            className={pill('outline')}
           >
             {uploading ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

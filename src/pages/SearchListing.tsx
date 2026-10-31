@@ -34,6 +34,7 @@ import {
   type IdxListing,
   type PriceHistoryEntry,
 } from '@/lib/idxSearch';
+import { pill } from '@/lib/pill';
 
 /**
  * One active listing, at /search/<address>-<mls> — see src/lib/listingUrl.ts for
@@ -330,7 +331,7 @@ const SearchListing = () => {
             </p>
             <Link
               to="/search"
-              className="btn-pill btn-pill-light mt-8 inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+              className={pill('ink', 'md', 'mt-8')}
             >
               Search current listings
             </Link>
@@ -845,7 +846,7 @@ const SearchListing = () => {
                   </p>
                   <a
                     href={telHref}
-                    className="btn-pill btn-pill-light mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+                    className={pill('ink', 'md', 'mt-5 w-full')}
                   >
                     <Phone className="h-4 w-4" aria-hidden />
                     Call {SITE.phone}
@@ -869,7 +870,7 @@ const SearchListing = () => {
                         .filter(Boolean)
                         .join(', ')} (MLS ${listing.mls_number}). Is it still available?`
                     )}
-                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-6 py-3 text-sm font-semibold text-ink transition-colors hover:border-champagne-ink"
+                    className={pill('outline', 'md', 'mt-3 w-full')}
                   >
                     <MessageSquare className="h-4 w-4" aria-hidden />
                     Text about {listing.address ?? `MLS ${listing.mls_number}`}
@@ -877,7 +878,7 @@ const SearchListing = () => {
                   <button
                     type="button"
                     onClick={() => window.print()}
-                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:border-champagne-ink"
+                    className={pill('outline', 'md', 'mt-3 w-full')}
                   >
                     <Printer className="h-4 w-4" aria-hidden />
                     Print listing sheet

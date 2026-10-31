@@ -5,6 +5,7 @@ import CtaBand from '@/components/CtaBand';
 import { breadcrumbs, type Crumb } from '@/lib/schema';
 import { SITE, telHref, smsHref } from '@/lib/siteConfig';
 import { defaultStrip, type StripItem } from '@/lib/strip';
+import { pill } from '@/lib/pill';
 
 export type { StripItem };
 import { alternatesFor } from '@/lib/viRoutes';
@@ -257,7 +258,7 @@ const PageShell = ({
                     <>
                       <a
                         href={telHref}
-                        className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne btn-pill"
+                        className={pill('white', 'lg', 'group')}
                       >
                         <Phone className="w-4 h-4" aria-hidden />
                         {actionLabels?.primary ?? `Call ${SITE.phone}`}
@@ -266,14 +267,14 @@ const PageShell = ({
                         href={SITE.appointmentUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group inline-flex items-center gap-2 rounded-full border border-champagne/60 px-7 py-3.5 text-sm font-semibold tracking-wide text-champagne transition-colors hover:bg-champagne hover:text-ink-deep btn-pill"
+                        className={pill('gold', 'lg', 'group')}
                       >
                         <CalendarDays className="w-4 h-4" aria-hidden />
                         {actionLabels?.secondary ?? 'Book a consultation'}
                       </a>
                       <a
                         href={smsHref}
-                        className="group inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-medium tracking-wide text-white transition-colors hover:border-champagne hover:text-champagne btn-pill"
+                        className={pill('ghost', 'lg', 'group')}
                       >
                         <MessageSquare className="w-4 h-4" aria-hidden />
                         {actionLabels?.text ?? 'Text'}

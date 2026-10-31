@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle, Home, DollarSign, KeyRound, FileText, HelpCirc
 import { Link } from 'react-router-dom';
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { agentIdentity } from "@/lib/schema";
+import { pill } from '@/lib/pill';
 
 const FirstTimeBuyers = () => {
   const crumbs = [
@@ -181,10 +182,10 @@ const FirstTimeBuyers = () => {
             </p>
             <Link 
               to="/contact" 
-              className="bg-ink text-white px-8 py-3 rounded-md inline-flex items-center group hover:bg-black transition-colors"
+              className={pill('ink', 'md', 'group')}
             >
               <span>SCHEDULE A CONSULTATION</span>
-              <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
       </ShellSection>

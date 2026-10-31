@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { KIND_LABEL, type Sourced } from '@/lib/investmentAssumptions';
+import { pill } from '@/lib/pill';
 
 /** Small pieces shared by the screener and the deal view. */
 
@@ -21,8 +22,7 @@ export const LINK =
   'font-medium text-champagne-ink underline decoration-champagne underline-offset-4 hover:decoration-2';
 
 /** The dark button, with the champagne hover every dark button on a light surface has. */
-export const BUTTON =
-  'inline-flex items-center justify-center gap-2 rounded-full bg-ink-deep px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep';
+export const BUTTON = pill('ink');
 
 /**
  * Where an assumed number came from, under its input: "Assumption · …" or

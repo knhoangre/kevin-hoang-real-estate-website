@@ -1,5 +1,6 @@
 import { Heart } from 'lucide-react';
 import { useFavorites } from '@/hooks/useFavorites';
+import { pill } from '@/lib/pill';
 
 /**
  * The heart: save a home, or take it back out.
@@ -55,11 +56,15 @@ const SaveButton = ({
         type="button"
         onClick={onClick}
         aria-pressed={saved}
-        className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne-ink ${
-          saved
-            ? 'border-red-200 bg-red-50 text-red-800 hover:bg-red-100'
-            : 'border-gray-300 bg-white text-ink hover:border-champagne hover:bg-bone'
-        } ${className}`}
+        className={pill(
+          'outline',
+          'sm',
+          `${
+            saved
+              ? 'border-red-200 bg-red-50 text-red-800 hover:border-red-300 hover:bg-red-200 hover:text-red-900'
+              : 'bg-white'
+          } ${className}`
+        )}
       >
         <Heart className={`h-4 w-4 ${saved ? 'fill-red-600 text-red-600' : ''}`} aria-hidden />
         {/* "Favorite", Kevin's word for it (2026-10-09). The list it fills is

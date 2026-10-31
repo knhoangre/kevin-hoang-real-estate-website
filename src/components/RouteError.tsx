@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouteError } from 'react-router-dom';
+import { pill } from '@/lib/pill';
 
 /**
  * What the router shows when a page cannot be rendered — and, for the one cause
@@ -116,13 +117,13 @@ const RouteError = () => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="inline-flex items-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-deep transition-colors hover:bg-champagne"
+            className={pill('white', 'md')}
           >
             Reload the page
           </button>
           <a
             href="/"
-            className="inline-flex items-center rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-champagne hover:text-champagne"
+            className={pill('ghost', 'md')}
           >
             Go to the homepage
           </a>

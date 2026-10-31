@@ -298,10 +298,13 @@
  * that one outright, so every hover colour snapped instead of easing.
  *
  * A band of light sweeps across on hover or keyboard focus — the same sheen
- * as the Entry Only buttons. Every hover state here lands on champagne,
- * champagne-ink or a dark ghost, so one white band reads on all of them.
+ * as the Entry Only buttons. Every tone in @/lib/pill lands its hover on a colour
+ * one white band reads on, which is the rule a new tone has to keep.
  * `position` and `overflow` go through :where() so they carry no specificity:
  * a pill that is ever given `absolute` keeps it.
+ *
+ * This is the effect; @/lib/pill is the button. Reach for pill() or <Button>,
+ * not for this class.
  */
 .btn-pill {
   isolation: isolate; /* Safari clips the band to the radius only with a stacking context */
@@ -356,6 +359,24 @@
 /* A pill that sits on a light surface needs a lighter shadow to match. */
 .btn-pill-light:hover {
   box-shadow: 0 12px 28px -12px rgb(26 26 26 / 0.35);
+}
+
+/* The keyboard focus ring. Champagne measures 2.33:1 on white, under the 3:1 a
+   focus ring needs, so a pill on a light surface takes champagne-ink. */
+.btn-pill:focus-visible {
+  outline: 2px solid theme('colors.champagne');
+  outline-offset: 2px;
+}
+
+.btn-pill-light:focus-visible {
+  outline-color: theme('colors.champagne-ink');
+}
+
+/* A tab in a rounded track shines but stays put: lifted, it would leave the track. */
+.btn-pill-flat:hover,
+.btn-pill-flat:active {
+  transform: none;
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

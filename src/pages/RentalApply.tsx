@@ -42,6 +42,7 @@ import {
   type RentalApplicationData,
 } from '@/lib/rentalApplication';
 import { SITE, telHref } from '@/lib/siteConfig';
+import { pill } from '@/lib/pill';
 
 const CRUMBS = [
   { name: 'Home', path: '/' },
@@ -72,13 +73,13 @@ const Unavailable = () => (
     <div className="mt-6 flex flex-wrap gap-3">
       <a
         href={telHref}
-        className="rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80"
+        className={pill('ink')}
       >
         Call {SITE.phone}
       </a>
       <a
         href="/contact"
-        className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-champagne hover:text-champagne-ink"
+        className={pill('outline')}
       >
         Send a message
       </a>

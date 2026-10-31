@@ -38,6 +38,7 @@ import { formatPrice } from '@/lib/listings';
 import { describeProfile } from '@/lib/recommendations';
 import { listingsByMls, listViews, recommendFor, type FavoriteRow } from '@/lib/favorites';
 import { paramsFromFilters, EMPTY_FILTERS, type IdxListing } from '@/lib/idxSearch';
+import { pill } from '@/lib/pill';
 
 const CRUMBS = [
   { name: 'Home', path: '/' },
@@ -150,7 +151,7 @@ const Saved = () => {
           <button
             type="button"
             onClick={signIn}
-            className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80"
+            className={pill('ink', 'sm', 'mt-6')}
           >
             Sign in
           </button>

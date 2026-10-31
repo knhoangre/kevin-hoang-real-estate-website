@@ -19,6 +19,7 @@ import {
   type CalcLang,
   type CalcView,
 } from '@/components/calculator/copy';
+import { pill, pillTab } from '@/lib/pill';
 
 /**
  * THE calculator: what a home costs to live in, what it returns rented out, and
@@ -236,9 +237,7 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
               role="tab"
               aria-selected={view === key}
               onClick={() => setView(key)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-                view === key ? 'bg-ink-deep text-white' : 'text-gray-700 hover:text-champagne-ink'
-              }`}
+              className={pillTab(view === key)}
             >
               {c.tabs[context][key]}
             </button>
@@ -362,11 +361,7 @@ const HomeCalculator = ({ lang, context, seed }: Props) => {
                       type="button"
                       onClick={() => setTermYears(years)}
                       aria-pressed={termYears === years}
-                      className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                        termYears === years
-                          ? 'bg-ink-deep text-white'
-                          : 'border border-gray-300 text-gray-700 hover:border-champagne-ink'
-                      }`}
+                      className={pill(termYears === years ? 'ink' : 'outline', 'sm', 'flex-1 px-4 py-2')}
                     >
                       {c.years(years)}
                     </button>

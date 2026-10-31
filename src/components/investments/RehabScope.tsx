@@ -4,6 +4,7 @@ import { MoneyField, PercentField, money } from '@/components/calculator/fields'
 import { LINK } from '@/components/investments/ui';
 import { formatPrice } from '@/lib/listings';
 import { lineCost, scopeTotal, type CostItem, type Scope, type ScopeLine, type Tier } from '@/lib/rehabCosts';
+import { pill } from '@/lib/pill';
 
 /**
  * The renovation, line by line, from the cost book.
@@ -226,7 +227,7 @@ const RehabScope = ({
           type="button"
           onClick={() => setShowAll((v) => !v)}
           aria-expanded={showAll}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-champagne-ink hover:text-champagne-ink"
+          className={pill('outline', 'sm', 'mt-4 bg-white')}
         >
           {showAll ? 'Show only the work switched on' : `Add other work (${offCount} more kinds)`}
           <ChevronDown className={`h-4 w-4 transition-transform ${showAll ? 'rotate-180' : ''}`} aria-hidden />

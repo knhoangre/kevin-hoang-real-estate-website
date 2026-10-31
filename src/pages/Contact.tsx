@@ -22,6 +22,7 @@ import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
 import { agentIdentity, contactPage } from "@/lib/schema";
 import { formatPhoneInput } from "@/lib/phone";
+import { pill } from '@/lib/pill';
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -362,13 +363,12 @@ const Contact = () => {
                       />
 
                       <button
-                        className="w-full bg-ink text-white py-3 rounded-md hover:bg-black/80 transition-all duration-300 uppercase flex items-center justify-center group overflow-hidden relative"
+                        className={pill('ink', 'md', 'group w-full uppercase')}
                         disabled={form.formState.isSubmitting}
                         type="submit"
                       >
-                        <span className="group-hover:-translate-x-2 transition-transform duration-300">{t('contact.form.send_message')}</span>
-                        <ArrowRight className="ml-2 h-4 w-4 transform opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                        <span className="absolute bottom-0 left-0 w-0 h-1 bg-white group-hover:w-full transition-all duration-700"></span>
+                        {t('contact.form.send_message')}
+                        <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" aria-hidden />
                       </button>
                     </form>
                   </Form>

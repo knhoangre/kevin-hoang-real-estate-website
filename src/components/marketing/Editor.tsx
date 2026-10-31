@@ -62,6 +62,7 @@ import printCss from './designs/print.css?raw';
 import PhotoPicker from './PhotoPicker';
 import { DocProvider } from './Pic';
 import DocPages from './designs';
+import { pill } from '@/lib/pill';
 
 /**
  * The editor for one marketing document: the words and choices on the left, the
@@ -91,8 +92,7 @@ const SAVE_LABEL: Record<SaveState, string> = {
   failed: 'Not saved — check your connection',
 };
 
-const SMALL_BUTTON =
-  'inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-champagne hover:bg-champagne hover:text-ink-deep disabled:pointer-events-none disabled:opacity-50';
+const SMALL_BUTTON = pill('outline', 'xs');
 
 const ICON_BUTTON =
   'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-bone hover:text-ink disabled:pointer-events-none disabled:opacity-30';
@@ -591,11 +591,7 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
                         set('back', value);
                         setSelected(null);
                       }}
-                      className={`rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${
-                        doc.back === value
-                          ? 'border-ink-deep bg-ink-deep text-white'
-                          : 'border-gray-300 text-ink hover:border-champagne'
-                      }`}
+                      className={pill(doc.back === value ? 'ink' : 'outline', 'xs', 'px-4')}
                     >
                       {label}
                     </button>

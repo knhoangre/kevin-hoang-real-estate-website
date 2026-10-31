@@ -9,6 +9,7 @@ import PostBody from "@/components/PostBody";
 import AuthorCard from "@/components/AuthorCard";
 import { agentIdentity, blogPosting, breadcrumbs, person } from "@/lib/schema";
 import { ogVariant } from "@/lib/images";
+import { pill } from '@/lib/pill';
 
 
 const BlogPost = () => {
@@ -165,14 +166,14 @@ const BlogPost = () => {
 
             <div className="mt-16 pt-8 border-t border-gray-200">
               <h2 className="text-2xl font-bold text-ink mb-6">{t('blog.share_article')}</h2>
-              <div className="flex space-x-4">
-                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
+              <div className="flex flex-wrap gap-3">
+                <button className={pill('ink')}>
                   {t('blog.share_twitter')}
                 </button>
-                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
+                <button className={pill('ink')}>
                   {t('blog.share_facebook')}
                 </button>
-                <button className="px-4 py-2 bg-ink text-white rounded-lg hover:bg-ink/90 transition-colors">
+                <button className={pill('ink')}>
                   {t('blog.share_linkedin')}
                 </button>
               </div>

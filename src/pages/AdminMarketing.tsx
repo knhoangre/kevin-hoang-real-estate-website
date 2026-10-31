@@ -44,6 +44,7 @@ import {
   startDoc,
   type DocSummary,
 } from '@/lib/marketingStore';
+import { pill } from '@/lib/pill';
 
 const KIND_ICON: Record<DocKind, LucideIcon> = {
   booklet: BookOpen,
@@ -62,8 +63,7 @@ const formatDay = (iso: string): string => {
     : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
-const ROW_BUTTON =
-  'inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-3.5 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-champagne hover:bg-champagne hover:text-ink-deep disabled:pointer-events-none disabled:opacity-50';
+const ROW_BUTTON = pill('outline', 'xs');
 
 const Library = ({ onOpen }: { onOpen: (id: string) => void }) => {
   const { toast } = useToast();

@@ -873,12 +873,12 @@ export default function AdminShowings() {
               onClick={() => setParams({}, { replace: true })}
               className={adminActionClass('ghost')}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
+              <ArrowLeft className="h-4 w-4" aria-hidden />
               All tours
             </button>
             {tour && (
               <button type="button" onClick={dropTour} className={adminActionClass('danger')}>
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+                <Trash2 className="h-4 w-4" aria-hidden />
                 Delete tour
               </button>
             )}
@@ -1015,7 +1015,7 @@ export default function AdminShowings() {
           }}
           className={adminActionClass('primary')}
         >
-          <Plus className="mr-2 h-4 w-4" aria-hidden />
+          <Plus className="h-4 w-4" aria-hidden />
           New tour
         </button>
       }

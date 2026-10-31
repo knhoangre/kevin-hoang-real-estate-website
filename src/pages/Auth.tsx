@@ -206,7 +206,7 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-ink hover:bg-black"
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? "Signing in..." : "Sign In"}
@@ -288,7 +288,7 @@ const Auth = () => {
 
                 <Button
                   type="submit"
-                  className="w-full bg-ink hover:bg-black"
+                  className="w-full"
                   disabled={isLoading || !isPasswordValid}
                 >
                   {isLoading ? "Creating account..." : "Create Account"}

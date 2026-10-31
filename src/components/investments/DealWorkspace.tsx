@@ -18,6 +18,7 @@ import type { LotContext } from '@/lib/parcels';
 import type { CostItem } from '@/lib/rehabCosts';
 import { hydrateScenario, type DealTab, type Scenario } from '@/lib/scenario';
 import type { Valuation } from '@/lib/valuation';
+import { pillTab } from '@/lib/pill';
 
 /**
  * One home's analysis, every strategy over one Scenario.
@@ -161,9 +162,7 @@ const DealWorkspace = ({
               role="tab"
               aria-selected={tab.id === t.id}
               onClick={() => set({ tab: t.id })}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors sm:px-5 ${
-                tab.id === t.id ? 'bg-ink-deep text-white' : 'text-gray-700 hover:text-champagne-ink'
-              }`}
+              className={pillTab(tab.id === t.id)}
             >
               {t.label}
             </button>

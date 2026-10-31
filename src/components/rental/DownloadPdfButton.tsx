@@ -17,6 +17,7 @@ import { Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { listDocuments, type RentalApplicationRecord } from '@/lib/rentalApplication';
 import { buildApplicationPdf, pdfFileName } from '@/lib/applicationPdf';
+import { pill } from '@/lib/pill';
 
 export default function DownloadPdfButton({
   record,
@@ -65,10 +66,7 @@ export default function DownloadPdfButton({
       type="button"
       onClick={() => void run()}
       disabled={busy}
-      className={
-        className ??
-        'inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne hover:text-champagne-ink disabled:opacity-60'
-      }
+      className={className ?? pill('outline')}
     >
       {busy ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />

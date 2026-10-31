@@ -53,6 +53,7 @@ import { toast } from "sonner";
 import { errorMessage } from '@/lib/utils';
 import { formatPhone } from '@/lib/crmContacts';
 import { formatPhoneInput } from '@/lib/phone';
+import { PILL_TONES } from '@/lib/pill';
 
 type Address = {
   id: number;
@@ -1188,7 +1189,7 @@ export default function CRMContacts() {
               onClick={() => setBulkDeleteDialogOpen(true)}
               className={adminActionClass('danger')}
             >
-              <Trash2 className="mr-2 h-4 w-4" aria-hidden />
+              <Trash2 className="h-4 w-4" aria-hidden />
               Delete Selected ({selectedContactIds.length})
             </button>
           )}
@@ -1198,11 +1199,11 @@ export default function CRMContacts() {
             disabled={isLoading}
             className={adminActionClass()}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} aria-hidden />
             Refresh
           </button>
           <button type="button" onClick={handleExport} className={adminActionClass()}>
-            <Download className="mr-2 h-4 w-4" aria-hidden />
+            <Download className="h-4 w-4" aria-hidden />
             Export CSV
           </button>
           <button
@@ -1210,7 +1211,7 @@ export default function CRMContacts() {
             onClick={() => setIsCsvDialogOpen(true)}
             className={adminActionClass()}
           >
-            <Upload className="mr-2 h-4 w-4" aria-hidden />
+            <Upload className="h-4 w-4" aria-hidden />
             Import CSV
           </button>
           <button
@@ -1232,7 +1233,7 @@ export default function CRMContacts() {
             }}
             className={adminActionClass('primary')}
           >
-            <Edit className="mr-2 h-4 w-4" aria-hidden />
+            <Edit className="h-4 w-4" aria-hidden />
             Add Contact
           </button>
         </>
@@ -2210,7 +2211,7 @@ export default function CRMContacts() {
                     handleDeleteContact(deleteTargetId);
                   }
                 }}
-                className="bg-red-600 hover:bg-red-700"
+                className={PILL_TONES.dangerSolid}
               >
                 Delete
               </AlertDialogAction>
@@ -2233,7 +2234,7 @@ export default function CRMContacts() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBulkDelete}
-                className="bg-red-600 hover:bg-red-700"
+                className={PILL_TONES.dangerSolid}
               >
                 Delete {selectedContactIds.length} Contact(s)
               </AlertDialogAction>

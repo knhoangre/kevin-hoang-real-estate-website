@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import PageShell, { ShellSection } from "@/components/PageShell";
 import { agentIdentity } from "@/lib/schema";
 import { SITE, googleProfileUrl } from "@/lib/siteConfig";
+import { pill } from '@/lib/pill';
 
 const BATCH = 24;
 
@@ -87,7 +88,7 @@ const Testimonials = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  className="uppercase tracking-wider border-ink text-ink hover:bg-ink hover:text-white"
+                  className="uppercase tracking-wider"
                   onClick={() =>
                     setVisible((v) =>
                       Math.min(v + BATCH, ALL_TESTIMONIALS.length),
@@ -118,7 +119,7 @@ const Testimonials = () => {
                 href={googleProfileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-pill btn-pill-light mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+                className={pill('ink', 'md', 'mt-6')}
               >
                 View verified Google reviews
               </a>

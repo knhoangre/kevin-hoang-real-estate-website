@@ -20,6 +20,7 @@ import {
   type IdxListing,
   type SearchFilters,
 } from '@/lib/idxSearch';
+import { pill } from '@/lib/pill';
 
 /**
  * Search over the live MLS PIN IDX feed.
@@ -318,11 +319,7 @@ const Search = () => {
                     NON-TEXT MARK here, which is what makes it legal on a light
                     surface: the label sitting on it is ink-deep at 8.31:1.
                   */
-                  className={
-                    active
-                      ? 'rounded-full bg-champagne px-5 py-2 text-sm font-semibold text-ink-deep'
-                      : 'rounded-full border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne-ink'
-                  }
+                  className={active ? pill('champagne', 'sm', 'btn-pill-light') : pill('outline')}
                 >
                   {t.label}
                 </button>
@@ -350,7 +347,7 @@ const Search = () => {
             </div>
             <button
               type="submit"
-              className="btn-pill inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-champagne px-8 py-3.5 text-sm font-semibold tracking-wide text-ink-deep transition-colors hover:bg-champagne-ink hover:text-white"
+              className={pill('champagne', 'lg', 'btn-pill-light shrink-0 px-8')}
             >
               <SearchIcon className="h-4 w-4" aria-hidden />
               Search
@@ -534,7 +531,7 @@ const Search = () => {
             <button
               type="button"
               onClick={() => setAttempt((n) => n + 1)}
-              className="mt-3 inline-flex items-center gap-2 rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold text-red-800 transition-colors hover:border-red-400"
+              className={pill('danger', 'sm', 'mt-3 border-red-300 bg-white text-red-800')}
             >
               <RefreshCw className="h-3.5 w-3.5" aria-hidden />
               Try again
@@ -561,7 +558,7 @@ const Search = () => {
               type="button"
               disabled={filters.page <= 1}
               onClick={() => commit({ ...filters, page: filters.page - 1 })}
-              className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium transition-colors hover:border-champagne-ink disabled:cursor-not-allowed disabled:opacity-40"
+              className={pill('outline')}
             >
               Previous
             </button>
@@ -573,7 +570,7 @@ const Search = () => {
               type="button"
               disabled={filters.page >= lastPage}
               onClick={() => commit({ ...filters, page: filters.page + 1 })}
-              className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium transition-colors hover:border-champagne-ink disabled:cursor-not-allowed disabled:opacity-40"
+              className={pill('outline')}
             >
               Next
             </button>

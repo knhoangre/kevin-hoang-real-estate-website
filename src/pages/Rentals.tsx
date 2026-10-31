@@ -34,6 +34,7 @@ import {
 } from '@/lib/rentalApplication';
 import { useToast } from '@/components/ui/use-toast';
 import { SITE, telHref } from '@/lib/siteConfig';
+import { pill } from '@/lib/pill';
 
 const CRUMBS = [
   { name: 'Home', path: '/' },
@@ -134,7 +135,7 @@ export default function Rentals() {
           </p>
           <Link
             to="/auth"
-            className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80"
+            className={pill('ink', 'sm', 'mt-6')}
           >
             Sign in
           </Link>
@@ -204,7 +205,7 @@ export default function Rentals() {
                   type="button"
                   onClick={() => withdraw(record.id)}
                   disabled={withdrawing}
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-red-300 hover:text-red-700 disabled:opacity-60"
+                  className={pill('danger')}
                 >
                   {withdrawing ? (
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -264,7 +265,7 @@ export default function Rentals() {
           </p>
           <a
             href={telHref}
-            className="mt-6 inline-block rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black/80"
+            className={pill('ink', 'sm', 'mt-6')}
           >
             Call {SITE.phone}
           </a>

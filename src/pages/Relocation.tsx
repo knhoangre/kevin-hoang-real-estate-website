@@ -184,7 +184,8 @@ const ChecklistForm = () => {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-12 rounded-full bg-ink-deep px-8 text-sm font-semibold tracking-wide text-white hover:bg-champagne hover:text-ink-deep"
+            size="lg"
+            className="h-12 tracking-wide"
           >
             {isSubmitting ? 'Sending…' : 'Send me the checklist'}
           </Button>

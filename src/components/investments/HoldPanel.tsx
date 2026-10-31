@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/listings';
 import { describeRent, type ListingRent } from '@/lib/rentComps';
 import type { Scenario } from '@/lib/scenario';
 import { SITE } from '@/lib/siteConfig';
+import { pill } from '@/lib/pill';
 
 /**
  * Buy and hold: the operating statement of one home as a rental, and what it
@@ -156,9 +157,7 @@ const HoldPanel = ({ ctx, s: sc, set }: { ctx: HoldContext; s: Scenario; set: Se
                   type="button"
                   onClick={() => setLoan({ termYears: years })}
                   aria-pressed={loan.termYears === years}
-                  className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    loan.termYears === years ? 'bg-ink-deep text-white' : 'border border-gray-300 text-gray-700 hover:border-champagne-ink'
-                  }`}
+                  className={pill(loan.termYears === years ? 'ink' : 'outline', 'sm', 'flex-1 px-4 py-2')}
                 >
                   {years} years
                 </button>

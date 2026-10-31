@@ -15,6 +15,7 @@ import {
   percentOfAsking,
   representationLabel,
 } from '@/lib/listings';
+import { pill } from '@/lib/pill';
 
 /**
  * One closing, as its own document.
@@ -282,7 +283,7 @@ const PropertyDetail = () => {
               </p>
               <a
                 href={telHref}
-                className="btn-pill btn-pill-light mt-5 inline-flex items-center gap-2 rounded-full bg-ink-deep px-6 py-3 text-sm font-semibold tracking-wide text-white transition-colors hover:bg-champagne hover:text-ink-deep"
+                className={pill('ink', 'md', 'mt-5 tracking-wide')}
               >
                 <Phone className="h-4 w-4" aria-hidden />
                 Call {SITE.phone}

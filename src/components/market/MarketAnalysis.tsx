@@ -34,6 +34,7 @@ import {
   townSummary,
   windowSpan,
 } from '@/lib/marketText';
+import { pill } from '@/lib/pill';
 
 /**
  * One town's market, every section of it: the body of /market/<slug>, and of
@@ -349,7 +350,7 @@ export const MarketAnalysis = ({
               <li key={p.month}>
                 <Link
                   to={`${path}/${p.month}`}
-                  className="inline-block rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-ink transition-colors hover:border-champagne hover:bg-bone"
+                  className={pill('outline')}
                 >
                   {monthName(p.month)}
                 </Link>

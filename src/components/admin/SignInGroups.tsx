@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, Calendar, Trash2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { AdminCard } from '@/components/AdminShell';
+import { pill } from '@/lib/pill';
 
 /**
  * The expandable sign-in list shared by Open Houses and Events.
@@ -99,7 +100,7 @@ export const RowActions = ({
     <button
       type="button"
       onClick={onToggleRead}
-      className="rounded-full border border-gray-300 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-ink transition-colors hover:border-champagne hover:bg-champagne hover:text-ink-deep"
+      className={pill('outline', 'xs', 'px-4 uppercase tracking-[0.12em]')}
     >
       {isRead ? 'Mark unread' : 'Mark read'}
       <span className="sr-only"> — {label}</span>
@@ -107,7 +108,7 @@ export const RowActions = ({
     <button
       type="button"
       onClick={onDelete}
-      className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-gray-500 transition-colors hover:border-red-600 hover:bg-red-600 hover:text-white"
+      className={pill('danger', 'xs', 'px-4 uppercase tracking-[0.12em] text-gray-500')}
     >
       <Trash2 className="h-3.5 w-3.5" aria-hidden />
       Delete

@@ -1168,7 +1168,7 @@ export default function AdminApplications() {
               onClick={() => closeApplication(home?.key ?? null)}
               className={adminActionClass('ghost')}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
+              <ArrowLeft className="h-4 w-4" aria-hidden />
               {home ? 'Back to the property' : 'All properties'}
             </button>
             {record && (
@@ -1182,12 +1182,12 @@ export default function AdminApplications() {
               >
                 {editing ? (
                   <>
-                    <Check className="mr-2 h-4 w-4" aria-hidden />
+                    <Check className="h-4 w-4" aria-hidden />
                     Done editing
                   </>
                 ) : (
                   <>
-                    <Pencil className="mr-2 h-4 w-4" aria-hidden />
+                    <Pencil className="h-4 w-4" aria-hidden />
                     Edit answers
                   </>
                 )}
@@ -1306,7 +1306,7 @@ export default function AdminApplications() {
               onClick={() => setParams({})}
               className={adminActionClass('ghost')}
             >
-              <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
+              <ArrowLeft className="h-4 w-4" aria-hidden />
               All properties
             </button>
             {group && group.invites.length > 0 && (
@@ -1318,7 +1318,7 @@ export default function AdminApplications() {
                 }}
                 className={adminActionClass('ghost')}
               >
-                <Pencil className="mr-2 h-4 w-4" aria-hidden />
+                <Pencil className="h-4 w-4" aria-hidden />
                 Change address
               </button>
             )}
@@ -1333,7 +1333,7 @@ export default function AdminApplications() {
                 aria-expanded={choosingLease}
                 className={adminActionClass('ghost')}
               >
-                <FileSignature className="mr-2 h-4 w-4" aria-hidden />
+                <FileSignature className="h-4 w-4" aria-hidden />
                 New lease
               </button>
             )}
@@ -1347,7 +1347,7 @@ export default function AdminApplications() {
                 }}
                 className={adminActionClass('primary')}
               >
-                <Plus className="mr-2 h-4 w-4" aria-hidden />
+                <Plus className="h-4 w-4" aria-hidden />
                 New link
               </button>
             )}
@@ -1556,7 +1556,7 @@ export default function AdminApplications() {
           onClick={() => setShowNew((v) => !v)}
           className={adminActionClass('primary')}
         >
-          <Plus className="mr-2 h-4 w-4" aria-hidden />
+          <Plus className="h-4 w-4" aria-hidden />
           New link
         </button>
       }

@@ -7,6 +7,7 @@ import { EVENTS, track } from '@/lib/analytics';
 import { errorMessage } from '@/lib/utils';
 import { SITE, smsHref, telHref, locality } from '@/lib/siteConfig';
 import { formatPhoneInput } from '@/lib/phone';
+import { pill } from '@/lib/pill';
 
 /**
  * /vi/lien-he — the counterpart of /contact.
@@ -194,7 +195,7 @@ const ViContact = () => {
               <button
                 type="submit"
                 disabled={status === 'sending'}
-                className="rounded-full bg-ink-deep px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-champagne hover:text-ink-deep disabled:opacity-60"
+                className={pill('ink', 'lg')}
               >
                 {status === 'sending' ? 'Đang gửi...' : 'Gửi tin nhắn'}
               </button>
