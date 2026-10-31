@@ -2049,13 +2049,16 @@ messages, and `node scripts/send-listings-check.ts` runs both.
   the number, the office and the brokerage, on the card, in the signature and in its
   plain-text part (`renderEmailText`); its links carry `utm_source=send-listings`.
 - **[emailSignature.ts](supabase/functions/_shared/emailSignature.ts) is the
-  signature**: photo, a champagne rule, name, Realtor and LPT Realty, phone, email,
-  site, Google and Facebook. Only this email uses it so far; `showing-schedule` and
-  the showing reminders still print the plain name and number. The photo is cropped
-  from the signature Kevin supplied, not `kevin_hoang.jpg` (he is smiling in this
-  one), to `public/email/kevin-hoang.jpg`, 240px square. **Sent emails keep asking
-  for that address, so replace the file and never rename it.** Everything but the
-  photo is text, so the signature still reads with images blocked.
+  signature**: his own layout, tidied, which he chose from four on 2026-10-31 after
+  a first design missed. A square photo with Google and Facebook under it, then name,
+  Realtor and LPT Realty, and phone, email and site each beside a small icon. Only
+  this email uses it so far; `showing-schedule` and the showing reminders still
+  print the plain name and number. The photo is cropped from the signature Kevin
+  supplied, not `kevin_hoang.jpg` (he is smiling in this one). Its files are in
+  `public/email/`. **Sent emails keep asking for those addresses, so replace a file
+  and never rename it.** The contact details are text and Google and Facebook have
+  alt text, so it still reads with images blocked. Under 360px the photo shrinks,
+  because the column beside it cannot wrap.
 - **`send-listings` has the shape of `showing-schedule`**: `preview` and `send`,
   an ID and nothing else, `app_metadata.is_admin` checked first. A recipient or a
   body in the request is ignored. The email has one line offering to stop. It has
