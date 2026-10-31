@@ -109,18 +109,17 @@ export const propTypeLabel = (code: string | null) =>
 /**
  * MLS PIN status codes, spelled out.
  *
- * These are the ten codes that actually occur across all eight feeds, counted
- * rather than assumed: SLD, RNT, ACT, UAG, NEW, CTG, PCG, BOM, EXT, RAC. An
+ * These are the eleven codes that actually occur across all eight feeds, counted
+ * rather than assumed: SLD, RNT, ACT, UAG, NEW, CTG, PCG, BOM, EXT, RAC, CSO. An
  * unrecognised code falls through to itself rather than to a guess — a status
  * is a statement about whether a home can still be bought, and inventing one is
- * worse than showing four letters.
- *
- * Confirm against the Field Reference when it is to hand; these are the
- * standard MLS PIN meanings but have not been read off the official table.
+ * worse than showing four letters. They agree with MLS PIN's own table, in the
+ * STATUS entry of idx-codes.ts.
  */
 const STATUS_LABELS: Record<string, string> = {
   ACT: 'Active',
   NEW: 'New listing',
+  CSO: 'Coming soon',
   BOM: 'Back on market',
   PCG: 'Price changed',
   EXT: 'Extended',
@@ -137,108 +136,22 @@ export const statusLabel = (code: string | null) =>
 // AVAILABLE_STATUSES and isAvailable moved to idxDecode.ts so pure modules
 // (market.ts, run by scripts/market-check.ts with plain Node) count "for sale"
 // by the same list /search filters on.
-import { AVAILABLE_STATUSES, isAvailable } from '@/lib/idxDecode';
-export { AVAILABLE_STATUSES, isAvailable };
+import { AVAILABLE_STATUSES, isAvailable, isClosed } from '@/lib/idxDecode';
+export { AVAILABLE_STATUSES, isAvailable, isClosed };
 
-/**
- * The filter state, which lives entirely in the URL query string.
- *
- * Deliberately not component state: `?town=Needham&maxPrice=900000` is itself a
- * link Kevin can text to a client, which is the whole point of this feature.
- * State held in a component is a search only the person who typed it can see.
- */
-/**
- * What the search is looking at.
- *
- * NOT a free-form status filter, even though four of the seven are statuses.
- * These are the questions people actually arrive with, and each one implies a
- * feed, a property-type rule and a sort together — sold results ordered by
- * price would bury last week's closings under a mansion that closed eleven
- * months ago, and rentals priced per month sort a $4,000 apartment above a $2M
- * house. That coupling is why this is one control rather than a status dropdown
- * beside a feed dropdown.
- *
- * `sale` NARROWED when the status tabs were added, and that is the substantive
- * change here. It used to mean "everything in the active feed", so a third of a
- * Needham result page could be homes already under agreement, marked but still
- * counted. Now it means what the words say — available to buy today — and the
- * homes that are spoken for have their own tabs, with `all` for anyone who
- * wants the whole active market in one list. Nothing is hidden; it is reachable
- * in one click and stated on the button.
- */
-export type ListingType = 'sale' | 'uag' | 'ctg' | 'pricecut' | 'all' | 'sold' | 'rent';
-
-/**
- * Order is the reading order of the question: what is available, what is nearly
- * gone, what just got cheaper, then everything, then the two other markets.
- */
-export const LISTING_TYPES: { value: ListingType; label: string }[] = [
-  { value: 'sale', label: 'For sale' },
-  { value: 'uag', label: 'Under agreement' },
-  { value: 'ctg', label: 'Contingent' },
-  { value: 'pricecut', label: 'Price cut' },
-  { value: 'all', label: 'All active' },
-  { value: 'sold', label: 'Sold' },
-  { value: 'rent', label: 'For rent' },
-];
-
-export interface SearchFilters {
-  listingType: ListingType;
-  /** Free text, matched against address, town and MLS number. */
-  q: string;
-  town: string;
-  propType: string;
-  minPrice: string;
-  maxPrice: string;
-  beds: string;
-  baths: string;
-  page: number;
-}
-
-export const EMPTY_FILTERS: SearchFilters = {
-  listingType: 'sale',
-  q: '',
-  town: '',
-  propType: '',
-  minPrice: '',
-  maxPrice: '',
-  beds: '',
-  baths: '',
-  page: 1,
-};
-
-const LISTING_TYPE_VALUES = LISTING_TYPES.map((t) => t.value);
-
-export const filtersFromParams = (params: URLSearchParams): SearchFilters => ({
-  listingType: (LISTING_TYPE_VALUES as string[]).includes(params.get('for') ?? '')
-    ? (params.get('for') as ListingType)
-    : 'sale',
-  q: params.get('q') ?? '',
-  town: params.get('town') ?? '',
-  propType: params.get('type') ?? '',
-  minPrice: params.get('min') ?? '',
-  maxPrice: params.get('max') ?? '',
-  beds: params.get('beds') ?? '',
-  baths: params.get('baths') ?? '',
-  page: Math.max(1, Number(params.get('page') ?? '1') || 1),
-});
-
-/** Only non-empty values are written, so a shared URL stays readable. */
-export const paramsFromFilters = (f: SearchFilters): URLSearchParams => {
-  const p = new URLSearchParams();
-  // 'sale' is the default, so it stays out of the URL — a shared link should
-  // carry what was chosen, not restate the defaults.
-  if (f.listingType !== 'sale') p.set('for', f.listingType);
-  if (f.q) p.set('q', f.q);
-  if (f.town) p.set('town', f.town);
-  if (f.propType) p.set('type', f.propType);
-  if (f.minPrice) p.set('min', f.minPrice);
-  if (f.maxPrice) p.set('max', f.maxPrice);
-  if (f.beds) p.set('beds', f.beds);
-  if (f.baths) p.set('baths', f.baths);
-  if (f.page > 1) p.set('page', String(f.page));
-  return p;
-};
+// What a search is showing, and its URL, moved to searchFilters.ts so
+// `node scripts/search-filters-check.ts` can run them with no Supabase client.
+import { isRentSearch, isSoldSearch, statusesFor, type SearchFilters } from '@/lib/searchFilters';
+export {
+  EMPTY_FILTERS,
+  MARKET_KINDS,
+  SEPARATE_KINDS,
+  filtersFromParams,
+  paramsFromFilters,
+  pressKind,
+  pressPriceCut,
+} from '@/lib/searchFilters';
+export type { ListingKind, SearchFilters } from '@/lib/searchFilters';
 
 /* -------------------------------------------------------------------------- */
 /* Retrying a cold query                                                       */
@@ -319,7 +232,7 @@ export const withRetry = async <T>(run: () => Promise<T>, label: string): Promis
  * covering index idx_listings_active_count where the visibility map allows.
  */
 const matching = (f: SearchFilters, head: boolean) => {
-  const sold = f.listingType === 'sold';
+  const sold = isSoldSearch(f);
 
   let query = supabase
     .from('idx_listings')
@@ -330,24 +243,23 @@ const matching = (f: SearchFilters, head: boolean) => {
    * them sorts a $4,000/mo apartment above a $2M house. They are a separate
    * choice rather than a property type filter for that reason.
    */
-  if (f.listingType === 'rent') {
+  if (isRentSearch(f)) {
     query = query.eq('feed', 'active').eq('prop_type', 'RN');
   } else if (sold) {
-    query = query.eq('feed', 'sold').neq('prop_type', 'RN');
+    // By status as well as feed: the same feed holds the homes under agreement,
+    // which have not sold. They were counted here, and listed after the last
+    // closing, until 2026-10-30.
+    query = query.eq('feed', 'sold').neq('prop_type', 'RN').eq('status', 'SLD');
   } else {
-    query = query.eq('feed', 'active').neq('prop_type', 'RN');
+    query = query.neq('prop_type', 'RN').in('status', statusesFor(f.show));
 
-    /*
-     * The status tabs, applied within the active feed.
-     *
-     * `all` deliberately adds nothing — it is the absence of this filter, which
-     * is what makes it a meaningful choice next to the other three rather than
-     * a duplicate of `sale`.
-     */
-    if (f.listingType === 'sale') query = query.in('status', AVAILABLE_STATUSES);
-    else if (f.listingType === 'uag') query = query.eq('status', 'UAG');
-    else if (f.listingType === 'ctg') query = query.eq('status', 'CTG');
-    else if (f.listingType === 'pricecut') {
+    // Under agreement is the one status filed in the sold feed, so a mix with it
+    // cannot name a feed. A mix without it does: that keeps the plain For sale
+    // search on the indexes it has always used. See
+    // 20261030150000_idx_search_statuses.sql for the ones the other case needs.
+    if (!f.show.includes('uag')) query = query.eq('feed', 'active');
+
+    if (f.priceCut) {
       /*
        * TWO SOURCES, because neither is sufficient alone.
        *
@@ -422,7 +334,7 @@ const matching = (f: SearchFilters, head: boolean) => {
 export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> => {
   // Sold listings live in a second database once SITE.soldData says so. Same
   // filters, same order, same row shape — see soldApi.ts.
-  if (f.listingType === 'sold' && soldOnCockroach()) {
+  if (isSoldSearch(f) && soldOnCockroach()) {
     return withRetry(() => soldSearch(f), 'Sold search');
   }
 
@@ -434,7 +346,7 @@ export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> =>
   // are declared DESC NULLS LAST, and a query asking for NULLS FIRST cannot use
   // them and falls back to sorting every match.
   const query =
-    f.listingType === 'sold'
+    isSoldSearch(f)
       ? matching(f, false).order('settled_date', { ascending: false, nullsFirst: false })
       : matching(f, false).order('list_price', { ascending: false, nullsFirst: false });
 
@@ -461,7 +373,7 @@ export const searchListings = async (f: SearchFilters): Promise<IdxListing[]> =>
  * blocking them. A failure here costs the total and nothing else.
  */
 export const countListings = async (f: SearchFilters): Promise<number> => {
-  if (f.listingType === 'sold' && soldOnCockroach()) {
+  if (isSoldSearch(f) && soldOnCockroach()) {
     return withRetry(() => soldCount(f), 'Sold count');
   }
   return withRetry(async () => {
@@ -661,7 +573,7 @@ export { decodeCodes } from '@/lib/idxDecode';
 /**
  * The towns that have listings, each with how many homes are for sale there
  * today, for the filter. `listings` is 0 for a town with only sales or
- * under-agreement homes, which stays in the list for those tabs.
+ * under-agreement homes, which stays in the list for those searches.
  */
 export const townsWithListings = async (): Promise<{ town: string; listings: number }[]> => {
   // Through an RPC because PostgREST exposes no DISTINCT: reading the town
@@ -681,7 +593,7 @@ export const townsWithListings = async (): Promise<{ town: string; listings: num
  * A price movement, or null when there is nothing honest to say about one.
  *
  * Null covers three different situations that must all render as silence: no
- * change has been observed, the listing is sold (the movement that matters
+ * change has been observed, the listing has closed (the movement that matters
  * there is asked-vs-closed, which the page already states), or one of the two
  * numbers is missing. A cut is the single most useful thing a buyer can know
  * about a listing that has been sitting — and a *fabricated* one, derived from
@@ -699,9 +611,9 @@ export interface PriceChange {
 }
 
 export const priceChange = (
-  listing: Pick<IdxListing, 'feed' | 'previous_list_price' | 'list_price' | 'price_change_at'>
+  listing: Pick<IdxListing, 'feed' | 'status' | 'previous_list_price' | 'list_price' | 'price_change_at'>
 ): PriceChange | null => {
-  if (listing.feed === 'sold') return null;
+  if (isClosed(listing)) return null;
   const from = listing.previous_list_price ?? null;
   const to = listing.list_price;
   if (from === null || to === null || from <= 0 || from === to) return null;
@@ -819,8 +731,12 @@ export const similarListings = async (
   const price = headlinePrice(listing);
   if (!listing.town || !listing.prop_type || price === null || price <= 0) return [];
 
+  // A home under agreement is in the sold feed, but what stands in for one is
+  // something that can still be bought.
+  const closed = isClosed(listing);
+
   // A sold listing's alternatives are other sales, and those have moved.
-  if (listing.feed === 'sold' && soldOnCockroach()) {
+  if (closed && soldOnCockroach()) {
     try {
       return await soldSimilar(listing, limit);
     } catch {
@@ -831,18 +747,18 @@ export const similarListings = async (
   // Sold rows are compared on what they SOLD for, matching how searchListings
   // filters them — a sold comp banded by its asking price answers a different
   // question.
-  const priceColumn = listing.feed === 'sold' ? 'sale_price' : 'list_price';
+  const priceColumn = closed ? 'sale_price' : 'list_price';
 
   const side = (direction: 'above' | 'below') => {
     let query = supabase
       .from('idx_listings')
       .select('*')
-      .eq('feed', listing.feed)
+      .eq('feed', closed ? 'sold' : 'active')
       .eq('town', listing.town!)
       .eq('prop_type', listing.prop_type!)
       .neq('mls_number', listing.mls_number);
 
-    if (listing.feed !== 'sold') query = query.in('status', AVAILABLE_STATUSES);
+    if (!closed) query = query.in('status', AVAILABLE_STATUSES);
 
     if (listing.bedrooms !== null) {
       query = query.gte('bedrooms', listing.bedrooms - 1).lte('bedrooms', listing.bedrooms + 1);

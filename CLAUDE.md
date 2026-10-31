@@ -34,6 +34,7 @@ node scripts/applications-check.ts     # how /admin/applications files things: a
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
+node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -460,6 +461,42 @@ rows to find 24 rentals.
   list mirrors `AVAILABLE_STATUSES`. **If the sync schedule moves, move the two
   refresh jobs with it.**
 
+### What `/search` shows ([searchFilters.ts](src/lib/searchFilters.ts))
+
+Kevin asked on 2026-10-30 whether For sale includes price cuts (it does, and did)
+and for the status buttons to combine. Checking turned up two things that were
+actually missing, both found by counting the live table rather than reading code.
+
+- **The buttons combine.** Any mix of For sale, Coming soon, Contingent and Under
+  agreement is one list by asking price, in the URL as `for=sale&for=uag`. **Sold
+  and For rent stay separate lists** and pressing one replaces the mix: a rent is
+  monthly, a closing sorts by date and filters on what it sold for, and sold rows
+  are moving to a second database, and 24 cards cannot be cut from two. There is no
+  All active button any more; pressing the four is the same thing.
+- **Price cuts only NARROWS, it is not a fifth kind.** A cut is something that
+  happened to a home that is for sale or contingent. As one more kind in the union
+  it would add 416 contingent homes to 16,370 and appear to do nothing.
+- **Under agreement is filed in the SOLD feed, with no sale price and no date.**
+  The tab looked in the active feed and was empty for as long as it existed, while
+  all 6,976 homes sat after the last closing on the Sold tab, inflating its total.
+  Sold now filters `status = SLD`. **`feed === 'sold'` does not mean closed: use
+  `isClosed()`.** Testing the feed is how an under-agreement home's page came to
+  say "Sold" under its asking price, and lose its estimate and calculator.
+- **Coming Soon (CSO) is a real status**, 74 homes on 2026-10-30, and the eleventh
+  code: it had no label and could only be reached through All active. It is NOT in
+  `AVAILABLE_STATUSES`, because it cannot be shown or bought yet, and that list also
+  decides `idx_town_counts` and market-report inventory.
+- **Every old link still works.** `for=all` and `for=pricecut` are translated in
+  `filtersFromParams`; a single `for=uag` is already the new form.
+- **A mix with Under agreement names no feed, so it has its own indexes**
+  (`20261030150000_idx_search_statuses`). Before them `status = 'UAG' ORDER BY
+  list_price` hit the 8-second timeout. Their predicate lists `MARKET_STATUSES`
+  literally and the check script compares the two: a status added to one and not
+  the other quietly falls back to reading the table. A mix WITHOUT Under agreement
+  keeps `feed = 'active'`, so the default search's plan did not move.
+- **Land and commercial are not on the site at all.** `idx-sync` fetches SF, CC, MF
+  and RN (`DEFAULT_PROP_TYPES`), so no button can show them.
+
 ### Listings
 
 - **`src/data/soldListings.ts` is generated — never hand-edit it.** Listings are
@@ -675,6 +712,15 @@ generates a market from known parameters ($300/sqft marginal, $40k a bathroom,
     asking check that did the work.
   - **The chart has no trend line any more.** A line through five points within
     20% of each other in size slopes whichever way one sale tips it.
+  - **The legend is above the chart and every dot is a link** (Kevin, 2026-10-30:
+    he could not tell what the circles and lines were, and wanted to see which
+    house a dot was without losing his place). It was one line of small type under
+    the chart with no entry for the dashed line. Hovering shows the house and
+    clicking opens it in a NEW TAB, as do the table's addresses. A tap cannot hover,
+    so on a touch screen the first tap shows the card and a second opens it; the
+    card stays while the pointer crosses to it, and Escape or a tap elsewhere closes
+    it. The card names the listing office, because a photo and a price are an IDX
+    display, and comps carry no office: `listingByMls` is asked when a card opens.
   - The comps table carries beds and baths and opens with the subject's own row,
     so each sale is read against it.
 - **The sold feed is DELETED as it ages, so `idx_sold_archive` is the comp source
@@ -957,6 +1003,9 @@ describes what is LIVE. This section is what replaces the sold half of it.
    The booklet's listing field (`scope="all"`) also finds sold listings in
    `idx_listings` and will stop offering them when they go; it needs an address
    search on the sold database first.
+   **The sync must keep writing UAG rows to Supabase**, because they arrive in the
+   sold feed and `/search` reads them beside what is for sale: "stops writing sold
+   rows" means SLD and RNT. A mix on one page cannot span two databases.
    **Before that deletion, `fill_listing_favorite()` has to change**: it copies a
    saved home's snapshot out of `idx_listings` and refuses a number it cannot
    find there, and since 2026-10-09 a sold home can be saved — so with the sold

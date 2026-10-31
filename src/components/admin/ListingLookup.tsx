@@ -16,6 +16,7 @@ import SuggestInput, { type SuggestInputProps } from '@/components/admin/Suggest
 import { formatPrice } from '@/lib/listings';
 import { SITE } from '@/lib/siteConfig';
 import {
+  isClosed,
   isWorthLookingUp,
   statusLabel,
   suggestListings,
@@ -65,8 +66,8 @@ const renderListing = (l: ListingSuggestion) => (
         {l.prop_type === 'RN' ? '/mo' : ''}
         {statusLabel(l.status) ? ` · ${statusLabel(l.status)}` : ''}
         {/* The sold feed keeps a listing's last status, which is not always
-            "Sold" — so a closed listing is marked by its feed. */}
-        {l.feed === 'sold' && statusLabel(l.status) !== 'Sold' ? ' · Sold' : ''}
+            "Sold". Under agreement is the exception: that one has not closed. */}
+        {isClosed(l) && statusLabel(l.status) !== 'Sold' ? ' · Sold' : ''}
         {' · MLS '}
         {l.mls_number}
       </span>

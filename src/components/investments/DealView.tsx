@@ -11,7 +11,7 @@ import { useOfficeName } from '@/hooks/useOfficeName';
 import { useAuth } from '@/contexts/AuthContext';
 import { estimateSuppressed } from '@/lib/idxComps';
 import { decodeCodes } from '@/lib/idxDecode';
-import { isAvailable, photoUrl, propTypeLabel, statusLabel, type IdxListing } from '@/lib/idxSearch';
+import { isAvailable, isClosed, photoUrl, propTypeLabel, statusLabel, type IdxListing } from '@/lib/idxSearch';
 import { aduMaxSqft, fieldFlags, isDwelling, remarkFlags, usableTaxes } from '@/lib/investment';
 import { townRules } from '@/lib/investmentRules';
 import { newBuildExit, typicalNewSize } from '@/lib/newBuild';
@@ -180,7 +180,7 @@ const DataPanel = ({
 const DealView = ({ mls, enabled }: { mls: string; enabled: boolean }) => {
   const deal = useDealListing(mls, enabled);
   const listing = deal.data ?? null;
-  const investable = Boolean(listing && listing.feed !== 'sold' && INVESTABLE.includes(listing.prop_type ?? ''));
+  const investable = Boolean(listing && !isClosed(listing) && INVESTABLE.includes(listing.prop_type ?? ''));
   const rents = useRentEvidence(listing?.town ?? null, listing?.state ?? 'MA', enabled && investable);
   const parcel = useDealParcel(listing, enabled && investable);
   const valuation = useListingValuation(investable ? listing : null);

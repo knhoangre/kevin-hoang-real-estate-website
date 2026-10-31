@@ -212,6 +212,7 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
         low={valuation.low}
         high={valuation.high}
         subjectLabel={label}
+        subjectState={listing.state}
       />
 
       {/* --- Derived, cited --- */}
@@ -317,9 +318,15 @@ const ListingValuation = ({ listing }: { listing: IdxListing }) => {
                       // need one: every comp query is filtered to the
                       // subject's state, so this listing's state is the comp's.
                       to={listingPath({ ...comp, state: listing.state })}
+                      // A new tab, like the dots on the chart: the reader is
+                      // comparing it with this page, and the same tab would
+                      // have them pressing Back between the two.
+                      target="_blank"
+                      rel="noopener"
                       className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink"
                     >
                       {comp.address ?? `MLS ${comp.mls_number}`}
+                      <span className="sr-only"> (opens in a new tab)</span>
                     </Link>
                     {comp.town && <span className="block text-xs text-gray-500">{comp.town}</span>}
                   </td>

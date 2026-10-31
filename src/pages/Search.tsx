@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useHydrated } from '@/hooks/useHydrated';
-import { Search as SearchIcon, X, MapPin, RefreshCw } from 'lucide-react';
+import { Check, Search as SearchIcon, X, MapPin, RefreshCw } from 'lucide-react';
 import ListingCard from '@/components/listing/ListingCard';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import IdxDisclosure from '@/components/IdxDisclosure';
@@ -9,12 +9,15 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { formatPrice } from '@/lib/listings';
 import {
   EMPTY_FILTERS,
-  LISTING_TYPES,
+  MARKET_KINDS,
   PAGE_SIZE,
   PROP_TYPES,
+  SEPARATE_KINDS,
   countListings,
   filtersFromParams,
   paramsFromFilters,
+  pressKind,
+  pressPriceCut,
   searchListings,
   townsWithListings,
   type IdxListing,
@@ -69,6 +72,45 @@ const Skeleton = () => (
 
 const inputClass =
   'w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-ink focus:border-champagne-ink focus:outline-none focus:ring-1 focus:ring-champagne-ink';
+
+/**
+ * One of the buttons that choose what is shown. The check is what says these
+ * add up rather than switch: a row of tabs looks the same until it is pressed.
+ *
+ * Champagne on ink-deep text. The accent is the site's, and this row is the one
+ * place on the page where "which of these am I looking at" has to be answerable
+ * at a glance. Champagne is a NON-TEXT MARK here, which is what makes it legal
+ * on a light surface: the label sitting on it is ink-deep at 8.31:1.
+ *
+ * An off button hovers pale, not in the solid champagne of every other outline
+ * pill. A button just turned off is still under the pointer, and on a phone
+ * :hover sticks after a tap, so the solid fill read as "that did not turn off".
+ */
+const ShowButton = ({
+  on,
+  onPress,
+  children,
+}: {
+  on: boolean;
+  onPress: () => void;
+  children: ReactNode;
+}) => (
+  <button
+    type="button"
+    aria-pressed={on}
+    onClick={onPress}
+    className={
+      on
+        ? pill('champagne', 'sm', 'btn-pill-light')
+        : pill('outline', 'sm', 'hover:border-champagne-ink hover:bg-champagne/25')
+    }
+  >
+    {on && <Check className="h-3.5 w-3.5" aria-hidden />}
+    {children}
+  </button>
+);
+
+const ShowDivider = () => <span className="mx-1 hidden h-6 w-px bg-gray-300 sm:block" aria-hidden />;
 
 /** What the generator rendered /search with: no query string at all. */
 const NO_PARAMS = new URLSearchParams();
@@ -169,6 +211,13 @@ const Search = () => {
 
   const commit = (next: SearchFilters) => setParams(paramsFromFilters(next));
 
+  // Committed immediately, unlike the fields below: leaving a press pending
+  // behind the Search button makes the page look like it ignored the click.
+  const press = (next: SearchFilters) => {
+    setDraft(next);
+    commit(next);
+  };
+
   /*
    * Paging returns to the top OF THE RESULTS, not the top of the document.
    *
@@ -263,7 +312,7 @@ const Search = () => {
         alt: 'A residential street of brick colonial homes',
       }}
       h1="Search Massachusetts listings"
-      lede="Narrow by town, price, beds and baths — or paste an address or MLS number straight into the box. Search what is for sale, what is under agreement, what just had a price cut, and what has actually closed in the past year."
+      lede="Narrow by town, price, beds and baths — or paste an address or MLS number straight into the box. See what is for sale, coming soon, contingent or under agreement in any mix, only the homes with a price cut, or what has actually closed in the past year."
       heroSize="compact"
       width="wide"
       actions={false}
@@ -291,40 +340,40 @@ const Search = () => {
           }}
         >
           {/*
-            For sale / Sold / For rent. A segmented control rather than another
-            dropdown: it is the first decision, it changes what every other
-            filter means, and it should be visible without opening anything.
+            Buttons rather than another dropdown: this is the first decision, it
+            changes what every other filter means, and it should be visible
+            without opening anything. searchFilters.ts says which ones combine
+            and why; the sentence under them says so to the reader.
           */}
-          <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="What to search">
-            {LISTING_TYPES.map((t) => {
-              const active = draft.listingType === t.value;
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => {
-                    const next = { ...draft, listingType: t.value, page: 1 };
-                    setDraft(next);
-                    // Committed immediately: this is a mode switch, not a
-                    // criterion, and leaving it pending behind the Search
-                    // button makes the page look like it ignored the click.
-                    commit(next);
-                  }}
-                  /*
-                    Champagne on ink-deep text, not the dark pill this used to
-                    be. The accent is the site's, and the segmented control is
-                    the one place on the page where "which of these three am I
-                    looking at" has to be answerable at a glance. Champagne is a
-                    NON-TEXT MARK here, which is what makes it legal on a light
-                    surface: the label sitting on it is ink-deep at 8.31:1.
-                  */
-                  className={active ? pill('champagne', 'sm', 'btn-pill-light') : pill('outline')}
+          <div className="mb-5" role="group" aria-label="Which homes to show">
+            <div className="flex flex-wrap items-center gap-2">
+              {MARKET_KINDS.map((kind) => (
+                <ShowButton
+                  key={kind.value}
+                  on={draft.show.includes(kind.value)}
+                  onPress={() => press(pressKind(draft, kind.value))}
                 >
-                  {t.label}
-                </button>
-              );
-            })}
+                  {kind.label}
+                </ShowButton>
+              ))}
+              <ShowDivider />
+              <ShowButton on={draft.priceCut} onPress={() => press(pressPriceCut(draft))}>
+                Price cuts only
+              </ShowButton>
+              <ShowDivider />
+              {SEPARATE_KINDS.map((kind) => (
+                <ShowButton
+                  key={kind.value}
+                  on={draft.show.includes(kind.value)}
+                  onPress={() => press(pressKind(draft, kind.value))}
+                >
+                  {kind.label}
+                </ShowButton>
+              ))}
+            </div>
+            <p className="mt-3 text-sm text-gray-600">
+              Choose as many as you like. Sold and For rent are lists of their own.
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -377,8 +426,8 @@ const Search = () => {
                 {towns.map((t) => (
                   <option key={t.town} value={t.town}>
                     {/* The number is homes for sale today — what the default
-                        tab will find. A town with none is still listed, for the
-                        sold and under-agreement tabs, just without a "(0)". */}
+                        search will find. A town with none is still listed, for
+                        sold and under agreement, just without a "(0)". */}
                     {t.listings > 0 ? `${t.town} (${t.listings.toLocaleString()})` : t.town}
                   </option>
                 ))}
@@ -396,8 +445,8 @@ const Search = () => {
                 onChange={(e) => setDraft({ ...draft, propType: e.target.value })}
               >
                 <option value="">All types</option>
-                {/* Rentals are the listing-type control above, not a property type. */}
-                {PROP_TYPES.filter((t) => t.value !== 'RN' || draft.listingType === 'rent').map((t) => (
+                {/* Rentals are the For rent button above, not a property type. */}
+                {PROP_TYPES.filter((t) => t.value !== 'RN' || draft.show[0] === 'rent').map((t) => (
                   <option key={t.value} value={t.value}>
                     {t.label}
                   </option>

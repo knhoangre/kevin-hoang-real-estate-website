@@ -179,7 +179,7 @@ const Saved = () => {
     const searchLink = profile
       ? `/search?${paramsFromFilters({
           ...EMPTY_FILTERS,
-          listingType: profile.market === 'rent' ? 'rent' : 'sale',
+          show: [profile.market === 'rent' ? 'rent' : 'sale'],
           town: profile.towns[0]?.town ?? '',
           minPrice: String(profile.minPrice),
           maxPrice: String(profile.maxPrice),

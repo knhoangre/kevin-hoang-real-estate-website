@@ -57,3 +57,14 @@ export const AVAILABLE_STATUSES = ['ACT', 'NEW', 'BOM', 'PCG', 'EXT', 'RAC'];
 
 export const isAvailable = (code: string | null) =>
   AVAILABLE_STATUSES.includes((code ?? '').trim().toUpperCase());
+
+/**
+ * Whether a row is a finished sale or lease. NOT the same as `feed === 'sold'`.
+ *
+ * MLS PIN files a home that goes under agreement in the sold feed, with no sale
+ * price and no closing date, and it can still fall through. Every page that
+ * tested the feed alone printed "Sold" under such a home's asking price and took
+ * its estimate away, until 2026-10-30.
+ */
+export const isClosed = (listing: { feed: string | null; status: string | null }) =>
+  listing.feed === 'sold' && (listing.status ?? '').trim().toUpperCase() !== 'UAG';

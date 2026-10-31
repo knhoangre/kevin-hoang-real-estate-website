@@ -28,6 +28,7 @@ import {
   statusLabel,
   decodeCodes,
   headlinePrice,
+  isClosed,
   priceChange,
   priceHistory,
   pricePerSqft,
@@ -511,13 +512,14 @@ const SearchListing = () => {
                   What nearby sales suggest, stated beside the asking price and
                   linking down to the working. Without this the estimate lived
                   only below the mortgage calculator, where almost nobody reaches
-                  it. Active listings only: on a closed sale the sale price IS the
-                  answer, and an estimate beside it would be a model second-
-                  guessing a fact.
+                  it. Not on a closed sale: there the sale price IS the answer,
+                  and an estimate beside it would be a model second-guessing a
+                  fact. A home under agreement has no sale price yet, so it
+                  keeps the estimate and does not say Sold.
                 */}
-                {listing.feed !== 'sold' && <ValuationSummary listing={listing} />}
+                {!isClosed(listing) && <ValuationSummary listing={listing} />}
 
-                {listing.feed === 'sold' && (
+                {isClosed(listing) && (
                   <p className="numeral mt-2 text-gray-600">
                     {formatSoldMonth(listing.settled_date)
                       ? `Sold ${formatSoldMonth(listing.settled_date)}`
@@ -898,7 +900,7 @@ const SearchListing = () => {
               figure for a house nobody can have — the page's own "no longer
               available" copy is the standard here.
             */}
-            {listing.feed !== 'sold' && listing.prop_type !== 'RN' && (
+            {!isClosed(listing) && listing.prop_type !== 'RN' && (
               <ListingPayment listing={listing} />
             )}
 
@@ -918,7 +920,7 @@ const SearchListing = () => {
               same contract priceHistory and SimilarListings keep: a listing
               must never fail to render because a supporting query did.
             */}
-            {listing.feed !== 'sold' && <ListingValuation listing={listing} />}
+            {!isClosed(listing) && <ListingValuation listing={listing} />}
 
             <SimilarListings listing={listing} />
           </>

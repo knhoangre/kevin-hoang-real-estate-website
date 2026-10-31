@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ListingCard from '@/components/listing/ListingCard';
-import { similarListings, type IdxListing } from '@/lib/idxSearch';
+import { isClosed, similarListings, type IdxListing } from '@/lib/idxSearch';
 
 /**
  * A few comparable homes, so the listing page is not a dead end.
@@ -42,7 +42,7 @@ const SimilarListings = ({ listing }: { listing: IdxListing }) => {
   return (
     <section className="mt-16 border-t border-gray-200 pt-10 print:hidden">
       <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">
-        {listing.feed === 'sold'
+        {isClosed(listing)
           ? `Other recent sales in ${listing.town}`
           : `Similar homes in ${listing.town}`}
       </h2>
