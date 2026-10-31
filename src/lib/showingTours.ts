@@ -98,7 +98,7 @@ const text = (value: unknown): string | null =>
  * `Json` and says nothing about its shape; the trigger is what guarantees one,
  * and this is what refuses to crash the page if a row ever predates it.
  */
-const toPeople = (raw: Json): TourPerson[] =>
+export const toPeople = (raw: Json): TourPerson[] =>
   (Array.isArray(raw) ? raw : []).flatMap((entry, i) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
     const name = text(entry.name);
@@ -454,6 +454,15 @@ export const formatStopTime = (hhmm: string): string => {
   const hour = h % 12 === 0 ? 12 : h % 12;
   return `${hour}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
 };
+
+/** "Oct 30, 3:45 PM": when an email went, in the reader's own clock. */
+export const sentStamp = (iso: string): string =>
+  new Date(iso).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 
 /** Today in Massachusetts as "YYYY-MM-DD", for the date field's default. */
 export const todayInBoston = (): string =>

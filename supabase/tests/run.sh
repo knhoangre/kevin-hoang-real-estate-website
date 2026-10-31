@@ -128,6 +128,13 @@ psql_file "$REPO/supabase/migrations/20261008100000_showing_tour_people.sql" -q 
 echo
 run_tests "$TESTS/showing_tours_test.sql"
 
+# Send listings: the same people, filed the same way, on the same CRM stand-ins.
+echo "Applying 20261030160000_listing_sends"
+psql_file "$REPO/supabase/migrations/20261030160000_listing_sends.sql" -q 2>&1 \
+  | grep -v 'NOTICE.*skipping' || true
+echo
+run_tests "$TESTS/listing_sends_test.sql"
+
 # Marketing documents and the bucket their uploaded pictures go in. The
 # migration writes policies on storage.objects, so Storage's two tables get a
 # stand-in first.

@@ -34,8 +34,9 @@ node scripts/applications-check.ts     # how /admin/applications files things: a
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
+node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -1000,9 +1001,9 @@ describes what is LIVE. This section is what replaces the sold half of it.
 6. A week later: the sync stops writing sold rows to Supabase and starts failing
    on a CockroachDB error; then the Supabase-side sold rows, `idx_sold_archive`,
    `idx_comp_pool` and its cron are removed. Kevin runs that deletion himself.
-   The booklet's listing field (`scope="all"`) also finds sold listings in
-   `idx_listings` and will stop offering them when they go; it needs an address
-   search on the sold database first.
+   The booklet's listing field and Send listings (`scope="all"`) also find sold
+   listings in `idx_listings` and will stop offering them when they go; they need
+   an address search on the sold database first.
    **The sync must keep writing UAG rows to Supabase**, because they arrive in the
    sold feed and `/search` reads them beside what is for sale: "stops writing sold
    rows" means SLD and RNT. A mix on one page cannot span two databases.
@@ -1983,6 +1984,66 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
   showings and no problems sends nothing.
 - `run` takes `dryRun` (says what it would send) and `force` (skips the hour
   check); both still need the service-role key. `list` is admin-only.
+
+### Send listings (`/admin/send-listings`)
+
+Kevin asked on 2026-10-30 for what the showing tours do, without the times: he
+was assembling the address, the link and the MLS number by hand for each home he
+thought a client might like. Put in an address or a number, press a button.
+[listingSend.ts](src/lib/listingSend.ts) is the page's pure half,
+[_shared/listingSend.ts](supabase/functions/_shared/listingSend.ts) writes the
+messages, and `node scripts/send-listings-check.ts` runs both.
+
+- **Nothing has to be created first.** A tour has a date and stops, so it is made
+  and then filled in; this is a page opened with three numbers on the clipboard.
+  The form IS the page, and the `listing_sends` row is saved the first time a
+  message is generated, so typing and walking away leaves nothing.
+- **Saving does not touch the URL.** `?id=` says which saved message was OPENED
+  from the list. Writing a new id into it would run `useViewScroll` and throw
+  Kevin to the top of the page at the moment he pressed a button at the bottom.
+- **Nobody has to be on it.** A lot of these go into a Zillow chat, with no phone
+  or email to give; the text then opens "Hi," and is there to copy. Unlike a tour,
+  the trigger allows an empty list and asks for no way to reach anyone. Anyone
+  named with a last name and an email or phone is filed in the CRM by
+  `listing_send_people()`, source "Sent Listings", on the rules of
+  `showing_tour_people()`, and the two tests assert the same things.
+- **A paste goes straight on the list** (`mlsNumbersIn`): any run of six to twelve
+  digits, so a column of numbers, "MLS# 73568135" and one of this site's own links
+  all work, and a ZIP does not count. An address has no such run and is left to be
+  typed, which suggests as everywhere else. A number not in the database is named,
+  not silently dropped. Enter on typed text adds it if exactly one listing matches.
+- **It searches every listing (`scope="all"`), and says what each one is.** The
+  page cannot know why Kevin is sending a home, and a number pasted for a house
+  under agreement answering "not found" would read as a bug. Contingent, Under
+  agreement, Sold and Rented are marked in amber in the list and printed beside the
+  facts in the message (`NOT_AVAILABLE`, mirrored as `availabilityNote` and checked
+  to agree). Measured 2026-10-30: those four are the only such statuses in either
+  feed.
+- **The homes are re-read from the feed every time**, so a price cut shows. Unlike
+  a showing stop, a home that has LEFT the feed is left out and named to Kevin, not
+  printed from its snapshot: an appointment is still an appointment, but a home
+  that is gone is not something to recommend. The snapshot in `homes` is only what
+  this page draws.
+- **The page says when the feed is stale** (`feedIsStale`, a day since the last
+  good load). A client is about to be told a price; on 2026-10-30 the feed had been
+  failing for eleven days, so a home listed since could not be found at all.
+- **The text carries the address, the number, the link and the listing office.**
+  The first three are what he was typing by hand. The office is there because a
+  message signed "Kevin Hoang, LPT Realty" under someone else's listing reads as
+  his. There is no tracking on a text's links (every character is on screen); the
+  email's carry `utm_source=send-listings`.
+- **`send-listings` has the shape of `showing-schedule`**: `preview` and `send`,
+  an ID and nothing else, `app_metadata.is_admin` checked first. A recipient or a
+  body in the request is ignored. The email has one line offering to stop. It has
+  no postal address, because this business deliberately publishes none (see NAP);
+  whether a one-to-one listing email is "commercial" under CAN-SPAM, which asks for
+  one, is an open question for LPT Realty.
+- **[PeopleFields](src/components/admin/PeopleFields.tsx) and
+  [MessagePanel](src/components/admin/MessagePanel.tsx) are the showing tours' own
+  form and panel**, lifted out rather than copied. The panel knows nothing about
+  tours or listings; a page passes `build`, `send` and its `words`.
+- **The Homes and Who sections are not `AdminCard`s**, for the suggestions, which
+  that card's `overflow-hidden` would cut off.
 
 ### Marketing documents (`/admin/marketing`)
 

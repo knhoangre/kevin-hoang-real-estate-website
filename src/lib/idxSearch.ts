@@ -451,7 +451,8 @@ const SUGGESTION_COLUMNS =
  *   all     every listing in the database — for sale, for rent, under
  *           agreement and SOLD. The marketing booklets, where the first thing
  *           Kevin typed was one of his own closed listings and was offered
- *           nothing (2026-10-10).
+ *           nothing (2026-10-10), and Send listings, which cannot know why he
+ *           is sending a home and labels the status instead.
  */
 export type SuggestionScope = 'active' | 'all';
 
@@ -534,6 +535,21 @@ export const suggestListings = async (
         b.mls_number.localeCompare(a.mls_number)
     )
     .slice(0, scope === 'all' ? 20 : 8);
+};
+
+/**
+ * Several listings by number, for a list of MLS numbers pasted in one go. Exact
+ * matches on the primary key, from every feed. Whatever is not in the database
+ * is simply not in the answer; which numbers those were is the caller's to say.
+ */
+export const listingsByNumber = async (numbers: string[]): Promise<ListingSuggestion[]> => {
+  if (numbers.length === 0) return [];
+  const { data, error } = await supabase
+    .from('idx_listings')
+    .select(SUGGESTION_COLUMNS)
+    .in('mls_number', numbers);
+  if (error) throw error;
+  return (data ?? []) as ListingSuggestion[];
 };
 
 /** The listing office, for the attribution line MLS PIN requires. */

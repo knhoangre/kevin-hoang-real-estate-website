@@ -372,6 +372,12 @@ export const routes: RouteRecord[] = [
         'src/pages/AdminShowings.tsx'
       ),
       privatePage(
+        'admin/send-listings',
+        'Send Listings',
+        () => import('./pages/AdminSendListings'),
+        'src/pages/AdminSendListings.tsx'
+      ),
+      privatePage(
         'admin/activity',
         'Client Activity',
         () => import('./pages/AdminActivity'),

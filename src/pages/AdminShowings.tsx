@@ -25,35 +25,19 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Check,
-  ChevronRight,
-  Copy,
-  ExternalLink,
-  Loader2,
-  Mail,
-  MessageSquare,
-  Plus,
-  Trash2,
-  User,
-  UserPlus,
-  Users,
-  X,
-} from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Loader2, Plus, Trash2 } from 'lucide-react';
 import AdminShell, { ADMIN_BUTTON, AdminCard, adminActionClass } from '@/components/AdminShell';
 import AdminList from '@/components/admin/AdminList';
 import ListingLookup from '@/components/admin/ListingLookup';
+import MessagePanel, { type MessageWords } from '@/components/admin/MessagePanel';
+import PeopleFields from '@/components/admin/PeopleFields';
 import ShowingReminders from '@/components/admin/ShowingReminders';
-import SuggestInput from '@/components/admin/SuggestInput';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useViewScroll } from '@/hooks/useViewScroll';
 import { formatPrice } from '@/lib/listings';
-import { formatPhoneInput } from '@/lib/phone';
-import { smsHrefTo, smsHrefToGroup } from '@/lib/siteConfig';
 import { sentenceList } from '@/lib/utils';
 import { listingPath } from '@/lib/listingUrl';
 import type { ListingSuggestion } from '@/lib/idxSearch';
@@ -61,27 +45,21 @@ import {
   STOP_KINDS,
   addStop,
   blankPerson,
-  canFileInCrm,
   createTour,
   deleteTour,
   draftOf,
   formatStopTime,
   formatTourDate,
   isBlankPerson,
-  isWorthFindingClient,
   listTours,
   previewSchedule,
   removeStop,
+  sentStamp,
   sendSchedule,
-  suggestClients,
   todayInBoston,
-  tourEmails,
   tourNames,
   tourSaveMessage,
   updateTour,
-  type ClientSuggestion,
-  type PersonDraft,
-  type SchedulePreview,
   type ShowingTour,
   type StopKind,
   type TourDetails,
@@ -90,16 +68,18 @@ import {
 const FIELD =
   'h-10 w-full rounded-md border border-gray-200 bg-white px-3 text-sm text-ink focus:border-champagne focus:outline-none focus:ring-1 focus:ring-champagne';
 
-const sentStamp = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-
-/** The most people one tour lists. The table enforces the same ceiling. */
-const MAX_PEOPLE = 8;
+/** What the panel says, in this page's words. */
+const SCHEDULE_WORDS: MessageWords = {
+  textLede:
+    'Writes the schedule as a text for you to send yourself. Nothing is sent from here, and no email goes out.',
+  textLabel: 'The schedule as a text message',
+  emailLede: (who) => `Sends the schedule to ${who} with a calendar file attached, and a copy to you.`,
+  noEmail:
+    'Nobody on this tour has an email address. Add one above to email it, or send it as a text.',
+  sentTitle: 'Schedule emailed',
+  buildError: 'Could not build the schedule',
+  notReady: 'Add at least one stop above and both of these come to life.',
+};
 
 /** A function, not a constant: each blank form needs a row with its own id. */
 const blankDetails = (tourDate = ''): TourDetails => ({
@@ -148,51 +128,6 @@ const detailsProblem = (d: TourDetails): string | null => {
 /* Client, date, note                                                  */
 /* ------------------------------------------------------------------ */
 
-// Module scope: SuggestInput reads these in an effect and needs them stable.
-const clientKey = (c: ClientSuggestion) => String(c.contactId);
-const renderClient = (c: ClientSuggestion) => (
-  <>
-    <User className="mt-0.5 h-4 w-4 shrink-0 text-champagne-ink" aria-hidden />
-    <span className="min-w-0">
-      <span className="block font-medium text-ink">{c.name}</span>
-      <span className="numeral block truncate text-xs text-gray-500">
-        {[c.email, c.phone].filter(Boolean).join(' · ') || 'No contact details in the CRM'}
-      </span>
-    </span>
-  </>
-);
-
-/**
- * The line under a person's row: whether they are in the CRM, and if not, what
- * saving will do about it. Kevin asked that nobody typed here goes missing from
- * the CRM, so the page says which of the three cases each row is rather than
- * leaving it to be found out later on /crm/contacts.
- */
-const CrmLine = ({ person }: { person: PersonDraft }) => {
-  if (isBlankPerson(person)) return null;
-  if (person.contactId !== null) {
-    return (
-      <p className="flex items-center gap-1.5 text-xs text-emerald-800">
-        <Check className="h-3.5 w-3.5" aria-hidden />
-        In your CRM
-      </p>
-    );
-  }
-  if (canFileInCrm(person)) {
-    return (
-      <p className="flex items-center gap-1.5 text-xs text-champagne-ink">
-        <UserPlus className="h-3.5 w-3.5" aria-hidden />
-        Saving adds them to your CRM, if they are not in it already.
-      </p>
-    );
-  }
-  return (
-    <p className="text-xs text-gray-500">
-      Not in your CRM. Add a last name and an email or phone, and saving adds them.
-    </p>
-  );
-};
-
 const DetailsFields = ({
   idPrefix,
   value,
@@ -205,135 +140,20 @@ const DetailsFields = ({
   const set = (key: 'tourDate' | 'note') => (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ ...value, [key]: e.target.value });
 
-  /**
-   * Typing in a row. `contactId` is dropped with it: the row was known to be a
-   * CRM contact as it stood, and an edited row is a claim nobody has checked
-   * until the next save.
-   */
-  const typed = (id: string, patch: Partial<Pick<PersonDraft, 'name' | 'email' | 'phone'>>) =>
-    onChange({
-      ...value,
-      people: value.people.map((p) => (p.id === id ? { ...p, ...patch, contactId: null } : p)),
-    });
-
-  const picked = (id: string, c: ClientSuggestion) =>
-    onChange({
-      ...value,
-      people: value.people.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              name: c.name,
-              // What the CRM has, without wiping something already typed here
-              // when the CRM has nothing.
-              email: c.email ?? p.email,
-              phone: c.phone ? formatPhoneInput(c.phone) : p.phone,
-              contactId: c.contactId,
-            }
-          : p
-      ),
-    });
-
-  const remove = (id: string) =>
-    onChange({ ...value, people: value.people.filter((p) => p.id !== id) });
-
-  const several = value.people.length > 1;
-
   return (
     <div className="space-y-5">
-      <div className="space-y-3">
-        {value.people.map((person, i) => (
-          /*
-            A fieldset per person, so "Email" and "Phone" are announced as
-            belonging to somebody. Keyed on the row's own id, not its position:
-            removing the first of two must not hand the second one's typing to
-            the first one's inputs.
-          */
-          <fieldset
-            key={person.id}
-            className={several ? 'rounded-lg border border-gray-200 p-4' : undefined}
-          >
-            <legend className={several ? 'numeral px-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-gray-500' : 'sr-only'}>
-              Person {i + 1}
-            </legend>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto]">
-              <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-                <Label htmlFor={`${idPrefix}-name-${person.id}`}>{i === 0 ? 'Client' : 'Name'}</Label>
-                <SuggestInput<ClientSuggestion>
-                  id={`${idPrefix}-name-${person.id}`}
-                  required={i === 0}
-                  placeholder="Start typing a name"
-                  value={person.name}
-                  onChange={(name) => typed(person.id, { name })}
-                  onSelect={(c) => picked(person.id, c)}
-                  worth={isWorthFindingClient}
-                  suggest={suggestClients}
-                  keyOf={clientKey}
-                  renderItem={renderClient}
-                  listLabel="Matching contacts"
-                  footer="From your CRM. Somebody new? Keep typing — saving adds them."
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`${idPrefix}-email-${person.id}`}>Email</Label>
-                <Input
-                  id={`${idPrefix}-email-${person.id}`}
-                  type="email"
-                  autoComplete="off"
-                  value={person.email}
-                  onChange={(e) => typed(person.id, { email: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor={`${idPrefix}-phone-${person.id}`}>Phone</Label>
-                <Input
-                  id={`${idPrefix}-phone-${person.id}`}
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="off"
-                  placeholder="774-222-0952"
-                  value={person.phone}
-                  onChange={(e) => typed(person.id, { phone: formatPhoneInput(e.target.value) })}
-                />
-              </div>
-              {several && (
-                <div className="flex items-end sm:col-span-2 lg:col-span-1">
-                  <button
-                    type="button"
-                    onClick={() => remove(person.id)}
-                    aria-label={`Remove ${person.name.trim() || `person ${i + 1}`} from this tour`}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-red-700 hover:underline"
-                  >
-                    <X className="h-3.5 w-3.5" aria-hidden />
-                    Remove
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="mt-2">
-              <CrmLine person={person} />
-            </div>
-          </fieldset>
-        ))}
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          {value.people.length < MAX_PEOPLE && (
-            <button
-              type="button"
-              onClick={() => onChange({ ...value, people: [...value.people, blankPerson()] })}
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-              Add another person
-            </button>
-          )}
-          <p className="text-xs text-gray-500">
-            {several
-              ? 'One email or phone across the group is enough. The email goes to everyone with an address.'
-              : 'Email or phone — one is enough.'}
-          </p>
-        </div>
-      </div>
+      <PeopleFields
+        idPrefix={idPrefix}
+        people={value.people}
+        onChange={(people) => onChange({ ...value, people })}
+        firstRequired
+        removeFrom="this tour"
+        hint={(several) =>
+          several
+            ? 'One email or phone across the group is enough. The email goes to everyone with an address.'
+            : 'Email or phone — one is enough.'
+        }
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
@@ -484,245 +304,6 @@ const AddStopForm = ({
         </button>
       </div>
     </form>
-  );
-};
-
-/* ------------------------------------------------------------------ */
-/* Sending it                                                          */
-/* ------------------------------------------------------------------ */
-
-const firstName = (name: string) => name.trim().split(/\s+/)[0];
-
-const DeliveryPanel = ({
-  tour,
-  onSent,
-}: {
-  tour: ShowingTour;
-  onSent: (sentAt: string) => void;
-}) => {
-  const { toast } = useToast();
-  const [preview, setPreview] = useState<SchedulePreview | null>(null);
-  const [building, setBuilding] = useState<'text' | 'email' | null>(null);
-  const [showEmail, setShowEmail] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  /*
-   * A preview describes the tour as it was when it was built. Any edit — a
-   * stop added, a time changed, a new note — makes it a description of a
-   * schedule that no longer exists, and the worst outcome here is texting one.
-   * So it is thrown away whenever the tour changes and has to be asked for again.
-   */
-  // `sentAt` is left out: stamping it is not an edit to the schedule, and
-  // closing the preview the moment the email goes would look like a failure.
-  const fingerprint = useMemo(() => JSON.stringify({ ...tour, sentAt: null }), [tour]);
-  useEffect(() => {
-    setPreview(null);
-    setShowEmail(false);
-  }, [fingerprint]);
-
-  const noStops = tour.stops.length === 0;
-  const emails = tourEmails(tour);
-  const emailList = sentenceList(emails);
-  const texting = tour.people.filter((p) => p.phone);
-  // Asked once, after mount — this page is prerendered, and there is no
-  // navigator there to ask. It only chooses which form of group link to write.
-  const [apple, setApple] = useState(true);
-  useEffect(() => {
-    setApple(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent));
-  }, []);
-
-  const build = async (which: 'text' | 'email') => {
-    if (building) return;
-    setBuilding(which);
-    try {
-      setPreview(await previewSchedule(tour.id));
-      if (which === 'email') setShowEmail(true);
-    } catch (err) {
-      toast({
-        variant: 'destructive',
-        title: 'Could not build the schedule',
-        description: err instanceof Error ? err.message : 'Please try again.',
-      });
-    } finally {
-      setBuilding(null);
-    }
-  };
-
-  const send = async () => {
-    if (sending || emails.length === 0) return;
-    setSending(true);
-    try {
-      const sentAt = await sendSchedule(tour.id);
-      onSent(sentAt);
-      toast({ title: 'Schedule emailed', description: `Sent to ${emailList}, with you on cc.` });
-    } catch (err) {
-      toast({
-        variant: 'destructive',
-        title: 'Could not send the email',
-        description: err instanceof Error ? err.message : 'Please try again in a moment.',
-      });
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const copy = async () => {
-    if (!preview) return;
-    try {
-      await navigator.clipboard.writeText(preview.text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard needs a secure context and a permission. The text is in a
-      // selectable box right there, which is the fallback that always works.
-      toast({ title: 'Select the text in the box and copy it.' });
-    }
-  };
-
-  return (
-    <div className="grid gap-px bg-gray-200 md:grid-cols-2">
-      {/* ---- Text ---- */}
-      <div className="space-y-4 bg-white p-4 sm:p-6">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-champagne-ink" aria-hidden />
-          <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Text message</h3>
-        </div>
-        <p className="text-sm leading-relaxed text-gray-600">
-          Writes the schedule as a text for you to send yourself. Nothing is sent from here, and no
-          email goes out.
-        </p>
-        <button
-          type="button"
-          onClick={() => build('text')}
-          disabled={noStops || building !== null}
-          className={ADMIN_BUTTON}
-        >
-          {building === 'text' ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : (
-            <MessageSquare className="h-4 w-4" aria-hidden />
-          )}
-          {preview ? 'Rebuild the text' : 'Generate text message'}
-        </button>
-
-        {preview && (
-          <div className="space-y-3">
-            <textarea
-              readOnly
-              value={preview.text}
-              rows={Math.min(22, preview.text.split('\n').length + 1)}
-              aria-label="The schedule as a text message"
-              onFocus={(e) => e.currentTarget.select()}
-              className="numeral w-full rounded-md border border-gray-200 bg-bone p-3 text-sm leading-relaxed text-ink"
-            />
-            <div className="flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                onClick={copy}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
-              >
-                {copied ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-                {copied ? 'Copied' : 'Copy'}
-              </button>
-              {texting.length === 0 && (
-                <span className="text-xs text-gray-500">
-                  Add a phone number above to open it straight in Messages.
-                </span>
-              )}
-            </div>
-            {texting.length > 0 && (
-              /* One link per person, always. With two or more there is also a
-                 group link, FIRST because one thread is what a couple expects —
-                 but it is the form Apple does not document (see smsHrefToGroup),
-                 so the individual links are never replaced by it. */
-              <ul className="space-y-2 border-t border-gray-100 pt-3">
-                {texting.length > 1 && (
-                  <li>
-                    <a
-                      href={smsHrefToGroup(
-                        texting.map((p) => p.phone as string),
-                        preview.text,
-                        apple
-                      )}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
-                    >
-                      <Users className="h-4 w-4" aria-hidden />
-                      Open one group text to {sentenceList(texting.map((p) => firstName(p.name)))}
-                    </a>
-                  </li>
-                )}
-                {texting.map((p) => (
-                  <li key={p.id}>
-                    <a
-                      href={smsHrefTo(p.phone as string, preview.text)}
-                      className="numeral inline-flex items-center gap-1.5 text-sm font-medium text-champagne-ink hover:underline"
-                    >
-                      <MessageSquare className="h-4 w-4" aria-hidden />
-                      {texting.length > 1
-                        ? `Text ${firstName(p.name)} only — ${p.phone}`
-                        : `Open in Messages to ${p.phone}`}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ---- Email ---- */}
-      <div className="space-y-4 bg-white p-4 sm:p-6">
-        <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-champagne-ink" aria-hidden />
-          <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-ink">Email</h3>
-        </div>
-        <p className="text-sm leading-relaxed text-gray-600">
-          {emails.length > 0
-            ? `Sends the schedule to ${emailList} with a calendar file attached, and a copy to you.`
-            : 'Nobody on this tour has an email address. Add one above to email it, or send it as a text.'}
-        </p>
-        <div className="flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={send}
-            disabled={noStops || sending || emails.length === 0}
-            className={ADMIN_BUTTON}
-          >
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Mail className="h-4 w-4" aria-hidden />}
-            {tour.sentAt ? 'Email it again' : emails.length > 1 ? `Email to all ${emails.length}` : 'Email to client'}
-          </button>
-          <button
-            type="button"
-            onClick={() => (showEmail ? setShowEmail(false) : build('email'))}
-            disabled={noStops || building !== null}
-            className="text-sm font-medium text-champagne-ink hover:underline disabled:opacity-50"
-          >
-            {building === 'email' ? 'Building…' : showEmail ? 'Hide the preview' : 'Preview the email'}
-          </button>
-        </div>
-        <p className="numeral text-xs text-gray-500">
-          {tour.sentAt ? `Emailed ${sentStamp(tour.sentAt)}.` : 'Not emailed yet.'}
-        </p>
-
-        {showEmail && preview && (
-          /* `sandbox` with no allowances: the email is our own HTML, but it is
-             rendered as a document and nothing in it needs to run. */
-          <iframe
-            title="Email preview"
-            sandbox=""
-            srcDoc={preview.html}
-            className="h-[32rem] w-full rounded-md border border-gray-200 bg-white"
-          />
-        )}
-      </div>
-
-      {noStops && (
-        <p className="bg-white px-4 pb-4 text-sm text-gray-600 sm:px-6 sm:pb-6 md:col-span-2">
-          Add at least one stop above and both of these come to life.
-        </p>
-      )}
-    </div>
   );
 };
 
@@ -987,11 +568,20 @@ export default function AdminShowings() {
                 Send it
               </h2>
               <AdminCard>
-                <DeliveryPanel
-                  tour={tour}
+                <MessagePanel
+                  people={tour.people}
+                  sentAt={tour.sentAt}
+                  // `sentAt` is left out: stamping it is not an edit to the
+                  // schedule, and closing the preview the moment the email goes
+                  // would look like a failure.
+                  fingerprint={JSON.stringify({ ...tour, sentAt: null })}
+                  ready={tour.stops.length > 0}
+                  build={() => previewSchedule(tour.id)}
+                  send={async () => ({ sentAt: await sendSchedule(tour.id) })}
                   onSent={(sentAt) =>
                     setTours((rows) => rows.map((t) => (t.id === tour.id ? { ...t, sentAt } : t)))
                   }
+                  words={SCHEDULE_WORDS}
                 />
               </AdminCard>
             </section>

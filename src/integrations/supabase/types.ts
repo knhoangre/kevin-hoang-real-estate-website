@@ -1967,6 +1967,36 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_sends: {
+        Row: {
+          clients: Json
+          created_at: string
+          homes: Json
+          id: string
+          note: string | null
+          sent_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          clients?: Json
+          created_at?: string
+          homes: Json
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          clients?: Json
+          created_at?: string
+          homes?: Json
+          id?: string
+          note?: string | null
+          sent_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       listing_views: {
         Row: {
           address: string | null
@@ -2340,6 +2370,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           expires_at: string | null
+          form: string
           id: string
           invitee_email: string | null
           label: string | null
@@ -2357,6 +2388,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          form?: string
           id?: string
           invitee_email?: string | null
           label?: string | null
@@ -2374,6 +2406,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          form?: string
           id?: string
           invitee_email?: string | null
           label?: string | null
@@ -2401,6 +2434,7 @@ export type Database = {
           created_at: string
           credit_auth_at: string | null
           data: Json
+          form: string
           id: string
           invite_id: string | null
           status: string
@@ -2418,6 +2452,7 @@ export type Database = {
           created_at?: string
           credit_auth_at?: string | null
           data?: Json
+          form?: string
           id?: string
           invite_id?: string | null
           status?: string
@@ -2435,6 +2470,7 @@ export type Database = {
           created_at?: string
           credit_auth_at?: string | null
           data?: Json
+          form?: string
           id?: string
           invite_id?: string | null
           status?: string

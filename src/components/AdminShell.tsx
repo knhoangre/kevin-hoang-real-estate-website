@@ -4,6 +4,7 @@ import {
   Activity,
   BookOpen,
   CalendarClock,
+  Send,
   ClipboardList,
   FileText,
   Home,
@@ -99,6 +100,14 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/showings',
     icon: CalendarClock,
     blurb: 'Put a day of showings in order and send the client one schedule, by email or text.',
+    group: 'clients',
+  },
+  {
+    to: '/admin/send-listings',
+    label: 'Send listings',
+    match: '/admin/send-listings',
+    icon: Send,
+    blurb: 'Put in an address or MLS number and get a text or email with each home\u2019s details and link.',
     group: 'clients',
   },
   {
