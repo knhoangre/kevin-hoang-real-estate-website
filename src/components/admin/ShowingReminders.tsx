@@ -19,9 +19,11 @@
  * a message can be copied just to read it, so Mark completed is there for that.
  */
 import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Check, Copy, ExternalLink, Loader2, Mail, MessageSquare } from 'lucide-react';
 import { AdminCard } from '@/components/AdminShell';
 import { useToast } from '@/components/ui/use-toast';
+import { TO_CONFIRM_KEY } from '@/hooks/useAdminCounts';
 import { pill } from '@/lib/pill';
 import { smsHrefTo } from '@/lib/siteConfig';
 import {
@@ -73,6 +75,7 @@ const TEXT_BUTTON = 'font-medium text-champagne-ink underline underline-offset-2
 
 const ShowingReminders = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [day, setDay] = useState<ReminderDay>('today');
   const [state, setState] = useState<State>({ status: 'loading' });
   const [copied, setCopied] = useState<string | null>(null);
@@ -141,6 +144,8 @@ const ShowingReminders = () => {
       const request = markReminder(list.day, r.key, how, to);
       saving.current = request;
       setCompleted(r.key, await request);
+      // Takes it off the number on his picture and the Showings tile right away.
+      queryClient.invalidateQueries({ queryKey: TO_CONFIRM_KEY });
     } catch (err) {
       setCompleted(r.key, r.completed);
       toast({

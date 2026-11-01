@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { CalendarDays, ClipboardList } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import AdminShell, { ADMIN_LINKS, TOOL_GROUPS } from '@/components/AdminShell';
-import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import CountBadge from '@/components/CountBadge';
+import { useAdminCounts } from '@/hooks/useAdminCounts';
 
 /**
  * The admin front door.
@@ -49,13 +50,15 @@ const ToolCard = ({
   label,
   blurb,
   icon: Icon,
-  badge,
+  badge = 0,
+  badgeLabel = '',
 }: {
   to: string;
   label: string;
   blurb?: string;
   icon: LucideIcon;
   badge?: number;
+  badgeLabel?: string;
 }) => (
   <Link
     to={to}
@@ -63,12 +66,7 @@ const ToolCard = ({
   >
     <div className="flex items-start justify-between gap-3">
       <Icon className="h-6 w-6 text-champagne-ink" aria-hidden />
-      {badge ? (
-        <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
-          {badge}
-          <span className="sr-only"> unread</span>
-        </span>
-      ) : null}
+      <CountBadge count={badge} label={badgeLabel} className="text-xs" />
     </div>
     {/* h3: the group's heading above it is the h2. */}
     <h3 className="mt-4 font-display text-xl font-semibold tracking-tight text-ink">{label}</h3>
@@ -89,11 +87,14 @@ const Group = ({ label, children }: { label: string; children: React.ReactNode }
 );
 
 const AdminHome = () => {
-  const { unreadCounts } = useUnreadCounts();
+  const { unread, toConfirm } = useAdminCounts();
 
-  /** Follow Up is the only tool with anything unread to report. */
-  const badgeFor = (match: string) =>
-    match === '/admin/follow-up' ? unreadCounts.total : undefined;
+  /** The two tools with something waiting on Kevin. */
+  const badgeFor = (match: string) => {
+    if (match === '/admin/follow-up') return { badge: unread, badgeLabel: 'unread' };
+    if (match === '/admin/showings') return { badge: toConfirm, badgeLabel: 'clients to confirm today' };
+    return {};
+  };
 
   return (
     <AdminShell title="Admin" description="Everything behind the site, in one place.">
@@ -106,7 +107,7 @@ const AdminHome = () => {
               label={link.label}
               blurb={link.blurb}
               icon={link.icon}
-              badge={badgeFor(link.match)}
+              {...badgeFor(link.match)}
             />
           ))}
         </Group>

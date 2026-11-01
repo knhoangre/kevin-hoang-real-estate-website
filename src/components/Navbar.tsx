@@ -8,6 +8,8 @@ import Logo from "./Logo";
 import NavLink, { type NavTone } from "./NavLink";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
+import CountBadge from "./CountBadge";
+import { useAdminCounts } from "@/hooks/useAdminCounts";
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, SECONDARY_NAV, ZH_PRIMARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
 import {
@@ -129,6 +131,7 @@ const Navbar = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { total: waiting } = useAdminCounts();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -433,9 +436,12 @@ const Navbar = () => {
               "transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-[0.94]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2",
             )}
-            aria-label="Toggle menu"
+            aria-label={waiting > 0 ? `Toggle menu, ${waiting} waiting for you` : "Toggle menu"}
             aria-expanded={mobileMenuOpen}
           >
+            {/* On a phone the profile picture is at the foot of this menu, so the
+                number it carries has to show out here as well. */}
+            <CountBadge count={waiting} label="waiting for you" corner className="-right-3 -top-2" />
             <span className="relative block h-3 w-4 shrink-0">
               <span
                 className={cn(

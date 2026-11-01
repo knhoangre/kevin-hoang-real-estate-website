@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnreadCounts } from "@/hooks/useUnreadCounts";
+import { useAdminCounts } from "@/hooks/useAdminCounts";
+import CountBadge from "@/components/CountBadge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Briefcase, LayoutDashboard, FileText, Heart, TrendingUp } from "lucide-react";
+import { CalendarClock, LogOut, User, Briefcase, LayoutDashboard, FileText, Heart, TrendingUp } from "lucide-react";
 
 interface ProfileDropdownProps {
   onItemClick?: () => void;
@@ -24,7 +25,7 @@ const ITEM =
 
 export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileDropdownProps) {
   const { user, signOut, avatarUrl, avatarInitials, isAdmin } = useAuth();
-  const { unreadCounts } = useUnreadCounts();
+  const { unread, toConfirm, total } = useAdminCounts();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,6 +69,11 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
     onItemClick?.();
   };
 
+  const handleShowingsClick = () => {
+    navigate("/admin/showings");
+    onItemClick?.();
+  };
+
   const handleCRMClick = () => {
     navigate("/crm");
     onItemClick?.();
@@ -92,6 +98,8 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
               {avatarInitials || user.email?.charAt(0).toUpperCase() || "U"}
             </AvatarFallback>
           </Avatar>
+          {/* A sibling of the Avatar, which clips what is inside it to the circle. */}
+          <CountBadge count={total} label="waiting for you" corner />
         </Button>
       </DropdownMenuTrigger>
 
@@ -163,13 +171,26 @@ export default function ProfileDropdown({ onItemClick, align = "end" }: ProfileD
                 <LayoutDashboard className="mr-2.5 h-4 w-4" aria-hidden />
                 Admin
               </span>
-              {unreadCounts.total > 0 && (
-                <span className="rounded-full bg-red-600 px-2 py-0.5 text-[0.65rem] font-semibold text-white">
-                  {unreadCounts.total}
-                  <span className="sr-only"> unread</span>
-                </span>
-              )}
+              <CountBadge count={unread} label="unread" />
             </DropdownMenuItem>
+
+            {/*
+              Its own row, only while there is someone to confirm with today. Added
+              into Admin's number it could not be read: 2 clients beside 23 unread
+              sign-ins is just 25.
+            */}
+            {toConfirm > 0 && (
+              <DropdownMenuItem
+                onClick={handleShowingsClick}
+                className={`${ITEM} justify-between`}
+              >
+                <span className="flex items-center">
+                  <CalendarClock className="mr-2.5 h-4 w-4" aria-hidden />
+                  Showings
+                </span>
+                <CountBadge count={toConfirm} label="clients to confirm today" />
+              </DropdownMenuItem>
+            )}
 
             {/* CRM keeps its own entry: it is a destination, not a desk tool. */}
             <DropdownMenuItem onClick={handleCRMClick} className={ITEM}>

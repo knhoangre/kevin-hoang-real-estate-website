@@ -2016,6 +2016,23 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
 - `run` takes `dryRun` (says what it would send, for today or a given `day`, and
   where the notes' links go) and `force` (skips the hour check); both still need
   the service-role key. `list` and `mark` are admin-only.
+- **The Showings tile's number is how many clients Kevin still has to confirm with
+  today** (Kevin, 2026-10-31), from `clientsToConfirm`. It counts a showing until
+  its reminder is completed, but not once it has started, and not before 8 if the
+  morning email will reach its guests anyway. It counts CLIENTS: two homes with
+  Sarah Lee are one, by name, until both are done; a showing with no name is its
+  own. So it can be lower than the rows left on the panel. The `count` action
+  answers with the number alone, for the admin or the service role.
+- **Every number waiting for Kevin adds up on his profile picture**
+  (`useAdminCounts`, shown with [CountBadge](src/components/CountBadge.tsx)): what
+  is unread, plus clients to confirm. A new number goes in `total` there. In the
+  profile menu Admin keeps the unread number and Showings is its own row, shown only
+  above zero, because added together 2 clients beside 23 sign-ins is just 25. **On a
+  phone the picture is at the foot of the hamburger menu, so the hamburger carries
+  the same number.** It lives in the root layout, on every page, so it asks every
+  five minutes rather than every thirty seconds: each answer reads his calendar.
+  It must not import `@/lib/showingReminders`, or `showingTours` joins the public
+  bundle.
 
 ### Send listings (`/admin/send-listings`)
 

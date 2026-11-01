@@ -5,7 +5,7 @@
  * says — is in _shared/showingReminders.ts, which is pure and checked by
  * `node scripts/showing-reminders-check.ts`. This file fetches and sends.
  *
- * Three actions:
+ * Four actions:
  *
  *   run   From pg_cron, at 12:00 and 13:00 UTC (20261028110000). SERVICE ROLE
  *         ONLY. Goes ahead only when it is 8 AM in Boston, so exactly one of the
@@ -23,6 +23,10 @@
  *   mark  From /admin/showings. ADMIN ONLY. Records that Kevin sent one himself,
  *         or with `how: null` takes that back. Sends nothing, and it is the only
  *         thing here a browser can write.
+ *
+ *   count From every page, while Kevin is signed in. ADMIN ONLY (or the service
+ *         role, to check it). How many clients he still has to confirm with today,
+ *         and nothing about who they are.
  *
  * THE CALENDAR is the "Secret address in iCal format" of Kevin's Google
  * Calendar, in the SHOWING_CALENDAR_ICS_URL secret. It reads his whole
@@ -42,6 +46,7 @@ import {
   calendarReminders,
   clientEmail,
   clientSubject,
+  clientsToConfirm,
   clockAt,
   completion,
   digestEmail,
@@ -232,7 +237,9 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const action = body?.action;
-    if (action !== 'run' && action !== 'list' && action !== 'mark') return json({ error: 'Unknown action' }, 400);
+    if (action !== 'run' && action !== 'list' && action !== 'mark' && action !== 'count') {
+      return json({ error: 'Unknown action' }, 400);
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -276,6 +283,16 @@ serve(async (req) => {
           };
         }),
       });
+    }
+
+    // ---- count ------------------------------------------------------------
+    if (action === 'count') {
+      if (callerRole(req) !== 'service_role') {
+        const refusal = await refuseNonAdmin(db, req);
+        if (refusal) return refusal;
+      }
+      const [{ reminders }, rows] = await Promise.all([gather(db, now.day), sentRows(db, now.day)]);
+      return json({ toConfirm: clientsToConfirm(reminders, rows, now) });
     }
 
     // ---- mark -------------------------------------------------------------

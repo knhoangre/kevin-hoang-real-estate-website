@@ -20,6 +20,7 @@ import {
   calendarReminders,
   clientEmail,
   clientSubject,
+  clientsToConfirm,
   completion,
   reminderText,
   clientName,
@@ -376,6 +377,40 @@ is(stillToEmail([sarah, late], []).map((r) => r.key), [sarah.key, late.key], 'at
 is(stillToEmail([sarah, late], [pressed]).map((r) => r.key), [late.key], 'but not one Kevin already completed');
 is(stillToEmail([sarah, late], [failed]).map((r) => r.key), [sarah.key, late.key], 'a failed email does not count against a second try, whose claim decides');
 is(stillToEmail([marcus], []).length, 0, 'and nobody with no address');
+
+// The number on the Showings tile, in the profile menu and on his picture.
+const at = (time: string) => ({ time, hour: Number(time.slice(0, 2)) });
+const showing = (key: string, over: Partial<Reminder> = {}): Reminder => ({
+  ...marcus,
+  key,
+  name: key,
+  startsAt: '15:00',
+  autoEmail: [],
+  ...over,
+});
+const done = (key: string) => log('done', key, { how: 'text', sent_at: '2026-10-28T13:00:00Z' });
+
+is(clientsToConfirm([], [], at('09:00')), 0, 'no showings, no number');
+is(clientsToConfirm([showing('a'), showing('b')], [], at('09:00')), 2, 'two clients are two');
+is(clientsToConfirm([showing('a'), showing('b')], [done('a')], at('09:00')), 1, 'one Kevin has sent is off the count');
+is(clientsToConfirm([showing('a'), showing('b')], [done('a'), done('b')], at('09:00')), 0, 'and the number goes away with the last');
+
+const sameClient = [showing('h1', { name: 'Sarah Lee' }), showing('h2', { name: 'sarah lee', startsAt: '16:00' })];
+is(clientsToConfirm(sameClient, [], at('09:00')), 1, 'two homes with one client is one person to confirm with');
+is(clientsToConfirm(sameClient, [done('h1')], at('09:00')), 1, 'who stays on the count until both are done');
+is(clientsToConfirm(sameClient, [done('h1'), done('h2')], at('09:00')), 0, 'and then comes off');
+is(clientsToConfirm([showing('x', { name: null }), showing('y', { name: null })], [], at('09:00')), 2, 'a showing with no name is its own client');
+
+is(clientsToConfirm([showing('a')], [], at('14:59')), 1, 'it counts up to its start');
+is(clientsToConfirm([showing('a')], [], at('15:00')), 0, 'and not once it has started');
+is(clientsToConfirm([showing('a')], [], at('21:00')), 0, 'so a morning showing is not still up that night');
+
+const guest = showing('g', { autoEmail: ['sarah@example.com'] });
+is(clientsToConfirm([guest], [], at('07:30')), 0, 'before 8 a guest is left to the morning email');
+is(clientsToConfirm([guest, showing('a')], [], at('07:30')), 1, 'while a client with no email already counts');
+is(clientsToConfirm([guest], [log('client', 'g', { recipients: ['sarah@example.com'] })], at('09:00')), 0, 'the morning email going completes it');
+is(clientsToConfirm([guest], [log('client', 'g', { sent_at: null, error: 'refused' })], at('09:00')), 1, 'an email that failed puts it back on him');
+is(clientsToConfirm([guest], [], at('09:00')), 1, 'and so does a guest added after 8, which nothing will email');
 
 const doneDigest = digestEmail('2026-10-28', [sarah, marcus], outcomesFrom([pressed]), []);
 is(doneDigest.text.includes('Already completed.'), true, 'the morning email says one is already done');

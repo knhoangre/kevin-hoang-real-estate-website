@@ -406,7 +406,7 @@ export const bostonClock = (start: CalEvent['start']): WallClock | null => {
 };
 
 /** Boston's clock at an instant. */
-export const clockAt = (instant: number): WallClock & { hour: number } => {
+export const clockAt = (instant: number): WallClock & { time: string; hour: number } => {
   const f = fieldsIn(instant, BOSTON);
   return { day: dayOf(f), time: timeOf(f), hour: f.h };
 };
@@ -871,6 +871,31 @@ export const completion = (rows: LogRow[], key: string): Completion | null => {
 export const stillToEmail = (reminders: Reminder[], rows: LogRow[]): Reminder[] => {
   const done = new Set(rows.filter((row) => row.kind === 'done').map((row) => row.source_key));
   return reminders.filter((r) => r.autoEmail.length > 0 && !done.has(r.key));
+};
+
+/**
+ * How many clients Kevin still has to confirm with today: the number on the
+ * Showings tile, in the profile menu and on his picture.
+ *
+ * A showing counts until its reminder has gone (`completion`), except once it has
+ * started, when there is nothing left to confirm (a number still up at 9 PM for a
+ * morning showing is one he learns to ignore), and before 8, when the morning run
+ * will email its guests without him.
+ *
+ * It counts clients, not showings. Three homes with Sarah Lee is one person to
+ * confirm with, who stays on the count until all three are done. The name is all
+ * a calendar event reliably has, so a showing with no name is its own client.
+ */
+export const clientsToConfirm = (
+  reminders: Reminder[],
+  rows: LogRow[],
+  now: { time: string; hour: number }
+): number => {
+  const goingAt8 = new Set(now.hour < SEND_HOUR ? stillToEmail(reminders, rows).map((r) => r.key) : []);
+  const waiting = reminders.filter(
+    (r) => r.startsAt > now.time && !completion(rows, r.key) && !goingAt8.has(r.key)
+  );
+  return new Set(waiting.map((r) => r.name?.toLowerCase() ?? r.key)).size;
 };
 
 /* -------------------------------------------------------------------------- */
