@@ -11,7 +11,7 @@
  * and silently renders every glyph as a tofu box, so run this on a Debian base
  * with fontconfig present, e.g.
  *   docker run --rm -v "$PWD":/app -w /app node:20-slim bash -c \
- *     'apt-get update -qq && apt-get install -y -qq fontconfig fonts-dejavu-core \
+ *     'apt-get update -qq && apt-get install -y -qq fontconfig fonts-dejavu-core fonts-noto-cjk \
  *      && node scripts/generate-icons.mjs'
  */
 import sharp from 'sharp';
@@ -66,14 +66,24 @@ const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
  * `lines` is already HTML-escaped by the caller where it contains an ampersand —
  * SVG text is XML, and a bare `&` is a parse error rather than an ampersand.
  */
-const card = async (out, { name, lines }) => {
+const card = async (
+  out,
+  {
+    name,
+    lines,
+    phone = '(860) 682-2251',
+    site = 'kevinhoang.co',
+    picture = photo,
+    font = 'Helvetica, Arial, sans-serif',
+  }
+) => {
   // Baselines are literal rather than computed: the third line sits on a wider
   // gap than the second, which a uniform step would quietly flatten.
   const Y = [258, 312, 386];
   const body = lines
     .map(
       (line, i) =>
-        `<text x="72" y="${Y[i]}" font-family="Helvetica, Arial, sans-serif" ` +
+        `<text x="72" y="${Y[i]}" font-family="${font}" ` +
         `font-size="${i < 2 ? 38 : 28}" font-weight="${i < 2 ? 500 : 400}" ` +
         `fill="${i < 2 ? '#e5e5e5' : '#9ca3af'}">${line}</text>`
     )
@@ -82,16 +92,16 @@ const card = async (out, { name, lines }) => {
   const svg = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${W}" height="${H}" fill="#1a1a1a"/>
   <rect x="72" y="188" width="64" height="4" fill="#ffffff"/>
-  <text x="72" y="150" font-family="Helvetica, Arial, sans-serif" font-size="68" font-weight="700" fill="#ffffff" letter-spacing="2">${esc(name)}</text>
+  <text x="72" y="150" font-family="${font}" font-size="68" font-weight="700" fill="#ffffff" letter-spacing="2">${esc(name)}</text>
   ${body}
-  <text x="72" y="536" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="600" fill="#ffffff">(860) 682-2251</text>
-  <text x="72" y="578" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#9ca3af">kevinhoang.co</text>
+  <text x="72" y="536" font-family="${font}" font-size="30" font-weight="600" fill="#ffffff">${phone}</text>
+  <text x="72" y="578" font-family="${font}" font-size="26" fill="#9ca3af">${site}</text>
 </svg>`;
 
   await sharp({ create: { width: W, height: H, channels: 3, background: '#1a1a1a' } })
     .composite([
       { input: Buffer.from(svg), top: 0, left: 0 },
-      { input: photo, top: 0, left: W - PHOTO_W },
+      { input: picture, top: 0, left: W - PHOTO_W },
     ])
     .jpeg({ quality: 82, mozjpeg: true })
     .toFile(out);
@@ -115,6 +125,24 @@ await card('public/og-about.jpg', {
     'English &amp; Ti&#7871;ng Vi&#7879;t',
     'LPT Realty · Newton, MA',
   ],
+});
+
+// Every /zh page. Maggie Li's, in Chinese, naming her brokerage for the reason the
+// other two name Kevin's. Needs a Chinese font as well: add fonts-noto-cjk to the
+// apt-get line above, or every character is a box.
+await card('public/og-zh.jpg', {
+  name: 'MAGGIE LI',
+  lines: [
+    '大波士顿中文房地产服务',
+    '普通话 · English',
+    'William Raveis Real Estate · Newton, MA',
+  ],
+  phone: '(774) 222-0952',
+  site: 'kevinhoang.co/zh',
+  picture: await sharp('public/images/maggie-li.webp')
+    .resize(PHOTO_W, H, { fit: 'cover', position: 'top' })
+    .toBuffer(),
+  font: "'Noto Sans CJK SC', Helvetica, Arial, sans-serif",
 });
 
 // --- WebP versions of the large raster assets ----------------------------

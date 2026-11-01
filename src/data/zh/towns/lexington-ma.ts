@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'lexington-ma',
-  title: '住在列克星敦（Lexington, MA）：街区、学校和房地产指南',
+  title: '列克星敦（Lexington, MA）买房指南：街区、学区和通勤',
   description:
     '列克星敦（Lexington, MA）中文指南：各街区的特点，公立学校，Route 2 和 128 号公路的通勤，没有通勤火车的取舍，以及在这里买房要知道的事。',
   keywords: '列克星敦 Lexington 买房, Lexington MA 学区, 列克星敦 房价, East Lexington, Minuteman Bikeway',

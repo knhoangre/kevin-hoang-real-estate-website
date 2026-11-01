@@ -1,5 +1,6 @@
 import type { QA } from '@/lib/schema';
 import { TOWN_FACTS } from '@/data/townFacts';
+import { CHINESE_PARTNER } from '@/lib/siteConfig';
 
 /**
  * The town FAQ in Chinese, for the guides at /zh/quyu/<slug>.
@@ -14,6 +15,7 @@ import { TOWN_FACTS } from '@/data/townFacts';
  */
 export const townFaqsZh = (
   townName: string,
+  englishName: string,
   slug: string,
   notes: { buyer?: string; schools?: string } = {},
 ): QA[] => {
@@ -21,6 +23,13 @@ export const townFaqsZh = (
   if (!f) return [];
 
   const qas: QA[] = [];
+
+  // First, because it is what a reader of Chinese most wants to know about any
+  // town, and an answer engine lifts a direct question and answer whole.
+  qas.push({
+    question: `在${townName}（${englishName}）买房或卖房，有讲中文的房地产经纪人吗？`,
+    answer: `有。${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，可以用普通话和英文服务${townName}（${englishName}）的买家和卖家。电话 ${CHINESE_PARTNER.phone}，邮箱 ${CHINESE_PARTNER.email}，也可以通过微信联系。`,
+  });
 
   qas.push({
     question: `${townName}有通勤火车或地铁站吗？`,

@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'weston-ma',
-  title: '住在韦斯顿（Weston, MA）：大地块、保护用地和房地产指南',
+  title: '韦斯顿（Weston, MA）买房指南：大地块和保护用地',
   description:
     '韦斯顿（Weston, MA）中文指南：大地块分区和保护用地，公立学校，Mass Pike 和 128 号公路的通勤，以及在这里买房为什么要看土地和建造潜力。',
   keywords: '韦斯顿 Weston 买房, Weston MA 学区, 韦斯顿 豪宅, Weston 新建房, 大波士顿 大地块',

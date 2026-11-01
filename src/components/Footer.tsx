@@ -121,7 +121,11 @@ const ZhFooter = ({ year }: { year: number }) => (
             </li>
             <li className="flex items-start gap-3 text-sm text-gray-300">
               <MapPin className="mt-1 h-4 w-4 shrink-0" aria-hidden />
-              <span>{CHINESE_PARTNER.brokerage}</span>
+              <span>
+                {CHINESE_PARTNER.brokerage}
+                <br />
+                {CHINESE_PARTNER.addressLine}
+              </span>
             </li>
           </ul>
           <img

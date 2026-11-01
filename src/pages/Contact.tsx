@@ -17,7 +17,7 @@ import ContactQRCode from '@/components/ContactQRCode';
 import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 import PageShell, { ShellSection } from "@/components/PageShell";
-import { SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
+import { CHINESE_PARTNER, SITE, serviceAreaLine, smsHref, telHref } from "@/lib/siteConfig";
 import { submitContactMessage } from "@/lib/submitContact";
 import { EVENTS, track } from "@/lib/analytics";
 import { agentIdentity, contactPage } from "@/lib/schema";
@@ -270,6 +270,26 @@ const Contact = () => {
                   <div className="pt-4 flex justify-center">
                     <ContactQRCode />
                   </div>
+
+                  {/* Kevin does not speak Chinese. In both languages, because the
+                      person who needs this line may read only one of them. */}
+                  <p className="border-t border-gray-200 pt-4 text-sm leading-relaxed text-gray-600">
+                    Prefer to work in Chinese? Contact{' '}
+                    <Link
+                      to="/chinese-speaking-real-estate-agent"
+                      className="underline decoration-champagne decoration-2 underline-offset-4"
+                    >
+                      Maggie Li, a Chinese-speaking real estate agent
+                    </Link>{' '}
+                    with {CHINESE_PARTNER.brokerage}.{' '}
+                    <Link
+                      to="/zh/lianxi"
+                      lang="zh-Hans"
+                      className="underline decoration-champagne decoration-2 underline-offset-4"
+                    >
+                      需要中文服务？请联系 Maggie Li。
+                    </Link>
+                  </p>
                 </div>
               </div>
             </div>

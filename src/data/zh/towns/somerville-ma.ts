@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'somerville-ma',
-  title: '住在萨默维尔（Somerville, MA）：绿线延伸、广场和房地产指南',
+  title: '萨默维尔（Somerville, MA）买房指南：绿线延伸和广场',
   description:
     '萨默维尔（Somerville, MA）中文指南：绿线延伸带来的变化，Davis、Union、Assembly 等广场的特点，三层楼和多户住宅，以及在这里买房要知道的事。',
   keywords: '萨默维尔 Somerville 买房, Somerville condo, 绿线延伸 房价, Davis Square, Union Square, 三层楼 投资',

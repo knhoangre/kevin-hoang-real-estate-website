@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'winchester-ma',
-  title: '住在温彻斯特（Winchester, MA）：镇中心、火车和房地产指南',
+  title: '温彻斯特（Winchester, MA）买房指南：镇中心和火车',
   description:
     '温彻斯特（Winchester, MA）中文指南：适合步行的镇中心和到 North Station 的通勤火车，Mystic Lakes 和 Middlesex Fells，洪水区要查什么，以及老房子的验房。',
   keywords: '温彻斯特 Winchester MA 买房, Winchester 学区, Winchester Center, Wedgemere, Winchester 洪水区',

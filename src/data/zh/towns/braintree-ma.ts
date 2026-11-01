@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'braintree-ma',
-  title: '住在布伦特里（Braintree, MA）：红线终点站和房地产指南',
+  title: '布伦特里（Braintree, MA）买房指南：红线终点站',
   description:
     '布伦特里（Braintree, MA）中文指南：红线终点站和主要高速公路，South Shore Plaza，各街区的特点，以及在南岸这个通勤方便的城镇买房要知道的事。',
   keywords: '布伦特里 Braintree 买房, Braintree MA 房价, 红线 终点站, East Braintree, South Shore 买房',

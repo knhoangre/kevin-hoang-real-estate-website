@@ -4,7 +4,7 @@ import PageShell, { ShellSection, type HeroSize, type ShellWidth } from '@/compo
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';
-import { faqPage, partnerPerson, type Crumb, type QA } from '@/lib/schema';
+import { faqPage, partnerAgent, partnerPerson, zhWebPage, type Crumb, type QA } from '@/lib/schema';
 import { alternatesFor } from '@/lib/viRoutes';
 import { CHINESE_PARTNER, SITE, partnerSmsHref, partnerTelHref } from '@/lib/siteConfig';
 import { pill } from '@/lib/pill';
@@ -91,6 +91,10 @@ const ZhPage = ({
 }: ZhPageProps) => {
   const english = alternatesFor(path)?.en;
   const allFaqs = [...faqs, ...faqGroups.flatMap((group) => group.faqs)];
+  // Her name in every result a Chinese page appears as, since that is the point
+  // of this tree. A title with its own pipe has already said whose it is: the two
+  // pages about Kevin do. Seo's own suffix would have said Kevin Hoang on all 32.
+  const title = seo.title.includes('|') ? seo.title : `${seo.title} | ${CHINESE_PARTNER.name}`;
 
   return (
     <PageShell
@@ -101,8 +105,16 @@ const ZhPage = ({
           { name: eyebrow, path },
         ]
       }
-      seo={{ ...seo, locale: 'zh_CN' }}
-      jsonLd={[...(allFaqs.length ? [faqPage(allFaqs)] : []), partnerPerson(), ...jsonLd]}
+      // The Chinese card with her photo, unless a page has its own. It is what a
+      // link to any of these unfurls as, in WeChat as anywhere else.
+      seo={{ ogImage: '/og-zh.jpg', ...seo, title, locale: 'zh_CN' }}
+      jsonLd={[
+        zhWebPage({ path, name: title, description: seo.description }),
+        ...(allFaqs.length ? [faqPage(allFaqs)] : []),
+        partnerPerson(),
+        partnerAgent(),
+        ...jsonLd,
+      ]}
       eyebrow={eyebrow}
       h1={h1}
       lede={lede}

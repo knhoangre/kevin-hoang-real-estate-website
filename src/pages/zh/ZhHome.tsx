@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import ZhPage from '@/components/ZhPage';
+import { service } from '@/lib/schema';
 import { CHINESE_PARTNER, SITE } from '@/lib/siteConfig';
 
 /**
@@ -33,7 +34,20 @@ const ZhHome = () => (
       alt: '大波士顿郊区的一栋住宅',
     }}
     faqHeading="大家最常问的问题"
+    jsonLd={[
+      service({
+        name: '大波士顿中文房地产服务',
+        serviceType: 'Real estate representation in Mandarin and English',
+        description: `${CHINESE_PARTNER.name} 用普通话和英文代表大波士顿地区的买家和卖家。`,
+        path: '/zh',
+        provider: CHINESE_PARTNER.agentId,
+      }),
+    ]}
     faqs={[
+      {
+        question: '大波士顿有讲中文的房地产经纪人吗？',
+        answer: `有。${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，办公室在 ${CHINESE_PARTNER.addressLine}，可以用普通话和英文代表大波士顿 ${SITE.areaServed.length} 个城镇的买家和卖家。电话 ${CHINESE_PARTNER.phone}，邮箱 ${CHINESE_PARTNER.email}，也可以通过微信联系。`,
+      },
       {
         question: '整个买房过程真的都可以用中文吗？',
         answer:

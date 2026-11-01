@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'dover-ma',
-  title: '住在多佛（Dover, MA）：一英亩地块、化粪池和房地产指南',
+  title: '多佛（Dover, MA）买房指南：一英亩地块和化粪池',
   description:
     '多佛（Dover, MA）中文指南：几乎全镇要求一英亩以上地块，化粪池和水井很普遍，与 Sherborn 共用的区域学校，以及在这里买房要查什么。',
   keywords: '多佛 Dover MA 买房, Dover Sherborn 学区, 多佛 化粪池, 大波士顿 大地块, Dover MA 豪宅',

@@ -4,7 +4,7 @@ import PageShell, { ShellSection } from '@/components/PageShell';
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import { agentIdentity, person } from '@/lib/schema';
-import { SITE, telHref, locality } from '@/lib/siteConfig';
+import { CHINESE_PARTNER, SITE, telHref, locality } from '@/lib/siteConfig';
 import { pill } from '@/lib/pill';
 
 /**
@@ -299,7 +299,12 @@ const About = () => {
               <Link to="/relocation">moving to Massachusetts from Connecticut</Link>, a
               move he has made himself, and offers the whole of the above{' '}
               <Link to="/vietnamese-speaking-real-estate-agent">in Vietnamese</Link> as
-              well as English — an additional service, not a specialisation.
+              well as English — an additional service, not a specialisation. He does not
+              speak Chinese, and refers clients who would rather work in it to{' '}
+              <Link to="/chinese-speaking-real-estate-agent">
+                Maggie Li, a Chinese-speaking real estate agent
+              </Link>{' '}
+              with {CHINESE_PARTNER.brokerage}.
             </p>
           </Section>
 

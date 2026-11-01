@@ -243,7 +243,7 @@ const Relocation = () => (
       description:
         'Relocating from Connecticut to Massachusetts: choosing a town, comparing property taxes and schools, transferring your licence, and timing a sale against a purchase.',
       keywords:
-        'moving from Connecticut to Massachusetts, CT to MA relocation, relocating to Boston, best Massachusetts towns for families, MA vs CT property tax',
+        'moving from Connecticut to Massachusetts, CT to MA relocation, relocating to Boston, choosing a Massachusetts town, MA vs CT property tax',
     }}
     serviceMeta={{
       name: 'Relocation assistance',

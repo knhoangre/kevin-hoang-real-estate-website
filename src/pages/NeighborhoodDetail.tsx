@@ -15,6 +15,7 @@ import TownGuideSections, { type TownGuide } from "@/components/TownGuideSection
 import { TOWN_FACTS } from "@/data/townFacts";
 import { townFaqs } from "@/lib/townFaqs";
 import { alternatesFor } from "@/lib/viRoutes";
+import { CHINESE_PARTNER } from "@/lib/siteConfig";
 
 const neighborhoodData: Record<string, TownGuide> = {
   "brookline-ma": {
@@ -120,7 +121,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🎓",
             title: "Its Own School District",
-            text: "Brookline runs its own schools rather than sharing Boston's, which is decisive for many families comparing the two."
+            text: "Brookline runs its own schools rather than sharing Boston's, which is decisive for many buyers comparing the two."
           },
           {
             icon: "🚶",
@@ -277,7 +278,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Belmont right for?",
         bullets: [
-          "Families choosing a district first and a house second",
+          "Buyers choosing a district first and a house second",
           "Cambridge and Kendall Square professionals who want more space",
           "Buyers considering an owner-occupied two-family",
           "Long-term owners who value stability over rapid turnover"
@@ -349,7 +350,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "subsection",
         title: "🎓 Schools and Community",
-        text: "Winchester runs its own school district and it is one of the main reasons families move here. The town also supports an unusually active civic and cultural life for its size, including the Griffin Museum of Photography and a long-running town day tradition."
+        text: "Winchester runs its own school district and it is one of the main reasons people move here. The town also supports an unusually active civic and cultural life for its size, including the Griffin Museum of Photography and a long-running town day tradition."
       },
       {
         type: "section",
@@ -415,7 +416,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🎓",
             title: "Its Own Schools",
-            text: "A self-contained, well-regarded district supports steady family demand year after year."
+            text: "A self-contained, well-regarded district supports steady buyer demand year after year."
           },
           {
             icon: "🛣",
@@ -429,7 +430,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         title: "Who is Winchester right for?",
         bullets: [
           "Commuters who want to walk to a train rather than drive to one",
-          "Families prioritising schools and a real town center",
+          "Buyers prioritising schools and a real town center",
           "Buyers drawn to older, architecturally distinctive homes",
           "People who want trail and water access without leaving Greater Boston"
         ]
@@ -629,7 +630,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "subsection",
         title: "🎨 Culture, Creativity & Community",
-        text: "From art festivals and farmers markets to live music and food truck events, Somerville is known for its cultural personality. It attracts professionals, creatives, families, and long-term residents who value a strong sense of neighborhood identity."
+        text: "From art festivals and farmers markets to live music and food truck events, Somerville is known for its cultural personality. It attracts professionals, creatives, and long-term residents who value a strong sense of neighborhood identity."
       },
       {
         type: "section",
@@ -797,7 +798,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             name: "West Newton",
-            description: "One of Newton's most dynamic and valuable mixed markets. Features commuter rail + express bus access, active village center, strong single-family, condo, and multifamily demand, and increasing luxury redevelopment. West Newton is a buyer-depth village — strong for families, professionals, and investors."
+            description: "One of Newton's most dynamic and valuable mixed markets. Features commuter rail + express bus access, active village center, strong single-family, condo, and multifamily demand, and increasing luxury redevelopment. West Newton is a buyer-depth village — strong for owner-occupants, professionals, and investors."
           },
           {
             name: "Auburndale",
@@ -829,7 +830,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             name: "Nonantum",
-            description: "Traditionally Newton's most accessible village. Features strong community identity, historic Italian-American roots, smaller lot sizes in many areas, and proximity to Watertown and the Charles River. Nonantum often provides the lowest entry point into Newton, which is why it remains extremely competitive."
+            description: "Traditionally Newton's most accessible village. Features strong community identity, smaller lot sizes in many areas, and proximity to Watertown and the Charles River. Nonantum often provides the lowest entry point into Newton, which is why it remains extremely competitive."
           }
         ]
       },
@@ -862,8 +863,8 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             icon: "🏡",
-            title: "Family & Lifestyle Appeal",
-            text: "Newton attracts families, professionals, and executives seeking space, safety, and long-term lifestyle value."
+            title: "Lifestyle Appeal",
+            text: "Newton attracts professionals and executives seeking space and long-term lifestyle value."
           },
           {
             icon: "🌎",
@@ -876,7 +877,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Newton right for?",
         bullets: [
-          "Families prioritizing schools and neighborhood quality",
+          "Buyers prioritizing schools and neighborhood quality",
           "Buyers looking for luxury or new construction homes",
           "Professionals who want suburban space with urban access",
           "Long-term buyers focused on appreciation and stability"
@@ -925,7 +926,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "subsection",
         title: "🎓 Highly Acclaimed School System",
-        text: "Lexington is widely recognized for its outstanding public schools, which consistently rank among the top in Massachusetts. This reputation drives both lifestyle demand and real estate value, making Lexington a long-term stronghold market for families.",
+        text: "Lexington is widely recognized for its outstanding public schools, which consistently rank among the top in Massachusetts. This reputation drives both lifestyle demand and real estate value, making Lexington a long-term stronghold market for buyers.",
         note: "Strong schools also support market resilience, helping Lexington homes maintain desirability across economic cycles."
       },
       {
@@ -1007,7 +1008,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             icon: "🏡",
-            title: "Family-Centered Lifestyle",
+            title: "Long-Term Living",
             text: "With excellent schools, parks, recreation facilities, and community programming, Lexington is ideal for long-term living."
           },
           {
@@ -1021,7 +1022,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Lexington right for?",
         bullets: [
-          "Families prioritizing elite public schools",
+          "Buyers prioritizing elite public schools",
           "Buyers seeking luxury and long-term stability",
           "Professionals commuting to Cambridge, Boston, or Route 128",
           "Relocation buyers and executives"
@@ -1070,7 +1071,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "subsection",
         title: "🎓 Elite Public Schools",
-        text: "Weston is widely recognized for its exceptional public school system, a key driver behind its strong real estate values and relocation demand. School quality supports long-term price stability and makes Weston a perennial choice for families prioritizing education."
+        text: "Weston is widely recognized for its exceptional public school system, a key driver behind its strong real estate values and relocation demand. School quality supports long-term price stability and makes Weston a perennial choice for buyers prioritizing education."
       },
       {
         type: "subsection",
@@ -1142,7 +1143,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🌎",
             title: "Relocation & Executive Appeal",
-            text: "Weston is a top destination for corporate relocations, executives, and families seeking discreet luxury living."
+            text: "Weston is a top destination for corporate relocations, executives, and buyers seeking discreet luxury living."
           }
         ]
       },
@@ -1151,7 +1152,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         title: "Who is Weston right for?",
         bullets: [
           "Buyers seeking luxury or estate properties",
-          "Families prioritizing education and space",
+          "Buyers prioritizing education and space",
           "Executives and relocation buyers",
           "Long-term homeowners focused on privacy and appreciation"
         ]
@@ -1281,7 +1282,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🌎",
             title: "Relocation & Executive Demand",
-            text: "Wellesley consistently attracts relocating professionals, executives, and families seeking elite suburban living."
+            text: "Wellesley consistently attracts relocating professionals, executives, and buyers seeking elite suburban living."
           }
         ]
       },
@@ -1289,7 +1290,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Wellesley right for?",
         bullets: [
-          "Families prioritizing top-tier public schools",
+          "Buyers prioritizing top-tier public schools",
           "Buyers seeking luxury homes and long-term value",
           "Professionals commuting to Boston, Cambridge, or Route 128",
           "Relocation buyers and move-up homeowners"
@@ -1338,7 +1339,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "subsection",
         title: "🌳 Expansive Space & Natural Beauty",
-        text: "Dover is one of the most low-density communities inside Route 128. Residents enjoy:",
+        text: "Dover is one of the most low-density communities in the western suburbs. Residents enjoy:",
         bullets: [
           "Large residential lots and estate properties",
           "Miles of protected open space and trails",
@@ -1411,7 +1412,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🌎",
             title: "Relocation & Executive Appeal",
-            text: "Dover is frequently chosen by relocating professionals and families seeking discreet, estate-style living."
+            text: "Dover is frequently chosen by relocating professionals and buyers seeking discreet, estate-style living."
           }
         ]
       },
@@ -1420,7 +1421,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         title: "Who is Dover right for?",
         bullets: [
           "Buyers seeking estate-level properties and privacy",
-          "Families prioritizing education and lifestyle quality",
+          "Buyers prioritizing education and lifestyle quality",
           "Executives and relocation clients",
           "Long-term homeowners focused on land value and stability"
         ]
@@ -1650,7 +1651,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           "Thayer Academy area",
           "Local sports fields, trails, and community centers"
         ],
-        note: "This balance of space and access continues to attract families and long-term homeowners."
+        note: "This balance of space and access continues to attract long-term homeowners."
       },
       {
         type: "section",
@@ -1663,7 +1664,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             name: "South Braintree / Thayer Academy Area",
-            description: "Known for strong residential neighborhoods, larger homes, and family appeal."
+            description: "Known for strong residential neighborhoods and larger homes."
           },
           {
             name: "Braintree Highlands",
@@ -1720,7 +1721,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         bullets: [
           "Boston and South Shore commuters",
           "First-time and move-up buyers",
-          "Families seeking space and value",
+          "Buyers seeking space and value",
           "Buyers who want transit access without Boston pricing",
           "Long-term homeowners"
         ]
@@ -2151,7 +2152,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🌎",
             title: "Relocation & Executive Appeal",
-            text: "Concord is frequently chosen by relocating professionals and families seeking prestigious suburban living."
+            text: "Concord is frequently chosen by relocating professionals and buyers seeking prestigious suburban living."
           }
         ]
       },
@@ -2159,7 +2160,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Concord right for?",
         bullets: [
-          "Families prioritizing education and environment",
+          "Buyers prioritizing education and environment",
           "Buyers seeking historic or luxury homes",
           "Executives and relocation buyers",
           "Long-term homeowners focused on lifestyle and stability"
@@ -2196,7 +2197,7 @@ const neighborhoodData: Record<string, TownGuide> = {
     content: [
       {
         type: "intro",
-        text: "Needham, Massachusetts is one of the most consistently desirable towns in the western suburbs of Boston. Known for its top-ranked public schools, vibrant town center, strong community atmosphere, and excellent commuter access, Needham continues to attract families and professionals seeking long-term lifestyle value and real estate stability.",
+        text: "Needham, Massachusetts is one of the most consistently desirable towns in the western suburbs of Boston. Known for its top-ranked public schools, vibrant town center, strong community atmosphere, and excellent commuter access, Needham continues to attract buyers and professionals seeking long-term lifestyle value and real estate stability.",
         highlight: "Located just southwest of Boston and bordering Newton, Wellesley, Dedham, and Dover, Needham offers an ideal blend of suburban comfort, modern amenities, and direct access to major employment hubs."
       },
       {
@@ -2247,7 +2248,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           },
           {
             name: "Bird's Hill & Broadmeadow",
-            description: "Established neighborhoods known for classic colonials, larger lots, and family appeal."
+            description: "Established neighborhoods known for classic colonials and larger lots."
           },
           {
             name: "South Needham",
@@ -2290,7 +2291,7 @@ const neighborhoodData: Record<string, TownGuide> = {
           {
             icon: "🌎",
             title: "Relocation & Professional Demand",
-            text: "Needham is a popular choice for relocating families and professionals working in Boston and the Route 128 corridor."
+            text: "Needham is a popular choice for relocating buyers and professionals working in Boston and the Route 128 corridor."
           }
         ]
       },
@@ -2298,7 +2299,7 @@ const neighborhoodData: Record<string, TownGuide> = {
         type: "section",
         title: "Who is Needham right for?",
         bullets: [
-          "Families prioritizing strong public schools",
+          "Buyers prioritizing strong public schools",
           "Buyers seeking suburban comfort with urban access",
           "Move-up and luxury buyers",
           "Long-term homeowners"
@@ -2320,7 +2321,7 @@ const neighborhoodData: Record<string, TownGuide> = {
       {
         type: "cta",
         title: "Thinking About Buying in Needham?",
-        text: "If you're considering purchasing in Needham, having local insight can significantly affect your results. From targeting family-friendly neighborhoods to identifying new construction opportunities, guidance matters.",
+        text: "If you're considering purchasing in Needham, having local insight can significantly affect your results. From comparing neighborhoods to identifying new construction opportunities, guidance matters.",
         highlight: "I help buyers evaluate Needham homes, compare neighborhoods, and navigate competitive markets with confidence.",
         closing: "If you'd like to explore Needham opportunities or compare Needham with Newton, Wellesley, or Dedham, feel free to reach out anytime."
       }
@@ -2607,6 +2608,19 @@ const NeighborhoodDetail = () => {
                   Newton-based agent
                 </Link>{" "}
                 covering this town and the rest of Greater Boston.
+              </p>
+              {/* A link into the Chinese side from every guide, with the words a
+                  person would search for. Kevin does not speak Chinese. */}
+              <p className="text-gray-700 leading-relaxed">
+                Prefer to work in Chinese? Kevin refers those clients to{" "}
+                <Link to="/chinese-speaking-real-estate-agent" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
+                  Maggie Li, a Chinese-speaking real estate agent
+                </Link>{" "}
+                with {CHINESE_PARTNER.brokerage}, and{" "}
+                <Link to={`/zh/quyu/${slug}`} lang="zh-Hans" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
+                  this guide is in Chinese too
+                </Link>
+                .
               </p>
             </aside>
 

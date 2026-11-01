@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import ZhPage from '@/components/ZhPage';
+import { service } from '@/lib/schema';
+import { CHINESE_PARTNER } from '@/lib/siteConfig';
 
 /**
  * /zh/gujia — the home valuation page in Chinese. Pairs with /home-valuation, and
@@ -10,11 +12,20 @@ const ZhValuation = () => (
   <ZhPage
     path="/zh/gujia"
     seo={{
-      title: '大波士顿免费房屋估价 | 中文服务',
+      title: '大波士顿免费房屋估价：书面报告，中文讲解',
       description:
         '想知道您在大波士顿的房子值多少钱？一份免费、没有义务的书面估价，基于附近同类成交和实地查看，不是自动算出来的数字，可以用中文讲解。',
       keywords: '房屋估价 波士顿, 我的房子值多少钱, 免费 估价 麻州, 比较市场分析, Zillow 估价 准吗, home valuation Boston Chinese',
     }}
+    jsonLd={[
+      service({
+        name: '免费书面房屋估价',
+        serviceType: 'Property valuation',
+        description: '根据附近同类成交和实地查看准备的书面估价，可以用中文讲解。',
+        path: '/zh/gujia',
+        provider: CHINESE_PARTNER.agentId,
+      }),
+    ]}
     eyebrow="房屋估价"
     h1="您的房子值多少钱？"
     lede="一份书面估价，根据您附近最近的同类成交和实地查看来准备。它免费，不要求您挂牌出售，而且是真正的分析，不是自动算出来的猜测。"

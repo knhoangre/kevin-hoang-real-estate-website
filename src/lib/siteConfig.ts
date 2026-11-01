@@ -375,6 +375,8 @@ export const SITE = {
  */
 export const CHINESE_PARTNER = {
   name: 'Maggie Li',
+  /** Her business, as her own site and schema name it. */
+  teamName: 'Maggie Li & Co',
   brokerage: 'William Raveis Real Estate',
   /** Display format, as on her own site. */
   phone: '(774) 222-0952',
@@ -383,6 +385,20 @@ export const CHINESE_PARTNER = {
   website: 'https://maggieli.co',
   reviewsUrl: 'https://maggieli.co/testimonials',
   locality: 'Newton, MA',
+  /**
+   * Hers, unlike Kevin's: she has an office and publishes it. Printed exactly as
+   * on her site, because the same name, address and phone in more than one place
+   * is what a local search engine counts as a citation.
+   */
+  address: {
+    streetAddress: '1229 Centre St',
+    addressLocality: 'Newton',
+    addressRegion: 'MA',
+    postalCode: '02459',
+    addressCountry: 'US',
+  },
+  addressLine: '1229 Centre St, Newton, MA 02459',
+  geo: { latitude: 42.3309430185562, longitude: -71.1949515635617 },
   languages: ['zh', 'en'],
   photo: '/images/maggie-li.webp',
   wechatQr: '/images/maggie-wechat.webp',
@@ -391,6 +407,7 @@ export const CHINESE_PARTNER = {
    * tells a search engine these are one person rather than two named alike.
    */
   personId: 'https://maggieli.co/#maggie',
+  agentId: 'https://maggieli.co/#agent',
   profiles: [
     'https://maggieli.co',
     'https://www.raveis.com/Agent/maggieli',

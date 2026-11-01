@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'needham-ma',
-  title: '住在尼德姆（Needham, MA）：四个火车站、学校和房地产指南',
+  title: '尼德姆（Needham, MA）买房指南：四个火车站和学区',
   description:
     '尼德姆（Needham, MA）中文指南：镇上四个通勤火车站，公立学校，Needham Center 等街区的特点，重建趋势，以及在这里买房要知道的事。',
   keywords: '尼德姆 Needham 买房, Needham MA 学区, Needham Heights, Needham 通勤火车, 尼德姆 新建房',
@@ -68,7 +68,7 @@ const guide: ZhTownGuideData = {
         { icon: '📈', title: '长期基础', text: '学校、地段和城镇设施支撑着这里的房产价值。' },
         { icon: '🏗', title: '新建房和现代生活', text: '尼德姆持续吸引高品质的新建房，让买家可以买到现代格局和高端装修。' },
         { icon: '🏡', title: '生活和社区', text: '有公园、休闲设施、镇上的活动和积极的公民参与。' },
-        { icon: '🌎', title: '搬迁和专业人士', text: '很受搬迁家庭和在波士顿及 128 号公路一带工作的专业人士欢迎。' },
+        { icon: '🌎', title: '搬迁和专业人士', text: '很受搬迁买家和在波士顿及 128 号公路一带工作的专业人士欢迎。' },
       ],
     },
     {

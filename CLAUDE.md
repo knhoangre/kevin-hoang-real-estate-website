@@ -36,7 +36,7 @@ node scripts/market-check.ts           # the market reports: windows, medians, s
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
 node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
-node scripts/zh-check.mjs              # the BUILT Chinese pages (after npm run build): language tags, Maggie's number, both brokerages, nothing saying Kevin speaks Chinese
+node scripts/zh-check.mjs              # the BUILT Chinese pages (after npm run build): language tags, Maggie's name, number and address, both brokerages, nothing saying Kevin speaks Chinese
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -2415,9 +2415,11 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
   the Chinese guides and the ten closings stay English.
 - **Language, never ethnicity.** No "towns with a large Chinese community" and no
   school rankings, which is steering by national origin. So the guides drop the
-  English "Who is X right for?" sections ("families prioritizing..."), "safety",
-  "Italian-American roots" and "elite schools". `/vi/khu-vuc` still has a question
-  of the kind this rules out; it needs its own decision.
+  English "Who is X right for?" sections and "elite schools". The rest of the site
+  came into line on 2026-10-31 at Kevin's request: `/vi/khu-vuc` no longer says where
+  the Vietnamese community lives, and the English guides and FAQ lost "safety",
+  "family-friendly", "Families prioritizing...", "Italian-American roots", the
+  letter to the seller and "standard fee 5-6%". Write "buyers", and name the need.
 - **Not a literal translation where a literal one would make a claim.** `/faq`'s
   answers about how "we" work describe Kevin's practice and would be statements
   about Maggie's. Love letters and "5-6% commission" are not carried across either.
@@ -2439,6 +2441,35 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
 - **English on purpose:** `/search` and listings (MLS PIN: noindex), the ten closings,
   `/needham-real-estate-agent` (it is about hiring Kevin), the legal pages (not
   without a lawyer), sign-in, applications, admin.
+- **What makes her show up in search, all deliberate** (Kevin asked for "SEO to the
+  max" on 2026-10-31):
+  - **Her name in every title**: `ZhPage` adds `| Maggie Li` unless the title has its
+    own pipe, which only the two pages about Kevin use. Town titles lead with what
+    is searched, `<town>（<English>, MA）买房指南`, while the h1 stays 住在<town>.
+  - **Her name, address and phone on every page**, in the footer and in
+    `partnerAgent()`, exactly as on her site: a second domain repeating them is what
+    local search calls a citation. The @ids are her site's own (`maggieli.co/#agent`,
+    `/#maggie`), so an engine reads one person, not a namesake.
+    `/zh/maggie-li` is a `ProfilePage`; every page says `inLanguage: zh-Hans`.
+  - **The direct question, answered**: "is there a Chinese-speaking agent in <town>?"
+    opens every town FAQ, because that is what gets typed into an AI, and an answer
+    engine lifts a question and its answer whole. /zh and the English page ask it too.
+  - **`public/og-zh.jpg`**, her card, is what any /zh link unfurls as. Regenerate it
+    with `fonts-noto-cjk` installed (see generate-icons.mjs), or Chinese comes out as
+    boxes. Only the Chinese card needs that font.
+  - **Links in from the English side with the words a person searches**: /about,
+    /contact and every English town guide, to `/chinese-speaking-real-estate-agent`.
+  - **`scripts/zh-fonts.mjs` (in `npm run build`)** makes the Google Fonts link
+    non-blocking on /zh pages only. That host is blocked in mainland China, so a
+    blocking link meant a blank page until it gave up. English pages keep it, because
+    there it prevents a visible jump between fonts.
+  - **IndexNow**: the key file is `public/5df7d710b180f78d8ec839d8631fedb1.txt`, and the
+    /zh routes carry a real `lastmod` (`ZH_UPDATED` in routes.mjs), which is what
+    makes them eligible. Automatic pings need `INDEXNOW_KEY` set to that key in
+    Vercel's Production environment. Move `ZH_UPDATED` only when the text changes.
+  - **What code cannot do** is most of the rest: her Google Business Profile, a link
+    back from maggieli.co, and links from outside. Translating the blog is the largest
+    on-site step left, and waits on her review as above.
 - **Simplified, but hreflang `zh`.** There is one Chinese version, and `zh-Hans`
   would tell Google it is not for someone searching in Traditional characters.
   `<html lang>` is `zh-Hans`, or Windows draws the glyphs in a Japanese font.

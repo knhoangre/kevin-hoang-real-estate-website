@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'newton-ma',
-  title: '住在牛顿（Newton, MA）：13 个村区、学校和房地产指南',
+  title: '牛顿（Newton, MA）买房指南：13 个村区、学区和新建房',
   description:
     '牛顿（Newton, MA）中文指南：13 个村区各有什么特点，绿线和通勤火车，公立学校，新建房市场，以及在牛顿买房之前要知道的事。',
   keywords: '牛顿 Newton 买房, 牛顿 学区, Newton MA 村区, Chestnut Hill, Waban, Newton Centre, 牛顿 新建房',
@@ -56,7 +56,7 @@ const guide: ZhTownGuideData = {
       title: '牛顿的村区各有什么特点？',
       text: '每个村区的生活方式和价格情况都不一样。',
       neighborhoods: [
-        { name: 'Chestnut Hill', description: '牛顿价格通常最高的地区。有庄园式住宅和高端新建房，靠近波士顿、布鲁克莱恩、波士顿学院和高尔夫球场，地块大、私密性好，重建价值高。常吸引高管、搬迁家庭和高端买家。' },
+        { name: 'Chestnut Hill', description: '牛顿价格通常最高的地区。有庄园式住宅和高端新建房，靠近波士顿、布鲁克莱恩、波士顿学院和高尔夫球场，地块大、私密性好，重建价值高。常吸引高管、搬迁买家和高端买家。' },
         { name: 'Waban', description: '牛顿很受追捧的住宅村区之一。地块大，街道蜿蜒，有绿地的感觉，高端住宅和新建房集中，有 MBTA 绿线。独栋房的价格常与 Chestnut Hill 相近。' },
         { name: 'Newton Centre', description: '需求很高的村区。中心适合步行，有餐饮、商店和绿线；有经典的殖民式住宅、高端翻新和新建房。独栋市场竞争激烈，高价位与步行便利并存，所以需求一直很高。' },
         { name: 'Newton Highlands', description: '价格范围稍宽的优质村区。社区氛围受欢迎，有绿线，房屋有翻新的殖民式也有高端新建房。价格往往略低于 Newton Centre 和 Waban，但仍属牛顿的较高水平。' },

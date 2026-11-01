@@ -231,7 +231,7 @@ const Roadmap = ({
                           isActive ? c.active : 'text-gray-400'
                         }`}
                       >
-                        {String(index + 1).padStart(2, '0')}
+                        {index + 1}
                       </span>
                       <span className="leading-snug">{step.title}</span>
                     </a>

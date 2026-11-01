@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'wellesley-ma',
-  title: '住在韦尔斯利（Wellesley, MA）：街区、通勤和房地产指南',
+  title: '韦尔斯利（Wellesley, MA）买房指南：街区、学区和通勤火车',
   description:
     '韦尔斯利（Wellesley, MA）中文指南：Wellesley Square 等街区的特点，三个通勤火车站，公立学校，新建房市场，以及在这里买房要知道的事。',
   keywords: '韦尔斯利 Wellesley 买房, Wellesley MA 学区, 韦尔斯利 房价, Wellesley Hills, Wellesley 通勤火车',

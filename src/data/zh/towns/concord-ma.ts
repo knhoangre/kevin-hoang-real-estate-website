@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'concord-ma',
-  title: '住在康科德（Concord, MA）：历史街区、学校和房地产指南',
+  title: '康科德（Concord, MA）买房指南：历史街区和学区',
   description:
     '康科德（Concord, MA）中文指南：Walden Pond 和保护用地，通勤火车到 North Station，与 Carlisle 共用的区域高中，历史街区的限制，以及在这里买房要知道的事。',
   keywords: '康科德 Concord MA 买房, Concord Carlisle 学区, West Concord, Walden Pond 附近 住房, 康科德 历史 住宅',

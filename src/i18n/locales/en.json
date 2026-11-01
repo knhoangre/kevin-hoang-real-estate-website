@@ -178,7 +178,7 @@
       },
       "item4": {
         "question": "What costs should I expect when selling my home?",
-        "answer": "When selling your home, typical costs include real estate commission (usually 5-6% of the sale price), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
+        "answer": "When selling your home, typical costs include real estate commission (negotiable, and set in your listing agreement; there is no standard rate), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
       },
       "item5": {
         "question": "How do you market properties to ensure maximum exposure?",
@@ -232,7 +232,7 @@
       },
       "item5": {
         "question": "What should I look for during property viewings?",
-        "answer": "During viewings, we help you evaluate both the property itself and its location. We look at structural elements, layout, natural light, storage, and potential for improvements. We also assess neighborhood factors such as safety, schools, transportation, and future development plans. We encourage you to take notes and photos, and we're happy to point out features you might not notice on your own."
+        "answer": "During viewings, we help you evaluate both the property itself and its location. We look at structural elements, layout, natural light, storage, and potential for improvements. We also look at practical factors such as schools, transportation, and future development plans. We encourage you to take notes and photos, and we're happy to point out features you might not notice on your own."
       },
       "item6": {
         "question": "How do you help with the offer process?",
@@ -252,7 +252,7 @@
       },
       "item10": {
         "question": "How do you help with competitive bidding situations?",
-        "answer": "In competitive markets like Boston, multiple-offer situations are common. We help you craft a strong offer that stands out while protecting your interests. This may include offering a higher price, minimizing contingencies, providing a larger earnest money deposit, or writing a personal letter to the seller. We explain the pros and cons of each strategy and help you decide which approach aligns with your goals and risk tolerance."
+        "answer": "In competitive markets like Boston, multiple-offer situations are common. We help you craft a strong offer that stands out while protecting your interests. This may include offering a higher price, a more flexible closing date, a larger earnest money deposit, or having the home inspected before you offer. Massachusetts bars a seller or listing agent from requiring a buyer to waive the inspection (760 CMR 74.00), and personal letters to the seller are best avoided because they raise fair-housing concerns. We explain the pros and cons of each strategy and help you decide which approach aligns with your goals and risk tolerance."
       },
       "item11": {
         "question": "What should I know about property taxes in Boston?",
@@ -282,7 +282,7 @@
       },
       "item5": {
         "question": "What costs should I expect when selling my home?",
-        "answer": "When selling your home, typical costs include real estate commission (usually 5-6% of the sale price), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
+        "answer": "When selling your home, typical costs include real estate commission (negotiable, and set in your listing agreement; there is no standard rate), closing costs (1-3%), potential repairs identified during inspections, possible seller concessions, moving expenses, and any outstanding mortgage balance. We provide a detailed net proceeds estimate during our initial consultation so you'll have a clear understanding of your financial outcome."
       },
       "item6": {
         "question": "How do you market properties to ensure maximum exposure?",
@@ -328,7 +328,7 @@
       },
       "step2": {
         "title": "Hiring Professionals",
-        "description": "Choose a buyer's agent – They represent your interests, negotiate on your behalf, and guide you through the process (paid from seller's commission in most cases).",
+        "description": "Choose a buyer's agent – They represent your interests, negotiate on your behalf, and guide you through the process. Since August 2024 you sign a written agreement before touring homes, and what they are paid is negotiable.",
         "details": [
           "Select a lender/mortgage broker – Compare rates, fees, and programs (FHA, VA, USDA, conventional).",
           "Optional specialists – Real estate attorney (common in some states), financial advisor, inspector."
@@ -338,7 +338,7 @@
         "title": "House Hunting",
         "description": "Search online & tour properties – MLS, Zillow, Redfin, open houses.",
         "details": [
-          "Narrow your search – Consider market trends, property taxes, neighborhood safety, and future resale value.",
+          "Narrow your search – Consider market trends, property taxes, your commute, and future resale value.",
           "Track comparable sales – Understand what similar homes sell for to avoid overpaying."
         ]
       },
@@ -436,7 +436,7 @@
       },
       "step2": {
         "title": "Hiring Professionals",
-        "description": "Choose a listing agent – They'll market, negotiate, and guide you through the sale (standard fee 5–6% split between listing and buyer agents).",
+        "description": "Choose a listing agent – They'll market, negotiate, and guide you through the sale. Commission is negotiable and set in your listing agreement, including whether any of it is offered to a buyer's agent.",
         "details": [
           "Optional specialists – Real estate attorney (common in states like MA), home stager, photographer.",
           "Discuss pricing strategy – Pricing slightly above, at, or below market value depending on market conditions."

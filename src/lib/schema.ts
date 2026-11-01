@@ -94,6 +94,53 @@ export const partnerPerson = () =>
   });
 
 /**
+ * Her business, under the @id her own site gives it, and the one thing a local
+ * search engine looks for on a second site: her name, address and phone, the same
+ * as everywhere else. Every field here is printed on /zh/maggie-li.
+ */
+export const partnerAgent = () =>
+  compact({
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateAgent',
+    '@id': CHINESE_PARTNER.agentId,
+    name: CHINESE_PARTNER.teamName,
+    url: CHINESE_PARTNER.website,
+    image: absoluteUrl(CHINESE_PARTNER.photo),
+    telephone: CHINESE_PARTNER.phoneE164,
+    email: CHINESE_PARTNER.email,
+    address: { '@type': 'PostalAddress', ...CHINESE_PARTNER.address },
+    geo: { '@type': 'GeoCoordinates', ...CHINESE_PARTNER.geo },
+    areaServed: areaServed(),
+    knowsLanguage: [...CHINESE_PARTNER.languages],
+    parentOrganization: { '@type': 'Organization', name: CHINESE_PARTNER.brokerage },
+    employee: { '@id': CHINESE_PARTNER.personId },
+    sameAs: [...CHINESE_PARTNER.profiles],
+  });
+
+/** Says a /zh document is in Chinese, which hreflang alone says only in the head. */
+export const zhWebPage = (opts: { path: string; name: string; description: string }) => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  url: absoluteUrl(opts.path),
+  name: opts.name,
+  description: opts.description,
+  inLanguage: 'zh-Hans',
+});
+
+/**
+ * A page that exists to describe one person: Google's ProfilePage. mainEntity is a
+ * reference, so partnerPerson() has to be on the same page.
+ */
+export const profilePage = (opts: { path: string; name: string; personId: string }) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url: absoluteUrl(opts.path),
+  name: opts.name,
+  inLanguage: 'zh-Hans',
+  mainEntity: { '@id': opts.personId },
+});
+
+/**
  * The business itself. Homepage only.
  *
  * RealEstateAgent is a subtype of LocalBusiness, so this covers both. `geo` and
@@ -225,13 +272,15 @@ export const service = (opts: {
   serviceType: string;
   description: string;
   path: string;
+  /** @id of whoever provides it, declared on the same page. Defaults to Kevin. */
+  provider?: string;
 }) => ({
   '@context': 'https://schema.org',
   '@type': 'Service',
   name: opts.name,
   serviceType: opts.serviceType,
   description: opts.description,
-  provider: { '@id': AGENT_ID },
+  provider: { '@id': opts.provider ?? AGENT_ID },
   areaServed: areaServed(),
   url: absoluteUrl(opts.path),
 });
@@ -286,13 +335,19 @@ export const blogPosting = (post: BlogPostLike) =>
  * geo is worth the payload, because it is the page a consumer lands on when it
  * is specifically looking for how to reach the business.
  */
-export const contactPage = () => ({
+export const contactPage = (
+  opts: { path: string; name: string; entity: string } = {
+    path: '/contact',
+    name: `Contact ${SITE.agentName}`,
+    entity: AGENT_ID,
+  }
+) => ({
   '@context': 'https://schema.org',
   '@type': 'ContactPage',
-  '@id': absoluteUrl('/contact'),
-  url: absoluteUrl('/contact'),
-  name: `Contact ${SITE.agentName}`,
-  mainEntity: { '@id': AGENT_ID },
+  '@id': absoluteUrl(opts.path),
+  url: absoluteUrl(opts.path),
+  name: opts.name,
+  mainEntity: { '@id': opts.entity },
 });
 
 /**

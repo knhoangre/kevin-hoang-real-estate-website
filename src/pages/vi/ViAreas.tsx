@@ -10,6 +10,10 @@ import { SITE } from '@/lib/siteConfig';
  * content — exactly the scaled-content shape this corpus was cleaned of once.
  * The guides are named and their contents described so a Vietnamese reader
  * knows what they will find there.
+ *
+ * It does not say which towns a community lives in. It did until 2026-10-31, and
+ * pointing a reader at a town by national origin is steering under fair-housing
+ * law, whatever language it is written in and however kindly it is meant.
  */
 const ViAreas = () => (
   <ViPage
@@ -34,11 +38,6 @@ const ViAreas = () => (
     }}
     faqHeading="Câu hỏi về khu vực"
     faqs={[
-      {
-        question: 'Thị trấn nào có cộng đồng người Việt lớn?',
-        answer:
-          'Quincy, Malden và Medford là những nơi có cộng đồng người Việt đáng kể ở vùng Boston, cùng với khu Dorchester của thành phố Boston. Nhưng đừng để đó là tiêu chí duy nhất — quãng đường đi làm, trường học và loại nhà bạn cần thường quan trọng hơn về lâu dài, và các thị trấn quanh đó đều nằm trong khoảng cách lái xe hợp lý.',
-      },
       {
         question: 'Nhà hai căn hộ (two-family) phổ biến ở đâu?',
         answer:
@@ -106,8 +105,8 @@ const ViAreas = () => (
       khoảng cách đi bộ tới ga tạo ra chênh lệch giá rõ rệt giữa những căn nhà tương tự nhau.
     </p>
     <p>
-      <strong>Quincy, Malden và Medford</strong> có nhiều nhà hai và ba căn hộ, và là nơi có
-      cộng đồng người Việt lớn nhất trong vùng.
+      <strong>Quincy, Malden và Medford</strong> có nhiều nhà hai và ba căn hộ, phần lớn nguồn
+      cung ở đó là loại này.
     </p>
     <p>
       <strong>Dover và Weston</strong> có lô đất lớn và nhiều nhà dùng hầm tự hoại thay vì cống

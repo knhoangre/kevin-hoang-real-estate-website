@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'quincy-ma',
-  title: '住在昆西（Quincy, MA）：红线、海岸和房地产指南',
+  title: '昆西（Quincy, MA）买房指南：红线和海岸',
   description:
     '昆西（Quincy, MA）中文指南：四个红线车站，Wollaston Beach 和 Marina Bay，Quincy Center 的更新，各街区的特点和洪水区，以及在这里买房要知道的事。',
   keywords: '昆西 Quincy 买房, Quincy MA 房价, Wollaston, North Quincy, Marina Bay, 红线 买房',

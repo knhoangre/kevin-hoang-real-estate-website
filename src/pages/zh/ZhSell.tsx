@@ -2,6 +2,8 @@ import { ClipboardCheck, FileText, TrendingUp } from 'lucide-react';
 import ZhPage from '@/components/ZhPage';
 import ZhSellerRoadmap from '@/components/zh/ZhSellerRoadmap';
 import ViResources from '@/components/vi/ViResources';
+import { service } from '@/lib/schema';
+import { CHINESE_PARTNER } from '@/lib/siteConfig';
 
 /**
  * /zh/shoufang — the seller's guide in Chinese. Pairs with /seller. Weighted
@@ -63,6 +65,15 @@ const ZhSell = () => (
       button: '申请估价',
     }}
     enLabel="The seller's guide and roadmap"
+    jsonLd={[
+      service({
+        name: '麻州售房代理',
+        serviceType: 'Real estate listing agency',
+        description: '用普通话和英文代表大波士顿地区的卖家。',
+        path: '/zh/shoufang',
+        provider: CHINESE_PARTNER.agentId,
+      }),
+    ]}
     // Wide, like /seller: the roadmap's sticky index sits beside the steps.
     width="wide"
     sections={

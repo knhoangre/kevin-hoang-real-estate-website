@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'malden-ma',
-  title: '住在莫尔登（Malden, MA）：橙线、市中心和房地产指南',
+  title: '莫尔登（Malden, MA）买房指南：橙线和市中心',
   description:
     '莫尔登（Malden, MA）中文指南：两个橙线车站几分钟到波士顿市中心，Malden Center 的更新，各街区的特点，condo 和多户住宅，以及在这里买房要知道的事。',
   keywords: '莫尔登 Malden 买房, Malden Center, Oak Grove, 橙线 买房, Malden condo, 马尔登 房价',

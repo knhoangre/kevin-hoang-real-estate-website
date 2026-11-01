@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'brookline-ma',
-  title: '住在布鲁克莱恩（Brookline, MA）：绿线、condo 和房地产指南',
+  title: '布鲁克莱恩（Brookline, MA）买房指南：绿线、condo 和学区',
   description:
     '布鲁克莱恩（Brookline, MA）中文指南：绿线和 Longwood 医疗区，Coolidge Corner 等街区的特点，这里的 condo 文件为什么特别重要，以及买房要注意什么。',
   keywords: '布鲁克莱恩 Brookline 买房, Brookline condo, Coolidge Corner, Longwood 医疗区 住房, Brookline 学区',
@@ -34,7 +34,7 @@ const guide: ZhTownGuideData = {
         'E 支线和 Longwood 医疗区就在镇界外',
         '多条巴士线路，商业广场真正适合步行',
       ],
-      note: '一个镇里有两条绿线支线，这就是为什么很多家庭不需要第二辆车，也是为什么离车站的远近会明显反映在价格上。',
+      note: '一个镇里有两条绿线支线，这就是为什么很多住户不需要第二辆车，也是为什么离车站的远近会明显反映在价格上。',
     },
     {
       type: 'subsection',

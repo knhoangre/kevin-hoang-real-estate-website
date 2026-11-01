@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import ZhPage from '@/components/ZhPage';
 import WeChatCard from '@/components/zh/WeChatCard';
+import { profilePage } from '@/lib/schema';
 import { CHINESE_PARTNER, SITE, partnerTelHref } from '@/lib/siteConfig';
 
 /**
@@ -16,7 +17,7 @@ const ZhMaggie = () => (
   <ZhPage
     path="/zh/maggie-li"
     seo={{
-      title: 'Maggie Li：讲普通话的波士顿房地产经纪人',
+      title: 'Maggie Li：波士顿讲中文的房地产经纪人 | 牛顿 Newton',
       description: `${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，常驻 Newton（牛顿），用普通话和英文服务大波士顿的买家和卖家，也是美国亚裔房地产协会（AREAA）理事会成员。`,
       keywords:
         'Maggie Li, Maggie Li 地产经纪, Maggie Li real estate, 牛顿 地产经纪, Newton MA Mandarin realtor, William Raveis Maggie Li',
@@ -30,6 +31,13 @@ const ZhMaggie = () => (
       alt: '',
     }}
     heroSize="standard"
+    jsonLd={[
+      profilePage({
+        path: '/zh/maggie-li',
+        name: `${CHINESE_PARTNER.name}：波士顿讲中文的房地产经纪人`,
+        personId: CHINESE_PARTNER.personId,
+      }),
+    ]}
     heroAside={
       <div className="aspect-square w-full max-w-[220px] overflow-hidden rounded-2xl ring-1 ring-champagne/40">
         <img
@@ -45,6 +53,10 @@ const ZhMaggie = () => (
     }
     faqHeading="关于 Maggie 的问题"
     faqs={[
+      {
+        question: 'Maggie Li 的联系方式是什么？',
+        answer: `电话 ${CHINESE_PARTNER.phone}，邮箱 ${CHINESE_PARTNER.email}，办公室地址 ${CHINESE_PARTNER.addressLine}，个人网站 maggieli.co。也可以扫描这个页面上的二维码，通过微信联系她。`,
+      },
       {
         question: 'Maggie 和 Kevin Hoang 是什么关系？',
         answer: `这是 ${SITE.agentName} 的网站。${SITE.agentName} 不讲中文，所以把需要中文服务的客户转介给 ${CHINESE_PARTNER.name}。两人分属不同的经纪公司：${SITE.agentName} 在 ${SITE.brokerage}，${CHINESE_PARTNER.name} 在 ${CHINESE_PARTNER.brokerage}。您和 Maggie 合作时，由她和她的公司代表您。`,
@@ -73,12 +85,16 @@ const ZhMaggie = () => (
     <h2>Maggie 的基本资料</h2>
     <ul>
       <li>
+        <strong>团队：</strong>
+        {CHINESE_PARTNER.teamName}
+      </li>
+      <li>
         <strong>经纪公司：</strong>
         {CHINESE_PARTNER.brokerage}
       </li>
       <li>
-        <strong>工作地点：</strong>
-        Newton（牛顿），马萨诸塞州
+        <strong>办公地址：</strong>
+        {CHINESE_PARTNER.addressLine}
       </li>
       <li>
         <strong>工作语言：</strong>

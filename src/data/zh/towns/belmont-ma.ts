@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'belmont-ma',
-  title: '住在贝尔蒙特（Belmont, MA）：三个广场、两户住宅和房地产指南',
+  title: '贝尔蒙特（Belmont, MA）买房指南：三个广场和两户住宅',
   description:
     '贝尔蒙特（Belmont, MA）中文指南：Belmont Center、Cushing 和 Waverley 三个广场，通勤火车和没有地铁的取舍，两户住宅和小型 condo 协会，以及买房前要查什么。',
   keywords: '贝尔蒙特 Belmont MA 买房, Belmont 学区, Belmont Hill, 两户住宅 Belmont, 靠近 剑桥 买房',

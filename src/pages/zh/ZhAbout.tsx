@@ -17,7 +17,7 @@ const ZhAbout = () => (
   <ZhPage
     path="/zh/guanyu"
     seo={{
-      title: `关于本站：Kevin Hoang，${locality} 持牌房地产经纪人`,
+      title: `关于本站 | Kevin Hoang，${locality} 持牌房地产经纪人`,
       description: `这是 ${SITE.agentName} 的网站。他是 ${SITE.brokerage} 的麻州持牌房地产经纪人，常驻 Newton，用英文和越南语工作。中文客户由 ${CHINESE_PARTNER.name} 直接服务。`,
       keywords: `Kevin Hoang, ${SITE.brokerage}, 麻州 持牌 房地产经纪人, 牛顿 地产经纪`,
       ogImage: '/og-about.jpg',

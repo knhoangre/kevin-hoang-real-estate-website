@@ -2,6 +2,8 @@ import { BookOpen, Calculator, Eye, FileText, Home, BarChart3 } from 'lucide-rea
 import ZhPage from '@/components/ZhPage';
 import ZhBuyerRoadmap from '@/components/zh/ZhBuyerRoadmap';
 import ViResources from '@/components/vi/ViResources';
+import { service } from '@/lib/schema';
+import { CHINESE_PARTNER } from '@/lib/siteConfig';
 
 /**
  * /zh/goufang — the buyer's guide in Chinese. Pairs with /buyer.
@@ -60,6 +62,15 @@ const ZhBuy = () => (
       button: '联系 Maggie',
     }}
     enLabel="The buyer's guide and roadmap"
+    jsonLd={[
+      service({
+        name: '麻州购房代理',
+        serviceType: 'Real estate buyer agency',
+        description: '用普通话和英文代表大波士顿地区的买家。',
+        path: '/zh/goufang',
+        provider: CHINESE_PARTNER.agentId,
+      }),
+    ]}
     // Wide, like /buyer: the roadmap's sticky index sits beside the steps.
     width="wide"
     sections={

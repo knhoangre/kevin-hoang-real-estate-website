@@ -4,7 +4,7 @@ import PageShell, { ShellSection } from '@/components/PageShell';
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';
-import { faqPage, partnerPerson, type QA } from '@/lib/schema';
+import { faqPage, partnerAgent, partnerPerson, service, type QA } from '@/lib/schema';
 import { CHINESE_PARTNER, SITE, partnerTelHref } from '@/lib/siteConfig';
 import { pill } from '@/lib/pill';
 
@@ -21,6 +21,10 @@ import { pill } from '@/lib/pill';
  * not a specialization, and about language rather than who anyone is.
  */
 const FAQS: QA[] = [
+  {
+    question: 'Is there a Mandarin-speaking real estate agent in Newton, MA?',
+    answer: `Yes. ${CHINESE_PARTNER.name} of ${CHINESE_PARTNER.brokerage} works with buyers and sellers in Mandarin and English across Newton and Greater Boston, from ${CHINESE_PARTNER.addressLine}. Call ${CHINESE_PARTNER.phone} or email ${CHINESE_PARTNER.email}.`,
+  },
   {
     question: 'Does Kevin Hoang speak Chinese?',
     answer: `No. Kevin works in English and Vietnamese. Clients who would rather work in Chinese are referred to ${CHINESE_PARTNER.name} of ${CHINESE_PARTNER.brokerage}, who works in Mandarin and English. They are at separate brokerages, and if you work with Maggie, she and her brokerage represent you.`,
@@ -58,12 +62,23 @@ const ChineseAgent = () => {
       path="/chinese-speaking-real-estate-agent"
       crumbs={crumbs}
       seo={{
-        title: 'Chinese-Speaking Real Estate Agent in Greater Boston: Maggie Li',
+        title: 'Chinese-Speaking Real Estate Agent in Greater Boston | Maggie Li',
         description: `Buy or sell in Newton and Greater Boston in Mandarin or English with ${CHINESE_PARTNER.name} of ${CHINESE_PARTNER.brokerage}. 波士顿中文地产经纪。Call ${CHINESE_PARTNER.phone}.`,
         keywords:
           'Chinese speaking real estate agent Boston, Mandarin speaking realtor Newton MA, Chinese realtor Massachusetts, 波士顿 地产经纪, 牛顿 房地产, Maggie Li real estate',
       }}
-      jsonLd={[faqPage(FAQS), partnerPerson()]}
+      jsonLd={[
+        faqPage(FAQS),
+        partnerPerson(),
+        partnerAgent(),
+        service({
+          name: 'Real estate representation in Mandarin and English',
+          serviceType: 'Bilingual real estate agency services',
+          description: `${CHINESE_PARTNER.name} represents buyers and sellers in Mandarin and English across Greater Boston.`,
+          path: '/chinese-speaking-real-estate-agent',
+          provider: CHINESE_PARTNER.agentId,
+        }),
+      ]}
       eyebrow="中文 / Chinese"
       h1="Chinese-Speaking Real Estate Agent in Greater Boston"
       lede={`Kevin Hoang does not speak Chinese, so clients who would rather work in Chinese are referred to ${CHINESE_PARTNER.name} of ${CHINESE_PARTNER.brokerage}. She works with buyers and sellers in Mandarin and English across Newton and Greater Boston.`}
@@ -110,9 +125,10 @@ const ChineseAgent = () => {
         <ProseBody>
           <h2>Who is Maggie Li?</h2>
           <p>
-            {CHINESE_PARTNER.name} is a real estate agent with {CHINESE_PARTNER.brokerage}, based in
-            Newton, Massachusetts. She works in Mandarin and English and serves on the board of the
-            Asian Real Estate Association of America. Her own site is{' '}
+            {CHINESE_PARTNER.name} of {CHINESE_PARTNER.teamName} is a real estate agent with{' '}
+            {CHINESE_PARTNER.brokerage}, at {CHINESE_PARTNER.addressLine}. She works in Mandarin and
+            English and serves on the board of the Asian Real Estate Association of America. Her own
+            site is{' '}
             <a href={CHINESE_PARTNER.website} target="_blank" rel="noopener noreferrer">
               maggieli.co
             </a>

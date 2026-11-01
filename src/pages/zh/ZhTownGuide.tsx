@@ -7,7 +7,6 @@ import TownGuideSections, { type TownSection } from '@/components/TownGuideSecti
 import MaggieCard from '@/components/zh/MaggieCard';
 import { TOWN_FACTS } from '@/data/townFacts';
 import { TOWN_NAMES_ZH } from '@/data/zh/townNames';
-import { ogVariant } from '@/lib/images';
 import { faqPage } from '@/lib/schema';
 import { townFaqsZh } from '@/lib/townFaqsZh';
 import { SITE } from '@/lib/siteConfig';
@@ -56,7 +55,7 @@ const ZhTownGuide = ({ guide }: { guide: ZhTownGuideData }) => {
   const english = SITE.areaServed.find((town) => town.slug === slug)?.name ?? slug;
   const chinese = TOWN_NAMES_ZH[slug] ?? english;
   const facts = TOWN_FACTS[slug];
-  const faqs = townFaqsZh(chinese, slug, { buyer: guide.buyerNote, schools: guide.schoolsNote });
+  const faqs = townFaqsZh(chinese, english, slug, { buyer: guide.buyerNote, schools: guide.schoolsNote });
   const path = `/zh/quyu/${slug}`;
 
   return (
@@ -66,7 +65,6 @@ const ZhTownGuide = ({ guide }: { guide: ZhTownGuideData }) => {
         title: guide.title,
         description: guide.description,
         keywords: guide.keywords,
-        ogImage: ogVariant(guide.image),
       }}
       eyebrow={`${chinese}（${english}）`}
       crumbs={[

@@ -257,7 +257,7 @@ const en: CalculatorCopy = {
     `The mortgage only. Taxes, insurance and any association fee are not projected across ${years} years — they change, and forecasting today's figures that far out would be a guess dressed as arithmetic.`,
   ifYouPutDown: 'If you put down',
   scenarioNote: (pmiRate) =>
-    `The 5% and 10% options include mortgage insurance at ${pmiRate}% a year, which is what makes them closer to the 20% figure than the loan size alone would suggest.`,
+    `The 5% and 10% options include mortgage insurance at ${pmiRate}% a year, which is why they cost more each month than the loan size alone would suggest.`,
 
   cashFlow: 'Estimated monthly cash flow',
   perYear: (amount, outOfPocket) => `${amount} a year${outOfPocket ? ' out of pocket' : ''}.`,
@@ -411,7 +411,7 @@ const vi: CalculatorCopy = {
     `Chỉ tính khoản vay. Thuế, bảo hiểm và phí hội quản lý không được tính cho ${years} năm — các khoản này thay đổi theo thời gian, và kéo con số hôm nay ra xa như vậy chỉ là đoán.`,
   ifYouPutDown: 'Nếu bạn trả trước',
   scenarioNote: (pmiRate) =>
-    `Hai lựa chọn 5% và 10% đã gồm bảo hiểm khoản vay ${pmiRate}% mỗi năm, nên khoản trả hàng tháng gần với mức 20% hơn so với những gì số tiền vay gợi ý.`,
+    `Hai lựa chọn 5% và 10% đã gồm bảo hiểm khoản vay ${pmiRate}% mỗi năm, nên khoản trả hàng tháng cao hơn so với những gì số tiền vay gợi ý.`,
 
   cashFlow: 'Dòng tiền ước tính mỗi tháng',
   perYear: (amount, outOfPocket) => `${amount} mỗi năm${outOfPocket ? ' phải bỏ thêm tiền túi' : ''}.`,
@@ -569,7 +569,7 @@ const zh: CalculatorCopy = {
     `这里只算贷款。房产税、保险和物业费没有按 ${years} 年推算，因为它们会变化，把今天的数字推到那么远只是猜测。`,
   ifYouPutDown: '如果首付',
   scenarioNote: (pmiRate) =>
-    `5% 和 10% 两个选项包含每年 ${pmiRate}% 的贷款保险，所以月供与 20% 首付的差距比单看贷款额要大一些。`,
+    `5% 和 10% 两个选项包含每年 ${pmiRate}% 的贷款保险，所以月供比单看贷款额要高一些。`,
 
   cashFlow: '估算每月现金流',
   perYear: (amount, outOfPocket) => `每年 ${amount}${outOfPocket ? '，需要自己贴钱' : ''}。`,

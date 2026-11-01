@@ -20,6 +20,9 @@
 #   Perplexity  PerplexityBot
 #   CCBot       Common Crawl, whose archive several engines retrieve from
 #               rather than crawling themselves
+#   Chinese     Baiduspider, Sogou, 360Spider and YisouSpider are the search
+#               engines; Bytespider and PetalBot crawl for ByteDance and Huawei.
+#               Named since the /zh pages, for readers who search with them.
 
 User-agent: *
 User-agent: Bingbot
@@ -31,6 +34,12 @@ User-agent: Claude-SearchBot
 User-agent: Claude-User
 User-agent: PerplexityBot
 User-agent: CCBot
+User-agent: Baiduspider
+User-agent: Sogou web spider
+User-agent: 360Spider
+User-agent: YisouSpider
+User-agent: Bytespider
+User-agent: PetalBot
 Allow: /
 # Gated and utility routes. These also carry a noindex meta tag (see
 # src/components/PrivatePage.tsx), which is the safety net for any that get

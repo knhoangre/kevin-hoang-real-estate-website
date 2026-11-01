@@ -36,6 +36,8 @@ const PAGES = [...STATIC_PAGES, ...TOWN_SLUGS.map((slug) => `/zh/quyu/${slug}`)]
 
 /** Has no English page, so it declares no language set. */
 const UNPAIRED = new Set(['/zh/maggie-li']);
+/** About Kevin, so his name and card rather than hers. */
+const ABOUT_KEVIN = new Set(['/zh/guanyu', '/zh/pingjia']);
 /** The one page that is about Kevin, and so may give his number. */
 const MAY_NAME_KEVINS_NUMBER = new Set(['/zh/guanyu']);
 
@@ -134,6 +136,18 @@ for (const path of PAGES) {
 
   if (!html.includes('bg-ink-deep')) fail(path, 'no dark hero, but hasDarkHero says it has one');
 
+  // What makes Maggie show up: her name in the title, her card when shared, her
+  // business in the page's data, and a page that opens in mainland China.
+  const title = html.match(/<title[^>]*>([^<]*)<\/title>/)?.[1] ?? '';
+  if (!ABOUT_KEVIN.has(path) && !title.includes('Maggie Li')) fail(path, `title does not name her: ${title}`);
+  if (!ABOUT_KEVIN.has(path) && !html.includes('/og-zh.jpg')) fail(path, 'does not share as the Chinese card');
+  if (!html.includes('https://maggieli.co/#agent')) fail(path, 'her business is not in the schema');
+  if (!html.includes('"inLanguage":"zh-Hans"')) fail(path, 'its schema does not say it is in Chinese');
+  if (/<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com[^>]*>/.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<link[^>]*media="print"[^>]*>/g, ''))) {
+    fail(path, 'still waits on Google Fonts, which is blocked in mainland China');
+  }
+  if (!html.includes('1229 Centre St, Newton, MA 02459')) fail(path, 'her address is not on the page');
+
   // Enough of the page is actually Chinese.
   const chinese = (text.match(/[一-鿿]/g) ?? []).length;
   if (chinese < 400) fail(path, `only ${chinese} Chinese characters: thin, or a page of English`);
@@ -182,6 +196,9 @@ else if (!english.includes(MAGGIE_TEL)) failures.push("/chinese-speaking-real-es
 const home = read('/');
 if (home && hreflangs(home).zh !== '/zh') failures.push('/: its hreflang set does not list /zh');
 if (home && !/<html[^>]*lang="en"/.test(home)) failures.push('/: <html> is not lang="en"');
+if (!existsSync('dist/og-zh.jpg')) failures.push('dist/og-zh.jpg: the Chinese share card is missing');
+const profile = read('/zh/maggie-li');
+if (profile && !profile.includes('"ProfilePage"')) failures.push('/zh/maggie-li: no ProfilePage schema');
 const vi = read('/vi');
 if (vi && !/<html[^>]*lang="vi"/.test(vi)) failures.push('/vi: <html> is not lang="vi"');
 

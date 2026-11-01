@@ -156,6 +156,13 @@ export const PRIVATE_PREFIXES = [
 export const isPrivate = (path) =>
   PRIVATE_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
 
+/**
+ * When the Chinese pages last really changed. A true date, unlike a build date,
+ * and it is what makes submit-indexnow.mjs tell Bing about them. Move it only when
+ * their text changes.
+ */
+const ZH_UPDATED = '2026-10-31';
+
 export const STATIC_ROUTES = [
   { path: '/', priority: 1.0, changefreq: 'weekly' },
 
@@ -163,7 +170,7 @@ export const STATIC_ROUTES = [
   { path: '/needham-real-estate-agent', priority: 0.9, changefreq: 'monthly' },
   { path: '/home-valuation', priority: 0.9, changefreq: 'monthly' },
   { path: '/vietnamese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
-  { path: '/chinese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
+  { path: '/chinese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly', lastmod: ZH_UPDATED },
   { path: '/relocation', priority: 0.8, changefreq: 'monthly' },
 
   // Town guides.
@@ -209,25 +216,26 @@ export const STATIC_ROUTES = [
 
   // Chinese. The same arrangement, paired by src/lib/zhRoutes.ts, and one guide
   // per town. Every town guide has a Chinese page, unlike the Vietnamese tree.
-  { path: '/zh', priority: 0.8, changefreq: 'monthly' },
-  { path: '/zh/maggie-li', priority: 0.8, changefreq: 'monthly' },
-  { path: '/zh/zhongwen-fuwu', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/goufang', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/shoufang', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/shouci-goufang', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/gujia', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/changjian-wenti', priority: 0.6, changefreq: 'monthly' },
-  { path: '/zh/guanyu', priority: 0.5, changefreq: 'monthly' },
-  { path: '/zh/banjia-mazhou', priority: 0.6, changefreq: 'monthly' },
-  { path: '/zh/pingjia', priority: 0.4, changefreq: 'monthly' },
-  { path: '/zh/jisuanqi', priority: 0.6, changefreq: 'monthly' },
-  { path: '/zh/lianxi', priority: 0.7, changefreq: 'monthly' },
-  { path: '/zh/wenzhang', priority: 0.5, changefreq: 'monthly' },
-  { path: '/zh/quyu', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh', priority: 0.8, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/maggie-li', priority: 0.8, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/zhongwen-fuwu', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/goufang', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/shoufang', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/shouci-goufang', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/gujia', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/changjian-wenti', priority: 0.6, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/guanyu', priority: 0.5, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/banjia-mazhou', priority: 0.6, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/pingjia', priority: 0.4, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/jisuanqi', priority: 0.6, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/lianxi', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/wenzhang', priority: 0.5, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/quyu', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
   ...TOWN_SLUGS.map((slug) => ({
     path: `/zh/quyu/${slug}`,
     priority: 0.7,
     changefreq: 'monthly',
+    lastmod: ZH_UPDATED,
   })),
 
   // Legal. Real pages, low priority — they exist for users and for trust

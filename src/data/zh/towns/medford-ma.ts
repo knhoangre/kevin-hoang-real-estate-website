@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'medford-ma',
-  title: '住在梅德福（Medford, MA）：绿线延伸、Fells 和房地产指南',
+  title: '梅德福（Medford, MA）买房指南：绿线延伸和 Fells',
   description:
     '梅德福（Medford, MA）中文指南：绿线延伸对各街区的不同影响，Middlesex Fells 和 Mystic River，塔夫茨大学和出租需求，以及在这里买房要知道的事。',
   keywords: '梅德福 Medford 买房, West Medford, 塔夫茨 附近 住房, 绿线延伸 Medford, Medford condo',

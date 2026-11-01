@@ -3,6 +3,7 @@ import ZhPage from '@/components/ZhPage';
 import WeChatCard from '@/components/zh/WeChatCard';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { contactPage } from '@/lib/schema';
 import { submitContactMessage } from '@/lib/submitContact';
 import { EVENTS, track } from '@/lib/analytics';
 import { errorMessage } from '@/lib/utils';
@@ -60,6 +61,13 @@ const ZhContact = () => {
         description: `联系 ${CHINESE_PARTNER.name}（${CHINESE_PARTNER.brokerage}），用中文或英文咨询大波士顿买房和卖房。电话 ${CHINESE_PARTNER.phone}，也可以通过微信、短信或邮箱联系。`,
         keywords: 'Maggie Li 联系方式, Maggie Li 微信, 波士顿 地产经纪 电话, 牛顿 地产经纪 联系',
       }}
+      jsonLd={[
+        contactPage({
+          path: '/zh/lianxi',
+          name: `联系 ${CHINESE_PARTNER.name}`,
+          entity: CHINESE_PARTNER.agentId,
+        }),
+      ]}
       eyebrow="联系方式"
       h1="联系 Maggie"
       lede="打电话、发短信、发微信，或者填写下面的表格，用中文或英文都可以。"
@@ -209,9 +217,11 @@ const ZhContact = () => {
 
       <h2>经纪公司和服务地区</h2>
       <p>
-        {CHINESE_PARTNER.brokerage}
+        {CHINESE_PARTNER.teamName}，{CHINESE_PARTNER.brokerage}
         <br />
-        常驻 Newton, MA（牛顿，麻州），服务大波士顿地区
+        {CHINESE_PARTNER.addressLine}
+        <br />
+        服务大波士顿地区
       </p>
     </ZhPage>
   );

@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'cambridge-ma',
-  title: '住在剑桥（Cambridge, MA）：广场、街区和房地产指南',
+  title: '剑桥（Cambridge, MA）买房指南：广场、红线和 condo',
   description:
     '剑桥（Cambridge, MA）中文指南：哈佛、MIT 和 Kendall Square 对房市的影响，红线交通，各广场和街区的特点，以及在这个竞争激烈的市场买房要知道的事。',
   keywords: '剑桥 Cambridge 买房, 哈佛 附近 买房, MIT 附近 住房, Kendall Square condo, Cambridge MA 房价, 波士顿 多户 投资',

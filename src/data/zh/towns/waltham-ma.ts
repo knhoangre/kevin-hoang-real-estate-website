@@ -2,7 +2,7 @@ import type { ZhTownGuideData } from '@/pages/zh/ZhTownGuide';
 
 const guide: ZhTownGuideData = {
   slug: 'waltham-ma',
-  title: '住在沃尔瑟姆（Waltham, MA）：Moody Street、通勤和房地产指南',
+  title: '沃尔瑟姆（Waltham, MA）买房指南：Moody Street 和通勤',
   description:
     '沃尔瑟姆（Waltham, MA）中文指南：128 号公路和 Mass Pike 的交汇位置，Moody Street 市中心，Brandeis 和 Bentley 带来的出租市场，以及各街区的特点。',
   keywords: '沃尔瑟姆 Waltham 买房, Waltham condo, Moody Street, Brandeis 附近 住房, Waltham 多户 投资',

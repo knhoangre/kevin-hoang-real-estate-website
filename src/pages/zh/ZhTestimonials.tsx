@@ -20,7 +20,7 @@ const ZhTestimonials = () => (
   <ZhPage
     path="/zh/pingjia"
     seo={{
-      title: 'Kevin Hoang 的客户评价（英文原文）',
+      title: 'Kevin Hoang 的客户评价 | 英文原文',
       description: `这些是 ${SITE.agentName} 的客户在 Google 上写的真实评价，保留英文原文。${CHINESE_PARTNER.name} 的客户评价在她自己的网站上。`,
     }}
     eyebrow="客户评价"
