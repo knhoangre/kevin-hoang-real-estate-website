@@ -3,6 +3,15 @@ import { Phone, Mail, ArrowRight } from 'lucide-react';
 import { SITE, telHref } from '@/lib/siteConfig';
 import { pill } from '@/lib/pill';
 
+/** Who the band reaches, for the pages where that is not Kevin. */
+export interface CtaContact {
+  /** Where the main button goes. */
+  to: string;
+  phone: string;
+  tel: string;
+  email: string;
+}
+
 /**
  * The dark closing band.
  *
@@ -14,10 +23,12 @@ const CtaBand = ({
   heading,
   body,
   button,
+  contact = { to: '/contact', phone: SITE.phone, tel: telHref, email: SITE.email },
 }: {
   heading: string;
   body: string;
   button?: string;
+  contact?: CtaContact;
 }) => (
   <section className="relative overflow-hidden bg-ink-deep py-24 text-white">
     <div
@@ -30,25 +41,25 @@ const CtaBand = ({
         <p className="mt-5 mx-auto max-w-2xl text-lg leading-relaxed text-gray-300">{body}</p>
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
-            to="/contact"
+            to={contact.to}
             className={pill('champagne', 'lg', 'group')}
           >
             {button ?? 'Send a message'}
             <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
           <a
-            href={telHref}
+            href={contact.tel}
             className={pill('ghost', 'lg', 'group')}
           >
             <Phone className="w-4 h-4" aria-hidden />
-            {SITE.phone}
+            {contact.phone}
           </a>
           <a
-            href={`mailto:${SITE.email}`}
+            href={`mailto:${contact.email}`}
             className={pill('ghost', 'lg', 'group')}
           >
             <Mail className="w-4 h-4" aria-hidden />
-            {SITE.email}
+            {contact.email}
           </a>
         </div>
       </div>

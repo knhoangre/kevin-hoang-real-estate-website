@@ -163,6 +163,7 @@ export const STATIC_ROUTES = [
   { path: '/needham-real-estate-agent', priority: 0.9, changefreq: 'monthly' },
   { path: '/home-valuation', priority: 0.9, changefreq: 'monthly' },
   { path: '/vietnamese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
+  { path: '/chinese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
   { path: '/relocation', priority: 0.8, changefreq: 'monthly' },
 
   // Town guides.
@@ -205,6 +206,29 @@ export const STATIC_ROUTES = [
   { path: '/vi/lien-he', priority: 0.7, changefreq: 'monthly' },
   { path: '/vi/bai-viet', priority: 0.6, changefreq: 'monthly' },
   { path: '/vi/dich-vu-tieng-viet', priority: 0.7, changefreq: 'monthly' },
+
+  // Chinese. The same arrangement, paired by src/lib/zhRoutes.ts, and one guide
+  // per town. Every town guide has a Chinese page, unlike the Vietnamese tree.
+  { path: '/zh', priority: 0.8, changefreq: 'monthly' },
+  { path: '/zh/maggie-li', priority: 0.8, changefreq: 'monthly' },
+  { path: '/zh/zhongwen-fuwu', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/goufang', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/shoufang', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/shouci-goufang', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/gujia', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/changjian-wenti', priority: 0.6, changefreq: 'monthly' },
+  { path: '/zh/guanyu', priority: 0.5, changefreq: 'monthly' },
+  { path: '/zh/banjia-mazhou', priority: 0.6, changefreq: 'monthly' },
+  { path: '/zh/pingjia', priority: 0.4, changefreq: 'monthly' },
+  { path: '/zh/jisuanqi', priority: 0.6, changefreq: 'monthly' },
+  { path: '/zh/lianxi', priority: 0.7, changefreq: 'monthly' },
+  { path: '/zh/wenzhang', priority: 0.5, changefreq: 'monthly' },
+  { path: '/zh/quyu', priority: 0.7, changefreq: 'monthly' },
+  ...TOWN_SLUGS.map((slug) => ({
+    path: `/zh/quyu/${slug}`,
+    priority: 0.7,
+    changefreq: 'monthly',
+  })),
 
   // Legal. Real pages, low priority — they exist for users and for trust
   // signals, not to rank.

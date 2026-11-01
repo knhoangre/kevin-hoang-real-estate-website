@@ -1,5 +1,5 @@
 /**
- * Every word the calculator shows, in English and in Vietnamese.
+ * Every word the calculator shows, in English, Vietnamese and Chinese.
  *
  * LITERAL STRINGS, NEVER t(). i18n is pinned to `lng: 'en'` during static
  * generation, so a calculator assembled through useTranslation() prerenders in
@@ -8,8 +8,8 @@
  * language: the /vi page fixes it at 'vi', /calculator follows the toggle after
  * mount, and a listing page stays English like the rest of that page.
  *
- * One interface, two objects: a string added to the English and forgotten in
- * the Vietnamese is a type error, not a blank label in front of a reader.
+ * One interface, three objects: a string added to the English and forgotten in
+ * another language is a type error, not a blank label in front of a reader.
  *
  * Numbers are formatted by the caller with formatPrice (US dollars, US
  * separators) in both languages. These are US prices in a US market, and that
@@ -18,7 +18,7 @@
  */
 import type { ReactNode } from 'react';
 
-export type CalcLang = 'en' | 'vi';
+export type CalcLang = 'en' | 'vi' | 'zh';
 export type CalcView = 'live' | 'invest' | 'sell';
 export type CalcContext = 'listing' | 'general';
 
@@ -461,4 +461,159 @@ const vi: CalculatorCopy = {
     'Đây là con số ước tính, không phải bảng quyết toán. Luật sư đóng giao dịch sẽ lập bảng thật, và đó là con số duy nhất nên dùng để tính cho lần mua kế tiếp.',
 };
 
-export const CALCULATOR_COPY: Record<CalcLang, CalculatorCopy> = { en, vi };
+const zh: CalculatorCopy = {
+  tablist: '选择计算内容',
+  tabs: {
+    listing: { live: '如果自住', invest: '如果出租', sell: '如果按此价出售' },
+    general: { live: '买来自住', invest: '买来出租', sell: '出售房屋' },
+  },
+
+  intro: {
+    listing: ({ taxes, hoa }) =>
+      `已按这套房源的${[
+        '价格',
+        taxes && '房产税',
+        hoa && '物业费',
+      ]
+        .filter(Boolean)
+        .join('、')}填入。下面的数字都可以修改，请换成您自己的数字。`,
+    general: '开始显示的数字只是示例。每一项都可以修改，请换成您正在考虑的房子和真实数字。',
+  },
+
+  purchasePrice: '购买价格',
+  salePrice: '出售价格',
+  priceHint: {
+    asking: '这是挂牌价。修改它可以试算您的出价。',
+    changed: (listed) => `挂牌价为 ${listed}。`,
+    example: '这是示例价格，请输入您正在考虑的价格。',
+    sellListing: '这是挂牌价。修改它可以试算实际成交价。',
+    sellExample: '您预计房子能卖到的价格。这个数字最好来自一份书面估价。',
+  },
+  downPayment: '首付',
+  downAs: '首付输入方式',
+  downOf: (amount, price) => `${price} 中的 ${amount}`,
+  percentOf: (percent, price) => `${price} 的 ${percent}%`,
+  rate: '贷款利率',
+  rateHint: (asOf) => (
+    <>
+      这是假设值，不是报价，请换成贷款机构给您的利率。默认值于 {asOf} 与 Freddie Mac 的利率调查核对过。
+    </>
+  ),
+  term: '贷款年限',
+  years: (n) => `${n} 年`,
+  pmi: '贷款保险（PMI），每年',
+  pmiHint: (threshold) =>
+    `贷款额超过房价 ${threshold}% 时需要支付。常规贷款的 PMI 每年约为 0.46%–1.5%，取决于信用分数（Urban Institute Housing Finance Policy Center）；0.5% 是信用很好时的水平。`,
+  taxes: '房产税，每年',
+  taxesHint: {
+    listingYear: (year) => `来自房源信息，${year} 年。`,
+    listing: '来自房源信息。',
+    missing: '这套房源的数据中没有房产税金额。',
+    example:
+      '这是示例数字。麻州每个城镇各自制定税率，请使用您所看房子的真实税单，可以在房源信息或城镇估税办公室（assessor）的网站上查到。',
+  },
+  insuranceCondo: 'Condo 保险，每年',
+  insuranceHome: '房屋保险，每年',
+  insuranceCondoHint: (average) =>
+    `麻州 HO-6 保险的平均水平（${average}）。大楼结构由业主协会的总保单承保，这一项只保您单元内部。`,
+  insuranceHomeHint: (rate) =>
+    `按每年房价的 ${rate}% 估算，依据是麻州 $300,000 房屋保额的平均保费 $1,471（Insure.com / Quadrant，2026 年）。保额按重建成本计算，不含土地，所以在地价高的地方这个估算会偏高，请以实际报价为准。`,
+  hoa: '物业费（HOA），每月',
+  hoaHint: {
+    listing: '来自房源信息。如果您的费用按年收取，请自行更正。',
+    listingNoAmount: '这套房源有业主协会，但没有列出费用金额。',
+    example: 'Condo 或业主协会的费用（如有）。没有就保持为 0。',
+  },
+  rent: '预期租金，每月',
+  rentHint: {
+    median: (count, town) =>
+      `这是 ${town} 目前 ${count} 套同类出租房的挂牌租金中位数。这是要价，不是实际成交租金，也不是对这套房的预测。`,
+    none: '数据中没有这个城镇的同类出租房，请输入您自己的数字。',
+    example: '这是示例数字，请输入您预计这套房能租到的租金。',
+  },
+  vacancy: '空置率',
+  vacancyHint: '一年中房子在两任租客之间空着的比例。',
+  maintenance: '维修储备金，每年',
+  maintenanceHint: '默认为房价的 1%。这是常用的规划数字，不是实际账单。',
+  management: '物业管理费',
+  managementHint: '按收到的租金计算。如果您自己管理，请设为 0。',
+  payoff: '尚欠贷款余额',
+  payoffHint:
+    '这套房子上所有还欠的款项，包括每一笔房贷和房屋净值贷款。贷款机构的还清通知（payoff letter）上有准确数字，最近一期账单上的数字也很接近。',
+  commission: '佣金总额',
+  commissionHint:
+    '这是假设值，请替换。佣金可以协商，写在您的挂牌合同中，包括其中是否有一部分付给买方经纪。',
+  otherCosts: '其他过户费用',
+  otherCostsHint:
+    '这是起始数字，请替换。包括律师费、烟雾和一氧化碳报警器证明、注销贷款的登记费，以及 condo 证明（如需要）。您的律师可以提供实际数字。',
+  credits: '修缮费用或给买方的补贴',
+  creditsHint: '验房后您同意修缮或补贴的金额。在收到出价之前通常为 0。',
+
+  monthlyCost: '估算每月费用',
+  perMonth: ' /月',
+  perMo: '/月',
+  segments: {
+    principalAndInterest: '本金和利息',
+    taxes: '房产税',
+    insurance: '保险',
+    hoa: '物业费',
+    pmi: '贷款保险',
+  },
+  taxesRow: (year) => (year ? `房产税（${year}）` : '房产税'),
+  pmiRow: '贷款保险（PMI）',
+  overTerm: (years) => `完整 ${years} 年合计`,
+  loanAmount: '贷款金额',
+  interestPaid: '利息总额',
+  totalRepaid: '还款总额',
+  overTermNote: (years) =>
+    `这里只算贷款。房产税、保险和物业费没有按 ${years} 年推算，因为它们会变化，把今天的数字推到那么远只是猜测。`,
+  ifYouPutDown: '如果首付',
+  scenarioNote: (pmiRate) =>
+    `5% 和 10% 两个选项包含每年 ${pmiRate}% 的贷款保险，所以月供与 20% 首付的差距比单看贷款额要大一些。`,
+
+  cashFlow: '估算每月现金流',
+  perYear: (amount, outOfPocket) => `每年 ${amount}${outOfPocket ? '，需要自己贴钱' : ''}。`,
+  capRate: '资本化率（cap rate）',
+  capRateNote: '净运营收入除以房价。这里有意不计贷款：它衡量的是房产本身，不是您的融资方式，所以可以在不同房产之间比较。',
+  cashOnCash: '现金回报率（cash-on-cash）',
+  cashOnCashNote: (down) =>
+    `每年现金流除以 ${down} 首付。过户费用没有计入投入的现金，所以实际回报会略低一些。`,
+  effectiveRent: '实际租金收入（扣除空置后）',
+  operatingExpenses: '运营费用',
+  noi: '净运营收入（NOI）',
+  mortgagePi: '贷款月供（本金和利息）',
+  rentNote: {
+    listing: (town) =>
+      `租金是 ${town} 同类房屋的挂牌租金中位数，不是对这套房的预测，也不是它实际租到的价格。这里没有计入房价增值、折旧、税务处理、大修支出和更换租客的成本，真正的投资分析要把这些都算进去。`,
+    general: '这里没有计入房价增值、折旧、税务处理、大修支出和更换租客的成本，真正的投资分析要把这些都算进去。',
+  },
+
+  netProceeds: '估算您实际拿到的金额',
+  underwater: '售价不足以还清欠款。挂牌之前请先和贷款机构及律师谈一谈，短售（short sale）需要贷款机构批准。',
+  sellSegments: {
+    net: '您拿到',
+    mortgagePayoff: '还清贷款',
+    commission: '佣金',
+    deedExcise: '地契税',
+    otherAndCredits: '过户费用和补贴',
+  },
+  saleRow: '出售价格',
+  commissionRow: (rate) => `佣金（${rate}%）`,
+  deedRow: '麻州地契税',
+  otherRow: '其他过户费用',
+  creditsRow: '修缮和补贴',
+  beforePayoffRow: '还清贷款之前',
+  payoffRow: '还清贷款',
+  netRow: '您实际拿到',
+  deedNote:
+    '地契税（deed excise）为每 $500 售价 $2.28（M.G.L. c.64D §1 加 14% 附加税；麻州税务局 Directive 95-4，2026 年核对），由卖方支付。Cape Cod 所在的 Barnstable 郡有自己的税率，这个数字请向您的律师确认。',
+  sellNotModelled:
+    '未包含：按过户日分摊的房产税和水费、资本利得税，以及提前还款罚金（如有）。律师的结算单上会列出所有这些项目。',
+
+  disclaimerBuy:
+    '这是估算，不是贷款报价、预批或投资建议。其中不含 escrow 和过户费用，实际利率取决于贷款机构对您财务状况的审核。',
+  disclaimerSell:
+    '这是估算，不是结算单。真正的结算单由过户律师准备，只有那个数字才能作为下一次购房的依据。',
+};
+
+export const CALCULATOR_COPY: Record<CalcLang, CalculatorCopy> = { en, vi, zh };

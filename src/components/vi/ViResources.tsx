@@ -26,10 +26,15 @@ const ViResources = ({
   heading,
   subtitle,
   resources,
+  viewLabel = 'Xem chi tiết',
+  viewEnglishLabel = 'Xem (tiếng Anh)',
 }: {
   heading: string;
   subtitle: string;
   resources: ViResource[];
+  /** The two link labels, for the Chinese guides, which use the same grid. */
+  viewLabel?: string;
+  viewEnglishLabel?: string;
 }) => (
   <div className="py-12">
     {/* No container of its own: this renders inside the page's container. */}
@@ -56,7 +61,7 @@ const ViResources = ({
               className="group relative inline-flex items-center font-medium text-ink"
             >
               <span className="relative">
-                {resource.english ? 'Xem (tiếng Anh)' : 'Xem chi tiết'}
+                {resource.english ? viewEnglishLabel : viewLabel}
                 <span className="absolute -bottom-[2px] left-0 h-0.5 w-0 bg-ink transition-all duration-300 group-hover:w-full" />
               </span>
               <ArrowRight

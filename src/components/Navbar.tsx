@@ -9,13 +9,21 @@ import NavLink, { type NavTone } from "./NavLink";
 import ProfileDropdown from "./ProfileDropdown";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { cn } from "@/lib/utils";
-import { PRIMARY_NAV, SECONDARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
-import { SITE, smsHref, telHref } from "@/lib/siteConfig";
+import { PRIMARY_NAV, SECONDARY_NAV, ZH_PRIMARY_NAV, hasDarkHero, isActivePath, type NavItem } from "@/lib/navItems";
+import {
+  CHINESE_PARTNER,
+  SITE,
+  partnerSmsHref,
+  partnerTelHref,
+  smsHref,
+  telHref,
+} from "@/lib/siteConfig";
 import { VI_ROUTES, type ViRoute } from "@/lib/viRoutes";
+import { ZH_ROUTES, isZhPath, type ZhRoute } from "@/lib/zhRoutes";
 
 /**
- * The menu panel as PAIRS: an English page on the left, its Vietnamese
- * counterpart on the same line on the right.
+ * The menu panel as ROWS: an English page, then its Vietnamese and Chinese
+ * counterparts on the same line.
  *
  * It used to be the eight English links, a "Tiếng Việt" heading, then the
  * eleven Vietnamese links beneath them — twenty rows, taller than a laptop
@@ -34,33 +42,46 @@ import { VI_ROUTES, type ViRoute } from "@/lib/viRoutes";
 interface PanelRow {
   en?: NavItem;
   vi?: ViRoute;
+  zh?: ZhRoute;
 }
 
-/** English labels for the two paired pages that are in neither nav list. */
+/** English labels for the paired pages that are in neither nav list. */
 const EXTRA_EN: NavItem[] = [
   { to: "/", labelKey: "nav.home" },
   { to: "/home-valuation", labelKey: "nav.homeValuation" },
+  { to: "/first-time-buyers", label: "First-Time Buyers" },
+  { to: "/chinese-speaking-real-estate-agent", label: "Chinese-Speaking Service" },
 ];
 
 const englishFor = (path: string): NavItem | undefined =>
   [...SECONDARY_NAV, ...PRIMARY_NAV, ...EXTRA_EN].find((item) => item.to === path);
 
 const viFor = (path: string) => VI_ROUTES.find((route) => route.en === path);
+const zhFor = (path: string) => ZH_ROUTES.find((route) => route.en === path);
 
 /**
- * isActivePath, except that `/vi` — the Vietnamese HOME — matches exactly, the
- * way `/` does. By prefix it matched every page in the Vietnamese tree, so
+ * isActivePath, except that `/vi` and `/zh` — each tree's HOME — match exactly,
+ * the way `/` does. By prefix `/vi` matched every page in the Vietnamese tree, so
  * "Trang chủ" was marked current alongside whichever page was actually open.
  */
 const isCurrent = (pathname: string, to: string) =>
-  to === "/vi" ? pathname === "/vi" : isActivePath(pathname, to);
+  to === "/vi" || to === "/zh" ? pathname === to : isActivePath(pathname, to);
+
+const rowFor = (en: string): PanelRow => ({
+  en: englishFor(en),
+  vi: viFor(en),
+  zh: zhFor(en),
+});
 
 const PANEL_ROWS: PanelRow[] = [
-  { en: englishFor("/"), vi: viFor("/") },
-  ...SECONDARY_NAV.map((en) => ({ en, vi: viFor(en.to) })),
-  ...VI_ROUTES.filter(
-    (route) => route.en !== "/" && !SECONDARY_NAV.some((item) => item.to === route.en),
-  ).map((vi) => ({ en: englishFor(vi.en), vi })),
+  rowFor("/"),
+  ...SECONDARY_NAV.map((item) => rowFor(item.to)),
+  // Every other translated page, whichever language it was translated into.
+  ...[...new Set([...VI_ROUTES.map((r) => r.en), ...ZH_ROUTES.flatMap((r) => r.en ?? [])])]
+    .filter((en) => en !== "/" && !SECONDARY_NAV.some((item) => item.to === en))
+    .map(rowFor),
+  // A page with no English pair still has a row, or it has no place in the menu.
+  ...ZH_ROUTES.filter((route) => !route.en).map((zh) => ({ zh })),
 ];
 
 /**
@@ -100,7 +121,9 @@ const useDisclosure = () => {
 const PANEL =
   "absolute right-0 top-full z-50 w-52 min-w-[8rem] pt-2";
 const PANEL_INNER =
-  "rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg";
+  "max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg";
+/** English and Vietnamese labels are long; the Chinese ones are a few characters. */
+const PANEL_COLUMNS = "grid grid-cols-[38fr_41fr_21fr] gap-x-3";
 
 const Navbar = () => {
   const location = useLocation();
@@ -113,6 +136,15 @@ const Navbar = () => {
   const menu = useDisclosure();
 
   const pathname = location.pathname;
+  // On the Chinese pages the bar reaches Maggie Li, because Kevin does not speak
+  // Chinese, and its words are literal rather than t(). A function of the path,
+  // so it is the same on the server and in the hydrating browser.
+  const zh = isZhPath(pathname);
+  const primaryNav = zh ? ZH_PRIMARY_NAV : PRIMARY_NAV;
+  const phoneNumber = zh ? CHINESE_PARTNER.phone : SITE.phone;
+  const phoneTel = zh ? partnerTelHref : telHref;
+  const phoneSms = zh ? partnerSmsHref : smsHref;
+  const loginLabel = zh ? "登录" : t("nav.login");
   // Transparent only while sitting over a dark hero and not yet scrolled.
   // `isScrolled` seeds false on both the server and the client and is corrected
   // in an effect, so it is not a hydration surface.
@@ -162,6 +194,22 @@ const Navbar = () => {
     );
   };
 
+  /** One line of the phone menu's language lists. */
+  const TreeLink = ({ to, label, lang }: { to: string; label: string; lang: string }) => (
+    <Link
+      to={to}
+      lang={lang}
+      onClick={() => setMobileMenuOpen(false)}
+      aria-current={isCurrent(pathname, to) ? "page" : undefined}
+      className={cn(
+        "inline-block text-center text-sm uppercase tracking-wide transition-colors",
+        isCurrent(pathname, to) ? "text-champagne-ink" : "text-ink hover:text-champagne-ink",
+      )}
+    >
+      {label}
+    </Link>
+  );
+
   return (
     <nav
       className={cn(
@@ -170,14 +218,14 @@ const Navbar = () => {
       )}
     >
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
-        <Link to="/" className="relative z-10 flex shrink-0 items-center">
+        <Link to={zh ? "/zh" : "/"} className="relative z-10 flex shrink-0 items-center">
           <Logo className="h-20 w-auto" />
         </Link>
 
         {/* Desktop. The breakpoint moved from 1011px to 1140px when /about made
             this a four-item bar alongside the switcher, phone, menu and login. */}
         <div className="hidden min-h-0 min-[1140px]:flex h-full items-center gap-8">
-          {PRIMARY_NAV.map((item) => (
+          {primaryNav.map((item) => (
             <NavLink
               key={item.to}
               item={item}
@@ -205,7 +253,7 @@ const Navbar = () => {
                 overDark ? "text-white hover:text-champagne" : "text-ink hover:text-champagne-ink",
               )}
             >
-              {SITE.phone}
+              {phoneNumber}
             </button>
             <AnimatePresence>
               {phone.open && (
@@ -219,18 +267,18 @@ const Navbar = () => {
                 >
                   <div className={PANEL_INNER}>
                     <a
-                      href={telHref}
+                      href={phoneTel}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm uppercase tracking-wide text-ink transition-colors hover:bg-bone hover:text-champagne-ink"
                     >
                       <Phone className="h-3.5 w-3.5" aria-hidden />
-                      Call
+                      {zh ? "致电" : "Call"}
                     </a>
                     <a
-                      href={smsHref}
+                      href={phoneSms}
                       className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm uppercase tracking-wide text-ink transition-colors hover:bg-bone hover:text-champagne-ink"
                     >
                       <MessageSquare className="h-3.5 w-3.5" aria-hidden />
-                      Text
+                      {zh ? "短信" : "Text"}
                     </a>
                   </div>
                 </motion.div>
@@ -289,20 +337,20 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  // Wide enough for "Chuyển đến Massachusetts" on one line (32rem wrapped it); the
-                  // max-w keeps it on screen just above the 1140px breakpoint.
-                  className={cn(PANEL, "w-[35rem] max-w-[calc(100vw-2rem)]")}
+                  // Wide enough for "Chuyển đến Massachusetts" on one line; the max-w keeps
+                  // it on screen just above the 1140px breakpoint.
+                  className={cn(PANEL, "w-[46rem] max-w-[calc(100vw-2rem)]")}
                 >
                   {/*
-                    English left, Vietnamese right, one page per line — see
-                    PANEL_ROWS. The hairline between the columns is drawn once
-                    on the grid rather than per cell, so it stays unbroken
-                    through a row whose right-hand cell is empty.
+                    English, Vietnamese, Chinese, one page per line — see
+                    PANEL_ROWS. The hairlines between the columns are drawn once
+                    on the grid rather than per cell, so they stay unbroken
+                    through a row with an empty cell.
 
-                    Vietnamese labels come straight from VI_ROUTES and are
-                    literal Vietnamese, never t(), which is pinned to 'en'
-                    during static generation. Each carries lang="vi" so a
-                    screen reader switches voice for it.
+                    Vietnamese and Chinese labels come straight from their route
+                    lists and are literal, never t(), which is pinned to 'en'
+                    during static generation. Each carries its lang so a screen
+                    reader switches voice for it.
                   */}
                   <div className={PANEL_INNER}>
                     {/* A heading over EACH column. The left one used to be
@@ -310,7 +358,7 @@ const Navbar = () => {
                         translates those labels too — but the column is the
                         English pages whatever their labels say, and a heading
                         over one column only read as a layout mistake. */}
-                    <div className="grid grid-cols-2 gap-x-3 pb-1 pt-1">
+                    <div className={cn(PANEL_COLUMNS, "pb-1 pt-1")}>
                       <p
                         lang="en"
                         className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"
@@ -323,10 +371,21 @@ const Navbar = () => {
                       >
                         Tiếng Việt
                       </p>
+                      <p
+                        lang="zh-Hans"
+                        className="px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"
+                      >
+                        中文
+                      </p>
                     </div>
-                    <div className="relative grid grid-cols-2 gap-x-3 before:absolute before:inset-y-1 before:left-1/2 before:w-px before:bg-gray-200">
+                    <div
+                      className={cn(
+                        PANEL_COLUMNS,
+                        "relative before:absolute before:inset-y-1 before:left-[38%] before:w-px before:bg-gray-200 after:absolute after:inset-y-1 after:left-[79%] after:w-px after:bg-gray-200",
+                      )}
+                    >
                       {PANEL_ROWS.map((row) => (
-                        <Fragment key={row.en?.to ?? row.vi?.vi}>
+                        <Fragment key={row.en?.to ?? row.vi?.vi ?? row.zh?.zh}>
                           {row.en ? (
                             <PanelLink to={row.en.to} label={labelFor(row.en)} />
                           ) : (
@@ -334,6 +393,11 @@ const Navbar = () => {
                           )}
                           {row.vi ? (
                             <PanelLink to={row.vi.vi} label={row.vi.label} lang="vi" />
+                          ) : (
+                            <span aria-hidden />
+                          )}
+                          {row.zh ? (
+                            <PanelLink to={row.zh.zh} label={row.zh.label} lang="zh-Hans" />
                           ) : (
                             <span aria-hidden />
                           )}
@@ -353,7 +417,7 @@ const Navbar = () => {
               item={{ to: "/auth", labelKey: "nav.login" }}
               pathname={pathname}
               tone={tone}
-              label={t("nav.login")}
+              label={loginLabel}
             />
           )}
         </div>
@@ -426,62 +490,82 @@ const Navbar = () => {
                   inverse of the desktop hierarchy — with identical hairlines
                   between all eleven and nothing marking the boundary.
                 */}
-                {PRIMARY_NAV.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    item={item}
-                    pathname={pathname}
-                    tone="light"
-                    label={labelFor(item)}
-                    className="inline-block text-center"
-                    onClick={() => setMobileMenuOpen(false)}
-                  />
-                ))}
+                {/* On a Chinese page its own list comes first and the others are
+                    a line each; elsewhere Chinese is one more group at the end. */}
+                {zh ? (
+                  <>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                      中文
+                    </p>
+                    {ZH_ROUTES.map((route) => (
+                      <TreeLink key={route.zh} to={route.zh} label={route.label} lang="zh-Hans" />
+                    ))}
+                    <TreeLink to="/search" label="搜索房源" lang="zh-Hans" />
 
-                <div className="my-2 h-px w-full bg-gray-200" />
+                    <div className="my-2 h-px w-full bg-gray-200" />
 
-                {SECONDARY_NAV.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    item={item}
-                    pathname={pathname}
-                    tone="light"
-                    label={labelFor(item)}
-                    className="inline-block text-center"
-                    onClick={() => setMobileMenuOpen(false)}
-                  />
-                ))}
+                    <TreeLink to="/" label="English" lang="en" />
+                    <TreeLink to="/vi" label="Tiếng Việt" lang="vi" />
+                  </>
+                ) : (
+                  <>
+                    {PRIMARY_NAV.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        item={item}
+                        pathname={pathname}
+                        tone="light"
+                        label={labelFor(item)}
+                        className="inline-block text-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      />
+                    ))}
 
-                <div className="my-2 h-px w-full bg-gray-200" />
+                    <div className="my-2 h-px w-full bg-gray-200" />
 
-                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
-                  Tiếng Việt
-                </p>
-                {VI_ROUTES.map((route) => (
-                  <Link
-                    key={route.vi}
-                    to={route.vi}
-                    onClick={() => setMobileMenuOpen(false)}
-                    aria-current={isCurrent(pathname, route.vi) ? "page" : undefined}
-                    className={cn(
-                      "inline-block text-center text-sm uppercase tracking-wide transition-colors",
-                      isCurrent(pathname, route.vi)
-                        ? "text-champagne-ink"
-                        : "text-ink hover:text-champagne-ink",
-                    )}
-                  >
-                    {route.label}
-                  </Link>
-                ))}
+                    {SECONDARY_NAV.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        item={item}
+                        pathname={pathname}
+                        tone="light"
+                        label={labelFor(item)}
+                        className="inline-block text-center"
+                        onClick={() => setMobileMenuOpen(false)}
+                      />
+                    ))}
+
+                    <div className="my-2 h-px w-full bg-gray-200" />
+
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                      Tiếng Việt
+                    </p>
+                    {VI_ROUTES.map((route) => (
+                      <TreeLink key={route.vi} to={route.vi} label={route.label} lang="vi" />
+                    ))}
+
+                    <div className="my-2 h-px w-full bg-gray-200" />
+
+                    <p
+                      lang="zh-Hans"
+                      className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500"
+                    >
+                      中文
+                    </p>
+                    {ZH_ROUTES.map((route) => (
+                      <TreeLink key={route.zh} to={route.zh} label={route.label} lang="zh-Hans" />
+                    ))}
+                  </>
+                )}
 
                 <div className="my-2 h-px w-full bg-gray-200" />
 
                 <a
-                  href={telHref}
+                  href={phoneTel}
                   className="inline-flex items-center gap-2 text-sm uppercase tracking-wider text-ink transition-colors hover:text-champagne-ink"
                 >
                   <Phone className="h-3.5 w-3.5" aria-hidden />
-                  {SITE.phone}
+                  {phoneNumber}
                 </a>
 
                 {user ? (
@@ -491,7 +575,7 @@ const Navbar = () => {
                     item={{ to: "/auth", labelKey: "nav.login" }}
                     pathname={pathname}
                     tone="light"
-                    label={t("nav.login")}
+                    label={loginLabel}
                     className="inline-block text-center"
                     onClick={() => setMobileMenuOpen(false)}
                   />
@@ -502,7 +586,7 @@ const Navbar = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="mx-auto mt-8 text-xs uppercase tracking-[0.2em] text-gray-500 transition-colors hover:text-ink"
               >
-                Exit menu
+                {zh ? "关闭菜单" : "Exit menu"}
               </button>
             </div>
           </motion.div>

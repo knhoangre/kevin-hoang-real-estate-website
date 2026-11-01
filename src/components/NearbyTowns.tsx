@@ -12,7 +12,20 @@ import { neighborhoods } from '@/data/neighborhoodData';
  * list rather than a random sample, so the link graph is the same on every
  * build and every town both gives and receives links.
  */
-const NearbyTowns = ({ currentSlug, count = 4 }: { currentSlug: string; count?: number }) => {
+const NearbyTowns = ({
+  currentSlug,
+  count = 4,
+  heading = 'Other towns nearby',
+  pathFor = (slug) => `/neighborhoods/${slug}`,
+  labelFor = (town) => `${town.name}, MA`,
+}: {
+  currentSlug: string;
+  count?: number;
+  /** The three that differ on a Chinese guide, which links to Chinese guides. */
+  heading?: string;
+  pathFor?: (slug: string) => string;
+  labelFor?: (town: { name: string; slug: string }) => string;
+}) => {
   const index = neighborhoods.findIndex((n) => n.slug === currentSlug);
   if (index === -1) return null;
 
@@ -24,15 +37,15 @@ const NearbyTowns = ({ currentSlug, count = 4 }: { currentSlug: string; count?: 
 
   return (
     <aside className="mt-16 pt-8 border-t border-gray-200">
-      <h2 className="text-2xl font-bold text-ink mb-6">Other towns nearby</h2>
+      <h2 className="text-2xl font-bold text-ink mb-6">{heading}</h2>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 list-none p-0">
         {others.map((town) => (
           <li key={town.slug} className="m-0">
             <Link
-              to={`/neighborhoods/${town.slug}`}
+              to={pathFor(town.slug)}
               className="block rounded-lg border border-gray-200 px-4 py-3 font-medium text-ink transition-shadow hover:shadow-md"
             >
-              {town.name}, MA
+              {labelFor(town)}
             </Link>
           </li>
         ))}

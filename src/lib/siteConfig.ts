@@ -358,6 +358,51 @@ export const SITE = {
 } as const;
 
 /**
+ * Maggie Li, the agent Chinese-speaking visitors are referred to. Kevin does not
+ * speak Chinese, and asked on 2026-10-31 for a Chinese side of the site with her
+ * as the contact (LPT Realty has approved promoting it that way).
+ *
+ * Everything on the /zh pages that reaches a person reads this, the way every
+ * English page reads SITE. It is NOT a second SITE: she is at another brokerage,
+ * so she is named beside William Raveis everywhere she appears, and the site's
+ * own identity stays Kevin's.
+ *
+ * Taken from her own site (the maggie-li-website repo, src/lib/siteConfig.ts),
+ * and only what it states plainly. Its rankings are deliberately not repeated:
+ * that repo notes one of them still needs a source, and this site's rule is no
+ * claim we cannot back up. Her Chinese name is absent because nothing records
+ * one. Add it here if she supplies it; do not guess at it.
+ */
+export const CHINESE_PARTNER = {
+  name: 'Maggie Li',
+  brokerage: 'William Raveis Real Estate',
+  /** Display format, as on her own site. */
+  phone: '(774) 222-0952',
+  phoneE164: '+1-774-222-0952',
+  email: 'maggie.li@raveis.com',
+  website: 'https://maggieli.co',
+  reviewsUrl: 'https://maggieli.co/testimonials',
+  locality: 'Newton, MA',
+  languages: ['zh', 'en'],
+  photo: '/images/maggie-li.webp',
+  wechatQr: '/images/maggie-wechat.webp',
+  /**
+   * The @id her own site gives her Person node. Using the same one here is what
+   * tells a search engine these are one person rather than two named alike.
+   */
+  personId: 'https://maggieli.co/#maggie',
+  profiles: [
+    'https://maggieli.co',
+    'https://www.raveis.com/Agent/maggieli',
+    'https://www.zillow.com/profile/maggieli402',
+    'https://www.realtor.com/realestateagents/5a620242dac6af0012386623',
+  ],
+} as const;
+
+export const partnerTelHref = `tel:${CHINESE_PARTNER.phoneE164}`;
+export const partnerSmsHref = `sms:${CHINESE_PARTNER.phoneE164}`;
+
+/**
  * Just the URLs, for schema.org `sameAs`. Derived rather than maintained
  * separately so the visible links on /about and the machine-readable claim can
  * never name different sets of profiles.

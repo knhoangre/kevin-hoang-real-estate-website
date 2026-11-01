@@ -16,6 +16,8 @@
  * src/AppRoutes.tsx and in scripts/routes.mjs, or it has no prerendered file
  * and 404s on hard refresh.
  */
+import { zhPairFor } from './zhRoutes';
+
 export interface ViRoute {
   /** Vietnamese path. */
   vi: string;
@@ -52,8 +54,22 @@ export const VI_ROUTES: ViRoute[] = [
   { vi: '/vi/dich-vu-tieng-viet', en: '/vietnamese-speaking-real-estate-agent', label: 'Dịch vụ tiếng Việt' },
 ];
 
-/** `{ en, vi }` for a path on either side of a pair, or undefined if unpaired. */
+/**
+ * Every language version of a path, including the path itself, or undefined if
+ * it has none. Whichever side it is asked from, the answer goes through the
+ * English page, so English, Vietnamese and Chinese all list the same set: a set
+ * that is not reciprocal is ignored.
+ *
+ * `zh`, not `zh-Hans`, though the pages are Simplified: there is one Chinese
+ * version, and `zh-Hans` would tell Google it is not for someone searching in
+ * Traditional characters.
+ */
 export const alternatesFor = (path: string): Record<string, string> | undefined => {
-  const pair = VI_ROUTES.find((r) => r.vi === path || r.en === path);
-  return pair ? { en: pair.en, vi: pair.vi } : undefined;
+  const en =
+    VI_ROUTES.find((r) => r.vi === path || r.en === path)?.en ?? zhPairFor(path)?.en;
+  if (!en) return undefined;
+  const vi = VI_ROUTES.find((r) => r.en === en)?.vi;
+  const zh = zhPairFor(en)?.zh;
+  if (!vi && !zh) return undefined;
+  return { en, ...(vi ? { vi } : {}), ...(zh ? { zh } : {}) };
 };

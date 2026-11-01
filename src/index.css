@@ -910,3 +910,36 @@
     margin: 10mm;
   }
 }
+
+/*
+ * The Chinese pages. Inter and Playfair have no Chinese characters, so without
+ * this every glyph falls back wherever the browser likes, and a heading in the
+ * display serif lands on a thin Songti over a photograph. These are the fonts
+ * already on each device, deliberately: a Chinese web font is several megabytes.
+ *
+ * Latin text keeps Inter, which is why it stays first in the stack.
+ *
+ * Headings need more air than the English ones: a Chinese line has no ascenders
+ * or gaps to breathe through, and leading-[1.05] closes it up. The negative
+ * tracking is for mixed-case Latin and only cramps it. And Chinese has no italic:
+ * a browser fakes one by slanting the glyphs, which is hard to read.
+ */
+html[lang='zh-Hans'] body {
+  font-family: Inter, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
+    'Noto Sans CJK SC', sans-serif;
+}
+
+html[lang='zh-Hans'] :is(h1, h2, h3, h4, .font-display) {
+  font-family: Inter, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC',
+    'Noto Sans CJK SC', sans-serif;
+  letter-spacing: 0;
+}
+
+html[lang='zh-Hans'] h1 {
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  line-height: 1.25;
+}
+
+html[lang='zh-Hans'] :is(.italic, em) {
+  font-style: normal;
+}

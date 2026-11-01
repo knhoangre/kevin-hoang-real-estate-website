@@ -7,6 +7,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+/**
+ * This form is public, and what is typed into it lands in an HTML email, which
+ * since the Chinese pages also goes to someone outside this business.
+ */
+const esc = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -14,8 +25,14 @@ serve(async (req) => {
 
   try {
     // console.log('Received request:', req.method);
-    const { firstName, lastName, email, phone, message } = await req.json();
+    const { firstName, lastName, email, phone, message, lang } = await req.json();
     // console.log('Parsed request data:', { firstName, lastName, email, phone, messageLength: message?.length });
+
+    // The Chinese contact form. Kevin does not read Chinese, so its messages go
+    // to Maggie Li as well, and the source says how the person arrived. Her
+    // address is fixed here and the request can only ask for this one thing: it
+    // cannot name a recipient, so the flag cannot be used to mail anyone else.
+    const fromChinesePage = lang === 'zh';
 
     if (!firstName || !lastName || !email || !message) {
       // console.log('Missing required fields:', { firstName, lastName, email, message: !!message });
@@ -168,7 +185,7 @@ serve(async (req) => {
     }
 
     // Get or create "Website" source
-    const contactSource = "Website";
+    const contactSource = fromChinesePage ? "Website - Chinese (Maggie Li)" : "Website";
     let { data: sourceData, error: sourceError } = await supabase
       .from('contact_sources')
       .select('id')
@@ -340,8 +357,15 @@ serve(async (req) => {
       // console.log('Attempting to send email...');
       const data = await resend.emails.send({
         from: "Kevin Hoang <contact@kevinhoang.co>",
-        to: ["knhoangre@gmail.com"],
-        subject: "New Contact Form Submission",
+        to: fromChinesePage
+          ? ["maggie.li@raveis.com", "knhoangre@gmail.com"]
+          : ["knhoangre@gmail.com"],
+        // Spelled reply_to: resend@3.1.0 silently drops replyTo. Only on the
+        // Chinese form for now, where whoever replies is not the site's owner.
+        ...(fromChinesePage ? { reply_to: email } : {}),
+        subject: fromChinesePage
+          ? "New message from the Chinese pages on kevinhoang.co"
+          : "New Contact Form Submission",
         html: `
           <!DOCTYPE html>
           <html>
@@ -435,16 +459,16 @@ serve(async (req) => {
             <body>
               <div class="container">
                 <div class="header">
-                  <h2>New Contact Form Submission</h2>
+                  <h2>${fromChinesePage ? "New message from the Chinese pages" : "New Contact Form Submission"}</h2>
                 </div>
                 <div class="content">
                   <div class="field">
                     <span class="label">Name</span>
-                    <div class="value">${firstName} ${lastName}</div>
+                    <div class="value">${esc(firstName)} ${esc(lastName)}</div>
                   </div>
                   <div class="field">
                     <span class="label">Email</span>
-                    <div class="value">${email}</div>
+                    <div class="value">${esc(email)}</div>
                   </div>
                   ${phone ? `
                   <div class="field">
@@ -461,14 +485,14 @@ serve(async (req) => {
                         </a>
                       </div>
                       <div style="margin-top: 8px; text-align: center; color: #666; font-size: 14px;">
-                        ${phone}
+                        ${esc(phone)}
                       </div>
                     </div>
                   </div>
                   ` : ''}
                   <div class="field">
                     <span class="label">Message</span>
-                    <div class="message">${message}</div>
+                    <div class="message">${esc(message)}</div>
                   </div>
                 </div>
               </div>

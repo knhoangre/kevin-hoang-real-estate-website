@@ -6,6 +6,7 @@
 // React context, and head tags silently fail to register at build time.
 import { Head } from 'vite-react-ssg';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SITE, absoluteUrl } from '@/lib/siteConfig';
 import { OG_WIDTH, OG_HEIGHT } from '@/lib/images';
 
@@ -73,7 +74,15 @@ export interface SeoProps {
 // the shorter titleSuffix is what goes in <title>. og:site_name still uses the
 // full profile name below.
 /** hreflang code -> Open Graph locale. */
-const OG_LOCALES: Record<string, string> = { en: 'en_US', vi: 'vi_VN' };
+const OG_LOCALES: Record<string, string> = { en: 'en_US', vi: 'vi_VN', zh: 'zh_CN' };
+
+/**
+ * Open Graph locale -> <html lang>, for pages written in another language.
+ *
+ * zh-Hans is the one that matters: without it a browser picks Chinese glyphs for
+ * the wrong region, and Windows draws them in a Japanese font.
+ */
+const HTML_LANGS: Record<string, string> = { vi_VN: 'vi', zh_CN: 'zh-Hans' };
 
 const withBrand = (title: string) =>
   title.includes('|') ? title : `${title} | ${SITE.titleSuffix}`;
@@ -110,6 +119,10 @@ const Seo = ({
   article,
 }: SeoProps) => {
   const { pathname } = useLocation();
+  const { i18n } = useTranslation();
+  // A page written in a language says so. Every other page says whatever the
+  // toggle says, which is 'en' for the first render and at build time.
+  const htmlLang = (locale && HTML_LANGS[locale]) || i18n.language || 'en';
   const fullTitle = withBrand(title);
   const canonicalUrl = canonical ? absoluteUrl(canonical) : absoluteUrl(pathname);
   const imageUrl = absoluteUrl(ogImage ?? SITE.defaultOgImage);
@@ -117,6 +130,7 @@ const Seo = ({
 
   return (
     <Head>
+      <html lang={htmlLang} />
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}

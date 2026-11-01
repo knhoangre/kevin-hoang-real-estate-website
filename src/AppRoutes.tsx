@@ -3,6 +3,7 @@ import App from './App';
 import PrivatePage from './components/PrivatePage';
 import RouteError from './components/RouteError';
 import type { MarketIndex, MarketIndexTown, MarketReport } from './lib/market';
+import type { ZhTownGuideData } from './pages/zh/ZhTownGuide';
 import marketIndexJson from './data/market/index.json';
 
 /**
@@ -91,6 +92,28 @@ const marketRoutes: RouteRecord[] = marketIndex.towns.flatMap((entry) => [
   ),
 ]);
 
+/**
+ * The Chinese town guides: one route per town, for the market pages' reason. Each
+ * loads only its own text, and its guide is a prop, so its first render is the
+ * whole page. Their English pairs are /neighborhoods/<slug>.
+ */
+const zhTownGuides = import.meta.glob<{ default: ZhTownGuideData }>('./data/zh/towns/*.ts');
+
+const zhTownRoutes: RouteRecord[] = Object.keys(zhTownGuides).map((file) => {
+  const slug = file.replace('./data/zh/towns/', '').replace('.ts', '');
+  return {
+    path: `zh/quyu/${slug}`,
+    lazy: async () => {
+      const [{ default: Page }, { default: guide }] = await Promise.all([
+        import('./pages/zh/ZhTownGuide'),
+        zhTownGuides[file](),
+      ]);
+      return { Component: () => <Page guide={guide} /> };
+    },
+    entry: 'src/pages/zh/ZhTownGuide.tsx',
+  };
+});
+
 export const routes: RouteRecord[] = [
   {
     path: '/',
@@ -128,6 +151,11 @@ export const routes: RouteRecord[] = [
         'vietnamese-speaking-real-estate-agent',
         () => import('./pages/VietnameseAgent'),
         'src/pages/VietnameseAgent.tsx'
+      ),
+      page(
+        'chinese-speaking-real-estate-agent',
+        () => import('./pages/ChineseAgent'),
+        'src/pages/ChineseAgent.tsx'
       ),
       page('relocation', () => import('./pages/Relocation'), 'src/pages/Relocation.tsx'),
 
@@ -237,6 +265,26 @@ export const routes: RouteRecord[] = [
         () => import('./pages/vi/ViServices'),
         'src/pages/vi/ViServices.tsx'
       ),
+
+      // --- Chinese ---------------------------------------------------------
+      // The same arrangement, for readers of Chinese, paired by src/lib/zhRoutes.ts.
+      // Kevin does not speak Chinese: every button on these reaches Maggie Li.
+      page('zh', () => import('./pages/zh/ZhHome'), 'src/pages/zh/ZhHome.tsx'),
+      page('zh/maggie-li', () => import('./pages/zh/ZhMaggie'), 'src/pages/zh/ZhMaggie.tsx'),
+      page('zh/zhongwen-fuwu', () => import('./pages/zh/ZhServices'), 'src/pages/zh/ZhServices.tsx'),
+      page('zh/goufang', () => import('./pages/zh/ZhBuy'), 'src/pages/zh/ZhBuy.tsx'),
+      page('zh/shoufang', () => import('./pages/zh/ZhSell'), 'src/pages/zh/ZhSell.tsx'),
+      page('zh/shouci-goufang', () => import('./pages/zh/ZhFirstTime'), 'src/pages/zh/ZhFirstTime.tsx'),
+      page('zh/gujia', () => import('./pages/zh/ZhValuation'), 'src/pages/zh/ZhValuation.tsx'),
+      page('zh/changjian-wenti', () => import('./pages/zh/ZhFaq'), 'src/pages/zh/ZhFaq.tsx'),
+      page('zh/guanyu', () => import('./pages/zh/ZhAbout'), 'src/pages/zh/ZhAbout.tsx'),
+      page('zh/banjia-mazhou', () => import('./pages/zh/ZhRelocation'), 'src/pages/zh/ZhRelocation.tsx'),
+      page('zh/pingjia', () => import('./pages/zh/ZhTestimonials'), 'src/pages/zh/ZhTestimonials.tsx'),
+      page('zh/jisuanqi', () => import('./pages/zh/ZhCalculator'), 'src/pages/zh/ZhCalculator.tsx'),
+      page('zh/lianxi', () => import('./pages/zh/ZhContact'), 'src/pages/zh/ZhContact.tsx'),
+      page('zh/wenzhang', () => import('./pages/zh/ZhBlog'), 'src/pages/zh/ZhBlog.tsx'),
+      page('zh/quyu', () => import('./pages/zh/ZhAreas'), 'src/pages/zh/ZhAreas.tsx'),
+      ...zhTownRoutes,
 
       // --- IDX search ------------------------------------------------------
       // NOT prerendered with content and NOT indexed. These are the only routes

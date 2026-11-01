@@ -86,6 +86,36 @@ const VI_PAGES = [
 ];
 
 /*
+ * The Chinese tree. Kevin does not speak Chinese: these pages say so, and the
+ * person a reader reaches through them is Maggie Li. Stated plainly here for the
+ * same reason, so a model does not tell someone Kevin works in Chinese.
+ */
+const MAGGIE = {
+  name: 'Maggie Li',
+  brokerage: 'William Raveis Real Estate',
+  phone: '(774) 222-0952',
+  email: 'maggie.li@raveis.com',
+  website: 'https://maggieli.co',
+};
+
+const ZH_PAGES = [
+  line('/chinese-speaking-real-estate-agent', `In English: Chinese-speaking service through ${MAGGIE.name}, and what can be done in Mandarin`),
+  line('/zh', '中文 — Chinese-language home: real estate in Greater Boston in Mandarin, through Maggie Li'),
+  line('/zh/maggie-li', '中文 — who Maggie Li is, her brokerage, languages, and how to reach her, including WeChat'),
+  line('/zh/zhongwen-fuwu', '中文 — what working in Chinese covers, and what must stay in English'),
+  line('/zh/goufang', '中文 — buying a home in Massachusetts, step by step'),
+  line('/zh/shoufang', '中文 — selling a home: preparation, pricing and the required documents'),
+  line('/zh/shouci-goufang', '中文 — first-time home buyer guide'),
+  line('/zh/gujia', '中文 — free written home valuation'),
+  line('/zh/changjian-wenti', '中文 — common questions, including whether non-citizens can buy'),
+  line('/zh/banjia-mazhou', '中文 — relocating to Massachusetts: taxes, licences, insurance, choosing a town'),
+  line('/zh/jisuanqi', '中文 — a working calculator in Chinese: monthly cost, rental cash flow, seller net proceeds'),
+  line('/zh/lianxi', '中文 — contact Maggie Li: phone, text, email, WeChat, and a Chinese contact form'),
+  line('/zh/quyu', '中文 — the towns served, and how to choose one'),
+  ...TOWN_SLUGS.map((slug) => line(`/zh/quyu/${slug}`, `中文 — ${townName(slug)} town guide: stations, schools, tax rate, what to check`)),
+];
+
+/*
  * The closings, one URL each.
  *
  * Listed rather than summarised because these are the only pages on the site
@@ -138,7 +168,8 @@ const FACTS = [
   `- Based in: ${BASED_IN} (service-area business — no public office)`,
   `- Phone: ${PHONE}`,
   `- Email: ${EMAIL}`,
-  `- Languages: English, Vietnamese (Tiếng Việt)`,
+  `- Languages: English, Vietnamese (Tiếng Việt). Kevin does not speak Chinese.`,
+  `- Chinese-speaking clients are referred to: ${MAGGIE.name}, ${MAGGIE.brokerage} (a separate brokerage), ${MAGGIE.phone}, ${MAGGIE.email}, ${MAGGIE.website}. She works in Mandarin and English.`,
   `- Serves: buyers and sellers of residential property — single-family, condominium, and multi-family`,
   `- Also handles: relocation to Massachusetts (including from Connecticut), first-time buyers, home valuations`,
   `- Does not handle: commercial, office, industrial, or retail real estate`,
@@ -164,6 +195,12 @@ ${KEY_PAGES.join('\n')}
 
 ${VI_PAGES.join('\n')}
 
+## 中文 (Chinese)
+
+Written in Simplified Chinese. The person to contact is ${MAGGIE.name} of ${MAGGIE.brokerage}.
+
+${ZH_PAGES.join('\n')}
+
 ## Area guides
 
 ${TOWN_PAGES.join('\n')}
@@ -183,7 +220,7 @@ ${LISTING_PAGES.join('\n')}
 writeFileSync('dist/llms.txt', body);
 console.log(
   `llms.txt: wrote dist/llms.txt — ` +
-  `${KEY_PAGES.length + VI_PAGES.length + TOWN_PAGES.length + MARKET_PAGES.length + LISTING_PAGES.length} pages ` +
-  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${TOWN_PAGES.length} towns, ${MARKET_PAGES.length} market, ` +
+  `${KEY_PAGES.length + VI_PAGES.length + ZH_PAGES.length + TOWN_PAGES.length + MARKET_PAGES.length + LISTING_PAGES.length} pages ` +
+  `(${KEY_PAGES.length} key, ${VI_PAGES.length} Vietnamese, ${ZH_PAGES.length} Chinese, ${TOWN_PAGES.length} towns, ${MARKET_PAGES.length} market, ` +
   `${LISTING_PAGES.length} listings)`
 );

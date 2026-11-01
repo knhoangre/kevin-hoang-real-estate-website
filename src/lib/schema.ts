@@ -8,7 +8,7 @@
  * @id `${origin}/#agent`. Every other page references that @id instead of
  * restating the whole entity — smaller payloads, and one place to fix mistakes.
  */
-import { SITE, absoluteUrl, profileUrls } from './siteConfig';
+import { CHINESE_PARTNER, SITE, absoluteUrl, profileUrls } from './siteConfig';
 
 const AGENT_ID = `${SITE.origin}/#agent`;
 const WEBSITE_ID = `${SITE.origin}/#website`;
@@ -65,6 +65,32 @@ export const person = () =>
       'Connecticut to Massachusetts relocation',
     ],
     sameAs: profileUrls,
+  });
+
+/**
+ * Maggie Li, on the /zh pages. Her own @id, the one her site declares, so a
+ * search engine reads this as the same person rather than a namesake.
+ *
+ * Standalone on purpose, with nothing referencing #agent: she is not an employee
+ * of this business. `memberOf` is the one credential, because her site states it
+ * and it can be checked with AREAA.
+ */
+export const partnerPerson = () =>
+  compact({
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': CHINESE_PARTNER.personId,
+    name: CHINESE_PARTNER.name,
+    url: CHINESE_PARTNER.website,
+    image: absoluteUrl(CHINESE_PARTNER.photo),
+    jobTitle: 'Real Estate Agent',
+    telephone: CHINESE_PARTNER.phoneE164,
+    email: CHINESE_PARTNER.email,
+    worksFor: { '@type': 'Organization', name: CHINESE_PARTNER.brokerage },
+    knowsLanguage: [...CHINESE_PARTNER.languages],
+    memberOf: { '@type': 'Organization', name: 'Asian Real Estate Association of America' },
+    areaServed: areaServed(),
+    sameAs: [...CHINESE_PARTNER.profiles],
   });
 
 /**

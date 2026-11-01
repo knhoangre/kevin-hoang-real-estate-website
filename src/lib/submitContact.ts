@@ -22,6 +22,8 @@ export interface ContactMessage {
   /** Optional. Empty strings are normalised to null rather than stored blank. */
   phone?: string | null;
   message: string;
+  /** 'zh' for the Chinese contact form: the function also tells Maggie Li. */
+  lang?: 'zh';
 }
 
 /**
@@ -45,6 +47,7 @@ export const submitContactMessage = async (values: ContactMessage): Promise<void
       email: values.email.trim().toLowerCase(),
       phone: phone ? phone : null,
       message: values.message.trim(),
+      ...(values.lang ? { lang: values.lang } : {}),
     },
   });
 

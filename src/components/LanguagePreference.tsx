@@ -32,8 +32,10 @@ const LanguagePreference = () => {
       v != null && (SUPPORTED_LANGUAGES as readonly string[]).includes(v);
 
     const next = isSupported(stored) ? stored : DEFAULT_LANGUAGE;
-    if (next !== i18n.language) void i18n.changeLanguage(next);
-    document.documentElement.lang = next;
+    // A microtask, so it lands after the rest of this commit's effects. <Seo> owns
+    // <html lang> and hears about a language change through its own effect, which
+    // runs after this one: changed any sooner, it stayed 'en' on a stored 'vi'.
+    if (next !== i18n.language) queueMicrotask(() => void i18n.changeLanguage(next));
   }, [i18n]);
 
   return null;

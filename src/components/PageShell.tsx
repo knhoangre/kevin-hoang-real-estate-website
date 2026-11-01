@@ -1,7 +1,7 @@
 import { Phone, CalendarDays, MessageSquare } from 'lucide-react';
 import Seo, { type SeoProps } from '@/components/Seo';
 import BreadcrumbBar from '@/components/BreadcrumbBar';
-import CtaBand from '@/components/CtaBand';
+import CtaBand, { type CtaContact } from '@/components/CtaBand';
 import { breadcrumbs, type Crumb } from '@/lib/schema';
 import { SITE, telHref, smsHref } from '@/lib/siteConfig';
 import { defaultStrip, type StripItem } from '@/lib/strip';
@@ -97,7 +97,7 @@ export interface PageShellProps {
   /** Credential strip. `false` omits it. */
   strip?: StripItem[] | false;
   children: React.ReactNode;
-  cta?: { heading: string; body: string; button?: string } | false;
+  cta?: { heading: string; body: string; button?: string; contact?: CtaContact } | false;
 }
 
 /**
@@ -310,7 +310,7 @@ const PageShell = ({
       {children}
 
       {cta !== false && cta && (
-        <CtaBand heading={cta.heading} body={cta.body} button={cta.button} />
+        <CtaBand heading={cta.heading} body={cta.body} button={cta.button} contact={cta.contact} />
       )}
     </div>
   );

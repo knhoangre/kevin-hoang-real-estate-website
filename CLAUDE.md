@@ -36,6 +36,7 @@ node scripts/market-check.ts           # the market reports: windows, medians, s
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
 node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
+node scripts/zh-check.mjs              # the BUILT Chinese pages (after npm run build): language tags, Maggie's number, both brokerages, nothing saying Kevin speaks Chinese
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
@@ -2361,6 +2362,81 @@ Two senders, and only one of them is ours today.
 - **The town guides are deliberately NOT translated.** Seventeen near-identical
   translations is the scaled-content shape this corpus was cleaned of once.
   `/vi/khu-vuc` describes them and links out to the English guides instead.
+
+### The Chinese tree (`/zh`)
+
+Kevin asked on 2026-10-31 for a Chinese side of the site. **He does not speak
+Chinese**, so this is not `/vi` translated: every button, number and form reaches
+**Maggie Li** of William Raveis Real Estate, his referral partner, and LPT Realty
+has approved promoting it that way. Her site is the `maggie-li-website` repo.
+[zhRoutes.ts](src/lib/zhRoutes.ts) is the list, [ZhPage](src/components/ZhPage.tsx)
+the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
+`node scripts/zh-check.mjs` reads the built pages.
+
+- **No page may say Kevin explains, answers or does anything in Chinese.** Say
+  Maggie, or say nobody. Every page opens with a notice saying whose site this is,
+  that Kevin does not speak Chinese, and that the two are at separate brokerages.
+  The check script looks for sentences that break this, because nobody who works
+  on this site can read them.
+- **Nothing about referral fees** (Kevin's decision, 2026-10-31).
+- **Only what her own site states plainly:** Mandarin and English, the brokerage,
+  Newton, the AREAA board seat, her phone, email and WeChat. Her rankings are left
+  to her site, which is one link away; her own repo notes one still needs a source.
+  She is **not** claimed to speak Cantonese, and she has no Chinese name here,
+  because nothing records one. Add one to `CHINESE_PARTNER` if she supplies it.
+- **Both brokerages on every page**: 254 CMR 3.09, in the ZhFooter.
+- **She covers all 17 towns** (Kevin, 2026-10-31), though her own site lists ten.
+- **The form emails Maggie and Kevin and files the person in the CRM**
+  (`lang: 'zh'` on `submit-contact`, source "Website - Chinese (Maggie Li)"), so
+  Kevin has a record of who came through. Calls and WeChat go straight to her and
+  leave none. Her address is fixed in the function; a request cannot name a
+  recipient. The page says who will see a message. `submit-contact` also escapes
+  what is typed now, since that email reaches someone outside this business.
+- **`/zh/pingjia` shows reviews of Kevin, and says so first.** Beside her number
+  they would otherwise read as hers. Verbatim English, for `/vi/danh-gia`'s reason;
+  her own reviews are linked. For the same reason `TownSoldListings` is left off
+  the Chinese guides and the ten closings stay English.
+- **Language, never ethnicity.** No "towns with a large Chinese community" and no
+  school rankings, which is steering by national origin. So the guides drop the
+  English "Who is X right for?" sections ("families prioritizing..."), "safety",
+  "Italian-American roots" and "elite schools". `/vi/khu-vuc` still has a question
+  of the kind this rules out; it needs its own decision.
+- **Not a literal translation where a literal one would make a claim.** `/faq`'s
+  answers about how "we" work describe Kevin's practice and would be statements
+  about Maggie's. Love letters and "5-6% commission" are not carried across either.
+  Roadmaps come from the Massachusetts version on `/vi`, not the generic English
+  strings. No Chinese page may suggest waiving an inspection (760 CMR 74.00).
+- **Town guides ARE translated here**, unlike `/vi/khu-vuc`, because a town and its
+  schools are what a Chinese-speaking buyer searches for. One lazy route per town
+  ([src/data/zh/towns/](src/data/zh/towns/), globbed in AppRoutes), each handed its
+  guide as a prop like the market pages. The layout is the shared
+  [TownGuideSections](src/components/TownGuideSections.tsx). Station and school names
+  stay English, because that is what is on the sign; [townFaqsZh](src/lib/townFaqsZh.ts)
+  reads `TOWN_FACTS`, so a tax rate has one source. A new town needs a file there.
+- **The blog and market reports are NOT translated yet, and come in batches once
+  Maggie has read the first pages** (Kevin's decision). Google's spam policy names
+  translation published without human review, and the corpus was cleaned of scaled
+  content once already. `/zh/wenzhang` links the English posts under Chinese titles
+  ([blogTitles.ts](src/data/zh/blogTitles.ts)) and says they are English. Topic
+  groups live in [blogTopics.ts](src/data/blogTopics.ts), shared with `/vi/bai-viet`.
+- **English on purpose:** `/search` and listings (MLS PIN: noindex), the ten closings,
+  `/needham-real-estate-agent` (it is about hiring Kevin), the legal pages (not
+  without a lawyer), sign-in, applications, admin.
+- **Simplified, but hreflang `zh`.** There is one Chinese version, and `zh-Hans`
+  would tell Google it is not for someone searching in Traditional characters.
+  `<html lang>` is `zh-Hans`, or Windows draws the glyphs in a Japanese font.
+- **`<html lang>` now comes from `<Seo>` on every page**, and `index.html` has no
+  `lang`, because the generator prepends attributes and the first one wins.
+  `LanguagePreference` no longer overwrites it on `/vi` and `/zh`: until 2026-10-31
+  it marked every Vietnamese page `en` the moment it hydrated.
+- **No Chinese web font.** Several megabytes, and each device has one. `index.css`
+  sets the stack, looser line spacing, and no italics, which a browser fakes.
+- Glossary, so the pages stay consistent: 购房要约 Offer to Purchase · 买卖合同 P&S ·
+  贷款预批 pre-approval · 验房 inspection · 银行估价 appraisal · 过户 closing · 定金
+  deposit · 附加条件 contingency · 产权 title · 地契 deed · 地契税 deed excise · 契约登记处
+  Registry of Deeds · 估税价值 assessed value · 买方经纪 buyer's agent · 卖方经纪 listing
+  agent · 化粪池 septic · 含铅油漆 lead paint · 两户住宅 two-family · 三层楼 triple-decker.
+  Buying is goufang and selling shoufang in URLs, because "maifang" is both.
 
 ## The calculator (`HomeCalculator`)
 

@@ -54,6 +54,23 @@ export const SECONDARY_NAV: NavItem[] = [
 ];
 
 /**
+ * The always-visible bar on a /zh page, and a label for each item literally: i18n
+ * is pinned to 'en' during generation, so t() here would prerender English.
+ *
+ * Not the five English items mapped across. /properties is Kevin's own closings,
+ * which beside Maggie's number would read as her sales, and her page takes its
+ * place.
+ */
+export const ZH_PRIMARY_NAV: NavItem[] = [
+  { to: '/search', label: '搜索房源' },
+  { to: '/zh/maggie-li', label: '认识 Maggie' },
+  { to: '/zh/goufang', label: '购房' },
+  { to: '/zh/shoufang', label: '售房' },
+  { to: '/zh/changjian-wenti', label: '常见问题' },
+  { to: '/zh/lianxi', label: '联系' },
+];
+
+/**
  * Routes whose hero is `ink-deep`, so the bar must start transparent over them
  * and turn white on scroll.
  *
@@ -67,6 +84,7 @@ const DARK_HERO_EXACT = new Set([
   '/needham-real-estate-agent',
   '/home-valuation',
   '/vietnamese-speaking-real-estate-agent',
+  '/chinese-speaking-real-estate-agent',
   '/relocation',
   '/faq',
   '/buyer',
@@ -89,7 +107,8 @@ const DARK_HERO_EXACT = new Set([
 ]);
 
 /**
- * `/vi` and every page under it is a ViPage, and they all have dark heroes.
+ * `/vi` and every page under it is a ViPage, and they all have dark heroes, as
+ * `/zh` and its ZhPages do.
  * `/admin` and `/crm` render AdminShell, whose header band is the same dark
  * photographic treatment, so the bar starts transparent over those too.
  *
@@ -99,7 +118,7 @@ const DARK_HERO_EXACT = new Set([
  * likewise, since the page anyone actually opens is `/apply/<token>`, and
  * `/market`, whose town pages and monthly posts all sit on the PageShell hero.
  */
-const DARK_HERO_PREFIX = ['/vi', '/admin', '/crm', '/properties', '/apply', '/market'];
+const DARK_HERO_PREFIX = ['/vi', '/zh', '/admin', '/crm', '/properties', '/apply', '/market'];
 
 /**
  * Prefix-aware, so a detail route lights up its section.
