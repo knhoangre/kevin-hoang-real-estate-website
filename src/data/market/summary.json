@@ -2,323 +2,323 @@
  {
   "town": "Newton",
   "slug": "newton-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 870,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 813,
   "types": [
    {
     "type": "SF",
-    "median": 1827500,
-    "ppsf": 618,
-    "ratio": 1,
-    "over": 0.4552,
+    "median": 1845000,
+    "ppsf": 619,
+    "ratio": 0.9875,
+    "over": 0.3647,
     "window": 3,
     "edge": "balanced",
     "available": 139,
-    "monthsSupply": 3.2835
+    "monthsSupply": 3.5565
    },
    {
     "type": "CC",
-    "median": 1100000,
-    "ppsf": 561,
-    "ratio": 0.9861,
-    "over": 0.3117,
+    "median": 1070000,
+    "ppsf": 559,
+    "ratio": 0.9759,
+    "over": 0.2273,
     "window": 3,
-    "edge": "balanced",
+    "edge": "buyers",
     "available": 106,
-    "monthsSupply": 3.9503
+    "monthsSupply": 4.1433
    },
    {
     "type": "MF",
-    "median": 1345000,
-    "ppsf": 459,
-    "ratio": 0.9591,
-    "over": 0.1818,
-    "window": 3,
-    "edge": "buyers",
+    "median": 1340000,
+    "ppsf": 460,
+    "ratio": 1,
+    "over": 0.381,
+    "window": 6,
+    "edge": "balanced",
     "available": 17,
-    "monthsSupply": 5.1
+    "monthsSupply": 5.5135
    }
   ]
  },
  {
   "town": "Needham",
   "slug": "needham-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 304,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 291,
   "types": [
    {
     "type": "SF",
-    "median": 1770000,
-    "ppsf": 546,
-    "ratio": 0.9846,
-    "over": 0.3537,
+    "median": 1772500,
+    "ppsf": 547,
+    "ratio": 0.9805,
+    "over": 0.2941,
     "window": 3,
     "edge": "balanced",
     "available": 55,
-    "monthsSupply": 2.6087
+    "monthsSupply": 2.7731
    },
    {
     "type": "CC",
     "median": 1135000,
-    "ppsf": 514,
-    "ratio": 0.973,
-    "over": 0.1,
+    "ppsf": 520,
+    "ratio": 0.9838,
+    "over": 0.2105,
     "window": 3,
-    "edge": "buyers",
+    "edge": "balanced",
     "available": 11,
-    "monthsSupply": 2.6939
+    "monthsSupply": 2.5882
    }
   ]
  },
  {
   "town": "Wellesley",
   "slug": "wellesley-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 313,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 292,
   "types": [
    {
     "type": "SF",
-    "median": 2367500,
+    "median": 2360750,
     "ppsf": 652,
-    "ratio": 0.9892,
-    "over": 0.4268,
+    "ratio": 0.9721,
+    "over": 0.3333,
     "window": 3,
     "edge": "balanced",
     "available": 47,
-    "monthsSupply": 2.2118
+    "monthsSupply": 2.3697
    },
    {
     "type": "CC",
-    "median": 1270000,
-    "ppsf": 803,
-    "ratio": 0.9916,
-    "over": 0.2,
+    "median": 1262500,
+    "ppsf": 745,
+    "ratio": 0.9846,
+    "over": 0.0909,
     "window": 3,
     "edge": "balanced",
     "available": 9,
-    "monthsSupply": 2
+    "monthsSupply": 2.16
    }
   ]
  },
  {
   "town": "Waltham",
   "slug": "waltham-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 388,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 351,
   "types": [
    {
     "type": "SF",
-    "median": 870000,
-    "ppsf": 473,
-    "ratio": 1.0001,
-    "over": 0.5094,
+    "median": 875000,
+    "ppsf": 477,
+    "ratio": 1,
+    "over": 0.4884,
     "window": 3,
-    "edge": "sellers",
+    "edge": "balanced",
     "available": 51,
-    "monthsSupply": 3.2042
+    "monthsSupply": 3.4971
    },
    {
     "type": "CC",
-    "median": 640044,
-    "ppsf": 498,
-    "ratio": 0.9942,
-    "over": 0.2308,
+    "median": 675000,
+    "ppsf": 491,
+    "ratio": 0.9894,
+    "over": 0.2121,
     "window": 3,
     "edge": "balanced",
     "available": 52,
-    "monthsSupply": 3.9494
+    "monthsSupply": 4.3636
    },
    {
     "type": "MF",
     "median": 1120000,
-    "ppsf": 353,
+    "ppsf": 349,
     "ratio": 1.0001,
-    "over": 0.5,
+    "over": 0.5238,
     "window": 6,
     "edge": "sellers",
     "available": 22,
-    "monthsSupply": 6.7692
+    "monthsSupply": 8
    }
   ]
  },
  {
   "town": "Brookline",
   "slug": "brookline-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 527,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 493,
   "types": [
    {
     "type": "SF",
-    "median": 2570000,
-    "ppsf": 769,
-    "ratio": 0.9705,
-    "over": 0.24,
+    "median": 2600000,
+    "ppsf": 772,
+    "ratio": 0.9679,
+    "over": 0.2222,
     "window": 3,
     "edge": "buyers",
     "available": 51,
-    "monthsSupply": 5.5636
+    "monthsSupply": 5.6147
    },
    {
     "type": "CC",
-    "median": 1024500,
-    "ppsf": 817,
-    "ratio": 0.9835,
-    "over": 0.2952,
+    "median": 1037500,
+    "ppsf": 823,
+    "ratio": 0.9806,
+    "over": 0.1791,
     "window": 3,
     "edge": "balanced",
     "available": 134,
-    "monthsSupply": 4.0402
+    "monthsSupply": 4.3696
    },
    {
     "type": "MF",
-    "median": 2250000,
-    "ppsf": 580,
-    "ratio": 0.9945,
-    "over": 0.4211,
+    "median": 2225000,
+    "ppsf": 567,
+    "ratio": 0.9838,
+    "over": 0.3125,
     "window": 12,
     "edge": "balanced",
     "available": 15,
-    "monthsSupply": 9.4737
+    "monthsSupply": 11.25
    }
   ]
  },
  {
   "town": "Weston",
   "slug": "weston-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 137,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 126,
   "types": [
    {
     "type": "SF",
-    "median": 2532500,
+    "median": 2489500,
     "ppsf": 571,
-    "ratio": 0.963,
-    "over": 0.125,
+    "ratio": 0.9613,
+    "over": 0.1739,
     "window": 3,
     "edge": "buyers",
     "available": 35,
-    "monthsSupply": 3.4426
+    "monthsSupply": 3.8182
    },
    {
     "type": "CC",
-    "median": 1455000,
-    "ppsf": 614,
-    "ratio": 0.994,
-    "over": 0.4,
+    "median": 1177500,
+    "ppsf": 602,
+    "ratio": 0.9914,
+    "over": 0.375,
     "window": 12,
     "edge": "balanced",
     "available": 1,
-    "monthsSupply": 0.8
+    "monthsSupply": 0.75
    }
   ]
  },
  {
   "town": "Lexington",
   "slug": "lexington-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 327,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 307,
   "types": [
    {
     "type": "SF",
-    "median": 1750000,
+    "median": 1785000,
     "ppsf": 567,
-    "ratio": 0.9856,
-    "over": 0.3125,
+    "ratio": 0.9775,
+    "over": 0.2593,
     "window": 3,
     "edge": "balanced",
     "available": 73,
-    "monthsSupply": 3.0523
+    "monthsSupply": 3.2565
    },
    {
     "type": "CC",
-    "median": 950000,
+    "median": 1050000,
     "ppsf": 546,
     "ratio": 1,
-    "over": 0.25,
+    "over": 0.1818,
     "window": 3,
     "edge": "balanced",
     "available": 19,
-    "monthsSupply": 5.8462
+    "monthsSupply": 6.1622
    }
   ]
  },
  {
   "town": "Belmont",
   "slug": "belmont-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 208,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 194,
   "types": [
    {
     "type": "SF",
-    "median": 1600000,
+    "median": 1602500,
     "ppsf": 684,
-    "ratio": 1,
-    "over": 0.4419,
+    "ratio": 0.984,
+    "over": 0.2727,
     "window": 3,
     "edge": "balanced",
     "available": 30,
-    "monthsSupply": 2.9508
+    "monthsSupply": 3.0508
    },
    {
     "type": "CC",
-    "median": 920000,
-    "ppsf": 578,
-    "ratio": 1.0157,
-    "over": 0.6154,
-    "window": 3,
-    "edge": "sellers",
+    "median": 925000,
+    "ppsf": 583,
+    "ratio": 1,
+    "over": 0.4815,
+    "window": 6,
+    "edge": "balanced",
     "available": 20,
-    "monthsSupply": 4.5283
+    "monthsSupply": 5
    },
    {
     "type": "MF",
-    "median": 1372000,
-    "ppsf": 495,
-    "ratio": 1.0219,
-    "over": 0.6111,
+    "median": 1338500,
+    "ppsf": 500,
+    "ratio": 1.0111,
+    "over": 0.5294,
     "window": 6,
     "edge": "sellers",
     "available": 7,
-    "monthsSupply": 2.5455
+    "monthsSupply": 3
    }
   ]
  },
  {
   "town": "Winchester",
   "slug": "winchester-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 254,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 235,
   "types": [
    {
     "type": "SF",
-    "median": 1765000,
-    "ppsf": 565,
-    "ratio": 1,
-    "over": 0.4314,
+    "median": 1775000,
+    "ppsf": 569,
+    "ratio": 0.9759,
+    "over": 0.3,
     "window": 3,
     "edge": "balanced",
     "available": 43,
-    "monthsSupply": 2.8352
+    "monthsSupply": 3.0533
    },
    {
     "type": "CC",
-    "median": 894000,
-    "ppsf": 538,
+    "median": 919000,
+    "ppsf": 532,
     "ratio": 1.0113,
-    "over": 0.6429,
+    "over": 0.6538,
     "window": 6,
     "edge": "sellers",
     "available": 16,
-    "monthsSupply": 3.3103
+    "monthsSupply": 3.6923
    },
    {
     "type": "MF",
@@ -336,31 +336,31 @@
  {
   "town": "Concord",
   "slug": "concord-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
+  "month": "2026-10",
+  "asOf": "2026-11-03",
   "sales12": 194,
   "types": [
    {
     "type": "SF",
-    "median": 1742500,
-    "ppsf": 545,
-    "ratio": 0.9824,
-    "over": 0.3023,
+    "median": 1735000,
+    "ppsf": 542,
+    "ratio": 0.9889,
+    "over": 0.35,
     "window": 3,
     "edge": "balanced",
     "available": 50,
-    "monthsSupply": 3.9474
+    "monthsSupply": 3.9216
    },
    {
     "type": "CC",
-    "median": 820000,
-    "ppsf": 531,
-    "ratio": 0.9764,
-    "over": 0.15,
+    "median": 817500,
+    "ppsf": 533,
+    "ratio": 0.99,
+    "over": 0.2941,
     "window": 6,
-    "edge": "buyers",
+    "edge": "balanced",
     "available": 8,
-    "monthsSupply": 2.5946
+    "monthsSupply": 2.6667
    },
    {
     "type": "MF",
@@ -378,80 +378,80 @@
  {
   "town": "Cambridge",
   "slug": "cambridge-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 748,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 703,
   "types": [
    {
     "type": "SF",
-    "median": 2475000,
-    "ppsf": 973,
-    "ratio": 1,
-    "over": 0.4615,
+    "median": 2425000,
+    "ppsf": 967,
+    "ratio": 0.9767,
+    "over": 0.2857,
     "window": 3,
     "edge": "balanced",
     "available": 33,
-    "monthsSupply": 3.0698
+    "monthsSupply": 3.4435
    },
    {
     "type": "CC",
-    "median": 950000,
+    "median": 960000,
     "ppsf": 924,
-    "ratio": 0.9963,
-    "over": 0.3521,
+    "ratio": 1,
+    "over": 0.3656,
     "window": 3,
     "edge": "balanced",
     "available": 175,
-    "monthsSupply": 3.9326
+    "monthsSupply": 4.142
    },
    {
     "type": "MF",
-    "median": 2180000,
+    "median": 2150000,
     "ppsf": 662,
-    "ratio": 1,
-    "over": 0.48,
+    "ratio": 0.9841,
+    "over": 0.4375,
     "window": 3,
     "edge": "balanced",
     "available": 27,
-    "monthsSupply": 3.8118
+    "monthsSupply": 4
    }
   ]
  },
  {
   "town": "Somerville",
   "slug": "somerville-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 637,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 604,
   "types": [
    {
     "type": "SF",
-    "median": 1302500,
-    "ppsf": 737,
-    "ratio": 1.0106,
-    "over": 0.6,
+    "median": 1305000,
+    "ppsf": 720,
+    "ratio": 1.0156,
+    "over": 0.6154,
     "window": 3,
     "edge": "sellers",
     "available": 23,
-    "monthsSupply": 3.9429
+    "monthsSupply": 4.2462
    },
    {
     "type": "CC",
-    "median": 860000,
-    "ppsf": 746,
-    "ratio": 0.9945,
-    "over": 0.3119,
+    "median": 850000,
+    "ppsf": 750,
+    "ratio": 1,
+    "over": 0.3115,
     "window": 3,
     "edge": "balanced",
     "available": 154,
-    "monthsSupply": 4.4211
+    "monthsSupply": 4.7385
    },
    {
     "type": "MF",
     "median": 1320000,
-    "ppsf": 461,
-    "ratio": 1,
-    "over": 0.3673,
+    "ppsf": 463,
+    "ratio": 0.9832,
+    "over": 0.275,
     "window": 3,
     "edge": "balanced",
     "available": 64,
@@ -462,164 +462,164 @@
  {
   "town": "Medford",
   "slug": "medford-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 451,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 426,
   "types": [
    {
     "type": "SF",
-    "median": 902500,
-    "ppsf": 507,
+    "median": 900000,
+    "ppsf": 504,
     "ratio": 1,
-    "over": 0.5077,
+    "over": 0.4773,
     "window": 3,
-    "edge": "sellers",
+    "edge": "balanced",
     "available": 45,
-    "monthsSupply": 2.6214
+    "monthsSupply": 2.8571
    },
    {
     "type": "CC",
-    "median": 675000,
-    "ppsf": 523,
-    "ratio": 0.9922,
-    "over": 0.3091,
+    "median": 686750,
+    "ppsf": 524,
+    "ratio": 0.9836,
+    "over": 0.1778,
     "window": 3,
     "edge": "balanced",
     "available": 72,
-    "monthsSupply": 4.6203
+    "monthsSupply": 4.8539
    },
    {
     "type": "MF",
-    "median": 1110000,
+    "median": 1100000,
     "ppsf": 410,
-    "ratio": 1.015,
-    "over": 0.5625,
+    "ratio": 0.9767,
+    "over": 0.4615,
     "window": 3,
-    "edge": "sellers",
+    "edge": "balanced",
     "available": 31,
-    "monthsSupply": 6.4138
+    "monthsSupply": 6.3051
    }
   ]
  },
  {
   "town": "Malden",
   "slug": "malden-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 314,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 291,
   "types": [
    {
     "type": "SF",
-    "median": 712500,
-    "ppsf": 446,
-    "ratio": 1.0001,
-    "over": 0.5,
+    "median": 720000,
+    "ppsf": 447,
+    "ratio": 0.99,
+    "over": 0.4444,
     "window": 3,
-    "edge": "sellers",
+    "edge": "balanced",
     "available": 22,
-    "monthsSupply": 1.9701
+    "monthsSupply": 2.2185
    },
    {
     "type": "CC",
-    "median": 420000,
-    "ppsf": 472,
+    "median": 425000,
+    "ppsf": 469,
     "ratio": 1,
-    "over": 0.3462,
+    "over": 0.4375,
     "window": 3,
     "edge": "balanced",
     "available": 23,
-    "monthsSupply": 3.4074
+    "monthsSupply": 3.5385
    },
    {
     "type": "MF",
-    "median": 975000,
+    "median": 980000,
     "ppsf": 349,
-    "ratio": 1,
-    "over": 0.4348,
+    "ratio": 1.0001,
+    "over": 0.5294,
     "window": 3,
-    "edge": "balanced",
+    "edge": "sellers",
     "available": 29,
-    "monthsSupply": 3.5152
+    "monthsSupply": 3.7021
    }
   ]
  },
  {
   "town": "Quincy",
   "slug": "quincy-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 731,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 687,
   "types": [
    {
     "type": "SF",
-    "median": 755000,
-    "ppsf": 468,
-    "ratio": 1.013,
-    "over": 0.5888,
+    "median": 760000,
+    "ppsf": 473,
+    "ratio": 1.0085,
+    "over": 0.561,
     "window": 3,
     "edge": "sellers",
     "available": 70,
-    "monthsSupply": 2.6168
+    "monthsSupply": 2.7723
    },
    {
     "type": "CC",
-    "median": 501000,
-    "ppsf": 475,
-    "ratio": 0.9867,
-    "over": 0.2143,
+    "median": 500000,
+    "ppsf": 477,
+    "ratio": 0.9826,
+    "over": 0.2188,
     "window": 3,
     "edge": "balanced",
     "available": 98,
-    "monthsSupply": 3.7098
+    "monthsSupply": 3.92
    },
    {
     "type": "MF",
-    "median": 965000,
+    "median": 970000,
     "ppsf": 403,
-    "ratio": 0.988,
-    "over": 0.3448,
+    "ratio": 0.9991,
+    "over": 0.4762,
     "window": 3,
     "edge": "balanced",
     "available": 31,
-    "monthsSupply": 4
+    "monthsSupply": 4.4286
    }
   ]
  },
  {
   "town": "Braintree",
   "slug": "braintree-ma",
-  "month": "2026-09",
-  "asOf": "2026-10-20",
-  "sales12": 328,
+  "month": "2026-10",
+  "asOf": "2026-11-03",
+  "sales12": 309,
   "types": [
    {
     "type": "SF",
     "median": 750000,
-    "ppsf": 411,
-    "ratio": 1.018,
-    "over": 0.6029,
+    "ppsf": 413,
+    "ratio": 1.0139,
+    "over": 0.5577,
     "window": 3,
     "edge": "sellers",
     "available": 39,
-    "monthsSupply": 1.9664
+    "monthsSupply": 2.0708
    },
    {
     "type": "CC",
-    "median": 486000,
-    "ppsf": 434,
-    "ratio": 0.98,
-    "over": 0.0476,
+    "median": 480000,
+    "ppsf": 429,
+    "ratio": 0.9784,
+    "over": 0.0625,
     "window": 3,
     "edge": "buyers",
     "available": 22,
-    "monthsSupply": 3.3418
+    "monthsSupply": 3.6667
    },
    {
     "type": "MF",
-    "median": 800000,
-    "ppsf": 407,
-    "ratio": 1.0013,
-    "over": 0.6364,
+    "median": 760000,
+    "ppsf": 409,
+    "ratio": 1.0009,
+    "over": 0.5455,
     "window": 12,
     "edge": "sellers",
     "available": 1,

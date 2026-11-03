@@ -1,0 +1,1440 @@
+{
+ "version": 1,
+ "town": "Needham",
+ "slug": "needham-ma",
+ "state": "MA",
+ "month": "2026-10",
+ "asOf": "2026-11-03",
+ "trackingSince": "2026-09-02",
+ "coverage": {
+  "sales": "2025-09-17",
+  "leases": "2025-10-18"
+ },
+ "windows": [
+  {
+   "months": 12,
+   "from": "2025-11-01",
+   "to": "2026-10-31",
+   "byType": {
+    "SF": {
+     "sales": 238,
+     "perMonth": 19.8333,
+     "median": 1772500,
+     "low": 1350000,
+     "high": 2500000,
+     "ppsf": 547,
+     "ratio": 0.9917,
+     "over": 0.3866,
+     "at": 0.0882,
+     "under": 0.5252,
+     "premium": 82500,
+     "sqft": 3277
+    },
+    "CC": {
+     "sales": 51,
+     "perMonth": 4.25,
+     "median": 1135000,
+     "low": 575000,
+     "high": 1625000,
+     "ppsf": 520,
+     "ratio": 0.9839,
+     "over": 0.2157,
+     "at": 0.0784,
+     "under": 0.7059,
+     "premium": 21000,
+     "sqft": 2214
+    },
+    "MF": {
+     "sales": 2,
+     "perMonth": 0.1667,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 291,
+    "perMonth": 24.25,
+    "median": 1700000,
+    "low": 1225000,
+    "high": 2362500,
+    "ppsf": 541,
+    "ratio": 0.9884,
+    "over": 0.354,
+    "at": 0.0893,
+    "under": 0.5567,
+    "premium": 65000,
+    "sqft": 3016
+   }
+  },
+  {
+   "months": 6,
+   "from": "2026-05-01",
+   "to": "2026-10-31",
+   "byType": {
+    "SF": {
+     "sales": 143,
+     "perMonth": 23.8333,
+     "median": 1700000,
+     "low": 1331000,
+     "high": 2359000,
+     "ppsf": 549,
+     "ratio": 1,
+     "over": 0.4266,
+     "at": 0.0979,
+     "under": 0.4755,
+     "premium": 100000,
+     "sqft": 3023
+    },
+    "CC": {
+     "sales": 36,
+     "perMonth": 6,
+     "median": 1186950,
+     "low": 575000,
+     "high": 1720500,
+     "ppsf": 511,
+     "ratio": 0.9838,
+     "over": 0.1944,
+     "at": 0.0556,
+     "under": 0.75,
+     "premium": 30000,
+     "sqft": 2313
+    },
+    "MF": {
+     "sales": 1,
+     "perMonth": 0.1667,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 180,
+    "perMonth": 30,
+    "median": 1609000,
+    "low": 1220000,
+    "high": 2200000,
+    "ppsf": 542,
+    "ratio": 0.9903,
+    "over": 0.3778,
+    "at": 0.0944,
+    "under": 0.5278,
+    "premium": 82000,
+    "sqft": 2925
+   }
+  },
+  {
+   "months": 3,
+   "from": "2026-08-01",
+   "to": "2026-10-31",
+   "byType": {
+    "SF": {
+     "sales": 51,
+     "perMonth": 17,
+     "median": 1550000,
+     "low": 1250000,
+     "high": 2562500,
+     "ppsf": 527,
+     "ratio": 0.9805,
+     "over": 0.2941,
+     "at": 0.0784,
+     "under": 0.6275,
+     "premium": 105000,
+     "sqft": 2738
+    },
+    "CC": {
+     "sales": 19,
+     "perMonth": 6.3333,
+     "median": 1112000,
+     "low": 782500,
+     "high": 1720500,
+     "ppsf": 531,
+     "ratio": 0.9838,
+     "over": 0.2105,
+     "at": 0.1053,
+     "under": 0.6842,
+     "premium": null,
+     "sqft": 2327
+    },
+    "MF": {
+     "sales": 1,
+     "perMonth": 0.3333,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 71,
+    "perMonth": 23.6667,
+    "median": 1435000,
+    "low": 1182000,
+    "high": 2200000,
+    "ppsf": 527,
+    "ratio": 0.9816,
+    "over": 0.2676,
+    "at": 0.0986,
+    "under": 0.6338,
+    "premium": 81000,
+    "sqft": 2584
+   }
+  }
+ ],
+ "series": [
+  {
+   "month": "2025-11",
+   "byType": {
+    "SF": {
+     "sales": 16,
+     "perMonth": 16,
+     "median": 1803750,
+     "low": 1300000,
+     "high": 2165000,
+     "ppsf": 526,
+     "ratio": 0.9958,
+     "over": 0.4375,
+     "at": 0.0625,
+     "under": 0.5,
+     "premium": 50000,
+     "sqft": 3851
+    },
+    "CC": {
+     "sales": 1,
+     "perMonth": 1,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 17,
+    "perMonth": 17,
+    "median": 1700000,
+    "low": 1300000,
+    "high": 2165000,
+    "ppsf": 535,
+    "ratio": 0.9916,
+    "over": 0.4118,
+    "at": 0.0588,
+    "under": 0.5294,
+    "premium": 50000,
+    "sqft": 3698
+   }
+  },
+  {
+   "month": "2025-12",
+   "byType": {
+    "SF": {
+     "sales": 15,
+     "perMonth": 15,
+     "median": 1735000,
+     "low": 1337000,
+     "high": 2310000,
+     "ppsf": 562,
+     "ratio": 0.9989,
+     "over": 0.4667,
+     "at": 0,
+     "under": 0.5333,
+     "premium": 38000,
+     "sqft": 2910
+    },
+    "CC": {
+     "sales": 2,
+     "perMonth": 2,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 17,
+    "perMonth": 17,
+    "median": 1602000,
+    "low": 1330000,
+    "high": 2075000,
+    "ppsf": 562,
+    "ratio": 0.992,
+    "over": 0.4118,
+    "at": 0,
+    "under": 0.5882,
+    "premium": 38000,
+    "sqft": 2800
+   }
+  },
+  {
+   "month": "2026-01",
+   "byType": {
+    "SF": {
+     "sales": 15,
+     "perMonth": 15,
+     "median": 2625000,
+     "low": 1078888,
+     "high": 3350000,
+     "ppsf": 557,
+     "ratio": 0.9713,
+     "over": 0.2,
+     "at": 0.1333,
+     "under": 0.6667,
+     "premium": null,
+     "sqft": 4881
+    },
+    "CC": {
+     "sales": 2,
+     "perMonth": 2,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 17,
+    "perMonth": 17,
+    "median": 2574500,
+    "low": 1078888,
+    "high": 3250000,
+    "ppsf": 557,
+    "ratio": 0.9799,
+    "over": 0.1765,
+    "at": 0.1765,
+    "under": 0.6471,
+    "premium": null,
+    "sqft": 4781
+   }
+  },
+  {
+   "month": "2026-02",
+   "byType": {
+    "SF": {
+     "sales": 14,
+     "perMonth": 14,
+     "median": 2075000,
+     "low": 1495000,
+     "high": 2500000,
+     "ppsf": 539,
+     "ratio": 0.9706,
+     "over": 0.1429,
+     "at": 0.1429,
+     "under": 0.7143,
+     "premium": null,
+     "sqft": 3818
+    },
+    "CC": {
+     "sales": 1,
+     "perMonth": 1,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 15,
+    "perMonth": 15,
+    "median": 2025000,
+    "low": 1225000,
+    "high": 2500000,
+    "ppsf": 551,
+    "ratio": 0.9703,
+    "over": 0.1333,
+    "at": 0.1333,
+    "under": 0.7333,
+    "premium": null,
+    "sqft": 3269
+   }
+  },
+  {
+   "month": "2026-03",
+   "byType": {
+    "SF": {
+     "sales": 10,
+     "perMonth": 10,
+     "median": 2424500,
+     "low": 1735000,
+     "high": 2560000,
+     "ppsf": 475,
+     "ratio": 0.9809,
+     "over": 0.2,
+     "at": 0,
+     "under": 0.8,
+     "premium": null,
+     "sqft": 5033
+    },
+    "CC": {
+     "sales": 2,
+     "perMonth": 2,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 1,
+     "perMonth": 1,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 13,
+    "perMonth": 13,
+    "median": 2100000,
+    "low": 815000,
+    "high": 2555000,
+    "ppsf": 477,
+    "ratio": 0.9868,
+    "over": 0.2308,
+    "at": 0,
+    "under": 0.7692,
+    "premium": null,
+    "sqft": 3688
+   }
+  },
+  {
+   "month": "2026-04",
+   "byType": {
+    "SF": {
+     "sales": 25,
+     "perMonth": 25,
+     "median": 2000000,
+     "low": 1600000,
+     "high": 2850000,
+     "ppsf": 550,
+     "ratio": 0.9922,
+     "over": 0.4,
+     "at": 0.08,
+     "under": 0.52,
+     "premium": 133500,
+     "sqft": 4354
+    },
+    "CC": {
+     "sales": 7,
+     "perMonth": 7,
+     "median": 1450000,
+     "low": 520000,
+     "high": 1600000,
+     "ppsf": 504,
+     "ratio": 1,
+     "over": 0.4286,
+     "at": 0.1429,
+     "under": 0.4286,
+     "premium": null,
+     "sqft": 2373
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 32,
+    "perMonth": 32,
+    "median": 1800000,
+    "low": 1450000,
+    "high": 2675000,
+    "ppsf": 537,
+    "ratio": 0.9961,
+    "over": 0.4063,
+    "at": 0.0938,
+    "under": 0.5,
+    "premium": 105000,
+    "sqft": 3164
+   }
+  },
+  {
+   "month": "2026-05",
+   "byType": {
+    "SF": {
+     "sales": 26,
+     "perMonth": 26,
+     "median": 1630000,
+     "low": 1375383,
+     "high": 2000000,
+     "ppsf": 552,
+     "ratio": 1.0099,
+     "over": 0.5385,
+     "at": 0.0769,
+     "under": 0.3846,
+     "premium": 92500,
+     "sqft": 3012
+    },
+    "CC": {
+     "sales": 7,
+     "perMonth": 7,
+     "median": 1550000,
+     "low": 1150000,
+     "high": 1855000,
+     "ppsf": 554,
+     "ratio": 0.9893,
+     "over": 0.4286,
+     "at": 0,
+     "under": 0.5714,
+     "premium": null,
+     "sqft": 3325
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 33,
+    "perMonth": 33,
+    "median": 1615000,
+    "low": 1365000,
+    "high": 1920000,
+    "ppsf": 554,
+    "ratio": 1.0003,
+    "over": 0.5152,
+    "at": 0.0606,
+    "under": 0.4242,
+    "premium": 55000,
+    "sqft": 3026
+   }
+  },
+  {
+   "month": "2026-06",
+   "byType": {
+    "SF": {
+     "sales": 31,
+     "perMonth": 31,
+     "median": 1825000,
+     "low": 1452000,
+     "high": 2250000,
+     "ppsf": 593,
+     "ratio": 1.0114,
+     "over": 0.5484,
+     "at": 0.0968,
+     "under": 0.3548,
+     "premium": 122050,
+     "sqft": 3104
+    },
+    "CC": {
+     "sales": 4,
+     "perMonth": 4,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 35,
+    "perMonth": 35,
+    "median": 1758000,
+    "low": 1317050,
+    "high": 2200000,
+    "ppsf": 590,
+    "ratio": 1,
+    "over": 0.4857,
+    "at": 0.0857,
+    "under": 0.4286,
+    "premium": 122050,
+    "sqft": 2925
+   }
+  },
+  {
+   "month": "2026-07",
+   "byType": {
+    "SF": {
+     "sales": 35,
+     "perMonth": 35,
+     "median": 1850000,
+     "low": 1345000,
+     "high": 2375000,
+     "ppsf": 541,
+     "ratio": 1,
+     "over": 0.4286,
+     "at": 0.1429,
+     "under": 0.4286,
+     "premium": 65000,
+     "sqft": 3593
+    },
+    "CC": {
+     "sales": 6,
+     "perMonth": 6,
+     "median": 547500,
+     "low": 530000,
+     "high": 1050000,
+     "ppsf": 434,
+     "ratio": 0.9686,
+     "over": 0,
+     "at": 0,
+     "under": 1,
+     "premium": null,
+     "sqft": 1371
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 41,
+    "perMonth": 41,
+    "median": 1700000,
+    "low": 1120000,
+    "high": 2359000,
+    "ppsf": 532,
+    "ratio": 0.9978,
+    "over": 0.3659,
+    "at": 0.122,
+    "under": 0.5122,
+    "premium": 65000,
+    "sqft": 2939
+   }
+  },
+  {
+   "month": "2026-08",
+   "byType": {
+    "SF": {
+     "sales": 32,
+     "perMonth": 32,
+     "median": 1625000,
+     "low": 1220000,
+     "high": 2435000,
+     "ppsf": 557,
+     "ratio": 0.9786,
+     "over": 0.2813,
+     "at": 0.0313,
+     "under": 0.6875,
+     "premium": 105000,
+     "sqft": 2770
+    },
+    "CC": {
+     "sales": 8,
+     "perMonth": 8,
+     "median": 1050000,
+     "low": 575000,
+     "high": 1240000,
+     "ppsf": 512,
+     "ratio": 0.9767,
+     "over": 0.25,
+     "at": 0,
+     "under": 0.75,
+     "premium": null,
+     "sqft": 1896
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 40,
+    "perMonth": 40,
+    "median": 1490750,
+    "low": 1207000,
+    "high": 2200000,
+    "ppsf": 533,
+    "ratio": 0.9786,
+    "over": 0.275,
+    "at": 0.025,
+    "under": 0.7,
+    "premium": 81000,
+    "sqft": 2645
+   }
+  },
+  {
+   "month": "2026-09",
+   "byType": {
+    "SF": {
+     "sales": 15,
+     "perMonth": 15,
+     "median": 1570000,
+     "low": 1340000,
+     "high": 2650000,
+     "ppsf": 501,
+     "ratio": 0.9833,
+     "over": 0.3333,
+     "at": 0.0667,
+     "under": 0.6,
+     "premium": 90000,
+     "sqft": 3084
+    },
+    "CC": {
+     "sales": 6,
+     "perMonth": 6,
+     "median": 1366500,
+     "low": 975000,
+     "high": 1720500,
+     "ppsf": 475,
+     "ratio": 0.9739,
+     "over": 0,
+     "at": 0.1667,
+     "under": 0.8333,
+     "premium": null,
+     "sqft": 2771
+    },
+    "MF": {
+     "sales": 0,
+     "perMonth": 0,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 21,
+    "perMonth": 21,
+    "median": 1570000,
+    "low": 1182000,
+    "high": 2400000,
+    "ppsf": 501,
+    "ratio": 0.9796,
+    "over": 0.2381,
+    "at": 0.0952,
+    "under": 0.6667,
+    "premium": 90000,
+    "sqft": 3013
+   }
+  },
+  {
+   "month": "2026-10",
+   "byType": {
+    "SF": {
+     "sales": 4,
+     "perMonth": 4,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "CC": {
+     "sales": 5,
+     "perMonth": 5,
+     "median": 1112000,
+     "low": 782500,
+     "high": 1348000,
+     "ppsf": 546,
+     "ratio": 1,
+     "over": 0.4,
+     "at": 0.2,
+     "under": 0.4,
+     "premium": null,
+     "sqft": 1982
+    },
+    "MF": {
+     "sales": 1,
+     "perMonth": 1,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 10,
+    "perMonth": 10,
+    "median": 1349000,
+    "low": 1000000,
+    "high": 1700000,
+    "ppsf": 538,
+    "ratio": 1,
+    "over": 0.3,
+    "at": 0.4,
+    "under": 0.3,
+    "premium": null,
+    "sqft": 2387
+   }
+  }
+ ],
+ "yearAgo": {
+  "month": {
+   "month": "2025-10",
+   "byType": {
+    "SF": {
+     "sales": 19,
+     "perMonth": 19,
+     "median": 1400000,
+     "low": 1195000,
+     "high": 2450000,
+     "ppsf": 519,
+     "ratio": 0.9826,
+     "over": 0.4211,
+     "at": 0.0526,
+     "under": 0.5263,
+     "premium": 71000,
+     "sqft": 2987
+    },
+    "CC": {
+     "sales": 3,
+     "perMonth": 3,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    },
+    "MF": {
+     "sales": 1,
+     "perMonth": 1,
+     "median": null,
+     "low": null,
+     "high": null,
+     "ppsf": null,
+     "ratio": null,
+     "over": null,
+     "at": null,
+     "under": null,
+     "premium": null,
+     "sqft": null
+    }
+   },
+   "all": {
+    "sales": 23,
+    "perMonth": 23,
+    "median": 1350000,
+    "low": 1150000,
+    "high": 2100000,
+    "ppsf": 519,
+    "ratio": 1,
+    "over": 0.4348,
+    "at": 0.087,
+    "under": 0.4783,
+    "premium": 34000,
+    "sqft": 2603
+   }
+  },
+  "windows": [
+   null,
+   null,
+   null
+  ],
+  "inventory": null
+ },
+ "inventory": {
+  "byType": {
+   "SF": {
+    "available": 55,
+    "pending": 33,
+    "pendingShare": 0.375,
+    "monthsSupply": 2.7731,
+    "askMedian": 2487000,
+    "askPpsf": 531,
+    "cuts": 10,
+    "cutSize": 0.0411,
+    "fresh": 7
+   },
+   "CC": {
+    "available": 11,
+    "pending": 6,
+    "pendingShare": 0.3529,
+    "monthsSupply": 2.5882,
+    "askMedian": 899000,
+    "askPpsf": 496,
+    "cuts": 1,
+    "cutSize": null,
+    "fresh": 2
+   },
+   "MF": {
+    "available": 0,
+    "pending": 1,
+    "pendingShare": null,
+    "monthsSupply": null,
+    "askMedian": null,
+    "askPpsf": null,
+    "cuts": 0,
+    "cutSize": null,
+    "fresh": 0
+   }
+  },
+  "all": {
+   "available": 66,
+   "pending": 40,
+   "pendingShare": 0.3774,
+   "monthsSupply": 2.7216,
+   "askMedian": 1885000,
+   "askPpsf": 530,
+   "cuts": 11,
+   "cutSize": 0.0404,
+   "fresh": 9
+  }
+ },
+ "bands": [
+  {
+   "label": "Under $500k",
+   "min": 0,
+   "max": 500000,
+   "sales": 3,
+   "ratio": null,
+   "over": null,
+   "available": 1,
+   "pending": 1,
+   "monthsSupply": null
+  },
+  {
+   "label": "$500k–$750k",
+   "min": 500000,
+   "max": 750000,
+   "sales": 17,
+   "ratio": 0.9817,
+   "over": 0.1765,
+   "available": 4,
+   "pending": 3,
+   "monthsSupply": 2.8235
+  },
+  {
+   "label": "$750k–$1M",
+   "min": 750000,
+   "max": 1000000,
+   "sales": 19,
+   "ratio": 0.9845,
+   "over": 0.2632,
+   "available": 4,
+   "pending": 5,
+   "monthsSupply": 2.5263
+  },
+  {
+   "label": "$1M–$1.5M",
+   "min": 1000000,
+   "max": 1500000,
+   "sales": 73,
+   "ratio": 1,
+   "over": 0.4932,
+   "available": 13,
+   "pending": 7,
+   "monthsSupply": 2.137
+  },
+  {
+   "label": "$1.5M–$2M",
+   "min": 1500000,
+   "max": 2000000,
+   "sales": 73,
+   "ratio": 1.0114,
+   "over": 0.5616,
+   "available": 13,
+   "pending": 11,
+   "monthsSupply": 2.137
+  },
+  {
+   "label": "$2M–$3M",
+   "min": 2000000,
+   "max": 3000000,
+   "sales": 83,
+   "ratio": 0.9812,
+   "over": 0.1807,
+   "available": 16,
+   "pending": 8,
+   "monthsSupply": 2.3133
+  },
+  {
+   "label": "$3M and up",
+   "min": 3000000,
+   "max": null,
+   "sales": 23,
+   "ratio": 0.97,
+   "over": 0.087,
+   "available": 15,
+   "pending": 5,
+   "monthsSupply": 7.8261
+  }
+ ],
+ "beds": {
+  "SF": [
+   {
+    "label": "2 bedrooms or fewer",
+    "sales": 5,
+    "median": 925000,
+    "ppsf": 717,
+    "ratio": 0.9738,
+    "sqft": 1232
+   },
+   {
+    "label": "3 bedrooms",
+    "sales": 57,
+    "median": 1320000,
+    "ppsf": 644,
+    "ratio": 1.0209,
+    "sqft": 2036
+   },
+   {
+    "label": "4 bedrooms",
+    "sales": 75,
+    "median": 1650000,
+    "ppsf": 570,
+    "ratio": 1.0114,
+    "sqft": 2868
+   },
+   {
+    "label": "5 bedrooms",
+    "sales": 55,
+    "median": 2359000,
+    "ppsf": 501,
+    "ratio": 0.982,
+    "sqft": 4781
+   },
+   {
+    "label": "6 or more",
+    "sales": 46,
+    "median": 2896750,
+    "ppsf": 476,
+    "ratio": 0.9729,
+    "sqft": 6127
+   }
+  ],
+  "CC": [
+   {
+    "label": "Studio or 1 bedroom",
+    "sales": 4,
+    "median": null,
+    "ppsf": null,
+    "ratio": null,
+    "sqft": null
+   },
+   {
+    "label": "2 bedrooms",
+    "sales": 13,
+    "median": 550000,
+    "ppsf": 514,
+    "ratio": 0.9817,
+    "sqft": 1365
+   },
+   {
+    "label": "3 bedrooms or more",
+    "sales": 34,
+    "median": 1407500,
+    "ppsf": 525,
+    "ratio": 0.984,
+    "sqft": 2769
+   }
+  ]
+ },
+ "zips": {
+  "SF": [
+   {
+    "label": "02492",
+    "sales": 174,
+    "median": 1840000,
+    "ppsf": 561,
+    "ratio": 0.9919,
+    "sqft": 3497
+   },
+   {
+    "label": "02494",
+    "sales": 64,
+    "median": 1625000,
+    "ppsf": 529,
+    "ratio": 0.989,
+    "sqft": 3112
+   }
+  ],
+  "CC": [
+   {
+    "label": "02492",
+    "sales": 25,
+    "median": 1135000,
+    "ppsf": 504,
+    "ratio": 0.9839,
+    "sqft": 2073
+   },
+   {
+    "label": "02494",
+    "sales": 26,
+    "median": 1168500,
+    "ppsf": 532,
+    "ratio": 0.9845,
+    "sqft": 2293
+   }
+  ]
+ },
+ "rentals": {
+  "windows": [
+   {
+    "months": 12,
+    "from": "2025-11-01",
+    "to": "2026-10-31",
+    "rows": [
+     {
+      "label": "Studio",
+      "n": 1,
+      "median": null,
+      "low": null,
+      "high": null
+     },
+     {
+      "label": "1 bedroom",
+      "n": 17,
+      "median": 2400,
+      "low": 1975,
+      "high": 2500
+     },
+     {
+      "label": "2 bedrooms",
+      "n": 11,
+      "median": 2850,
+      "low": 2600,
+      "high": 3100
+     },
+     {
+      "label": "3 bedrooms",
+      "n": 26,
+      "median": 4400,
+      "low": 3700,
+      "high": 5150
+     },
+     {
+      "label": "4 or more",
+      "n": 22,
+      "median": 6625,
+      "low": 5555,
+      "high": 8100
+     }
+    ],
+    "n": 77
+   },
+   {
+    "months": 6,
+    "from": "2026-05-01",
+    "to": "2026-10-31",
+    "rows": [
+     {
+      "label": "Studio",
+      "n": 1,
+      "median": null,
+      "low": null,
+      "high": null
+     },
+     {
+      "label": "1 bedroom",
+      "n": 11,
+      "median": 2400,
+      "low": 2000,
+      "high": 2650
+     },
+     {
+      "label": "2 bedrooms",
+      "n": 7,
+      "median": 2800,
+      "low": 2500,
+      "high": 3250
+     },
+     {
+      "label": "3 bedrooms",
+      "n": 23,
+      "median": 4400,
+      "low": 3600,
+      "high": 5150
+     },
+     {
+      "label": "4 or more",
+      "n": 16,
+      "median": 6900,
+      "low": 6000,
+      "high": 8100
+     }
+    ],
+    "n": 58
+   },
+   {
+    "months": 3,
+    "from": "2026-08-01",
+    "to": "2026-10-31",
+    "rows": [
+     {
+      "label": "1 bedroom",
+      "n": 1,
+      "median": null,
+      "low": null,
+      "high": null
+     },
+     {
+      "label": "2 bedrooms",
+      "n": 4,
+      "median": null,
+      "low": null,
+      "high": null
+     },
+     {
+      "label": "3 bedrooms",
+      "n": 8,
+      "median": 3600,
+      "low": 3150,
+      "high": 3800
+     },
+     {
+      "label": "4 or more",
+      "n": 7,
+      "median": 7400,
+      "low": 6800,
+      "high": 8750
+     }
+    ],
+    "n": 20
+   }
+  ],
+  "month": {
+   "months": 1,
+   "from": "2026-10-01",
+   "to": "2026-10-31",
+   "rows": [
+    {
+     "label": "1 bedroom",
+     "n": 1,
+     "median": null,
+     "low": null,
+     "high": null
+    },
+    {
+     "label": "2 bedrooms",
+     "n": 1,
+     "median": null,
+     "low": null,
+     "high": null
+    },
+    {
+     "label": "3 bedrooms",
+     "n": 2,
+     "median": null,
+     "low": null,
+     "high": null
+    },
+    {
+     "label": "4 or more",
+     "n": 1,
+     "median": null,
+     "low": null,
+     "high": null
+    }
+   ],
+   "n": 5
+  },
+  "asking": {
+   "months": 0,
+   "from": "2026-11-03",
+   "to": "2026-11-03",
+   "rows": [
+    {
+     "label": "1 bedroom",
+     "n": 2,
+     "median": null,
+     "low": null,
+     "high": null
+    },
+    {
+     "label": "2 bedrooms",
+     "n": 2,
+     "median": null,
+     "low": null,
+     "high": null
+    },
+    {
+     "label": "3 bedrooms",
+     "n": 5,
+     "median": 3750,
+     "low": 3600,
+     "high": 4400
+    },
+    {
+     "label": "4 or more",
+     "n": 4,
+     "median": null,
+     "low": null,
+     "high": null
+    }
+   ],
+   "n": 13
+  }
+ }
+}
