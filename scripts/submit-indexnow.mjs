@@ -7,16 +7,17 @@
  * Naver) in minutes instead of waiting to be crawled. Google does not
  * participate; the sitemap and Search Console remain the path there.
  *
- * SAFE UN-CONFIGURED. With no INDEXNOW_KEY in the environment this is a no-op
- * that exits 0 — the same discipline as SITE.ga4Id gating <Analytics>, and the
- * reason it can sit in `npm run build` without firing from a local build or a
- * preview deploy.
+ * IT SUBMITS ONLY FROM VERCEL'S PRODUCTION BUILD. Vercel sets VERCEL_ENV there,
+ * so a local build or a preview deploy is a no-op that exits 0, which is why it
+ * can sit in `npm run build`. INDEXNOW_KEY in the environment overrides the key
+ * below, on any build.
  *
- * Setup:
- *   1. Generate a key: 8-128 hex characters. `openssl rand -hex 16`.
- *   2. Write it to `public/<key>.txt`, whose entire body is the key. IndexNow
- *      fetches that file to prove the submitter controls the host.
- *   3. Set INDEXNOW_KEY in the Vercel project's Production environment only.
+ * The key is in this file rather than a secret because it is not one: IndexNow
+ * fetches `public/<key>.txt`, whose entire body is the key, to prove the submitter
+ * controls the host, so it is public by design. Until 2026-11-06 it had to be set
+ * in Vercel by hand, and Kevin could not have known where; with it here, nothing
+ * has to be set. A new key is `openssl rand -hex 16`, a new file in public/, and
+ * this constant.
  *
  * A submission is a claim that these URLs changed. Submitting all 117 on every
  * deploy would be that claim made falsely, so this sends only URLs whose
@@ -24,7 +25,11 @@
  */
 import { ORIGIN, STATIC_ROUTES, BLOG_ROUTES, MARKET_ROUTES, isPrivate } from './routes.mjs';
 
-const KEY = process.env.INDEXNOW_KEY;
+/** The body of public/5df7d710b180f78d8ec839d8631fedb1.txt. */
+const PUBLIC_KEY = '5df7d710b180f78d8ec839d8631fedb1';
+
+const KEY =
+  process.env.INDEXNOW_KEY || (process.env.VERCEL_ENV === 'production' ? PUBLIC_KEY : undefined);
 const HOST = new URL(ORIGIN).host;
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
 
@@ -32,7 +37,7 @@ const ENDPOINT = 'https://api.indexnow.org/indexnow';
 const RECENT_DAYS = 30;
 
 if (!KEY) {
-  console.log('indexnow: INDEXNOW_KEY not set — skipping (this is not an error)');
+  console.log('indexnow: not a production build — skipping (this is not an error)');
   process.exit(0);
 }
 

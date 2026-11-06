@@ -18,13 +18,13 @@ const ZhAreas = () => (
     path="/zh/quyu"
     seo={{
       title: `大波士顿 ${SITE.areaServed.length} 个城镇指南：车站、学校和房产税`,
-      description: `牛顿、列克星敦、韦尔斯利、布鲁克莱恩、剑桥等大波士顿 ${SITE.areaServed.length} 个城镇的中文指南：火车站、公立学校、高速公路、房产税率，以及在当地买房要查的事情。`,
+      description: `牛顿、列克星敦、韦尔斯利、布鲁克莱恩、剑桥等大波士顿 ${SITE.areaServed.length} 个城镇的中文指南：火车站、公立学校、高速公路、房产税率，以及在当地买房要注意的事情。`,
       keywords:
         '牛顿 Newton 买房, 列克星敦 Lexington 学区, 韦尔斯利 Wellesley, 布鲁克莱恩 Brookline, 波士顿 郊区 哪里好, 大波士顿 城镇 指南',
     }}
     eyebrow="城镇指南"
     h1="波士顿周边，选哪个城镇？"
-    lede="在波士顿一带，房子的价值是一条街一条街决定的，而不是按镇界决定的。能否走路到火车站、这个地址属于哪所小学、接的是市政下水道还是化粪池，比镇名更影响价格和生活。"
+    lede="在波士顿一带，房价往往要看具体哪条街，不只是看在哪个镇。能否走路到火车站、这个地址属于哪所小学、接的是市政下水道还是化粪池，比镇名更影响价格和生活。"
     hero={{
       image:
         'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1600&q=70',
@@ -37,7 +37,7 @@ const ZhAreas = () => (
       {
         question: '两户住宅（two-family）在哪里比较多？',
         answer:
-          'Medford（梅德福）、Malden（莫尔登）、Somerville（萨默维尔）、Quincy（昆西）和 Waltham（沃尔瑟姆）有很多两户和三户住宅，在这些城镇是主要的房源类型之一，并不少见。很多家庭买下后自住一户，出租另一户，或者让父母住。',
+          'Medford（梅德福）、Malden（莫尔登）、Somerville（萨默维尔）、Quincy（昆西）和 Waltham（沃尔瑟姆）有很多两户和三户住宅，是这些城镇常见的房源类型。很多家庭买下后自住一户，出租另一户，或者让父母住。',
       },
       {
         question: '能走路到火车站真的那么重要吗？',
@@ -48,11 +48,6 @@ const ZhAreas = () => (
         question: '哪些城镇有化粪池？',
         answer:
           '在外围城镇比较常见，例如 Dover（多佛）和 Weston（韦斯顿），很多地方没有市政下水道。这很重要，因为 Title 5 规定出售时要检查，不合格的系统可能要花几万美元。',
-      },
-      {
-        question: '这些指南会告诉我哪所学校最好吗？',
-        answer:
-          '不会。指南列出学校的名称和所在系统，但不排名。请针对具体地址向学区确认学校分配，并直接查看麻州教育部门公布的资料，再根据孩子的需要判断。',
       },
     ]}
     cta={{
@@ -67,7 +62,7 @@ const ZhAreas = () => (
           <h2 className="mb-4 text-2xl font-semibold text-ink">从通勤开始</h2>
           <p className="mb-4 leading-relaxed text-gray-700">
             新搬来的人最常犯的错误，是先从名单里选一个城镇，然后才发现每天的实际情况。
-            波士顿一带的地理和地图给人的印象不一样：距离远不如您在哪条交通走廊上、能否到达火车站重要。
+            波士顿一带的通勤和地图上看到的不一样：距离远近，往往不如您靠近哪条路线、能不能走到火车站重要。
           </p>
           <ul className="list-disc space-y-2 pl-6 leading-relaxed text-gray-700">
             <li>

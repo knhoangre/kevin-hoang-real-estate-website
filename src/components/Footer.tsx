@@ -177,7 +177,12 @@ const ZhFooter = ({ year }: { year: number }) => (
           <span className="font-semibold text-gray-300">{SITE.brokerage}</span>
           ）运营。中文服务由 {CHINESE_PARTNER.name}（
           <span className="font-semibold text-gray-300">{CHINESE_PARTNER.brokerage}</span>
-          ）提供，两人分属不同的经纪公司。
+          ）提供。
+        </p>
+        {/* How a real estate page says everyone is welcome. It replaced the
+            paragraphs saying so, which Maggie found strange (2026-10-31). */}
+        <p className="mt-2 text-gray-400 text-sm">
+          公平住房机会 <span lang="en">(Equal Housing Opportunity)</span>
         </p>
       </div>
     </div>

@@ -19,8 +19,8 @@ const guide: ZhTownGuideData = {
     },
     {
       type: 'section',
-      title: '人们为什么搬到贝尔蒙特？',
-      text: '贝尔蒙特的吸引力很一致：学校、位置和安静的住宅环境。',
+      title: '为什么选择贝尔蒙特？',
+      text: '贝尔蒙特的吸引力主要是学校、地段和安静的住宅环境。',
     },
     {
       type: 'subsection',
@@ -42,7 +42,7 @@ const guide: ZhTownGuideData = {
     {
       type: 'subsection',
       title: '🌲 开放空间和山丘',
-      text: 'Belmont Hill 占据了全镇北半部，这里有很多较大的住宅。Rock Meadow 保护区、Habitat Education Center 和 Western Greenway，让这个镇的受保护土地比它的面积看起来要多。',
+      text: 'Belmont Hill 占据了全镇北半部，这里有很多较大的住宅。Rock Meadow 保护区、Habitat Education Center 和 Western Greenway，让这个小镇有不少受保护的绿地。',
       bullets: [
         'Belmont Hill：房子更大，地块更大，街道安静',
         'Rock Meadow 和 Western Greenway 步道网络',
@@ -52,13 +52,13 @@ const guide: ZhTownGuideData = {
     {
       type: 'section',
       title: '贝尔蒙特的广场和街区各有什么特点？',
-      text: '贝尔蒙特围绕三个小广场形成，而不是一个市中心。住在哪个广场附近，比镇界更影响日常生活。',
+      text: '贝尔蒙特围绕三个小广场形成，而不是一个市中心。住在哪个广场附近，很影响日常生活。',
       neighborhoods: [
         { name: 'Belmont Center', description: '主要广场，有通勤火车站、图书馆和镇上大部分商店和餐厅。适合步行，是全镇最方便少开车的地方。' },
         { name: 'Cushing Square', description: '较小，靠近 Watertown，有较新的综合开发和老住宅。适合想要步行便利、门槛又比 Center 略低的买家。' },
         { name: 'Waverley Square', description: '三个广场中最朴素的，有自己的通勤火车站，去沃尔瑟姆很方便。住宅更密集，有不少两户住宅。' },
-        { name: 'Belmont Hill', description: '大地块上的大型独栋住宅，安静，几乎全是住宅。这里默认要开车。' },
-        { name: 'Winn Brook', description: '地势较平、关系紧密的街区，靠近剑桥，有一所受到好评的小学，房子有殖民式和 cape 风格。' },
+        { name: 'Belmont Hill', description: '大地块上的大型独栋住宅，安静，几乎全是住宅。这里基本要开车。' },
+        { name: 'Winn Brook', description: '地势较平、邻里关系紧密的街区，靠近剑桥，有一所口碑不错的小学，房子有殖民风格和 Cape 风格。' },
       ],
     },
     {
@@ -67,13 +67,13 @@ const guide: ZhTownGuideData = {
       text: '贝尔蒙特的房子大多建于二十世纪上半叶到中期。以这样的郊区来说，两户住宅的比例特别高。',
       highlight: '市场大致分为：',
       bullets: [
-        '地势较平的街区中的殖民式、cape 和维多利亚式住宅',
+        '地势较平的街区中的殖民风格、Cape 和维多利亚式住宅',
         'Belmont Hill 上较大的独栋住宅',
         '两户住宅，很多是业主自住、另一户出租',
         'condo，常常由两户住宅改建',
         '数量有限的较新建筑，包括 McLean 的重建项目',
       ],
-      note: '两户住宅值得了解：很多买家靠它把数字算得过来，这也是为什么这里很多 condo 是两单元协会，并带来相应的管理问题。',
+      note: '两户住宅值得了解：很多买家靠第二户的租金才负担得起。这里很多 condo 也是由两户住宅改成的两单元协会，会有相应的管理问题。',
     },
     {
       type: 'section',
@@ -82,7 +82,7 @@ const guide: ZhTownGuideData = {
         { icon: '🎓', title: '持久的学校需求', text: '由学校带动的需求很持久，不太受大市场影响。' },
         { icon: '📍', title: '位置', text: '与剑桥、阿灵顿、Watertown、沃尔瑟姆和列克星敦相邻，可以同时到达几个主要就业区。' },
         { icon: '🏘', title: '供应有限', text: '四平方英里，几乎已经建满，新开发的土地很少，供应变化非常慢。' },
-        { icon: '🏡', title: '两户住宅的灵活性', text: '自住的两户住宅可以帮买家抵消持有成本，也让卖家有更多潜在买家。' },
+        { icon: '🏡', title: '两户住宅的灵活性', text: '自住一户、出租一户，可以帮买家抵消持有成本；卖房时潜在买家也更多。' },
       ],
     },
     {
@@ -95,9 +95,9 @@ const guide: ZhTownGuideData = {
         '如果打算坐火车，走到 Belmont Center 或 Waverley 要多久',
         '两户住宅：第二户的状况，以及现有的租约',
         '小型 condo 协会：储备金，以及由谁管理',
-        '主要系统的年龄，这里大多数房子都有一定年头',
+        '供暖、电路、屋顶等主要系统的年限，这里大多数房子都有一定年头',
       ],
-      note: '在这么小的镇，到火车站多走十分钟，是真实而持久的差别。',
+      note: '在这么小的镇，到火车站多走十分钟，差别是实实在在的。',
     },
   ],
 };

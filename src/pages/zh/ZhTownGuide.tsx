@@ -47,7 +47,7 @@ const LABELS: TownFactsLabels = {
   taxLine: (_rate, fiscalYear) => `每 $1,000 估税价值，${fiscalYear} 财年。`,
   taxCheckBefore: '税率每年制定。最新数字请向这里确认：',
   taxCheckAfter: '。',
-  check: '在这里要特别查什么',
+  check: '在这里买房要特别注意什么',
 };
 
 const ZhTownGuide = ({ guide }: { guide: ZhTownGuideData }) => {
@@ -78,7 +78,7 @@ const ZhTownGuide = ({ guide }: { guide: ZhTownGuideData }) => {
       heroSize="standard"
       cta={{
         heading: `想在${chinese}买房或卖房？`,
-        body: `这份指南是背景资料。至于在您的情况下实际要怎么做，请和 Maggie 谈一谈，用中文或英文都可以。`,
+        body: `这份指南只是背景资料。具体到您的情况该怎么做，欢迎和 Maggie 聊聊，中文或英文都可以。`,
         button: '联系 Maggie',
       }}
       enLabel={`Living in ${english}, MA`}

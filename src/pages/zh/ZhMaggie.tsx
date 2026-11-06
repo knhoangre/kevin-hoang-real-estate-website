@@ -18,13 +18,13 @@ const ZhMaggie = () => (
     path="/zh/maggie-li"
     seo={{
       title: 'Maggie Li：波士顿讲中文的房地产经纪人 | 牛顿 Newton',
-      description: `${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，常驻 Newton（牛顿），用普通话和英文服务大波士顿的买家和卖家，也是美国亚裔房地产协会（AREAA）理事会成员。`,
+      description: `${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，办公室位于 Newton（牛顿），用普通话和英文服务大波士顿的买家和卖家，也是美国亚裔房地产协会（AREAA）理事会成员。`,
       keywords:
         'Maggie Li, Maggie Li 地产经纪, Maggie Li real estate, 牛顿 地产经纪, Newton MA Mandarin realtor, William Raveis Maggie Li',
     }}
     eyebrow="认识 Maggie"
     h1="Maggie Li：用普通话和英文服务大波士顿"
-    lede={`${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，常驻 Newton（牛顿），代表大波士顿地区的买家和卖家。您可以用普通话、英文，或两者交替和她沟通。`}
+    lede={`${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，办公室位于 Newton（牛顿），为大波士顿地区的买家和卖家服务。您可以用普通话或英文和她沟通。`}
     hero={{
       image:
         'https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1920&q=70',
@@ -58,22 +58,13 @@ const ZhMaggie = () => (
         answer: `电话 ${CHINESE_PARTNER.phone}，邮箱 ${CHINESE_PARTNER.email}，办公室地址 ${CHINESE_PARTNER.addressLine}，个人网站 maggieli.co。也可以扫描这个页面上的二维码，通过微信联系她。`,
       },
       {
-        question: 'Maggie 和 Kevin Hoang 是什么关系？',
-        answer: `这是 ${SITE.agentName} 的网站。${SITE.agentName} 不讲中文，所以把需要中文服务的客户转介给 ${CHINESE_PARTNER.name}。两人分属不同的经纪公司：${SITE.agentName} 在 ${SITE.brokerage}，${CHINESE_PARTNER.name} 在 ${CHINESE_PARTNER.brokerage}。您和 Maggie 合作时，由她和她的公司代表您。`,
-      },
-      {
         question: 'Maggie 讲哪些语言？',
         answer:
-          '普通话和英文。您可以在任何时候切换：很多客户日常用英文沟通，遇到合同和议价时换成普通话，也有客户正好相反。',
+          '普通话和英文。您用哪种语言方便，就用哪种。',
       },
       {
         question: 'Maggie 服务哪些城镇？',
-        answer: `这个网站介绍的 ${SITE.areaServed.length} 个大波士顿城镇，她都可以服务。她的个人网站上还介绍了 Arlington（阿灵顿）以及 Back Bay、Beacon Hill、Fenway 等波士顿街区。`,
-      },
-      {
-        question: '怎样核实她的执照？',
-        answer:
-          '麻州的房地产执照可以在 elicensing.mass.gov 按姓名查询。她的 William Raveis、Zillow 和 Realtor.com 页面上也有她的资料。',
+        answer: `本站介绍的 ${SITE.areaServed.length} 个大波士顿城镇，她都可以服务。她的个人网站上还介绍了 Arlington（阿灵顿）以及 Back Bay、Beacon Hill、Fenway 等波士顿街区。`,
       },
     ]}
     cta={{
@@ -126,33 +117,37 @@ const ZhMaggie = () => (
     <h2>和 Maggie 合作，哪些可以用中文？</h2>
     <p>
       <strong>可以用普通话或英文：</strong>
-      咨询、看房、了解村区和街区、制定出价策略、议价，以及在您签字前解释每一份文件的含义。
+      咨询、看房、了解各个社区、制定出价策略、议价，以及在您签字前讲解每一份文件的含义。
     </p>
     <p>
       <strong>只能用英文：</strong>
       法律文件本身。麻州的买卖合同、披露文件和过户文件都以英文签署，经纪人无法改变这一点。
     </p>
     <p>
-      <strong>需要时转介专业人士：</strong>
-      贷款机构、房地产律师和税务顾问，其中也有能讲普通话的，用于那些本该由他们回答的问题。
+      <strong>需要其他专业人士时：</strong>
+      她可以为您介绍贷款机构、房地产律师和税务顾问，其中也有讲普通话的。
     </p>
     <p>
       更多说明请看<Link to="/zh/zhongwen-fuwu">中文服务包括哪些内容</Link>。
     </p>
 
-    <h2>海外买家和外州搬来的家庭</h2>
+    <h2>海外买家和外州买家</h2>
     <p>
       房源很容易在网上找到，难的是判断哪个城镇适合您、学校之间实际有什么差别、通勤到底要多久，
-      以及您不在现场时整个流程怎么走。Maggie 可以安排视频看房，代您参加看房和验房，
+      以及您不在现场时整个流程怎么走。Maggie 可以安排视频看房，代您到现场看房、参加验房，
       并提前提醒您哪些环节在海外办理会花更长时间，例如贷款、资金转账、身份证明和时间安排。
     </p>
 
-    <h2>欢迎所有客户</h2>
-    <p>
-      这个页面存在，是因为有人会搜索它，也因为想用普通话讨论合同的人应该能知道这是可以做到的。
-      它并不限定 Maggie 服务谁：她代表各种背景的买家和卖家，包括首次购房者、换小房子的家庭、
-      搬迁家庭和长期住在这里的业主。
-    </p>
+    <h2>在其他网站上查看 Maggie</h2>
+    <ul>
+      {CHINESE_PARTNER.profiles.map((profile) => (
+        <li key={profile.url}>
+          <a href={profile.url} target="_blank" rel="noopener noreferrer">
+            {profile.name}
+          </a>
+        </li>
+      ))}
+    </ul>
   </ZhPage>
 );
 

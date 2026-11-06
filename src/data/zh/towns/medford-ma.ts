@@ -19,7 +19,7 @@ const guide: ZhTownGuideData = {
     },
     {
       type: 'section',
-      title: '人们为什么搬到梅德福？',
+      title: '为什么选择梅德福？',
       text: '梅德福吸引的是想靠近城市，又不想付最高价格的买家。',
     },
     {
@@ -48,7 +48,7 @@ const guide: ZhTownGuideData = {
       title: '梅德福的街区各有什么特点？',
       text: '梅德福由不同的住宅区组成，性价比和生活方式各不相同。',
       neighborhoods: [
-        { name: 'West Medford', description: '很受欢迎的通勤地区，有村落感、通勤火车和公园，独栋和 condo 的需求都很强。' },
+        { name: 'West Medford', description: '很受欢迎的通勤地区，有小镇感、通勤火车和公园，独栋和 condo 的需求都很强。' },
         { name: 'South Medford', description: '靠近萨默维尔和剑桥，持续有开发，受首次购房者欢迎。' },
         { name: 'Wellington', description: '靠近交通，还在变化，有橙线、Assembly Row 和现代住宅项目。' },
         { name: 'Tufts 一带', description: '出租需求高，多户住宅多，有长期投资吸引力。' },
@@ -59,7 +59,7 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '梅德福的房市是什么样的？',
       text: '梅德福的房屋类型在波士顿内环算是非常多样的。',
-      highlight: '您会看到：',
+      highlight: '这里常见的房屋类型：',
       bullets: ['独栋住宅', 'condo 和联排住宅', '三层楼（triple-decker）和多户住宅', '靠近交通的开发项目'],
       note: '位置、基础设施投资和有限的住房供应，一直在支撑这里的房价。',
     },
@@ -77,9 +77,9 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '在梅德福买房之前要知道什么？',
       text: '梅德福由小市场组成，在市内的具体位置会明显影响价格和增值。',
-      highlight: '做好这些准备会很有帮助：',
+      highlight: '买房前建议先做好这些功课：',
       bullets: ['了解具体街区的价格', '了解多户住宅的分区和改建', '有竞争力的出价策略', '了解未来开发的影响', '分析出租市场'],
-      note: '分清哪些地方正在趋稳、哪些还在加速，非常关键。',
+      note: '关键是看清哪些区域的房价已经趋稳，哪些还在上涨。',
     },
   ],
 };

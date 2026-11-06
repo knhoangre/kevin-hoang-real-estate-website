@@ -72,7 +72,7 @@ export const townFaqsZh = (
 
   if (notes.buyer) {
     qas.push({
-      question: `在${townName}买房要特别查什么？`,
+      question: `在${townName}买房要特别注意什么？`,
       answer: notes.buyer,
     });
   }

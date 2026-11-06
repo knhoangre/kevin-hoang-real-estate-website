@@ -6,26 +6,27 @@ import { CHINESE_PARTNER, SITE, googleProfileUrl } from '@/lib/siteConfig';
 /**
  * /zh/pingjia — pairs with /testimonials.
  *
- * THESE ARE REVIEWS OF KEVIN, AND THE PAGE SAYS SO BEFORE ANYTHING ELSE. Every
- * button in this tree reaches Maggie, so a reader could otherwise take them for
- * hers, which would be presenting a testimonial about one person as if it were
- * about another. Her own reviews are one link away, on her site.
+ * THESE ARE REVIEWS OF KEVIN, AND THE H1 AND LEDE SAY SO. Every button in this
+ * tree reaches Maggie, so a reader could otherwise take them for hers, which would
+ * be presenting a testimonial about one person as if it were about another. Her
+ * own reviews are one link away, on her site.
  *
  * Not translated, for the reason on /vi/danh-gia: rewriting someone's words into
  * another language and presenting them as their review is fabrication, and it
  * breaks the one thing that makes a review checkable. No Review markup either
- * (16 CFR Part 465).
+ * (16 CFR Part 465). The page no longer explains either point in a FAQ: Maggie
+ * found the explaining strange (2026-10-31).
  */
 const ZhTestimonials = () => (
   <ZhPage
     path="/zh/pingjia"
     seo={{
       title: 'Kevin Hoang 的客户评价 | 英文原文',
-      description: `这些是 ${SITE.agentName} 的客户在 Google 上写的真实评价，保留英文原文。${CHINESE_PARTNER.name} 的客户评价在她自己的网站上。`,
+      description: `${SITE.agentName} 的客户在 Google 上留下的评价，保留英文原文。${CHINESE_PARTNER.name} 的客户评价请看她的网站。`,
     }}
     eyebrow="客户评价"
-    h1="客户怎么说"
-    lede={`这个页面上的评价都是写给 ${SITE.agentName} 的，不是写给 ${CHINESE_PARTNER.name} 的。它们来自他的 Google 商家资料，保留英文原文，您可以在 Google 上逐条核对。`}
+    h1="Kevin Hoang 的客户评价"
+    lede={`以下是 ${SITE.agentName} 的客户在 Google 上留下的评价，保留英文原文。${CHINESE_PARTNER.name} 的客户评价请看她的网站 maggieli.co。`}
     hero={{
       image:
         'https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=1600&q=65',
@@ -33,26 +34,9 @@ const ZhTestimonials = () => (
     }}
     heroSize="standard"
     width="wide"
-    faqHeading="关于评价的问题"
-    faqs={[
-      {
-        question: '为什么不翻译成中文？',
-        answer:
-          '因为这是客户自己写的原话。把别人的话翻译后当作他们的评价来呈现，会改变原意，您也无法再和 Google 上的原文核对。页面的介绍是中文的，引用的内容保持原样。',
-      },
-      {
-        question: '在哪里能看到 Maggie 的评价？',
-        answer: `在她的个人网站 maggieli.co 上，这里的评价都不是关于她的。`,
-      },
-      {
-        question: '怎样核实这些评价？',
-        answer:
-          '打开 Kevin 的 Google 商家资料直接阅读。如果一位经纪人只在自己网站上放好评，没有公开的资料可以核对，这件事本身就值得问一问。',
-      },
-    ]}
     cta={{
-      heading: '想和 Maggie 谈一谈？',
-      body: '了解是否合适，最好的办法就是打一个简短的电话。不需要提前准备。',
+      heading: '想和 Maggie 聊聊？',
+      body: '打个电话或发个微信就可以，不用提前准备。',
       button: '联系 Maggie',
     }}
     enLabel="Client reviews"

@@ -20,7 +20,7 @@ const guide: ZhTownGuideData = {
     },
     {
       type: 'section',
-      title: '人们为什么搬到剑桥？',
+      title: '为什么选择剑桥？',
       text: '剑桥提供了很少有城市能同时具备的东西：步行便利、文化、绿地和经济实力。',
     },
     {
@@ -51,7 +51,7 @@ const guide: ZhTownGuideData = {
       neighborhoods: [
         { name: 'Harvard Square', description: '有历史、有文化、有活力。以经典建筑、书店、街头生活和靠近哈佛园闻名。受专业人士、投资者和看重长期价值的买家欢迎。' },
         { name: 'Kendall Square', description: '创新的中心。有大型生物技术和科技公司、高端开发项目和很强的出租需求。适合想买较新建筑、condo 和有投资潜力的买家。' },
-        { name: 'Central Square', description: '有艺术气息，多元，还在变化。结合了文化、夜生活和社区，也有大型重建和发展机会。' },
+        { name: 'Central Square', description: '有艺术气息，还在不断变化。结合了文化、夜生活和社区，也有大型重建和发展机会。' },
         { name: 'Porter Square 和 North Cambridge', description: '更偏住宅，交通很好。受想要稍大空间、较安静街道、相对剑桥中部更实惠的买家欢迎。' },
         { name: 'Cambridgeport 和 Riverside', description: '靠近查尔斯河和波士顿。以迷人的小街、翻新的联排住宅和靠近 MIT 及 Back Bay 著称。' },
       ],
@@ -62,15 +62,15 @@ const guide: ZhTownGuideData = {
       text: '剑桥是麻州竞争很激烈的房市之一。',
       highlight: '这里的需求持续不断，原因是：',
       bullets: ['库存有限', '靠近大型雇主', '大学的影响', '买家和租客持续不断'],
-      note: '您会看到历史独栋住宅、多户投资房、高端 condo 和新开发项目，以及翻新的联排和 loft。',
+      note: '这里有历史独栋住宅、多户投资房、高端 condo 和新开发项目，以及翻新的联排和 loft。',
     },
     {
       type: 'section',
       title: '剑桥值得买吗？',
       reasons: [
-        { icon: '📈', title: '长期基础', text: '全球性的学术和研究机构，是这里房市相对稳定的重要原因。' },
+        { icon: '📈', title: '长期基本面', text: '全球性的学术和研究机构，是这里房市相对稳定的重要原因。' },
         { icon: '🏙', title: '出租需求高', text: '学生、教职员工、研究人员和专业人士带来很强的出租市场，适合考虑自住加出租、多户住宅或长期投资的买家。' },
-        { icon: '🏗', title: '持续发展', text: '从 Kendall Square 的扩展到基础设施升级，剑桥还在变化。发展保持了需求，严格的分区规定则有助于维持长期价值。' },
+        { icon: '🏗', title: '持续发展', text: '从 Kendall Square 的扩展到基础设施升级，剑桥还在变化。发展带来持续的需求，严格的分区规定则有助于维持长期价值。' },
         { icon: '🌎', title: '生活和稳定', text: '除了财务上的考虑，还有日常的生活品质：步行便利、餐饮、绿地、文化机构，以及靠近波士顿。' },
       ],
     },

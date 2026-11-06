@@ -258,9 +258,10 @@ returns, and the mismatches are the list. Sections with detail routes belong in
   the visible "Updated" line *and* schema.org `dateModified`, in that order —
   structured data that states something the page does not show is the same
   violation as a BreadcrumbList with no visible trail.
-- **`scripts/submit-indexnow.mjs` runs at the end of `npm run build`** and is a
-  no-op without `INDEXNOW_KEY`, the same way `<Analytics>` is inert without
-  `SITE.ga4Id`. It submits only URLs whose `lastmod` is within 30 days: a
+- **`scripts/submit-indexnow.mjs` runs at the end of `npm run build`** and
+  submits only on Vercel's production build (`VERCEL_ENV`), so a local or preview
+  build is a no-op. The key is in the script: it is public by design, served from
+  `public/<key>.txt`. It submits only URLs whose `lastmod` is within 30 days: a
   submission is a claim that a page changed, and claiming all 117 every deploy
   is that claim made falsely. IndexNow reaches Bing, which is what ChatGPT
   Search and Copilot retrieve from; Google does not participate.
@@ -2425,10 +2426,23 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
 `node scripts/zh-check.mjs` reads the built pages.
 
 - **No page may say Kevin explains, answers or does anything in Chinese.** Say
-  Maggie, or say nobody. Every page opens with a notice saying whose site this is,
-  that Kevin does not speak Chinese, and that the two are at separate brokerages.
-  The check script looks for sentences that break this, because nobody who works
-  on this site can read them.
+  Maggie, or say nobody. The check script looks for sentences that break this,
+  because nobody who works on this site can read them.
+- **No page explains itself, the site or the two of them.** Maggie read the pages
+  on 2026-10-31 and asked for "Maggie 和 Kevin Hoang 是什么关系？" and "欢迎所有客户
+  / 这个页面存在，是因为…" to go, and found "things like this" strange. So the boxed
+  notice that opened every page (whose site, Kevin does not speak Chinese, separate
+  brokerages), `/zh/guanyu`'s "why two names / who wrote this", `/zh/pingjia`'s FAQ
+  about why reviews are not translated, and every "she serves everyone" paragraph
+  are gone. The footer says whose site it is and names both brokerages; its
+  公平住房机会 (Equal Housing Opportunity) line is how a real estate page says
+  everyone is welcome. `zh-check` fails on the rejected wording (`REJECTED_WORDING`).
+  The English `/chinese-speaking-real-estate-agent` lost the same two sections.
+- **Write it as a Chinese agent would, not as English in Chinese words.** The pass
+  on 2026-11-06 found "mid-century" rendered 中世纪 (medieval), Newton's villages as
+  村区, "the most expensive misconception" (最昂贵的误解), "you'll find" (您会看到),
+  "relocation buyers" (搬迁买家) and "highly regarded schools" (受到重视的学校系统).
+  See the glossary at the end of this section.
 - **Nothing about referral fees** (Kevin's decision, 2026-10-31).
 - **Only what her own site states plainly:** Mandarin and English, the brokerage,
   Newton, the AREAA board seat, her phone, email and WeChat. Her rankings are left
@@ -2443,7 +2457,7 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
   leave none. Her address is fixed in the function; a request cannot name a
   recipient. The page says who will see a message. `submit-contact` also escapes
   what is typed now, since that email reaches someone outside this business.
-- **`/zh/pingjia` shows reviews of Kevin, and says so first.** Beside her number
+- **`/zh/pingjia` shows reviews of Kevin, and its h1 says so.** Beside her number
   they would otherwise read as hers. Verbatim English, for `/vi/danh-gia`'s reason;
   her own reviews are linked. For the same reason `TownSoldListings` is left off
   the Chinese guides and the ten closings stay English.
@@ -2481,10 +2495,14 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
     own pipe, which only the two pages about Kevin use. Town titles lead with what
     is searched, `<town>（<English>, MA）买房指南`, while the h1 stays 住在<town>.
   - **Her name, address and phone on every page**, in the footer and in
-    `partnerAgent()`, exactly as on her site: a second domain repeating them is what
-    local search calls a citation. The @ids are her site's own (`maggieli.co/#agent`,
+    `partnerAgent()`, exactly as on her **Google Business Profile**: a second domain
+    repeating them is what local search calls a citation. That is "1229 Centre St,
+    Newton Centre, MA 02459" (checked 2026-11-06); her own site says "Newton", and
+    Google is the one to match. The @ids are her site's own (`maggieli.co/#agent`,
     `/#maggie`), so an engine reads one person, not a namesake.
     `/zh/maggie-li` is a `ProfilePage`; every page says `inLanguage: zh-Hans`.
+    `CHINESE_PARTNER.profiles` is named, like `SITE.profiles`, and `/zh/maggie-li`
+    lists it as visible links, so her `sameAs` (her Google profile first) is backed.
   - **The direct question, answered**: "is there a Chinese-speaking agent in <town>?"
     opens every town FAQ, because that is what gets typed into an AI, and an answer
     engine lifts a question and its answer whole. /zh and the English page ask it too.
@@ -2499,8 +2517,9 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
     there it prevents a visible jump between fonts.
   - **IndexNow**: the key file is `public/5df7d710b180f78d8ec839d8631fedb1.txt`, and the
     /zh routes carry a real `lastmod` (`ZH_UPDATED` in routes.mjs), which is what
-    makes them eligible. Automatic pings need `INDEXNOW_KEY` set to that key in
-    Vercel's Production environment. Move `ZH_UPDATED` only when the text changes.
+    makes them eligible. The key is in `submit-indexnow.mjs`, which pings on
+    Vercel's production build only, so nothing has to be set in Vercel. Move
+    `ZH_UPDATED` only when the text changes.
   - **What code cannot do** is most of the rest: her Google Business Profile, a link
     back from maggieli.co, and links from outside. Translating the blog is the largest
     on-site step left, and waits on her review as above.
@@ -2517,7 +2536,11 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
   贷款预批 pre-approval · 验房 inspection · 银行估价 appraisal · 过户 closing · 定金
   deposit · 附加条件 contingency · 产权 title · 地契 deed · 地契税 deed excise · 契约登记处
   Registry of Deeds · 估税价值 assessed value · 买方经纪 buyer's agent · 卖方经纪 listing
-  agent · 化粪池 septic · 含铅油漆 lead paint · 两户住宅 two-family · 三层楼 triple-decker.
+  agent · 化粪池 septic · 含铅油漆 lead paint · 两户住宅 two-family · 三层楼 triple-decker ·
+  社区（village）a Newton village, never 村区 · Open House（开放日）· 殖民风格 Colonial ·
+  世纪中期 / 二十世纪中期 mid-century, never 中世纪 · 外地搬来的买家 relocation buyers ·
+  口碑很好的公立学校 well-regarded schools (no rankings) · 长期基本面 long-term
+  fundamentals · 办公室位于 Newton, for where Maggie works (not 常驻).
   Buying is goufang and selling shoufang in URLs, because "maifang" is both.
 
 ### Moving from Connecticut (`/relocation` and four posts)

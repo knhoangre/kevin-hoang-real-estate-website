@@ -56,6 +56,25 @@ const ENGLISH_CHROME = [
   'Exit menu',
 ];
 
+/**
+ * Maggie read the pages on 2026-10-31 and found the explaining strange: how she
+ * and Kevin are connected, that he does not speak Chinese, why a page exists, that
+ * everyone is welcome. The rest are mistranslations found while checking for more:
+ * Newton's villages are not 村, mid-century is not 中世纪 (medieval), and "the most
+ * expensive mistake" is English. Nobody else here reads Chinese, so this is what
+ * keeps them from coming back.
+ */
+const REJECTED_WORDING = [
+  '是什么关系',
+  '不讲中文',
+  '分属不同的经纪公司',
+  '这个页面存在',
+  '欢迎所有客户',
+  '村区',
+  '中世纪',
+  '最昂贵',
+];
+
 const fileFor = (path) =>
   join('dist', path === '/' ? 'index.html' : `${path.replace(/^\//, '')}/index.html`);
 
@@ -119,9 +138,9 @@ for (const path of PAGES) {
   }
 
   // Kevin, in one sentence, with a language he does not speak or a service he
-  // cannot give in it. "不讲中文" is the sentence that is meant to be there.
+  // cannot give in it.
   for (const sentence of text.split(/[。！？]/)) {
-    if (!/Kevin/.test(sentence) || /不讲中文/.test(sentence)) continue;
+    if (!/Kevin/.test(sentence)) continue;
     if (/(讲|说|会|用)(中文|普通话|粤语)/.test(sentence)) {
       fail(path, `says Kevin works in Chinese: "${sentence.trim()}"`);
     }
@@ -132,6 +151,9 @@ for (const path of PAGES) {
 
   for (const phrase of ENGLISH_CHROME) {
     if (text.includes(phrase)) fail(path, `English chrome: "${phrase}"`);
+  }
+  for (const phrase of REJECTED_WORDING) {
+    if (text.includes(phrase)) fail(path, `wording Maggie found strange, or a mistranslation: "${phrase}"`);
   }
 
   if (!html.includes('bg-ink-deep')) fail(path, 'no dark hero, but hasDarkHero says it has one');
@@ -146,11 +168,14 @@ for (const path of PAGES) {
   if (/<link rel="stylesheet" href="https:\/\/fonts\.googleapis\.com[^>]*>/.test(html.replace(/<noscript>[\s\S]*?<\/noscript>/g, '').replace(/<link[^>]*media="print"[^>]*>/g, ''))) {
     fail(path, 'still waits on Google Fonts, which is blocked in mainland China');
   }
-  if (!html.includes('1229 Centre St, Newton, MA 02459')) fail(path, 'her address is not on the page');
+  if (!html.includes('1229 Centre St, Newton Centre, MA 02459')) fail(path, 'her address, as on her Google profile, is not on the page');
+  if (!html.includes('公平住房机会')) fail(path, 'no Equal Housing Opportunity line');
 
-  // Enough of the page is actually Chinese.
+  // Enough of the page is actually Chinese. /zh/pingjia is mostly Kevin's reviews,
+  // in English on purpose, so less of it is; Chinese filler would be worse.
   const chinese = (text.match(/[一-鿿]/g) ?? []).length;
-  if (chinese < 400) fail(path, `only ${chinese} Chinese characters: thin, or a page of English`);
+  const floor = path === '/zh/pingjia' ? 250 : 400;
+  if (chinese < floor) fail(path, `only ${chinese} Chinese characters: thin, or a page of English`);
 
   if (!sitemap.includes(`${ORIGIN}${path}<`)) fail(path, 'not in the sitemap');
   if (!llms.includes(`${ORIGIN}${path})`) && !['/zh/guanyu', '/zh/pingjia', '/zh/wenzhang'].includes(path)) {

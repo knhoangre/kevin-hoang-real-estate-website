@@ -962,7 +962,7 @@ const neighborhoodData: Record<string, TownGuide> = {
             description: "Historic, walkable, and highly desirable. Features local shops, dining, public spaces, and access to the Minuteman Bikeway. Homes near the center often command premium value."
           },
           {
-            name: "Merriam Hill",
+            name: "Meriam Hill",
             description: "One of Lexington's most established neighborhoods, known for its classic colonials, larger lots, and proximity to schools and conservation areas."
           },
           {

@@ -7,10 +7,10 @@ const guide: ZhTownGuideData = {
     '布伦特里（Braintree, MA）中文指南：红线终点站和主要高速公路，South Shore Plaza，各街区的特点，以及在南岸这个通勤方便的城镇买房要知道的事。',
   keywords: '布伦特里 Braintree 买房, Braintree MA 房价, 红线 终点站, East Braintree, South Shore 买房',
   subtitle:
-    '布伦特里（Braintree）位于波士顿以南，与昆西、Weymouth 和 Milton 相邻，是红线的终点站，也是 I-93、Route 3 和 Route 128 的交汇处。住在终点站意味着早上能在车上有座位，这是常被忽略的实际优势。',
+    '布伦特里（Braintree）位于波士顿以南，与昆西、Weymouth 和 Milton 相邻，是红线的终点站，也是 I-93、Route 3 和 Route 128 的交汇处。住在终点站，早上上车通常有座位，这个实际好处常被忽略。',
   image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&h=600',
   buyerNote:
-    '作为红线的终点站，早上在车上能有座位，线路更靠前的通勤者没有这个条件。这是真实而且常被忽略的优势。',
+    '作为红线的终点站，早上上车通常有座位，沿线其他车站的通勤者未必有这个条件。这个好处很实在，却常被忽略。',
   sections: [
     {
       type: 'intro',
@@ -19,8 +19,8 @@ const guide: ZhTownGuideData = {
     },
     {
       type: 'section',
-      title: '人们为什么搬到布伦特里？',
-      text: '布伦特里吸引的是想要位置、便利和生活平衡的买家。',
+      title: '为什么选择布伦特里？',
+      text: '布伦特里吸引的是看重地段和便利的买家。',
     },
     {
       type: 'subsection',
@@ -58,8 +58,8 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '布伦特里的房市是什么样的？',
       text: '布伦特里的房屋类型很多样。',
-      highlight: '您会看到：',
-      bullets: ['独栋住宅', 'condo 和联排住宅', '错层、殖民式和 cape 风格住宅', '部分多户住宅机会'],
+      highlight: '这里常见的房屋类型：',
+      bullets: ['独栋住宅', 'condo 和联排住宅', '错层、殖民风格和 Cape 风格住宅', '部分多户住宅机会'],
       note: '位置、公共交通和持续的买家需求，一直在支撑这里的房价。',
     },
     {
@@ -76,7 +76,7 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '在布伦特里买房之前要知道什么？',
       text: '布伦特里的价格由位置决定，离公共交通、高速公路和学校的远近影响很大。',
-      highlight: '做好这些准备会很有帮助：',
+      highlight: '买房前建议先做好这些功课：',
       bullets: ['了解具体街区的价格', '了解靠近交通的溢价', '有竞争力的出价策略', '把握市场时机', '比较需要翻新和可直接入住的房子'],
     },
   ],

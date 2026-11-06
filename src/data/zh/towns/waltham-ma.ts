@@ -10,7 +10,7 @@ const guide: ZhTownGuideData = {
     '沃尔瑟姆（Waltham）别称“钟表之城”，与牛顿、列克星敦、贝尔蒙特和 Watertown 相邻，位于主要通勤走廊上。相比周边市场价格较容易接受，房屋类型也很多样。',
   image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&h=600',
   buyerNote:
-    'Bentley 和 Brandeis 都在沃尔瑟姆，支撑着不小的出租市场，如果您看多户住宅，这一点值得注意。Moody Street 是这里的餐饮区，靠近它是真正的便利。沃尔瑟姆的工厂历史也留下了一些格局特别的工业改建楼。',
+    'Bentley 和 Brandeis 都在沃尔瑟姆，支撑着不小的出租市场，如果您看多户住宅，这一点值得注意。Moody Street 是这里的餐饮区，住在附近很方便。沃尔瑟姆的工厂历史也留下了一些格局特别的工业改建楼。',
   sections: [
     {
       type: 'intro',
@@ -19,7 +19,7 @@ const guide: ZhTownGuideData = {
     },
     {
       type: 'section',
-      title: '人们为什么搬到沃尔瑟姆？',
+      title: '为什么选择沃尔瑟姆？',
       text: '沃尔瑟姆吸引的是想要便利、多样生活和长期潜力的买家。',
     },
     {
@@ -34,7 +34,7 @@ const guide: ZhTownGuideData = {
       title: '🏙 热闹的市中心和 Moody Street',
       text: '沃尔瑟姆市中心已成为波士顿以外很活跃的生活区之一。',
       bullets: ['Moody Street 的餐厅、咖啡馆和夜生活', '本地商店、健身房和娱乐场所', '河边步道和社区活动', '不断增加的住宅和综合开发'],
-      note: '这个适合步行的核心，持续改变着沃尔瑟姆对居民和投资者的吸引力。',
+      note: '走路就能到的市中心，让沃尔瑟姆对居民和投资者更有吸引力。',
     },
     {
       type: 'subsection',
@@ -59,7 +59,7 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '沃尔瑟姆的房市是什么样的？',
       text: '沃尔瑟姆的房屋类型在西郊算是非常多样的。',
-      highlight: '您会看到：',
+      highlight: '这里常见的房屋类型：',
       bullets: ['独栋住宅', 'condo 和联排住宅', '三层楼（triple-decker）和多户住宅', '靠近交通的较新综合开发'],
       note: '位置、靠近雇主、市中心的更新和区域住房供应有限，一直在支撑这里的房价。',
     },
@@ -77,9 +77,9 @@ const guide: ZhTownGuideData = {
       type: 'section',
       title: '在沃尔瑟姆买房之前要知道什么？',
       text: '沃尔瑟姆是由小市场组成的城市，街区选择、通勤条件和房屋类型都会明显影响价值。',
-      highlight: '做好这些准备会很有帮助：',
+      highlight: '买房前建议先做好这些功课：',
       bullets: ['了解具体街区的价格', '了解多户住宅和 condo 的情况', '了解开发趋势', '有竞争力的出价策略', '分析租金和长期价值'],
-      note: '分清哪些地方正在趋稳、哪些还在加速，是关键。',
+      note: '关键是看清哪些区域的房价已经趋稳，哪些还在上涨。',
     },
   ],
 };

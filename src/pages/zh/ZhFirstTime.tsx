@@ -94,7 +94,7 @@ const ZhFirstTime = () => (
     width="wide"
     cta={{
       heading: '正在考虑买第一套房？',
-      body: '第一次沟通不收费，也没有任何义务。主要是 Maggie 回答您的问题，并告诉您看房之前要做哪些事。',
+      body: '咨询免费，没有任何压力。Maggie 可以回答您的问题，并告诉您看房之前要做哪些事。',
       button: '联系 Maggie',
     }}
     enLabel="First-time home buyer guide"
@@ -133,7 +133,7 @@ const ZhFirstTime = () => (
           </div>
         </div>
 
-        <h2 className="mb-10 text-3xl font-bold text-ink">钱的问题：要先了解什么</h2>
+        <h2 className="mb-10 text-3xl font-bold text-ink">资金方面要先了解什么</h2>
         <div className="mb-14 grid grid-cols-1 gap-8 md:grid-cols-3">
           {FINANCES.map((item) => (
             <div key={item.title} className={`${item.color} rounded-xl p-6 shadow-sm`}>

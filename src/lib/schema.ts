@@ -98,7 +98,7 @@ export const partnerPerson = () =>
     knowsLanguage: [...CHINESE_PARTNER.languages],
     memberOf: { '@type': 'Organization', name: 'Asian Real Estate Association of America' },
     areaServed: areaServed(),
-    sameAs: [...CHINESE_PARTNER.profiles],
+    sameAs: CHINESE_PARTNER.profiles.map((profile) => profile.url),
   });
 
 /**
@@ -122,7 +122,7 @@ export const partnerAgent = () =>
     knowsLanguage: [...CHINESE_PARTNER.languages],
     parentOrganization: { '@type': 'Organization', name: CHINESE_PARTNER.brokerage },
     employee: { '@id': CHINESE_PARTNER.personId },
-    sameAs: [...CHINESE_PARTNER.profiles],
+    sameAs: CHINESE_PARTNER.profiles.map((profile) => profile.url),
   });
 
 /** Says a /zh document is in Chinese, which hreflang alone says only in the head. */

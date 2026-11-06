@@ -21,11 +21,11 @@ import { pill } from '@/lib/pill';
  * to `lng: 'en'` during generation. Her phone and email come from CHINESE_PARTNER
  * and Kevin's name and brokerage from SITE; neither is ever retyped.
  *
- * The notice below is on every page on purpose. A reader lands on any one of
- * these from a search engine, on a site with someone else's name on it, and is
- * entitled to know whose site it is and who they would be talking to. It also
- * says the two are at separate brokerages, because they are. It says nothing
- * about referral fees (Kevin's decision, 2026-10-31).
+ * Whose site this is, and both brokerages, are in the ZhFooter on every page. Each
+ * page used to open with a boxed notice saying it again, and that Kevin does not
+ * speak Chinese. Maggie read the pages on 2026-10-31 and found that kind of
+ * explaining strange, so it is gone. Do not bring it back. Nothing about referral
+ * fees either (Kevin's decision, 2026-10-31).
  */
 const ZH_CONTACT = {
   to: '/zh/lianxi',
@@ -147,19 +147,6 @@ const ZhPage = ({
       cta={{ ...cta, contact: { ...ZH_CONTACT, to: cta.to ?? ZH_CONTACT.to } }}
     >
       <ShellSection width={width}>
-        <p className="mb-12 rounded-r-lg border-l-4 border-champagne bg-bone p-5 text-sm leading-relaxed text-gray-700">
-          <strong className="text-ink">关于本站：</strong>
-          这是 {SITE.agentName}（持牌房地产经纪人，{SITE.brokerage}）的网站。{SITE.agentName}{' '}
-          不讲中文，所以需要中文服务的客户由{' '}
-          <Link
-            to="/zh/maggie-li"
-            className="underline decoration-champagne decoration-2 underline-offset-4"
-          >
-            {CHINESE_PARTNER.name}
-          </Link>
-          （{CHINESE_PARTNER.brokerage}）直接服务。两人分属不同的经纪公司。
-        </p>
-
         {children && <ProseBody>{children}</ProseBody>}
 
         {sections}

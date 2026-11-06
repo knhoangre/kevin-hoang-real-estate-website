@@ -26,7 +26,7 @@ const MaggieCard = ({ className = '' }: { className?: string }) => (
         {/* A <p>, not a heading, for AuthorCard's reason: it closes every guide. */}
         <p className="mt-2 text-2xl font-semibold text-ink">{CHINESE_PARTNER.name}</p>
         <p className="mt-3 text-base leading-relaxed text-gray-700">
-          {CHINESE_PARTNER.brokerage} 的房地产经纪人，常驻 Newton（牛顿），可以用普通话或英文为您服务。
+          {CHINESE_PARTNER.brokerage} 的房地产经纪人，办公室位于 Newton（牛顿），可以用普通话或英文为您服务。
         </p>
 
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">

@@ -77,13 +77,8 @@ const ZhContact = () => {
         alt: '麻州一栋房子的前廊',
       }}
       heroSize="standard"
-      faqHeading="联系之前的问题"
+      faqHeading="联系 Maggie 前常见的问题"
       faqs={[
-        {
-          question: '第一次沟通要收费吗？',
-          answer:
-            '不收费，也没有任何义务。如果您需要的不在 Maggie 的专业或服务范围内，她会直接告诉您。',
-        },
         {
           question: '事情很急怎么办？',
           answer:
@@ -91,7 +86,7 @@ const ZhContact = () => {
         },
         {
           question: '表格提交后谁会看到？',
-          answer: `您的消息会同时发给 ${CHINESE_PARTNER.name} 和本网站的所有者 Kevin Hoang，并保存在 Kevin 的客户记录中。由 Maggie 用中文回复您。`,
+          answer: `您的消息会发送给 ${CHINESE_PARTNER.name}，同时抄送本网站所有者 Kevin Hoang，并保存在他的客户记录中。Maggie 会用中文回复您。`,
         },
       ]}
       cta={{

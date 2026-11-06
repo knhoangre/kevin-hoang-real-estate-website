@@ -18,7 +18,10 @@ import { pill } from '@/lib/pill';
  * on LandingPage, whose strip and buttons are Kevin's and would say so wrongly.
  *
  * Framing, from her own Mandarin page and the Vietnamese one: an added service,
- * not a specialization, and about language rather than who anyone is.
+ * not a specialization, and about language rather than who anyone is. The
+ * "Everyone is welcome / this page exists because…" section and "How is this site
+ * connected to her?" went on 2026-11-06, as their Chinese versions did, after
+ * Maggie found them strange; the last FAQ still answers who she works with.
  */
 const FAQS: QA[] = [
   {
@@ -135,14 +138,10 @@ const ChineseAgent = () => {
             , and <Link to="/zh/maggie-li" lang="zh-Hans">her page here</Link> is in Chinese.
           </p>
 
-          <h2>How is this site connected to her?</h2>
+          <h2>Is this site in Chinese?</h2>
           <p>
-            This is the website of {SITE.agentName}, a Massachusetts broker with {SITE.brokerage}, who
-            works in English and Vietnamese. He wants people who read Chinese to be able to use what is
-            written here and to find someone who can help them in their own language. So the main pages
-            and all {SITE.areaServed.length} town guides are available{' '}
-            <Link to="/zh" lang="zh-Hans">in Chinese</Link>, with Maggie as the person to contact. They
-            are at separate brokerages.
+            The main pages and all {SITE.areaServed.length} town guides are{' '}
+            <Link to="/zh" lang="zh-Hans">in Chinese</Link>, with Maggie as the person to contact.
           </p>
 
           <h2>What can be done in Mandarin, and what cannot?</h2>
@@ -161,15 +160,6 @@ const ChineseAgent = () => {
               including ones who also work in Mandarin, when a question is properly theirs.
             </li>
           </ul>
-
-          <h2>Everyone is welcome</h2>
-          <p>
-            This page exists because people search for it, and because someone who would rather discuss
-            a contract in Mandarin should be able to find out that they can. It is not a statement
-            about who is welcome. Maggie represents buyers and sellers of every background, and
-            everything else on this site is {SITE.agentName}&rsquo;s, in English and{' '}
-            <Link to="/vietnamese-speaking-real-estate-agent">Vietnamese</Link>.
-          </p>
         </ProseBody>
       </ShellSection>
 

@@ -161,7 +161,7 @@ export const isPrivate = (path) =>
  * and it is what makes submit-indexnow.mjs tell Bing about them. Move it only when
  * their text changes.
  */
-const ZH_UPDATED = '2026-10-31';
+const ZH_UPDATED = '2026-11-06';
 
 /** When /relocation's text last really changed (its byline shows the same date). */
 const RELOCATION_UPDATED = '2026-11-06';

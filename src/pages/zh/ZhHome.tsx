@@ -10,10 +10,12 @@ import { CHINESE_PARTNER, SITE } from '@/lib/siteConfig';
  * working with, and what they can do here. Kevin's homepage is about Kevin; this
  * one cannot be a translation of it, because he is not who the reader would hire.
  *
- * Framing from Maggie's own Mandarin page and /vi, and it must not be edited away:
- * Chinese is an ADDITIONAL service, and clients of every background are served.
  * These pages talk about language, never ethnicity, and never say which towns a
- * given community lives in. That is steering under fair-housing law.
+ * given community lives in. That is steering under fair-housing law. There is no
+ * "everyone is welcome" paragraph or "does she only serve Chinese speakers?"
+ * question any more: Maggie read them on 2026-10-31 and found them strange, and the
+ * footer's 公平住房机会 (Equal Housing Opportunity) line is how a real estate page
+ * says it.
  */
 const ZhHome = () => (
   <ZhPage
@@ -27,7 +29,7 @@ const ZhHome = () => (
     eyebrow="中文"
     crumbs={[{ name: '首页', path: '/zh' }]}
     h1="大波士顿地区的中文房地产服务"
-    lede={`${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，常驻 Newton（牛顿），可以用普通话或英文代表买家和卖家，服务大波士顿地区 ${SITE.areaServed.length} 个城镇。从第一次看房到签字过户，您都可以用中文沟通。`}
+    lede={`${CHINESE_PARTNER.name} 是 ${CHINESE_PARTNER.brokerage} 的房地产经纪人，办公室位于 Newton（牛顿），用普通话和英文为买家和卖家服务，服务范围覆盖大波士顿地区 ${SITE.areaServed.length} 个城镇。从第一次看房到签字过户，您都可以用中文沟通。`}
     hero={{
       image:
         'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1600&q=70',
@@ -51,17 +53,12 @@ const ZhHome = () => (
       {
         question: '整个买房过程真的都可以用中文吗？',
         answer:
-          '沟通可以：看房、制定出价策略、议价，以及解释每一份文件的含义。但合同本身是英文的，因为麻州的房地产合同以英文签署，这一点经纪人无法改变。用中文的意义在于，您在签字之前能准确知道自己签的是什么。',
+          '看房、商量出价、议价，以及讲解每一份文件，都可以用中文。合同本身是英文的，因为麻州的房地产合同以英文签署；但在签字之前，您会清楚知道每一条的意思。',
       },
       {
         question: '英语不好能在麻州买房吗？',
         answer:
-          '可以。但麻州的法律文件都是英文，而且一签就有约束力。关键不在于您的英语有多好，而在于您是否清楚自己同意了什么。这正是中文服务要解决的问题。',
-      },
-      {
-        question: 'Maggie 只服务讲中文的客户吗？',
-        answer:
-          `不是。${CHINESE_PARTNER.name} 服务各种背景的买家和卖家，中文只是她可以使用的另一种语言，并不限定她代表谁。`,
+          '可以。麻州的法律文件都是英文，一旦签字就有约束力，所以关键是您要清楚自己签的是什么。Maggie 可以用中文为您讲解每一步。',
       },
       {
         question: '人在中国或其他国家，可以在波士顿买房吗？',
@@ -71,7 +68,7 @@ const ZhHome = () => (
       {
         question: '可以用微信联系吗？',
         answer:
-          '可以。每个中文页面的底部都有 Maggie 的微信二维码。如果您的家人或贷款机构在不同时区，微信往往是最方便的方式。',
+          '可以。每个中文页面的底部都有 Maggie 的微信二维码。如果您或家人在海外，微信往往是最方便的方式。',
       },
       {
         question: '怎样核实经纪人的执照？',
@@ -80,13 +77,13 @@ const ZhHome = () => (
       },
     ]}
     cta={{
-      heading: '从一次对话开始',
-      body: '不需要任何准备，也没有任何义务。告诉 Maggie 您的计划，她会告诉您下一步实际该做什么。',
+      heading: '先聊一聊',
+      body: '不用提前准备，也没有任何压力。告诉 Maggie 您的想法，她会告诉您下一步该怎么做。',
       button: '联系 Maggie',
     }}
     enLabel="Greater Boston real estate, in English"
   >
-    <h2>为什么在麻州买房要特别小心？</h2>
+    <h2>在麻州买房有什么不一样？</h2>
     <p>
       在麻州买卖房屋要经过<strong>两份合同</strong>，不是一份：先是购房要约（Offer to Purchase），
       大约十到十四天后是买卖合同（Purchase and Sale Agreement，简称 P&amp;S）。买家遇到的大部分麻烦，
@@ -119,12 +116,12 @@ const ZhHome = () => (
     <h2>服务哪些城镇？</h2>
     <p>
       大波士顿地区 {SITE.areaServed.length} 个城镇。每个城镇都有一份中文指南，列出火车站、学校、
-      高速公路，以及在当地买房要特别查的事情。请看<Link to="/zh/quyu">城镇指南</Link>。
+      高速公路，以及在当地买房要特别注意的事情。请看<Link to="/zh/quyu">城镇指南</Link>。
     </p>
     <p>
-      选城镇之前有一点值得知道：在波士顿一带，房子的价值是一条街一条街决定的，而不是按镇界决定的。
-      同一个镇里相距一英里的两栋房子，可能是完全不同的两种交易，取决于能否走路到火车站，
-      以及这个地址属于哪所小学。
+      选城镇之前有一点值得知道：在波士顿一带，房价往往要看具体哪条街，不只是看在哪个镇。
+      同一个镇里相距一英里的两栋房子，价格可能差很多，这取决于能否走路到火车站，
+      以及这个地址对应哪所小学。
     </p>
 
     <h2>刚搬到麻州？</h2>

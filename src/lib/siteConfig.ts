@@ -410,17 +410,19 @@ export const CHINESE_PARTNER = {
   locality: 'Newton, MA',
   /**
    * Hers, unlike Kevin's: she has an office and publishes it. Printed exactly as
-   * on her site, because the same name, address and phone in more than one place
-   * is what a local search engine counts as a citation.
+   * on her Google Business Profile (checked 2026-11-06), because the same name,
+   * address and phone in more than one place is what a local search engine counts
+   * as a citation. Google says Newton Centre, the village; her own site says Newton.
+   * Both are the same office and the same ZIP, and Google's is the one to match.
    */
   address: {
     streetAddress: '1229 Centre St',
-    addressLocality: 'Newton',
+    addressLocality: 'Newton Centre',
     addressRegion: 'MA',
     postalCode: '02459',
     addressCountry: 'US',
   },
-  addressLine: '1229 Centre St, Newton, MA 02459',
+  addressLine: '1229 Centre St, Newton Centre, MA 02459',
   geo: { latitude: 42.3309430185562, longitude: -71.1949515635617 },
   languages: ['zh', 'en'],
   photo: '/images/maggie-li.webp',
@@ -431,11 +433,17 @@ export const CHINESE_PARTNER = {
    */
   personId: 'https://maggieli.co/#maggie',
   agentId: 'https://maggieli.co/#agent',
+  /**
+   * Named, like SITE.profiles, because /zh/maggie-li renders them as visible links
+   * as well as `sameAs`: a sameAs nobody can see is an unbacked assertion. Her
+   * Google Business Profile is first, the share link Kevin gave on 2026-11-06.
+   */
   profiles: [
-    'https://maggieli.co',
-    'https://www.raveis.com/Agent/maggieli',
-    'https://www.zillow.com/profile/maggieli402',
-    'https://www.realtor.com/realestateagents/5a620242dac6af0012386623',
+    { name: 'Google 商家资料', url: 'https://share.google/3OBRiEtr5oFLQZotk' },
+    { name: '个人网站 maggieli.co', url: 'https://maggieli.co' },
+    { name: 'William Raveis 经纪人页面', url: 'https://www.raveis.com/Agent/maggieli' },
+    { name: 'Zillow', url: 'https://www.zillow.com/profile/maggieli402' },
+    { name: 'Realtor.com', url: 'https://www.realtor.com/realestateagents/5a620242dac6af0012386623' },
   ],
 } as const;
 
