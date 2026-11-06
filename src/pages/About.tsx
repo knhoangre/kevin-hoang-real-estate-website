@@ -329,9 +329,11 @@ const About = () => {
               ))}
             </ul>
             <p>
-              He also works with families{' '}
-              <Link to="/relocation">moving to Massachusetts from Connecticut</Link>, a
-              move he has made himself, and offers the whole of the above{' '}
+              He was born and raised in {SITE.roots.state} and lived in{' '}
+              {SITE.roots.town} for {SITE.roots.years} years before moving up to Greater
+              Boston in {SITE.roots.moved}, so he also works with people{' '}
+              <Link to="/relocation">moving from Connecticut to Massachusetts</Link>, and
+              offers the whole of the above{' '}
               <Link to="/vietnamese-speaking-real-estate-agent">in Vietnamese</Link> as
               well as English — an additional service, not a specialisation. He does not
               speak Chinese, and refers clients who would rather work in it to{' '}

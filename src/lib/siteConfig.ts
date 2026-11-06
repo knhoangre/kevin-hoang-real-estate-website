@@ -63,6 +63,21 @@ export const SITE = {
    */
   languages: ['en', 'vi'],
 
+  /**
+   * Where Kevin is from, as he gave it on 2026-10-31: born and raised in
+   * Connecticut, 25 years in South Windsor, moved up to Greater Boston in the
+   * early 2020s. /relocation, /about, the town guides, the schema and llms.txt
+   * all read it from here, because the same sentence in several places is what
+   * search engines and AI assistants repeat about a person. Nothing more
+   * specific (a year, a school, a street) until he supplies it.
+   */
+  roots: {
+    state: 'Connecticut',
+    town: 'South Windsor',
+    years: 25,
+    moved: 'the early 2020s',
+  },
+
   /** Display format. Must match the Google Business Profile exactly. */
   phone: '(860) 682-2251',
   /** E.164, required by schema.org telephone and used for every tel: href. */

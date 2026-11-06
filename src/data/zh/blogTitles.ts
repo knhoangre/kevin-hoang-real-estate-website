@@ -130,6 +130,10 @@ export const BLOG_TITLES_ZH: Record<string, string> = {
   'divorce-and-the-marital-home-massachusetts': '离婚时的房子：卖掉、买断还是继续住',
   'moving-to-massachusetts-relocation-guide': '搬到麻州的指南',
   'utilities-after-moving-massachusetts': '入住麻州新家：市政电力公司、水费、垃圾和城镇人口登记',
+  'connecticut-vs-massachusetts-taxes': '康州和麻州的税：搬家后实际有什么变化',
+  'moving-from-connecticut-to-massachusetts-for-work': '为了工作从康州搬到麻州：就业、薪资和需要注意的地方',
+  'massachusetts-vs-connecticut-schools': '麻州和康州的学校：怎样公平地比较',
+  'selling-a-connecticut-house-to-move-to-massachusetts': '卖掉康州的房子，在麻州买房',
   'transit-oriented-development-boston': '按通勤选择 MetroWest 城镇',
   'mbta-communities-act-zoning': 'MBTA 社区法：Section 3A 正在改变 MetroWest 的什么',
 };

@@ -2486,6 +2486,46 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
   agent · 化粪池 septic · 含铅油漆 lead paint · 两户住宅 two-family · 三层楼 triple-decker.
   Buying is goufang and selling shoufang in URLs, because "maifang" is both.
 
+### Moving from Connecticut (`/relocation` and four posts)
+
+Kevin was born and raised in Connecticut and lived in South Windsor for 25 years
+before moving up in the early 2020s (`SITE.roots`, his words of 2026-10-31). He
+asked on 2026-10-31 why the page was not being found. Search Console, Aug 25 to
+Oct 29: 109 impressions, no clicks, and no search containing "Connecticut" had
+shown the site at all. The page was logistics only and never said where he is
+from. It was rewritten on 2026-11-06 around his story and the question people
+actually search, which is WHY move, with four posts that each own one question
+(`connecticutPosts` in blogData.ts: taxes, work, schools, selling the CT house).
+
+- **Every figure is in [ctToMa.ts](src/data/ctToMa.ts) with its period and
+  source**, and the page lists every source at its foot. The posts repeat the same
+  figures in prose: change one there and search the posts for it. What could not
+  be read at its source was left out (RMV deadlines, a 2024 Census income figure,
+  the DLS table), not filled in from aggregators.
+- **One source for both states wherever there is one**: Zillow's home value index
+  for prices, BLS QCEW for jobs and pay, NAEP for schools (the two states' own tests
+  are different exams and must never be set side by side).
+- **The property-tax point is the one a Connecticut native makes**: a CT mill rate
+  is on 70% of value (C.G.S. § 12-62a), a MA rate on 100%. Compare bills, not rates.
+- **No town or school is ranked or called good for families or safe.** Familial
+  status is protected; that is steering. Schools are compared at state level and
+  the reader is sent to DESE profiles and CT EdSight.
+- **Kevin is not licensed in Connecticut.** Nothing offers to list or sell a CT
+  house: he refers the sale to a CT-licensed agent (unnamed, at his request; he
+  wants people to talk to him first) and coordinates the timing. No referral fees.
+- **The honest costs stay in**: CT home values (South Windsor ~$440k against Newton
+  ~$1.48M), the $2M MA estate tax against CT's $15M, MA biotech's 2025 job losses,
+  CT's higher finance pay. They are why the rest is believable.
+- **Crumbling foundations are named** (state estimate, the CT disclosure form's
+  pyrrhotite question, CFSIC, the conveyance-tax exemption), factually and without
+  saying any town is affected. Kevin approved this with the plan.
+- **The checklist is on the page.** It sat behind an email form whose success
+  message said "check your email for the checklist" when nothing ever sent one. The
+  form now asks only what Kevin answers himself.
+- **The byline's date, `guideArticle()`'s `dateModified` and `RELOCATION_UPDATED`
+  in routes.mjs are one claim.** Move all three when the text really changes, and
+  none otherwise.
+
 ## The calculator (`HomeCalculator`)
 
 - **One calculator in three places**: every listing page (`ListingPayment`),

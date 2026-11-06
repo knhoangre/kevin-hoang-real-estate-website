@@ -285,7 +285,7 @@ const Footer = () => {
               { to: '/buyer', label: 'Buyer\u2019s Guide' },
               { to: '/seller', label: 'Seller\u2019s Guide' },
               { to: '/first-time-buyers', label: 'First-Time Buyers' },
-              { to: '/relocation', label: 'Relocating to MA' },
+              { to: '/relocation', label: 'Moving from CT to MA' },
               // The ENGLISH page about Vietnamese service. The Vietnamese-language
               // tree is its own column — a different thing.
               { to: '/vietnamese-speaking-real-estate-agent', label: t('nav.vietnamese') },

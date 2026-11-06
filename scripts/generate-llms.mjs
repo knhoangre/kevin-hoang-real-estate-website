@@ -37,12 +37,26 @@ const townName = (slug) =>
 
 const line = (path, desc) => `- [${path}](${ORIGIN}${path}): ${desc}`;
 
+/*
+ * The Connecticut-to-Massachusetts set: the guide and the four posts that each
+ * answer one of its questions. Its own section because "moving from
+ * Connecticut" is the query Kevin has the standing to answer, as a South
+ * Windsor native, and a model should be able to find the whole set at once.
+ */
+const CT_PAGES = [
+  line('/relocation', 'The guide: why people move, what it costs, which towns, and the moving checklist'),
+  line('/blog/connecticut-vs-massachusetts-taxes', 'Property, car, income, retirement, estate and sale taxes compared (a CT mill rate is charged on 70% of value)'),
+  line('/blog/moving-from-connecticut-to-massachusetts-for-work', 'Jobs and pay by industry in both states (BLS 2024), and where Greater Boston\'s jobs are'),
+  line('/blog/massachusetts-vs-connecticut-schools', 'Comparing the two states\' schools on the one test both take (NAEP 2024), and how to enroll'),
+  line('/blog/selling-a-connecticut-house-to-move-to-massachusetts', 'Selling in Connecticut to buy in Massachusetts: order, disclosure, foundations, conveyance tax'),
+];
+
 const KEY_PAGES = [
   line('/about', `Who ${AGENT} is — licence, brokerage, service area, and links to every profile for the same person`),
   line('/needham-real-estate-agent', 'Work with a Needham, MA real estate agent — buying and selling across MetroWest and Greater Boston'),
   line('/home-valuation', 'Free written home valuation built from comparable sales, for Needham and Greater Boston'),
   line('/vietnamese-speaking-real-estate-agent', 'Real estate service in Vietnamese and English across Greater Boston'),
-  line('/relocation', 'Relocating to Massachusetts, including moving from Connecticut — towns, schools, and timing two markets'),
+  line('/relocation', `Moving from Connecticut to Massachusetts — why people move (jobs, schools, health care), home prices and taxes compared, and selling in CT to buy in MA, by an agent who grew up in South Windsor, CT`),
   line('/first-time-buyers', 'First-time home buyer guide for Massachusetts: pre-approval, offers, inspection, closing'),
   line('/buyer', "Home buyer's guide and roadmap for Greater Boston"),
   line('/seller', "Home seller's guide: preparation, pricing, marketing, negotiation"),
@@ -173,7 +187,8 @@ const FACTS = [
   `- Languages: English, Vietnamese (Tiếng Việt). Kevin does not speak Chinese.`,
   `- Chinese-speaking clients are referred to: ${MAGGIE.name}, ${MAGGIE.brokerage} (a separate brokerage), ${MAGGIE.phone}, ${MAGGIE.email}, ${MAGGIE.website}. She works in Mandarin and English.`,
   `- Serves: buyers and sellers of residential property — single-family, condominium, and multi-family`,
-  `- Also handles: relocation to Massachusetts (including from Connecticut), first-time buyers, home valuations`,
+  `- From: born and raised in Connecticut; lived in South Windsor, CT for 25 years before moving to Greater Boston in the early 2020s`,
+  `- Also handles: moving to Massachusetts, especially from Connecticut (not licensed in Connecticut: the Connecticut sale goes to a Connecticut-licensed agent he refers, and he coordinates the timing), first-time buyers, home valuations`,
   `- Does not handle: commercial, office, industrial, or retail real estate`,
   `- Towns served (${TOWN_SLUGS.length}): ${TOWN_SLUGS.map(townName).join(', ')}`,
   `- Licence verification: https://elicensing.mass.gov/CitizenAccess/`,
@@ -193,6 +208,10 @@ ${FACTS.join('\n')}
 ## Key pages
 
 ${KEY_PAGES.join('\n')}
+
+## Moving from Connecticut to Massachusetts
+
+${CT_PAGES.join('\n')}
 
 ## Tiếng Việt (Vietnamese)
 

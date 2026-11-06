@@ -71,6 +71,8 @@ export const person = () =>
       'Connecticut to Massachusetts relocation',
     ],
     sameAs: profileUrls,
+    // Born and raised there (SITE.roots); /about and /relocation say so.
+    birthPlace: { '@type': 'State', name: SITE.roots.state },
   });
 
 /**
@@ -329,6 +331,17 @@ export const blogPosting = (post: BlogPostLike) =>
       '@id': absoluteUrl(post.path ?? `/blog/${post.slug}`),
     },
   });
+
+/**
+ * A landing page written and dated like an article: /relocation names Kevin as
+ * its author and shows when it was last updated, so it says so here too. The
+ * node a post gets, typed Article because the page is not a blog post. Emit
+ * person() beside it, or the author reference has nothing to resolve to.
+ */
+export const guideArticle = (page: BlogPostLike & { path: string }) => ({
+  ...blogPosting(page),
+  '@type': 'Article',
+});
 
 /**
  * The contact page, as an addressable node that names the agent it contacts.

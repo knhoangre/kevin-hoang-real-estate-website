@@ -15,7 +15,7 @@ import TownGuideSections, { type TownGuide } from "@/components/TownGuideSection
 import { TOWN_FACTS } from "@/data/townFacts";
 import { townFaqs } from "@/lib/townFaqs";
 import { alternatesFor } from "@/lib/viRoutes";
-import { CHINESE_PARTNER } from "@/lib/siteConfig";
+import { CHINESE_PARTNER, SITE } from "@/lib/siteConfig";
 
 const neighborhoodData: Record<string, TownGuide> = {
   "brookline-ma": {
@@ -2608,6 +2608,16 @@ const NeighborhoodDetail = () => {
                   Newton-based agent
                 </Link>{" "}
                 covering this town and the rest of Greater Boston.
+              </p>
+              {/* Every guide, because "moving from Connecticut to <town>" is a
+                  real search and /relocation is the page that answers it. */}
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Moving from Connecticut? Kevin grew up there and lived in{" "}
+                {SITE.roots.town} for {SITE.roots.years} years.{" "}
+                <Link to="/relocation" className="underline decoration-champagne decoration-2 underline-offset-4 transition-colors hover:decoration-champagne-ink">
+                  His guide to moving from Connecticut to Massachusetts
+                </Link>{" "}
+                covers taxes, home prices and selling the Connecticut house.
               </p>
               {/* A link into the Chinese side from every guide, with the words a
                   person would search for. Kevin does not speak Chinese. */}

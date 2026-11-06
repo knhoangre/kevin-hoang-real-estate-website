@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import ViPage from '@/components/ViPage';
+import { SITE } from '@/lib/siteConfig';
 
 /**
  * /vi/chuyen-den-massachusetts — the counterpart of /relocation.
@@ -68,6 +69,16 @@ const ViRelocation = () => (
     }}
     enLabel="Relocating to Massachusetts"
   >
+    {/* SITE.roots, the same facts /relocation and /about state in English. */}
+    <h2>Kevin cũng từng chuyển đến đây</h2>
+    <p>
+      Kevin sinh ra và lớn lên ở Connecticut, sống ở {SITE.roots.town} {SITE.roots.years}{' '}
+      năm, rồi chuyển lên vùng Greater Boston vào đầu thập niên 2020. Nếu bạn cũng đang
+      chuyển từ Connecticut, trang{' '}
+      <Link to="/relocation">Moving from Connecticut to Massachusetts</Link> (tiếng Anh)
+      so sánh thuế, giá nhà và cách bán nhà ở Connecticut trước khi mua ở Massachusetts.
+    </p>
+
     <h2>Việc cần làm trước khi dọn đến</h2>
     <p>
       Ba việc nên xử lý sớm, vì chúng đều có thời hạn: đổi bằng lái và đăng ký xe tại RMV,

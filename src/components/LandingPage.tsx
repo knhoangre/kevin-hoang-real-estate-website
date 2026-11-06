@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import PageShell, { ShellSection } from '@/components/PageShell';
+import PageShell, { ShellSection, type PageShellProps } from '@/components/PageShell';
 import { defaultStrip } from '@/lib/strip';
 import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
@@ -38,9 +38,21 @@ interface LandingPageProps {
   /** Route path, used for the canonical and the Service node's url. */
   path: string;
   crumbs: Crumb[];
-  seo: { title: string; description: string; keywords: string };
+  seo: {
+    title: string;
+    description: string;
+    keywords: string;
+    /** For a page that shows a byline and an updated date, like an article. */
+    ogType?: PageShellProps['seo']['ogType'];
+    article?: PageShellProps['seo']['article'];
+  };
   /** Service schema. Describes only what this page actually offers. */
   serviceMeta: { name: string; serviceType: string };
+  /**
+   * More schema for this page, after the shell's own. /relocation adds its
+   * author (person()) and the article node that names him.
+   */
+  jsonLd?: object[];
   /**
    * The page's <h1>. No two landing pages may share an h1 or an h2 string —
    * convergent pages compete for the same query and neither ranks. Check
@@ -89,6 +101,7 @@ const LandingPage = ({
   crumbs,
   seo,
   serviceMeta,
+  jsonLd = [],
   h1,
   lede,
   faqHeading,
@@ -123,6 +136,7 @@ const LandingPage = ({
           description: seo.description,
           path,
         }),
+        ...jsonLd,
       ]}
       eyebrow={copy.eyebrow ?? eyebrow}
       h1={copy.h1}

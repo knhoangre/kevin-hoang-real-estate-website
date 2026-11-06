@@ -163,6 +163,9 @@ export const isPrivate = (path) =>
  */
 const ZH_UPDATED = '2026-10-31';
 
+/** When /relocation's text last really changed (its byline shows the same date). */
+const RELOCATION_UPDATED = '2026-11-06';
+
 export const STATIC_ROUTES = [
   { path: '/', priority: 1.0, changefreq: 'weekly' },
 
@@ -171,7 +174,7 @@ export const STATIC_ROUTES = [
   { path: '/home-valuation', priority: 0.9, changefreq: 'monthly' },
   { path: '/vietnamese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
   { path: '/chinese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly', lastmod: ZH_UPDATED },
-  { path: '/relocation', priority: 0.8, changefreq: 'monthly' },
+  { path: '/relocation', priority: 0.8, changefreq: 'monthly', lastmod: RELOCATION_UPDATED },
 
   // Town guides.
   { path: '/neighborhoods', priority: 0.8, changefreq: 'monthly' },
