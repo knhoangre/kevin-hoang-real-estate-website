@@ -54,13 +54,19 @@ export const person = () =>
     url: SITE.origin,
     image: absoluteUrl('/kevin_hoang.jpg'),
     jobTitle: 'Real Estate Broker',
+    description: `Licensed Massachusetts real estate broker with ${SITE.brokerage}, based in ${SITE.address.addressLocality}, who came to real estate from ${SITE.background}.`,
     worksFor: SITE.brokerage
       ? { '@type': 'Organization', name: SITE.brokerage }
       : undefined,
     knowsLanguage: SITE.languages,
+    // Each backed by pages a reader can see: the town guides, /about's
+    // engineering section and the inspection posts, /market, /investments.
     knowsAbout: [
-      'Needham MA real estate',
+      'Newton MA real estate',
       'Greater Boston real estate',
+      'home inspections and building systems',
+      'Massachusetts housing market statistics',
+      'real estate investment analysis',
       'first-time home buyers',
       'Connecticut to Massachusetts relocation',
     ],

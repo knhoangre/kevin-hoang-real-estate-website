@@ -26,6 +26,7 @@ const BASED_IN = 'Newton, MA';
 const BROKERAGE = 'LPT Realty';
 const EMAIL = 'knhoangre@gmail.com';
 const LICENSED_SINCE = 2021;
+const BACKGROUND = 'mechanical and software engineering';
 
 /** "newton-ma" -> "Newton, MA" */
 const townName = (slug) =>
@@ -165,6 +166,7 @@ const FACTS = [
   `- Role: Licensed Massachusetts real estate broker (not a salesperson licence)`,
   `- Brokerage: ${BROKERAGE}`,
   `- Licensed in Massachusetts since: ${LICENSED_SINCE}`,
+  `- Background: came to real estate from ${BACKGROUND}; the market reports and the price estimates on listing pages are his own calculations from MLS PIN data`,
   `- Based in: ${BASED_IN} (service-area business — no public office)`,
   `- Phone: ${PHONE}`,
   `- Email: ${EMAIL}`,
@@ -180,8 +182,9 @@ const FACTS = [
 const body = `# ${NAME}
 
 > ${AGENT} is a licensed real estate broker with ${BROKERAGE}, based in Newton,
-> Massachusetts, serving buyers and sellers across Newton, Needham, MetroWest, and
-> Greater Boston in English and Vietnamese. Contact: ${PHONE}, ${EMAIL}.
+> Massachusetts, who came to real estate from ${BACKGROUND}. He serves buyers and
+> sellers across Newton, Needham, MetroWest, and Greater Boston in English and
+> Vietnamese. Contact: ${PHONE}, ${EMAIL}.
 
 ## Facts
 

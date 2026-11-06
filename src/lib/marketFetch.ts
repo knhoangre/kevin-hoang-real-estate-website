@@ -220,3 +220,19 @@ export const fetchSalesCoverage = async (client: Client): Promise<string | null>
   if (error) throw new Error(error.message);
   return data?.[0]?.settled_date ?? null;
 };
+
+/**
+ * The newest closing in the archive, which idx-sync writes on every batch of the
+ * sold feed, so it is as current as the feed. Asked of the archive and not of
+ * idx_listings: the same question statewide there hits the anon timeout.
+ */
+export const fetchNewestSale = async (client: Client): Promise<string | null> => {
+  const { data, error } = await client
+    .from('idx_sold_archive')
+    .select('settled_date')
+    .not('settled_date', 'is', null)
+    .order('settled_date', { ascending: false })
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return data?.[0]?.settled_date ?? null;
+};

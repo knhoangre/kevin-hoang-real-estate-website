@@ -25,6 +25,7 @@ import {
   buildReport,
   cleanZip,
   edge,
+  feedCoversMonth,
   lastCompleteMonth,
   lastDay,
   monthWorthAPost,
@@ -84,6 +85,14 @@ eq(lastDay('2028-02'), '2028-02-29', 'and 2028 has 29');
 eq(lastCompleteMonth('2026-10-03'), '2026-09', 'on October 3rd the last whole month is September');
 eq(windowBounds('2026-09', 3, '2025-01-01'), { from: '2026-07-01', to: '2026-09-30' }, 'three months is July to September, not 91 days to today');
 eq(windowBounds('2026-09', 12, '2025-10-18'), { from: '2025-10-18', to: '2026-09-30' }, 'a window never starts before the data does');
+
+console.log('--- the feed has to reach the end of the month ---');
+eq(feedCoversMonth('2026-10-16', '2026-10'), false, 'October 2026 from a feed that stopped on the 19th is refused');
+eq(feedCoversMonth('2026-10-28', '2026-10'), true, 'a closing on the 28th is close enough to the 31st');
+eq(feedCoversMonth('2026-10-27', '2026-10'), false, 'the 27th is not');
+eq(feedCoversMonth('2026-11-02', '2026-10'), true, 'the next month\'s first closings count too');
+eq(feedCoversMonth('2026-02-25', '2026-02'), true, 'February is measured from the 28th');
+eq(feedCoversMonth(null, '2026-10'), false, 'no closing at all is refused');
 
 console.log('--- one set of sales ---');
 {

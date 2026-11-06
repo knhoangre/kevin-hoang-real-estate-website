@@ -5,11 +5,22 @@ import { DataTable, H2, LINK, Thin } from '@/components/market/MarketParts';
 import { MIN_MONTH_SALES, TYPE_NAMES, type Headline, type MarketIndex, type SaleType } from '@/lib/market';
 import { EDGE_LABEL, EDGE_RULE_TEXT, dateLong, money, monthName, months1, pct, ratioPct } from '@/lib/marketText';
 import { itemList } from '@/lib/schema';
+import { SITE } from '@/lib/siteConfig';
 import summaryJson from '@/data/market/summary.json';
 import indexJson from '@/data/market/index.json';
 
 const summary = summaryJson as Headline[];
 const index = indexJson as MarketIndex;
+
+/**
+ * Towns Kevin works in that have no report: Dover (Kevin's choice, 2026-10-20).
+ * Without this the page said "Towns covered 17" in its strip and "16 towns at a
+ * glance" under it, and said nothing about the difference.
+ */
+const unreported = SITE.areaServed.filter((t) => !SITE.marketTowns.includes(t.name));
+
+const listOf = (names: string[]) =>
+  names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 
 /**
  * /market — every town's report side by side, and every monthly post.
@@ -83,6 +94,22 @@ const Market = () => {
             Sale-to-asking and the share sold over asking are over the last three months where those hold at least
             ten sales, and over six or twelve months where they do not. Homes for sale are as of {dateLong(asOf)}.
           </p>
+          {unreported.length > 0 && (
+            <p className="max-w-3xl leading-relaxed text-gray-700">
+              Kevin works in {SITE.areaServed.length} towns. {listOf(unreported.map((t) => t.name))}{' '}
+              {unreported.length === 1 ? 'has' : 'have'} too few closings in a month for a report to say much, so{' '}
+              {unreported.length === 1 ? 'it is' : 'they are'} left out here; see the{' '}
+              {unreported.map((t, i) => (
+                <span key={t.slug}>
+                  {i > 0 && ', '}
+                  <Link to={`/neighborhoods/${t.slug}`} className={LINK}>
+                    {t.name} town guide
+                  </Link>
+                </span>
+              ))}{' '}
+              instead.
+            </p>
+          )}
           <TypeTable type="SF" />
           <TypeTable type="CC" />
           <p className="max-w-3xl text-xs leading-relaxed text-gray-500">{EDGE_RULE_TEXT}</p>

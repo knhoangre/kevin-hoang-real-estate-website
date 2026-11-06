@@ -30,8 +30,10 @@ import type { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 type Db = ReturnType<typeof createClient>;
 
 /**
- * `www`, not the apex. kevinhoang.co 307-redirects to www, and a link that goes
- * straight there is one hop shorter in a mail client's in-app browser.
+ * `www`, not the apex. The apex used to 307-redirect to www; since at least
+ * 2026-11-05 both hosts answer 200 with the same page, whose canonical names the
+ * apex. Kept as www because emails already sent carry these addresses, and an
+ * image asked for at a host that redirects is one some mail clients never show.
  */
 export const SITE_ORIGIN = 'https://www.kevinhoang.co';
 

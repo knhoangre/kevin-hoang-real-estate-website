@@ -4,7 +4,7 @@
  "slug": "newton-ma",
  "state": "MA",
  "month": "2026-10",
- "asOf": "2026-11-03",
+ "asOf": "2026-11-06",
  "trackingSince": "2026-09-02",
  "coverage": {
   "sales": "2025-09-17",
@@ -17,61 +17,61 @@
    "to": "2026-10-31",
    "byType": {
     "SF": {
-     "sales": 469,
-     "perMonth": 39.0833,
-     "median": 1845000,
-     "low": 1374000,
-     "high": 2625000,
-     "ppsf": 619,
-     "ratio": 0.9973,
-     "over": 0.4243,
-     "at": 0.0746,
-     "under": 0.5011,
-     "premium": 95000,
-     "sqft": 3090
+     "sales": 484,
+     "perMonth": 40.3333,
+     "median": 1830000,
+     "low": 1340000,
+     "high": 2620000,
+     "ppsf": 618,
+     "ratio": 0.9947,
+     "over": 0.4174,
+     "at": 0.0744,
+     "under": 0.5083,
+     "premium": 90501,
+     "sqft": 3089
     },
     "CC": {
-     "sales": 307,
-     "perMonth": 25.5833,
-     "median": 1070000,
-     "low": 715000,
+     "sales": 318,
+     "perMonth": 26.5,
+     "median": 1085000,
+     "low": 719000,
      "high": 1595000,
      "ppsf": 559,
-     "ratio": 0.988,
-     "over": 0.2638,
-     "at": 0.1401,
-     "under": 0.5961,
+     "ratio": 0.9876,
+     "over": 0.2579,
+     "at": 0.1352,
+     "under": 0.6069,
      "premium": 25000,
-     "sqft": 1800
+     "sqft": 1851
     },
     "MF": {
-     "sales": 37,
-     "perMonth": 3.0833,
-     "median": 1340000,
-     "low": 1130000,
-     "high": 1690000,
-     "ppsf": 460,
-     "ratio": 1,
-     "over": 0.3243,
-     "at": 0.1892,
-     "under": 0.4865,
+     "sales": 40,
+     "perMonth": 3.3333,
+     "median": 1327500,
+     "low": 1100000,
+     "high": 1550000,
+     "ppsf": 448,
+     "ratio": 0.992,
+     "over": 0.3,
+     "at": 0.175,
+     "under": 0.525,
      "premium": 52500,
-     "sqft": 2781
+     "sqft": 2789
     }
    },
    "all": {
-    "sales": 813,
-    "perMonth": 67.75,
-    "median": 1538000,
+    "sales": 842,
+    "perMonth": 70.1667,
+    "median": 1525000,
     "low": 1050000,
     "high": 2150000,
-    "ppsf": 588,
-    "ratio": 0.9915,
-    "over": 0.3592,
-    "at": 0.1046,
-    "under": 0.5363,
-    "premium": 65500,
-    "sqft": 2639
+    "ppsf": 587,
+    "ratio": 0.99,
+    "over": 0.3515,
+    "at": 0.1021,
+    "under": 0.5463,
+    "premium": 65000,
+    "sqft": 2634
    }
   },
   {
@@ -80,61 +80,61 @@
    "to": "2026-10-31",
    "byType": {
     "SF": {
-     "sales": 279,
-     "perMonth": 46.5,
-     "median": 1850000,
-     "low": 1385000,
-     "high": 2702000,
-     "ppsf": 618,
+     "sales": 294,
+     "perMonth": 49,
+     "median": 1847000,
+     "low": 1356750,
+     "high": 2700000,
+     "ppsf": 614,
      "ratio": 1,
-     "over": 0.491,
-     "at": 0.0609,
-     "under": 0.448,
-     "premium": 101000,
-     "sqft": 3104
+     "over": 0.4762,
+     "at": 0.0612,
+     "under": 0.4626,
+     "premium": 100000,
+     "sqft": 3096
     },
     "CC": {
-     "sales": 162,
-     "perMonth": 27,
+     "sales": 173,
+     "perMonth": 28.8333,
      "median": 1050000,
-     "low": 705000,
-     "high": 1427000,
-     "ppsf": 556,
-     "ratio": 0.9914,
-     "over": 0.3148,
-     "at": 0.1358,
-     "under": 0.5494,
+     "low": 728000,
+     "high": 1450000,
+     "ppsf": 559,
+     "ratio": 0.988,
+     "over": 0.3006,
+     "at": 0.1272,
+     "under": 0.5723,
      "premium": 25000,
-     "sqft": 1755
+     "sqft": 1792
     },
     "MF": {
-     "sales": 21,
-     "perMonth": 3.5,
-     "median": 1315000,
-     "low": 1150000,
-     "high": 1850000,
-     "ppsf": 460,
-     "ratio": 1,
-     "over": 0.381,
-     "at": 0.1429,
-     "under": 0.4762,
+     "sales": 24,
+     "perMonth": 4,
+     "median": 1282500,
+     "low": 1100000,
+     "high": 1730000,
+     "ppsf": 448,
+     "ratio": 0.992,
+     "over": 0.3333,
+     "at": 0.125,
+     "under": 0.5417,
      "premium": 30000,
-     "sqft": 2818
+     "sqft": 2807
     }
    },
    "all": {
-    "sales": 462,
-    "perMonth": 77,
-    "median": 1547500,
-    "low": 1100000,
-    "high": 2200000,
-    "ppsf": 590,
-    "ratio": 1,
-    "over": 0.4242,
-    "at": 0.0909,
-    "under": 0.4848,
-    "premium": 69000,
-    "sqft": 2628
+    "sales": 491,
+    "perMonth": 81.8333,
+    "median": 1538000,
+    "low": 1096907,
+    "high": 2180000,
+    "ppsf": 587,
+    "ratio": 0.9959,
+    "over": 0.4073,
+    "at": 0.0876,
+    "under": 0.5051,
+    "premium": 66000,
+    "sqft": 2625
    }
   },
   {
@@ -143,61 +143,61 @@
    "to": "2026-10-31",
    "byType": {
     "SF": {
-     "sales": 85,
-     "perMonth": 28.3333,
-     "median": 1821000,
-     "low": 1307500,
-     "high": 2750000,
-     "ppsf": 613,
-     "ratio": 0.9875,
-     "over": 0.3647,
-     "at": 0.0941,
-     "under": 0.5412,
-     "premium": 75000,
-     "sqft": 3222
+     "sales": 100,
+     "perMonth": 33.3333,
+     "median": 1806250,
+     "low": 1299000,
+     "high": 2725000,
+     "ppsf": 600,
+     "ratio": 0.9839,
+     "over": 0.34,
+     "at": 0.09,
+     "under": 0.57,
+     "premium": 63550,
+     "sqft": 3193
     },
     "CC": {
-     "sales": 44,
-     "perMonth": 14.6667,
-     "median": 937500,
-     "low": 598500,
-     "high": 1300000,
-     "ppsf": 536,
-     "ratio": 0.9759,
-     "over": 0.2273,
-     "at": 0.0909,
-     "under": 0.6818,
-     "premium": 23000,
-     "sqft": 1610
+     "sales": 55,
+     "perMonth": 18.3333,
+     "median": 1050000,
+     "low": 683000,
+     "high": 1425000,
+     "ppsf": 556,
+     "ratio": 0.9733,
+     "over": 0.2,
+     "at": 0.0727,
+     "under": 0.7273,
+     "premium": 25000,
+     "sqft": 1744
     },
     "MF": {
-     "sales": 9,
-     "perMonth": 3,
-     "median": 1169000,
-     "low": 1100000,
+     "sales": 12,
+     "perMonth": 4,
+     "median": 1159500,
+     "low": 1096907,
      "high": 1315000,
-     "ppsf": 460,
-     "ratio": 0.975,
-     "over": 0.3333,
-     "at": 0.1111,
-     "under": 0.5556,
+     "ppsf": 445,
+     "ratio": 0.9575,
+     "over": 0.25,
+     "at": 0.0833,
+     "under": 0.6667,
      "premium": null,
-     "sqft": 2736
+     "sqft": 2759
     }
    },
    "all": {
-    "sales": 138,
-    "perMonth": 46,
-    "median": 1430000,
+    "sales": 167,
+    "perMonth": 55.6667,
+    "median": 1425000,
     "low": 1000000,
-    "high": 2100000,
-    "ppsf": 593,
-    "ratio": 0.9822,
-    "over": 0.3188,
-    "at": 0.0942,
-    "under": 0.587,
-    "premium": 52550,
-    "sqft": 2555
+    "high": 2090000,
+    "ppsf": 585,
+    "ratio": 0.9781,
+    "over": 0.2874,
+    "at": 0.0838,
+    "under": 0.6287,
+    "premium": 43000,
+    "sqft": 2556
    }
   }
  ],
@@ -877,36 +877,36 @@
    "month": "2026-10",
    "byType": {
     "SF": {
-     "sales": 9,
-     "perMonth": 9,
-     "median": 1140000,
+     "sales": 24,
+     "perMonth": 24,
+     "median": 1262500,
      "low": 975000,
-     "high": 1190000,
-     "ppsf": 717,
-     "ratio": 1,
-     "over": 0.3333,
-     "at": 0.2222,
-     "under": 0.4444,
-     "premium": null,
-     "sqft": 1572
+     "high": 2150000,
+     "ppsf": 539,
+     "ratio": 0.9722,
+     "over": 0.25,
+     "at": 0.125,
+     "under": 0.625,
+     "premium": 30000,
+     "sqft": 2408
     },
     "CC": {
-     "sales": 14,
-     "perMonth": 14,
-     "median": 699450,
-     "low": 517500,
-     "high": 1278000,
-     "ppsf": 524,
-     "ratio": 1,
-     "over": 0.3571,
-     "at": 0.2143,
-     "under": 0.4286,
-     "premium": 25000,
-     "sqft": 1154
+     "sales": 25,
+     "perMonth": 25,
+     "median": 1000000,
+     "low": 599000,
+     "high": 1435000,
+     "ppsf": 528,
+     "ratio": 0.9765,
+     "over": 0.24,
+     "at": 0.12,
+     "under": 0.64,
+     "premium": 62500,
+     "sqft": 1932
     },
     "MF": {
-     "sales": 1,
-     "perMonth": 1,
+     "sales": 4,
+     "perMonth": 4,
      "median": null,
      "low": null,
      "high": null,
@@ -920,18 +920,18 @@
     }
    },
    "all": {
-    "sales": 24,
-    "perMonth": 24,
-    "median": 987500,
-    "low": 598500,
-    "high": 1278000,
-    "ppsf": 557,
-    "ratio": 1,
-    "over": 0.375,
-    "at": 0.2083,
-    "under": 0.4167,
-    "premium": 65000,
-    "sqft": 1545
+    "sales": 53,
+    "perMonth": 53,
+    "median": 1160000,
+    "low": 870000,
+    "high": 1600000,
+    "ppsf": 521,
+    "ratio": 0.9723,
+    "over": 0.2453,
+    "at": 0.1132,
+    "under": 0.6415,
+    "premium": 30000,
+    "sqft": 2299
    }
   }
  ],
@@ -1007,49 +1007,49 @@
  "inventory": {
   "byType": {
    "SF": {
-    "available": 139,
-    "pending": 75,
-    "pendingShare": 0.3505,
-    "monthsSupply": 3.5565,
-    "askMedian": 2495000,
-    "askPpsf": 622,
-    "cuts": 25,
-    "cutSize": 0.0384,
-    "fresh": 27
+    "available": 127,
+    "pending": 65,
+    "pendingShare": 0.3385,
+    "monthsSupply": 3.1488,
+    "askMedian": 2599000,
+    "askPpsf": 624,
+    "cuts": 20,
+    "cutSize": 0.0362,
+    "fresh": 21
    },
    "CC": {
-    "available": 106,
-    "pending": 36,
-    "pendingShare": 0.2535,
-    "monthsSupply": 4.1433,
-    "askMedian": 1212500,
-    "askPpsf": 590,
-    "cuts": 18,
-    "cutSize": 0.0321,
-    "fresh": 14
+    "available": 101,
+    "pending": 29,
+    "pendingShare": 0.2231,
+    "monthsSupply": 3.8113,
+    "askMedian": 1289000,
+    "askPpsf": 594,
+    "cuts": 16,
+    "cutSize": 0.0298,
+    "fresh": 11
    },
    "MF": {
-    "available": 17,
-    "pending": 8,
-    "pendingShare": 0.32,
-    "monthsSupply": 5.5135,
-    "askMedian": 1548000,
-    "askPpsf": 530,
-    "cuts": 2,
-    "cutSize": null,
-    "fresh": 3
+    "available": 16,
+    "pending": 6,
+    "pendingShare": 0.2727,
+    "monthsSupply": 4.8,
+    "askMedian": 1574000,
+    "askPpsf": 550,
+    "cuts": 6,
+    "cutSize": 0.047,
+    "fresh": 4
    }
   },
   "all": {
-   "available": 262,
-   "pending": 119,
-   "pendingShare": 0.3123,
-   "monthsSupply": 3.8672,
-   "askMedian": 1862500,
-   "askPpsf": 600,
-   "cuts": 45,
-   "cutSize": 0.034,
-   "fresh": 44
+   "available": 244,
+   "pending": 100,
+   "pendingShare": 0.2907,
+   "monthsSupply": 3.4774,
+   "askMedian": 1887000,
+   "askPpsf": 605,
+   "cuts": 42,
+   "cutSize": 0.0355,
+   "fresh": 36
   }
  },
  "bands": [
@@ -1057,147 +1057,147 @@
    "label": "Under $500k",
    "min": 0,
    "max": 500000,
-   "sales": 23,
-   "ratio": 0.97,
-   "over": 0.087,
-   "available": 6,
-   "pending": 0,
-   "monthsSupply": 3.1304
+   "sales": 24,
+   "ratio": 0.9697,
+   "over": 0.0833,
+   "available": 5,
+   "pending": 1,
+   "monthsSupply": 2.5
   },
   {
    "label": "$500k–$750k",
    "min": 500000,
    "max": 750000,
-   "sales": 73,
-   "ratio": 0.9861,
-   "over": 0.2466,
-   "available": 21,
-   "pending": 9,
-   "monthsSupply": 3.4521
+   "sales": 74,
+   "ratio": 0.9856,
+   "over": 0.2432,
+   "available": 20,
+   "pending": 8,
+   "monthsSupply": 3.2432
   },
   {
    "label": "$750k–$1M",
    "min": 750000,
    "max": 1000000,
-   "sales": 89,
-   "ratio": 0.9899,
-   "over": 0.382,
-   "available": 29,
-   "pending": 19,
-   "monthsSupply": 3.9101
+   "sales": 93,
+   "ratio": 0.988,
+   "over": 0.3656,
+   "available": 28,
+   "pending": 15,
+   "monthsSupply": 3.6129
   },
   {
    "label": "$1M–$1.5M",
    "min": 1000000,
    "max": 1500000,
-   "sales": 210,
+   "sales": 220,
    "ratio": 1,
-   "over": 0.4619,
-   "available": 46,
+   "over": 0.4545,
+   "available": 37,
    "pending": 27,
-   "monthsSupply": 2.6286
+   "monthsSupply": 2.0182
   },
   {
    "label": "$1.5M–$2M",
    "min": 1500000,
    "max": 2000000,
-   "sales": 186,
-   "ratio": 0.9881,
-   "over": 0.3495,
-   "available": 48,
-   "pending": 26,
-   "monthsSupply": 3.0968
+   "sales": 193,
+   "ratio": 0.9871,
+   "over": 0.3368,
+   "available": 46,
+   "pending": 19,
+   "monthsSupply": 2.8601
   },
   {
    "label": "$2M–$3M",
    "min": 2000000,
    "max": 3000000,
-   "sales": 155,
+   "sales": 158,
    "ratio": 1,
-   "over": 0.4129,
-   "available": 51,
-   "pending": 27,
-   "monthsSupply": 3.9484
+   "over": 0.4051,
+   "available": 49,
+   "pending": 21,
+   "monthsSupply": 3.7215
   },
   {
    "label": "$3M and up",
    "min": 3000000,
    "max": null,
-   "sales": 77,
-   "ratio": 0.9731,
-   "over": 0.1558,
-   "available": 61,
-   "pending": 11,
-   "monthsSupply": 9.5065
+   "sales": 80,
+   "ratio": 0.9726,
+   "over": 0.1625,
+   "available": 59,
+   "pending": 9,
+   "monthsSupply": 8.85
   }
  ],
  "beds": {
   "SF": [
    {
     "label": "2 bedrooms or fewer",
-    "sales": 16,
-    "median": 965000,
-    "ppsf": 756,
-    "ratio": 1.0237,
-    "sqft": 1238
+    "sales": 17,
+    "median": 960000,
+    "ppsf": 731,
+    "ratio": 1.0211,
+    "sqft": 1228
    },
    {
     "label": "3 bedrooms",
-    "sales": 117,
-    "median": 1305000,
-    "ppsf": 675,
-    "ratio": 1.0089,
-    "sqft": 1925
+    "sales": 118,
+    "median": 1315000,
+    "ppsf": 676,
+    "ratio": 1.0081,
+    "sqft": 1920
    },
    {
     "label": "4 bedrooms",
-    "sales": 147,
-    "median": 1799000,
-    "ppsf": 618,
+    "sales": 154,
+    "median": 1775000,
+    "ppsf": 615,
     "ratio": 1,
-    "sqft": 2883
+    "sqft": 2878
    },
    {
     "label": "5 bedrooms",
-    "sales": 111,
-    "median": 2475000,
+    "sales": 116,
+    "median": 2462500,
     "ppsf": 598,
-    "ratio": 0.9873,
-    "sqft": 4282
+    "ratio": 0.9868,
+    "sqft": 4292
    },
    {
     "label": "6 or more",
-    "sales": 78,
-    "median": 3259000,
+    "sales": 79,
+    "median": 3250000,
     "ppsf": 550,
-    "ratio": 0.9732,
-    "sqft": 5894
+    "ratio": 0.9733,
+    "sqft": 5920
    }
   ],
   "CC": [
    {
     "label": "Studio or 1 bedroom",
-    "sales": 47,
-    "median": 525000,
-    "ppsf": 638,
-    "ratio": 0.9846,
-    "sqft": 880
+    "sales": 48,
+    "median": 527500,
+    "ppsf": 646,
+    "ratio": 0.983,
+    "sqft": 877
    },
    {
     "label": "2 bedrooms",
-    "sales": 96,
-    "median": 742500,
-    "ppsf": 583,
-    "ratio": 0.9878,
-    "sqft": 1280
+    "sales": 99,
+    "median": 751000,
+    "ppsf": 589,
+    "ratio": 0.9868,
+    "sqft": 1285
    },
    {
     "label": "3 bedrooms or more",
-    "sales": 164,
-    "median": 1496250,
+    "sales": 171,
+    "median": 1492500,
     "ppsf": 540,
-    "ratio": 0.989,
-    "sqft": 2677
+    "ratio": 0.9884,
+    "sqft": 2671
    }
   ]
  },
@@ -1205,19 +1205,19 @@
   "SF": [
    {
     "label": "02458",
-    "sales": 53,
+    "sales": 54,
     "median": 1850000,
-    "ppsf": 585,
-    "ratio": 0.9848,
-    "sqft": 3139
+    "ppsf": 581,
+    "ratio": 0.9844,
+    "sqft": 3138
    },
    {
     "label": "02459",
-    "sales": 123,
+    "sales": 128,
     "median": 2100000,
-    "ppsf": 600,
-    "ratio": 0.9885,
-    "sqft": 3725
+    "ppsf": 596,
+    "ratio": 0.9874,
+    "sqft": 3738
    },
    {
     "label": "02460",
@@ -1229,7 +1229,7 @@
    },
    {
     "label": "02461",
-    "sales": 44,
+    "sales": 46,
     "median": 1665000,
     "ppsf": 630,
     "ratio": 1.0021,
@@ -1253,11 +1253,11 @@
    },
    {
     "label": "02465",
-    "sales": 80,
-    "median": 1698250,
-    "ppsf": 651,
+    "sales": 86,
+    "median": 1662500,
+    "ppsf": 647,
     "ratio": 1,
-    "sqft": 2876
+    "sqft": 2740
    },
    {
     "label": "02466",
@@ -1277,45 +1277,45 @@
    },
    {
     "label": "02468",
-    "sales": 66,
-    "median": 2252250,
-    "ppsf": 626,
-    "ratio": 0.9805,
-    "sqft": 3351
+    "sales": 67,
+    "median": 2289500,
+    "ppsf": 627,
+    "ratio": 0.98,
+    "sqft": 3375
    }
   ],
   "CC": [
    {
     "label": "02458",
-    "sales": 45,
-    "median": 1150000,
+    "sales": 46,
+    "median": 1155000,
     "ppsf": 540,
     "ratio": 0.9878,
-    "sqft": 2286
+    "sqft": 2206
    },
    {
     "label": "02459",
-    "sales": 37,
-    "median": 1247000,
-    "ppsf": 565,
-    "ratio": 0.9805,
-    "sqft": 2225
+    "sales": 40,
+    "median": 1327000,
+    "ppsf": 570,
+    "ratio": 0.9779,
+    "sqft": 2488
    },
    {
     "label": "02460",
-    "sales": 36,
+    "sales": 37,
     "median": 1500000,
-    "ppsf": 553,
-    "ratio": 0.9988,
-    "sqft": 2623
+    "ppsf": 560,
+    "ratio": 0.9976,
+    "sqft": 2585
    },
    {
     "label": "02461",
-    "sales": 44,
-    "median": 1277500,
-    "ppsf": 752,
-    "ratio": 0.9934,
-    "sqft": 1309
+    "sales": 46,
+    "median": 1250000,
+    "ppsf": 835,
+    "ratio": 0.9917,
+    "sqft": 1274
    },
    {
     "label": "02464",
@@ -1327,10 +1327,10 @@
    },
    {
     "label": "02465",
-    "sales": 31,
+    "sales": 33,
     "median": 1090000,
-    "ppsf": 561,
-    "ratio": 1,
+    "ppsf": 554,
+    "ratio": 0.9926,
     "sqft": 1886
    },
    {
@@ -1343,11 +1343,11 @@
    },
    {
     "label": "02467",
-    "sales": 54,
-    "median": 672500,
+    "sales": 55,
+    "median": 695000,
     "ppsf": 608,
-    "ratio": 0.9801,
-    "sqft": 1278
+    "ratio": 0.9789,
+    "sqft": 1285
    }
   ]
  },
@@ -1367,34 +1367,34 @@
      },
      {
       "label": "1 bedroom",
-      "n": 71,
+      "n": 75,
       "median": 2450,
       "low": 2200,
       "high": 2700
      },
      {
       "label": "2 bedrooms",
-      "n": 193,
+      "n": 196,
       "median": 3000,
       "low": 2700,
       "high": 3500
      },
      {
       "label": "3 bedrooms",
-      "n": 178,
+      "n": 183,
       "median": 4000,
       "low": 3500,
       "high": 5200
      },
      {
       "label": "4 or more",
-      "n": 160,
+      "n": 165,
       "median": 6700,
       "low": 5500,
       "high": 9000
      }
     ],
-    "n": 612
+    "n": 629
    },
    {
     "months": 6,
@@ -1410,34 +1410,34 @@
      },
      {
       "label": "1 bedroom",
-      "n": 44,
-      "median": 2438,
-      "low": 2150,
+      "n": 48,
+      "median": 2413,
+      "low": 2100,
       "high": 2600
      },
      {
       "label": "2 bedrooms",
-      "n": 130,
+      "n": 133,
       "median": 2950,
       "low": 2700,
-      "high": 3600
+      "high": 3500
      },
      {
       "label": "3 bedrooms",
-      "n": 101,
-      "median": 4150,
+      "n": 106,
+      "median": 4175,
       "low": 3600,
       "high": 5000
      },
      {
       "label": "4 or more",
-      "n": 101,
-      "median": 7200,
-      "low": 5950,
+      "n": 106,
+      "median": 7100,
+      "low": 5900,
       "high": 9500
      }
     ],
-    "n": 382
+    "n": 399
    },
    {
     "months": 3,
@@ -1453,34 +1453,34 @@
      },
      {
       "label": "1 bedroom",
-      "n": 21,
-      "median": 2400,
-      "low": 2150,
-      "high": 2550
+      "n": 25,
+      "median": 2310,
+      "low": 2100,
+      "high": 2500
      },
      {
       "label": "2 bedrooms",
-      "n": 56,
-      "median": 2925,
-      "low": 2700,
+      "n": 59,
+      "median": 2900,
+      "low": 2650,
       "high": 3600
      },
      {
       "label": "3 bedrooms",
-      "n": 39,
+      "n": 44,
       "median": 4300,
-      "low": 3650,
+      "low": 3600,
       "high": 5200
      },
      {
       "label": "4 or more",
-      "n": 42,
-      "median": 8075,
-      "low": 6000,
-      "high": 10500
+      "n": 47,
+      "median": 7900,
+      "low": 5950,
+      "high": 10000
      }
     ],
-    "n": 159
+    "n": 176
    }
   ],
   "month": {
@@ -1490,39 +1490,39 @@
    "rows": [
     {
      "label": "1 bedroom",
-     "n": 2,
-     "median": null,
-     "low": null,
-     "high": null
+     "n": 6,
+     "median": 2150,
+     "low": 1995,
+     "high": 2500
     },
     {
      "label": "2 bedrooms",
-     "n": 8,
-     "median": 3325,
-     "low": 2500,
+     "n": 11,
+     "median": 2850,
+     "low": 2400,
      "high": 4100
     },
     {
      "label": "3 bedrooms",
-     "n": 4,
-     "median": null,
-     "low": null,
-     "high": null
+     "n": 9,
+     "median": 3900,
+     "low": 3600,
+     "high": 4950
     },
     {
      "label": "4 or more",
-     "n": 6,
-     "median": 9400,
-     "low": 7000,
-     "high": 11000
+     "n": 11,
+     "median": 7000,
+     "low": 6500,
+     "high": 9800
     }
    ],
-   "n": 20
+   "n": 37
   },
   "asking": {
    "months": 0,
-   "from": "2026-11-03",
-   "to": "2026-11-03",
+   "from": "2026-11-06",
+   "to": "2026-11-06",
    "rows": [
     {
      "label": "Studio",
@@ -1533,34 +1533,34 @@
     },
     {
      "label": "1 bedroom",
-     "n": 13,
-     "median": 2200,
-     "low": 1995,
-     "high": 2500
+     "n": 10,
+     "median": 2275,
+     "low": 1950,
+     "high": 2750
     },
     {
      "label": "2 bedrooms",
-     "n": 36,
+     "n": 31,
      "median": 2900,
-     "low": 2595,
-     "high": 3350
+     "low": 2650,
+     "high": 3500
     },
     {
      "label": "3 bedrooms",
-     "n": 48,
+     "n": 41,
      "median": 3700,
-     "low": 3350,
-     "high": 4950
+     "low": 3400,
+     "high": 5000
     },
     {
      "label": "4 or more",
-     "n": 42,
-     "median": 7250,
-     "low": 5700,
+     "n": 37,
+     "median": 7500,
+     "low": 5800,
      "high": 10500
     }
    ],
-   "n": 143
+   "n": 123
   }
  }
 }

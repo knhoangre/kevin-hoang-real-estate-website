@@ -32,7 +32,8 @@ import { pill } from '@/lib/pill';
  * NOT here, deliberately: any biography that is not already published
  * elsewhere on this site, invented sale counts, and any credential that cannot
  * be looked up. The Connecticut-to-Massachusetts move is referenced because
- * /relocation already states it in the first person.
+ * /relocation already states it in the first person; the engineering background
+ * because /needham-real-estate-agent has always named it (SITE.background).
  *
  * TODO(kevin): the Massachusetts broker licence number. It is public record at
  * elicensing.mass.gov, which is exactly why it is worth printing — a number a
@@ -96,9 +97,10 @@ const About = () => {
       lede={
         <>
           Licensed Massachusetts real estate broker with {SITE.brokerage}, based
-          in {SITE.address.addressLocality}. He represents buyers and sellers
-          across {SITE.areaServed.length} towns in MetroWest and Greater Boston,
-          and works in English and Vietnamese.
+          in {SITE.address.addressLocality}, who came to real estate from{' '}
+          {SITE.background}. He represents buyers and sellers across{' '}
+          {SITE.areaServed.length} towns in MetroWest and Greater Boston, and works
+          in English and Vietnamese.
         </>
       }
       /*
@@ -225,6 +227,38 @@ const About = () => {
             <p>
               He practises under <strong>{SITE.brokerage}</strong> and is based in{' '}
               {locality}.
+            </p>
+          </Section>
+
+          {/* The phrase is SITE.background, the words /needham-real-estate-agent
+              has always used, and nothing more specific: no employer, years or
+              degree until Kevin supplies them. What each half does for a client
+              is said in terms of pages a reader can open and check. */}
+          <Section id="engineering" heading="From engineering to real estate">
+            <p>
+              Kevin came to real estate from {SITE.background}, and both halves show
+              up in the work.
+            </p>
+            <p>
+              The mechanical half is how a house gets read. An{' '}
+              <Link to="/blog/home-inspection-guide">inspection report</Link> describes
+              heating, roofs, foundations and wiring, and the useful question is which of
+              its findings are ordinary for a Massachusetts house of that age and which
+              are worth a specialist or a conversation about price. Several of the
+              questions particular to houses here have their own guides:{' '}
+              <Link to="/blog/title-5-septic-massachusetts">Title 5 septic</Link>,{' '}
+              <Link to="/blog/heating-oil-tanks-massachusetts">oil tanks</Link>,{' '}
+              <Link to="/blog/massachusetts-lead-paint-law">lead paint</Link> and{' '}
+              <Link to="/blog/radon-testing-massachusetts-homes">radon</Link>.
+            </p>
+            <p>
+              The software half is the numbers. The{' '}
+              <Link to="/market">monthly market reports</Link> on this site and the price
+              estimate on each listing page are his own calculations from MLS PIN data,
+              and how each one is calculated is published beside it, including when the
+              estimate is withheld because the comparable sales cannot support a number.{' '}
+              <Link to="/blog/how-to-read-a-comp-massachusetts">How to read a comp</Link>{' '}
+              explains the method in plain terms. He built this website too.
             </p>
           </Section>
 

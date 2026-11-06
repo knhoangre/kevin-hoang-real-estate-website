@@ -293,6 +293,20 @@ export const lastDay = (month: string): string => {
 /** The month before the one `iso` falls in: the last COMPLETE month on that date. */
 export const lastCompleteMonth = (iso: string): string => addMonths(iso.slice(0, 7), -1);
 
+/** How far before the month's last day the newest closing may be. */
+export const FEED_SLACK_DAYS = 3;
+
+/**
+ * Whether the sold data reaches the end of `month`, judged by the newest closing
+ * in it. The October 2026 reports were built on 2026-11-03 from a feed that had
+ * not loaded since 2026-10-19: the newest closing was 2026-10-16, so Newton
+ * "sold 24 homes, the fewest in twelve months", and a report is written once.
+ * Three days of slack covers a month that ends on a weekend or a holiday; by the
+ * 3rd the feed normally holds the next month's first closings too.
+ */
+export const feedCoversMonth = (newestSale: string | null, month: string): boolean =>
+  newestSale !== null && newestSale >= addDays(lastDay(month), -FEED_SLACK_DAYS);
+
 const daysBetween = (a: string, b: string) =>
   (Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY_MS;
 

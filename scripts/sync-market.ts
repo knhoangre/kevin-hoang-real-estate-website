@@ -35,13 +35,14 @@ import {
   TRACKING_SINCE,
   addMonths,
   buildReport,
+  feedCoversMonth,
   headline,
   lastCompleteMonth,
   monthWorthAPost,
   type MarketIndex,
   type MarketReport,
 } from '../src/lib/market.ts';
-import { fetchSalesCoverage, fetchTownRows, type TownRows } from '../src/lib/marketFetch.ts';
+import { fetchNewestSale, fetchSalesCoverage, fetchTownRows, type TownRows } from '../src/lib/marketFetch.ts';
 
 const DIR = 'src/data/market';
 
@@ -99,6 +100,21 @@ const readReport = (slug: string, m: string): MarketReport | null =>
  */
 const tidy = (_: string, v: unknown) =>
   typeof v === 'number' && !Number.isInteger(v) ? (Math.abs(v) >= 100 ? Math.round(v) : Number(v.toFixed(4))) : v;
+
+// --- the feed has to reach the end of the month ---------------------------------
+// A report is written once, so one built while the feed is down is wrong for
+// good. Asked only when something is about to be written: a re-run on the 4th
+// that fills in nothing should not fail on a feed that broke since.
+if (towns.some((t) => force || !existsSync(fileFor(t.slug, month)))) {
+  const newestSale = await fetchNewestSale(client);
+  if (!feedCoversMonth(newestSale, month)) {
+    console.error(
+      `sync-market: the newest closing in the sold data is ${newestSale ?? 'missing'}, so ${month} is not all in yet. ` +
+        'Is the MLS PIN feed failing? Check idx_sync_runs, then run this again once a sold sync has succeeded.'
+    );
+    process.exit(1);
+  }
+}
 
 // --- fetch ----------------------------------------------------------------------
 const salesCoverage = (await fetchSalesCoverage(client)) ?? addMonths(month, -11) + '-01';

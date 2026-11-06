@@ -52,7 +52,9 @@ const EXTRA_EN: NavItem[] = [
   { to: "/", labelKey: "nav.home" },
   { to: "/home-valuation", labelKey: "nav.homeValuation" },
   { to: "/first-time-buyers", label: "First-Time Buyers" },
-  { to: "/chinese-speaking-real-estate-agent", label: "Chinese-Speaking Service" },
+  // Names her: the service is a referral to Maggie Li, and "Chinese-Speaking
+  // Service" on an English page read as if Kevin offered it.
+  { to: "/chinese-speaking-real-estate-agent", label: "Chinese-Speaking Agent: Maggie Li" },
 ];
 
 const englishFor = (path: string): NavItem | undefined =>

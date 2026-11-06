@@ -1570,7 +1570,7 @@ it for e-signature.
   listing office, because an email showing the photo and price is an IDX display
   like any other. Its `formatPrice`, `formatBaths`, photo URL and status labels
   are deliberate mirrors of the app's — an edge function cannot import from the
-  bundle. Links use `www.`, which skips the apex's redirect, and carry
+  bundle. Links use `www.` (the apex redirected there until about November 2026; both hosts now answer 200 and the canonical is the apex), and carry
   `utm_source=open-house` so GA4 can say how many guests came back.
 - **[SuggestInput](src/components/admin/SuggestInput.tsx) is the one
   suggest-as-you-type field.** `AddressAutocomplete` (MassGIS) and

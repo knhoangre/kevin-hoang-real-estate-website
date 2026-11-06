@@ -18,8 +18,9 @@ function capitalizeFirstName(name: string): string {
 }
 
 /**
- * Apex `kevinhoang.co` 307-redirects to `www`. Many email clients do not follow
- * redirects for `<img src>`, so remote headshots break unless we use `www` directly.
+ * Apex `kevinhoang.co` used to 307-redirect to `www` (both answer 200 since at
+ * least 2026-11-05). Many email clients do not follow redirects for `<img src>`,
+ * so images stay on `www`, where they have always been served directly.
  */
 function canonicalWwwKevinhoangUrl(url: string): string {
   const t = url.trim();

@@ -15,6 +15,7 @@ import { formatPrice } from './listings.ts';
 import {
   EDGE_RULE,
   MIN_SALES,
+  SALE_TYPES,
   TYPE_NAMES,
   activeTypes,
   addMonths,
@@ -208,7 +209,10 @@ export const monthSummary = (r: MarketReport): string => {
   const p = lastPoint(r);
   const prev = previousPoint(r);
   const twelve = r.windows[0];
-  const types = activeTypes(r).filter((t) => p.byType[t].sales > 0);
+  // Every kind that sold this month, not only the kinds with enough sales in
+  // the year to be reported on: Needham's one multi-family in October 2026 was
+  // in the total and missing from the list, so "23 homes: 16 and 6" did not add up.
+  const types = SALE_TYPES.filter((t) => (p.byType[t]?.sales ?? 0) > 0);
   const parts = types.map((t) => count(p.byType[t].sales, t));
   const list =
     parts.length > 1

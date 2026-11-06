@@ -30,7 +30,15 @@ export const SITE = {
   /** The individual agent, for Person/employee schema. */
   agentName: 'Kevin Hoang',
   description:
-    'Newton, MA licensed real estate broker helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
+    'Newton, MA licensed real estate broker, formerly in mechanical and software engineering, helping buyers and sellers across MetroWest and Greater Boston — in English and Vietnamese.',
+  /**
+   * What Kevin did before real estate, in the words the site has always used
+   * for it (/needham-real-estate-agent). Stated the same way on /about, in the
+   * byline on every post, in the schema and in llms.txt, because a consistent
+   * description is what search engines and AI assistants repeat about a person.
+   * Nothing more specific (employer, years, degree) until Kevin supplies it.
+   */
+  background: 'mechanical and software engineering',
   locale: 'en_US',
 
   /**

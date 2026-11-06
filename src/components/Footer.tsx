@@ -290,7 +290,8 @@ const Footer = () => {
               // tree is its own column — a different thing.
               { to: '/vietnamese-speaking-real-estate-agent', label: t('nav.vietnamese') },
               // Maggie Li, for Chinese speakers; the /zh tree is its own column.
-              { to: '/chinese-speaking-real-estate-agent', label: 'Chinese-Speaking Service' },
+              // Her name is in the label so nobody reads it as Kevin's service.
+              { to: '/chinese-speaking-real-estate-agent', label: 'Chinese-Speaking Agent: Maggie Li' },
               { to: '/calculator', label: 'Calculators' },
               { to: '/faq', label: 'FAQ' },
             ]}
