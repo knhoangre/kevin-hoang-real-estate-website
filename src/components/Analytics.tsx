@@ -2,7 +2,15 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Head } from 'vite-react-ssg';
 import { SITE } from '@/lib/siteConfig';
-import { EVENTS, analyticsPath, isInternalPath, track } from '@/lib/analytics';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  EVENTS,
+  analyticsPath,
+  gaBootScript,
+  isInternalPath,
+  markDeviceNotCounted,
+  track,
+} from '@/lib/analytics';
 
 /**
  * Google Analytics 4 + Search Console verification.
@@ -37,6 +45,7 @@ const pageLocation = (path: string) => `${window.location.origin}${path}`;
 
 const Analytics = () => {
   const { pathname } = useLocation();
+  const { isAdmin } = useAuth();
   /*
    * The path as GA4 is to see it — and what the effects below are keyed on,
    * rather than the raw pathname. A listing opened from an old /search/<mls>
@@ -45,6 +54,15 @@ const Analytics = () => {
    * page_views. Both forms reduce to the same value here.
    */
   const path = analyticsPath(pathname);
+
+  /*
+    A browser Kevin signs in to as admin is never counted again — see "WHO IS
+    NOT COUNTED" in analytics.ts. Marked whether or not GA is configured, so the
+    mark is already there the day it is.
+  */
+  useEffect(() => {
+    if (isAdmin) markDeviceNotCounted(SITE.ga4Id);
+  }, [isAdmin]);
 
   /*
     The page_view, deferred by one frame.
@@ -125,7 +143,7 @@ const Analytics = () => {
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${SITE.ga4Id}`} />
       ) : null}
       {GA_ENABLED ? (
-        <script>{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${SITE.ga4Id}',{send_page_view:false});`}</script>
+        <script>{gaBootScript(SITE.ga4Id)}</script>
       ) : null}
     </Head>
   );

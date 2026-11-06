@@ -32,7 +32,30 @@ attribution. Any tool claiming to show you AI prompts is inferring them.
 
 ---
 
-## 1. Link Search Console to GA4 — 5 minutes
+## Where things stand (2026-11-06)
+
+- **Done:** Search Console is linked to GA4 (step 1), `traffic_source` is
+  registered (step 4), and `contact_text` and `appointment_click` are key
+  events (step 3).
+- **Still to do in step 3:** `generate_lead`, `contact_call` and
+  `rental_application_submitted` had not fired in the previous 28 days, so GA4
+  does not list them yet. Star each one under **Admin → Events** the first time
+  it appears.
+- **Two GA4 settings that must stay as they are:**
+  - **Admin → Data streams → Enhanced measurement → Page views → advanced:
+    "Page changes based on browser history events" OFF.** The site sends its
+    own page view per page; with this on, every page was counted twice and the
+    admin pages were counted at all.
+  - **Configure tag settings → List unwanted referrals:** `accounts.google.com`
+    and `zvipgykolpoxukyjgffx.supabase.co`, so coming back from sign-in is not
+    a new visit.
+- **Kevin is not counted.** Any phone or computer that has signed in as admin,
+  the test copy on localhost, and automated browsers send GA4 nothing (see
+  CLAUDE.md). Numbers before 2026-11-06 still include him.
+- **The easy way to read all this is /admin/visitors**, which needs the
+  one-time Google Cloud setup written out on that page.
+
+## 1. Link Search Console to GA4 — 5 minutes (done 2026-11-06)
 
 This is the one that answers "what did they search". Both properties already
 exist; they are just not talking to each other.
@@ -73,7 +96,7 @@ echo "<that key>" > public/<that key>.txt
 
 then set `INDEXNOW_KEY` in the Vercel project's **Production** environment.
 
-## 3. Mark the conversions as Key Events — 5 minutes
+## 3. Mark the conversions as Key Events — 5 minutes (two of five done)
 
 The site now sends four events. Until they are marked, GA4 collects them but
 does not treat them as conversions.
@@ -91,7 +114,7 @@ does not treat them as conversions.
 They will not appear in the list until each has fired at least once. Trigger them
 yourself on the live site, then check **Reports → Realtime**.
 
-## 4. Register the `traffic_source` dimension — 2 minutes
+## 4. Register the `traffic_source` dimension — 2 minutes (done 2026-11-06)
 
 **Without this step the AI attribution is collected but not reportable.** Every
 event carries a `traffic_source` parameter; GA4 discards unregistered custom

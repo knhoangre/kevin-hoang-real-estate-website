@@ -36,6 +36,7 @@ node scripts/market-check.ts           # the market reports: windows, medians, s
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
 node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
+node scripts/site-visitors-check.ts    # /admin/visitors' labels and sentences, and who GA4 never counts (localhost, automated browsers, Kevin's devices)
 node scripts/zh-check.mjs              # the BUILT Chinese pages (after npm run build): language tags, Maggie's name, number and address, both brokerages, nothing saying Kevin speaks Chinese
 sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
@@ -1571,7 +1572,8 @@ it for e-signature.
   like any other. Its `formatPrice`, `formatBaths`, photo URL and status labels
   are deliberate mirrors of the app's — an edge function cannot import from the
   bundle. Links use `www.` (the apex redirected there until about November 2026; both hosts now answer 200 and the canonical is the apex), and carry
-  `utm_source=open-house` so GA4 can say how many guests came back.
+  `utm_source=open-house` so GA4 can say how many guests came back. GA4
+  reports the two hosts as two hostnames; /admin/visitors reads both.
 - **[SuggestInput](src/components/admin/SuggestInput.tsx) is the one
   suggest-as-you-type field.** `AddressAutocomplete` (MassGIS) and
   `ListingLookup` (IDX) are thin wrappers that supply a source and a row; the
@@ -2033,6 +2035,38 @@ pure and decides everything; `node scripts/showing-reminders-check.ts` runs it.
   five minutes rather than every thirty seconds: each answer reads his calendar.
   It must not import `@/lib/showingReminders`, or `showingTours` joins the public
   bundle.
+
+### Website visitors (`/admin/visitors`)
+
+GA4 and Search Console in plain words, for Kevin on his phone (asked
+2026-11-05: he could not read GA4). [siteVisitors.ts](src/lib/siteVisitors.ts)
+is pure and writes every label and sentence; the `site-visitors` edge function
+only fetches, admin-only, taking a period (7/28/90) and nothing else; `node
+scripts/site-visitors-check.ts` runs both the labels and the boot script above.
+
+- **A service account reads both, with a JSON key in the
+  `GOOGLE_SERVICE_ACCOUNT_JSON` function secret** that Kevin creates and pastes
+  himself (the steps are on the page while the function answers
+  `{configured:false}`). No Google client library: [googleAuth.ts](supabase/functions/_shared/googleAuth.ts)
+  signs the RS256 JWT with WebCrypto. The account must be a Viewer on GA4
+  property 551743308 and a Restricted user on the `https://kevinhoang.co/`
+  Search Console property; each half fails on its own and says which permission
+  is missing.
+- **The headline is visits that STAYED** (GA4's engaged session). 71 "visitors"
+  read one blog post for three seconds each in October; a robot is a visit, not
+  a reader.
+- **Data before `CLEAN_SINCE` (2026-11-06) still has Kevin in it** and cannot be
+  taken out; the first note says so whenever the period reaches back that far.
+  His tools (Vercel, the test copy, the sign-in return) are listed last and
+  marked "you, not a visitor", never named as where visitors came from.
+- **A listing is one row** however its link was spelled (`foldPath`, the same
+  MLS-number rule as `analyticsPath`): older GA4 rows carry the address slug.
+- **Search Console is three days behind**, so its range ends three days ago, and
+  it returns rows sorted by clicks: the function asks for 250 so the searches
+  shown often and never clicked (`missedSearches`) are not cut off.
+- `HIDDEN_PREFIXES` / `LEAD_EVENTS` in the function mirror `HIDDEN_PAGES` /
+  `ACTIONS` in siteVisitors.ts. Add an event to `EVENTS` in analytics.ts and it
+  goes in both.
 
 ### Send listings (`/admin/send-listings`)
 
@@ -2906,6 +2940,30 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   driven by `SITE.ga4Id` / `SITE.gscVerification`; nothing is injected while they
   are empty. GA is configured `send_page_view: false` with a manual page_view on
   route change, because the app is client-routed after hydration.
+- **Kevin, test copies and automated browsers send GA4 nothing, since
+  2026-11-06.** Kevin looked at GA4 on 2026-11-05 and thought most of it was
+  him; about half was. Three causes, three fixes:
+  - **GA4's "page changes based on browser history events" is OFF in the
+    property (Admin → Data streams → Enhanced measurement → Page views →
+    advanced) and must stay off.** With it on, gtag sends its own page_view on
+    every in-app navigation: every page was counted twice, and `/admin` (which
+    `isInternalPath` suppresses in OUR page_view) still logged 118 views of
+    /admin/applications in a month.
+  - **The boot script decides before `gtag('config')`** (`gaBootScript` in
+    [analytics.ts](src/lib/analytics.ts)): any host but kevinhoang.co, a
+    `navigator.webdriver` browser, or a browser carrying `kh_not_counted` sets
+    `window['ga-disable-<id>']`, Google's own opt-out, which stops every hit
+    including the automatic ones. `localhost` had sent ~80 views a month, and
+    every Playwright check of the live site was a "visitor".
+  - **A browser that has ever signed in as admin is marked** (`kh_not_counted`
+    in localStorage, by an effect in Analytics.tsx) and stays marked after
+    sign-out. An in-app browser (Gmail, Instagram) has its own storage and is
+    not reached.
+  A Playwright check that wants to see a hit leave must override
+  `navigator.webdriver` and route `**/g/collect**` to abort, so it proves the
+  attempt without sending one. `accounts.google.com` and the Supabase host are
+  listed as unwanted referrals in the tag settings, so a sign-in round trip no
+  longer starts a "referral" visit.
 - Images: every Unsplash URL must carry `?auto=format&fit=crop&w=<size>&q=<n>` —
   a bare `images.unsplash.com/photo-…` serves a multi-MB original, and the
   homepage hero (the LCP element) was exactly that. Below-the-fold `<img>` tags

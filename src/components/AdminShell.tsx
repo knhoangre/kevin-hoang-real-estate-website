@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Activity,
+  BarChart3,
   BookOpen,
   CalendarClock,
   Send,
@@ -116,6 +117,14 @@ export const ADMIN_LINKS: ToolLink[] = [
     match: '/admin/activity',
     icon: Activity,
     blurb: 'Which homes signed-in clients have saved, and what they have been looking at.',
+    group: 'clients',
+  },
+  {
+    to: '/admin/visitors',
+    label: 'Website visitors',
+    match: '/admin/visitors',
+    icon: BarChart3,
+    blurb: 'Who visited the site, where they came from and what they read, not counting you.',
     group: 'clients',
   },
   {

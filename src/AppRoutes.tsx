@@ -432,6 +432,12 @@ export const routes: RouteRecord[] = [
         'src/pages/AdminActivity.tsx'
       ),
       privatePage(
+        'admin/visitors',
+        'Website Visitors',
+        () => import('./pages/AdminVisitors'),
+        'src/pages/AdminVisitors.tsx'
+      ),
+      privatePage(
         'admin/lockboxes',
         'Lockboxes',
         () => import('./pages/Lockboxes'),

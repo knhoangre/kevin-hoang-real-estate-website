@@ -14,7 +14,7 @@
  * Safe un-configured, like <Analytics> and submit-indexnow.mjs: with no
  * SITE.ga4Id there is no gtag on the page, and every call here is a no-op.
  */
-import { mlsFromListingParam } from '@/lib/listingUrl';
+import { mlsFromListingParam } from './listingUrl.ts';
 
 /** Where a session came from, as far as the referrer can tell us. */
 export type TrafficSource =
@@ -70,14 +70,25 @@ const SOURCES: [string, TrafficSource][] = [
 const GOOGLE_SEARCH = /(^|\.)google\.[a-z]{2,}(\.[a-z]{2,})?$/;
 
 /**
- * Classifies a referrer URL.
+ * Classifies a hostname — a referrer's, or a session source as GA4 reports it.
  *
  * Matched on exact host or registrable-domain suffix ONLY. A substring test
  * lived here until 2026-09-19 and was far too loose — any host merely
  * CONTAINING `t.co` was booked as social, which caught `blogspot.co.uk`,
  * `support.corp.com` and every `*t.co*` domain, corrupting the one dimension
- * this file exists to produce.
+ * this file exists to produce. /admin/visitors labels GA4's session sources
+ * with this too, so the two cannot name one site differently.
  */
+export const classifyHost = (hostname: string): TrafficSource => {
+  const host = hostname.toLowerCase();
+  for (const [needle, source] of SOURCES) {
+    if (host === needle || host.endsWith(`.${needle}`)) return source;
+  }
+  if (GOOGLE_SEARCH.test(host)) return 'search_google';
+  return 'referral';
+};
+
+/** Classifies a referrer URL. */
 export const classifyReferrer = (referrer: string, currentHost: string): TrafficSource => {
   if (!referrer) return 'direct';
 
@@ -91,12 +102,7 @@ export const classifyReferrer = (referrer: string, currentHost: string): Traffic
   // Navigation within our own site is not a new source.
   if (host === currentHost.toLowerCase()) return 'direct';
 
-  for (const [needle, source] of SOURCES) {
-    if (host === needle || host.endsWith(`.${needle}`)) return source;
-  }
-  if (GOOGLE_SEARCH.test(host)) return 'search_google';
-
-  return 'referral';
+  return classifyHost(host);
 };
 
 /**
@@ -157,6 +163,73 @@ const INTERNAL_PREFIXES = ['/admin', '/crm'];
 
 export const isInternalPath = (pathname: string): boolean =>
   INTERNAL_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
+/*
+ * WHO IS NOT COUNTED AT ALL.
+ *
+ * isInternalPath() was never enough on its own. In the 28 days to 2026-11-04
+ * about half of everything the property recorded was Kevin: one visitor in
+ * Newton made 47% of all events, /admin/applications still had 118 views
+ * (GA4's own "page changes based on browser history events" sends a page_view
+ * on every in-app navigation, whatever this file suppresses — that setting is
+ * OFF in the property now and must stay off), and ~80 views came from
+ * `localhost`, i.e. the dev server and every Playwright check run against it.
+ *
+ * So three kinds of browser send nothing, by Google's own opt-out — the
+ * `ga-disable-<id>` window property, which stops every hit gtag would send,
+ * automatic ones included:
+ *
+ *  - any host but kevinhoang.co / www.kevinhoang.co (dev server, previews);
+ *  - `navigator.webdriver` — Playwright, Selenium and most headless crawlers;
+ *  - a browser Kevin has signed in to as admin, EVER. The mark is in
+ *    localStorage and survives signing out, because the device is still his.
+ *    It cannot reach an in-app browser (Gmail, Instagram), which has storage
+ *    of its own; /admin/visitors says so.
+ */
+export const COUNTED_HOST = /(^|\.)kevinhoang\.co$/;
+
+export const NOT_COUNTED_KEY = 'kh_not_counted';
+
+/** The window property gtag reads before sending anything. */
+export const gaDisableKey = (id: string) => `ga-disable-${id}`;
+
+/**
+ * The inline script that starts gtag, as a string for <Head>.
+ *
+ * It decides whether this browser is counted BEFORE `gtag('config')`, so not
+ * even the first hit leaves. It runs from the prerendered <head>, never during
+ * render, which is why it may read localStorage. The host test is built from
+ * COUNTED_HOST so the rule is written once, and scripts/site-visitors-check.ts
+ * runs this exact string against fake browsers.
+ */
+export const gaBootScript = (id: string): string =>
+  'window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}' +
+  `try{if(!/${COUNTED_HOST.source}/.test(location.hostname)||navigator.webdriver||` +
+  `localStorage.getItem('${NOT_COUNTED_KEY}')==='1')window['${gaDisableKey(id)}']=true}catch(e){}` +
+  `gtag('js',new Date());gtag('config','${id}',{send_page_view:false});`;
+
+/** True when this browser has been marked as Kevin's. Effects only. */
+export const isDeviceNotCounted = (): boolean => {
+  try {
+    return window.localStorage.getItem(NOT_COUNTED_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Marks this browser as Kevin's: nothing from it is sent, from now on and on
+ * every later visit. Setting the window property as well stops the rest of
+ * THIS page's hits, since the boot script has already run.
+ */
+export const markDeviceNotCounted = (id: string): void => {
+  try {
+    window.localStorage.setItem(NOT_COUNTED_KEY, '1');
+  } catch {
+    // Storage blocked: this page is still stopped below, later visits are not.
+  }
+  (window as unknown as Record<string, unknown>)[gaDisableKey(id)] = true;
+};
 
 const STORAGE_KEY = 'kh_traffic_source';
 
