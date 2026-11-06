@@ -13,7 +13,7 @@
 export interface ZhRoute {
   /** Chinese path. */
   zh: string;
-  /** The English page this pairs with. /zh/maggie-li has none. */
+  /** The English page this pairs with. Every route has one since 2026-11-06. */
   en?: string;
   /** Chinese link label, for the menu and the footer. Literal, never t(). */
   label: string;
@@ -21,7 +21,7 @@ export interface ZhRoute {
 
 export const ZH_ROUTES: ZhRoute[] = [
   { zh: '/zh', en: '/', label: '首页' },
-  { zh: '/zh/maggie-li', label: '认识 Maggie' },
+  { zh: '/zh/maggie-li', en: '/maggie-li', label: '认识 Maggie' },
   { zh: '/zh/zhongwen-fuwu', en: '/chinese-speaking-real-estate-agent', label: '中文服务' },
   { zh: '/zh/goufang', en: '/buyer', label: '购房指南' },
   { zh: '/zh/shoufang', en: '/seller', label: '售房指南' },
@@ -35,6 +35,9 @@ export const ZH_ROUTES: ZhRoute[] = [
   { zh: '/zh/pingjia', en: '/testimonials', label: '客户评价' },
   { zh: '/zh/guanyu', en: '/about', label: '关于本站' },
   { zh: '/zh/lianxi', en: '/contact', label: '联系方式' },
+  // Added 2026-11-06 so every row of the menu has all three languages.
+  { zh: '/zh/shichang', en: '/market', label: '市场报告' },
+  { zh: '/zh/yuenanyu-fuwu', en: '/vietnamese-speaking-real-estate-agent', label: '越南语服务' },
 ];
 
 /** Each town guide is `/neighborhoods/<slug>` and `/zh/quyu/<slug>`. */

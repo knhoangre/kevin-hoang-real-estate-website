@@ -135,7 +135,8 @@ const ChineseAgent = () => {
             <a href={CHINESE_PARTNER.website} target="_blank" rel="noopener noreferrer">
               maggieli.co
             </a>
-            , and <Link to="/zh/maggie-li" lang="zh-Hans">her page here</Link> is in Chinese.
+            . Her page on this site is <Link to="/maggie-li">Meet Maggie Li</Link>, also{' '}
+            <Link to="/zh/maggie-li" lang="zh-Hans">in Chinese</Link>.
           </p>
 
           <h2>Is this site in Chinese?</h2>

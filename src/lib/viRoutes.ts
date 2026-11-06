@@ -52,6 +52,12 @@ export const VI_ROUTES: ViRoute[] = [
   // on the Vietnamese side.
   { vi: '/vi/bai-viet', en: '/blog', label: 'Bài viết' },
   { vi: '/vi/dich-vu-tieng-viet', en: '/vietnamese-speaking-real-estate-agent', label: 'Dịch vụ tiếng Việt' },
+  // Added 2026-11-06, when Kevin asked for every row of the menu to have all
+  // three languages.
+  { vi: '/vi/mua-nha-lan-dau', en: '/first-time-buyers', label: 'Mua nhà lần đầu' },
+  { vi: '/vi/thi-truong', en: '/market', label: 'Báo cáo thị trường' },
+  { vi: '/vi/dich-vu-tieng-trung', en: '/chinese-speaking-real-estate-agent', label: 'Tiếng Trung: Maggie Li' },
+  { vi: '/vi/maggie-li', en: '/maggie-li', label: 'Gặp Maggie Li' },
 ];
 
 /**

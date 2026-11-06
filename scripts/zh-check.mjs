@@ -31,13 +31,18 @@ const STATIC_PAGES = [
   '/zh/lianxi',
   '/zh/wenzhang',
   '/zh/quyu',
+  '/zh/shichang',
+  '/zh/yuenanyu-fuwu',
 ];
 const PAGES = [...STATIC_PAGES, ...TOWN_SLUGS.map((slug) => `/zh/quyu/${slug}`)];
 
-/** Has no English page, so it declares no language set. */
-const UNPAIRED = new Set(['/zh/maggie-li']);
+/**
+ * Pages with no English partner, which declare no language set. None since
+ * 2026-11-06, when /zh/maggie-li gained /maggie-li and /vi/maggie-li.
+ */
+const UNPAIRED = new Set([]);
 /** About Kevin, so his name and card rather than hers. */
-const ABOUT_KEVIN = new Set(['/zh/guanyu', '/zh/pingjia']);
+const ABOUT_KEVIN = new Set(['/zh/guanyu', '/zh/pingjia', '/zh/yuenanyu-fuwu']);
 /** The one page that is about Kevin, and so may give his number. */
 const MAY_NAME_KEVINS_NUMBER = new Set(['/zh/guanyu']);
 

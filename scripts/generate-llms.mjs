@@ -98,6 +98,10 @@ const VI_PAGES = [
     'Tiếng Việt — what working in Vietnamese covers: which documents are explained, and where language matters most'
   ),
   line('/vi/bai-viet', 'Tiếng Việt — the English articles, grouped by topic with Vietnamese introductions'),
+  line('/vi/mua-nha-lan-dau', 'Tiếng Việt — first-time home buyer guide for Massachusetts'),
+  line('/vi/thi-truong', 'Tiếng Việt — the monthly market figures for every town, with links to the English reports'),
+  line('/vi/dich-vu-tieng-trung', `Tiếng Việt — working in Chinese with Maggie Li of William Raveis Real Estate`),
+  line('/vi/maggie-li', 'Tiếng Việt — who Maggie Li is, her brokerage, languages, and how to reach her'),
 ];
 
 /*
@@ -115,6 +119,7 @@ const MAGGIE = {
 
 const ZH_PAGES = [
   line('/chinese-speaking-real-estate-agent', `In English: Chinese-speaking service through ${MAGGIE.name}, and what can be done in Mandarin`),
+  line('/maggie-li', `In English: who ${MAGGIE.name} is, her brokerage (${MAGGIE.brokerage}), languages, and how to reach her`),
   line('/zh', '中文 — Chinese-language home: real estate in Greater Boston in Mandarin, through Maggie Li'),
   line('/zh/maggie-li', '中文 — who Maggie Li is, her brokerage, languages, and how to reach her, including WeChat'),
   line('/zh/zhongwen-fuwu', '中文 — what working in Chinese covers, and what must stay in English'),
@@ -127,6 +132,8 @@ const ZH_PAGES = [
   line('/zh/jisuanqi', '中文 — a working calculator in Chinese: monthly cost, rental cash flow, seller net proceeds'),
   line('/zh/lianxi', '中文 — contact Maggie Li: phone, text, email, WeChat, and a Chinese contact form'),
   line('/zh/quyu', '中文 — the towns served, and how to choose one'),
+  line('/zh/shichang', '中文 — the monthly market figures for every town, with links to the English reports'),
+  line('/zh/yuenanyu-fuwu', `中文 — ${AGENT}'s Vietnamese-language service; Chinese-language service is through ${MAGGIE.name}`),
   ...TOWN_SLUGS.map((slug) => line(`/zh/quyu/${slug}`, `中文 — ${townName(slug)} town guide: stations, schools, tax rate, what to check`)),
 ];
 

@@ -158,6 +158,8 @@ export const routes: RouteRecord[] = [
         'src/pages/ChineseAgent.tsx'
       ),
       page('relocation', () => import('./pages/Relocation'), 'src/pages/Relocation.tsx'),
+      // Maggie Li, the person, as /about is Kevin; the page above is the language.
+      page('maggie-li', () => import('./pages/MaggieLi'), 'src/pages/MaggieLi.tsx'),
 
       // --- The person ----------------------------------------------------
       // Owns the PERSON axis, distinct from the four service pages above.
@@ -265,6 +267,10 @@ export const routes: RouteRecord[] = [
         () => import('./pages/vi/ViServices'),
         'src/pages/vi/ViServices.tsx'
       ),
+      page('vi/mua-nha-lan-dau', () => import('./pages/vi/ViFirstTime'), 'src/pages/vi/ViFirstTime.tsx'),
+      page('vi/thi-truong', () => import('./pages/vi/ViMarket'), 'src/pages/vi/ViMarket.tsx'),
+      page('vi/dich-vu-tieng-trung', () => import('./pages/vi/ViChinese'), 'src/pages/vi/ViChinese.tsx'),
+      page('vi/maggie-li', () => import('./pages/vi/ViMaggie'), 'src/pages/vi/ViMaggie.tsx'),
 
       // --- Chinese ---------------------------------------------------------
       // The same arrangement, for readers of Chinese, paired by src/lib/zhRoutes.ts.
@@ -284,6 +290,8 @@ export const routes: RouteRecord[] = [
       page('zh/lianxi', () => import('./pages/zh/ZhContact'), 'src/pages/zh/ZhContact.tsx'),
       page('zh/wenzhang', () => import('./pages/zh/ZhBlog'), 'src/pages/zh/ZhBlog.tsx'),
       page('zh/quyu', () => import('./pages/zh/ZhAreas'), 'src/pages/zh/ZhAreas.tsx'),
+      page('zh/shichang', () => import('./pages/zh/ZhMarket'), 'src/pages/zh/ZhMarket.tsx'),
+      page('zh/yuenanyu-fuwu', () => import('./pages/zh/ZhVietnamese'), 'src/pages/zh/ZhVietnamese.tsx'),
       ...zhTownRoutes,
 
       // --- IDX search ------------------------------------------------------

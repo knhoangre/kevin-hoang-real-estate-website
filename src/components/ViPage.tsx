@@ -61,6 +61,11 @@ export interface ViPageProps {
    * characters. Matches the English counterpart's own width.
    */
   width?: ShellWidth;
+  /**
+   * More schema for this page. The two pages about Maggie Li add her Person and
+   * business nodes, as their English and Chinese partners do.
+   */
+  jsonLd?: object[];
 }
 
 const ViPage = ({
@@ -78,6 +83,7 @@ const ViPage = ({
   enLabel,
   sections,
   width = 'prose',
+  jsonLd = [],
 }: ViPageProps) => {
   const alternates = alternatesFor(path);
 
@@ -92,6 +98,7 @@ const ViPage = ({
         // page — an @id only resolves against a node in the same document.
         agentIdentity(),
         person(),
+        ...jsonLd,
       ]}
       eyebrow={eyebrow}
       h1={h1}

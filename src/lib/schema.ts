@@ -139,12 +139,12 @@ export const zhWebPage = (opts: { path: string; name: string; description: strin
  * A page that exists to describe one person: Google's ProfilePage. mainEntity is a
  * reference, so partnerPerson() has to be on the same page.
  */
-export const profilePage = (opts: { path: string; name: string; personId: string }) => ({
+export const profilePage = (opts: { path: string; name: string; personId: string; inLanguage?: string }) => ({
   '@context': 'https://schema.org',
   '@type': 'ProfilePage',
   url: absoluteUrl(opts.path),
   name: opts.name,
-  inLanguage: 'zh-Hans',
+  inLanguage: opts.inLanguage ?? 'zh-Hans',
   mainEntity: { '@id': opts.personId },
 });
 

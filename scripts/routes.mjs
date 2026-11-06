@@ -176,6 +176,7 @@ export const STATIC_ROUTES = [
   { path: '/home-valuation', priority: 0.9, changefreq: 'monthly' },
   { path: '/vietnamese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly' },
   { path: '/chinese-speaking-real-estate-agent', priority: 0.8, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/maggie-li', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
   { path: '/relocation', priority: 0.8, changefreq: 'monthly', lastmod: RELOCATION_UPDATED },
 
   // Town guides.
@@ -218,6 +219,10 @@ export const STATIC_ROUTES = [
   { path: '/vi/lien-he', priority: 0.7, changefreq: 'monthly' },
   { path: '/vi/bai-viet', priority: 0.6, changefreq: 'monthly' },
   { path: '/vi/dich-vu-tieng-viet', priority: 0.7, changefreq: 'monthly' },
+  { path: '/vi/mua-nha-lan-dau', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/thi-truong', priority: 0.6, changefreq: 'monthly' },
+  { path: '/vi/dich-vu-tieng-trung', priority: 0.5, changefreq: 'monthly' },
+  { path: '/vi/maggie-li', priority: 0.5, changefreq: 'monthly' },
 
   // Chinese. The same arrangement, paired by src/lib/zhRoutes.ts, and one guide
   // per town. Every town guide has a Chinese page, unlike the Vietnamese tree.
@@ -236,6 +241,8 @@ export const STATIC_ROUTES = [
   { path: '/zh/lianxi', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
   { path: '/zh/wenzhang', priority: 0.5, changefreq: 'monthly', lastmod: ZH_UPDATED },
   { path: '/zh/quyu', priority: 0.7, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/shichang', priority: 0.6, changefreq: 'monthly', lastmod: ZH_UPDATED },
+  { path: '/zh/yuenanyu-fuwu', priority: 0.4, changefreq: 'monthly', lastmod: ZH_UPDATED },
   ...TOWN_SLUGS.map((slug) => ({
     path: `/zh/quyu/${slug}`,
     priority: 0.7,

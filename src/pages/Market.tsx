@@ -2,9 +2,10 @@ import { Link } from 'react-router-dom';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import AuthorCard from '@/components/AuthorCard';
 import MarketEmailSignup from '@/components/market/MarketEmailSignup';
-import { DataTable, H2, LINK, Thin } from '@/components/market/MarketParts';
+import { H2, LINK } from '@/components/market/MarketParts';
+import MarketGlance, { type GlanceWords } from '@/components/market/MarketGlance';
 import { MIN_MONTH_SALES, TYPE_NAMES, type Headline, type MarketIndex, type SaleType } from '@/lib/market';
-import { EDGE_LABEL, EDGE_RULE_TEXT, dateLong, money, monthName, months1, pct, ratioPct } from '@/lib/marketText';
+import { EDGE_LABEL, EDGE_RULE_TEXT, dateLong, monthName } from '@/lib/marketText';
 import { itemList } from '@/lib/schema';
 import { SITE, telHref } from '@/lib/siteConfig';
 import summaryJson from '@/data/market/summary.json';
@@ -30,35 +31,25 @@ const listOf = (names: string[]) =>
  * rather than sixteen full reports: this page compares towns, and a comparison
  * needs a line per town, not a page.
  */
-const cell = (s: string) => (s === '—' ? <Thin /> : s);
-
-const TypeTable = ({ type }: { type: SaleType }) => {
-  const rows = summary
-    .map((h) => ({ h, t: h.types.find((x) => x.type === type) }))
-    .filter((x): x is { h: Headline; t: Headline['types'][number] } => Boolean(x.t));
-  if (rows.length === 0) return null;
-  return (
-    <div>
-      <h3 className="mb-3 text-lg font-semibold text-ink">{TYPE_NAMES[type].short}</h3>
-      <DataTable
-        minWidth="min-w-[46rem]"
-        caption={`${TYPE_NAMES[type].short} markets by town`}
-        head={['Town', 'Median price, 12 months', 'Sale-to-asking', 'Sold over asking', 'For sale now', 'Months of supply', 'Who has the edge']}
-        rows={rows.map(({ h, t }) => [
-          <Link key={h.slug} to={`/market/${h.slug}`} className={LINK}>
-            {h.town}
-          </Link>,
-          cell(money(t.median)),
-          cell(ratioPct(t.ratio)),
-          cell(pct(t.over)),
-          String(t.available),
-          cell(months1(t.monthsSupply)),
-          t.edge ? EDGE_LABEL[t.edge] : <Thin key="e" />,
-        ])}
-      />
-    </div>
-  );
+/** The English words for the table /vi/thi-truong and /zh/shichang share. */
+const GLANCE: GlanceWords = {
+  head: ['Town', 'Median price, 12 months', 'Sale-to-asking', 'Sold over asking', 'For sale now', 'Months of supply', 'Who has the edge'],
+  edge: EDGE_LABEL,
+  caption: 'Markets by town',
 };
+
+const TypeTable = ({ type }: { type: SaleType }) => (
+  <MarketGlance
+    type={type}
+    heading={TYPE_NAMES[type].short}
+    words={{ ...GLANCE, caption: `${TYPE_NAMES[type].short} markets by town` }}
+    town={(h) => (
+      <Link key={h.slug} to={`/market/${h.slug}`} className={LINK}>
+        {h.town}
+      </Link>
+    )}
+  />
+);
 
 const Market = () => {
   const latest = summary.reduce((m, h) => (h.month > m ? h.month : m), '');

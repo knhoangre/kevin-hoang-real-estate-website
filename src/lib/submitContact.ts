@@ -48,6 +48,9 @@ export const submitContactMessage = async (values: ContactMessage): Promise<void
       phone: phone ? phone : null,
       message: values.message.trim(),
       ...(values.lang ? { lang: values.lang } : {}),
+      // Which form it was — the homepage, /contact, a listing, /vi or /zh — so
+      // the email can say so and link to it. Read at submit, never in render.
+      page: window.location.pathname,
     },
   });
 

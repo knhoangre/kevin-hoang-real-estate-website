@@ -22,6 +22,7 @@ import {
 } from "@/lib/siteConfig";
 import { VI_ROUTES, type ViRoute } from "@/lib/viRoutes";
 import { ZH_ROUTES, isZhPath, type ZhRoute } from "@/lib/zhRoutes";
+import enLocale from "@/i18n/locales/en.json";
 
 /**
  * The menu panel as ROWS: an English page, then its Vietnamese and Chinese
@@ -30,16 +31,21 @@ import { ZH_ROUTES, isZhPath, type ZhRoute } from "@/lib/zhRoutes";
  * It used to be the eight English links, a "Tiếng Việt" heading, then the
  * eleven Vietnamese links beneath them — twenty rows, taller than a laptop
  * screen, with each Vietnamese page ten rows away from the English page it is a
- * translation of. Paired, it is thirteen rows, and the pairing itself tells the
- * reader what the second column is.
+ * translation of. Paired, the pairing itself tells the reader what the second
+ * column is.
  *
- * DERIVED FROM VI_ROUTES, never listed here, so a Vietnamese route added there
+ * DERIVED FROM VI_ROUTES AND ZH_ROUTES, never listed here, so a route added there
  * arrives in the menu beside its English page without anyone remembering to.
- * The rows are: Home, then SECONDARY_NAV in its own order, then any Vietnamese
- * page whose English counterpart is not in SECONDARY_NAV — /faq, /about and
- * /contact are in the bar already, and appear here again so their Vietnamese
- * versions have something to sit beside. An English page with no translation
- * (the blog, the Vietnamese-services page) gets an empty right-hand cell.
+ * The rows are SECONDARY_NAV plus every English page that has a translation —
+ * /faq, /about and /contact are in the bar already, and appear here again so
+ * their translations have something to sit beside.
+ *
+ * Every row has all three languages since 2026-11-06 (Kevin asked for the menu
+ * to be symmetrical, and pages were written for every empty cell), and the rows
+ * are in alphabetical order of their ENGLISH names, with Home first: the other
+ * two columns follow their English page, so only one of the three can be sorted.
+ * The order is from en.json, not t(), so switching the site to Vietnamese does
+ * not reshuffle the rows under the reader.
  */
 interface PanelRow {
   en?: NavItem;
@@ -55,6 +61,7 @@ const EXTRA_EN: NavItem[] = [
   // Names her: the service is a referral to Maggie Li, and "Chinese-Speaking
   // Service" on an English page read as if Kevin offered it.
   { to: "/chinese-speaking-real-estate-agent", label: "Chinese-Speaking Agent: Maggie Li" },
+  { to: "/maggie-li", label: "Meet Maggie Li" },
 ];
 
 const englishFor = (path: string): NavItem | undefined =>
@@ -62,6 +69,21 @@ const englishFor = (path: string): NavItem | undefined =>
 
 const viFor = (path: string) => VI_ROUTES.find((route) => route.en === path);
 const zhFor = (path: string) => ZH_ROUTES.find((route) => route.en === path);
+
+/** An item's English label, whatever language the page is showing. */
+const englishLabel = (item: NavItem): string =>
+  item.label ??
+  String(
+    (item.labelKey ?? "")
+      .split(".")
+      .reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], enLocale) ?? item.to,
+  );
+
+/** A to Z, with a tree's home first. */
+const alphabetical = <T,>(items: T[], label: (item: T) => string, isHome: (item: T) => boolean, locale: string) =>
+  [...items].sort((a, b) =>
+    isHome(a) !== isHome(b) ? (isHome(a) ? -1 : 1) : label(a).localeCompare(label(b), locale),
+  );
 
 /**
  * isActivePath, except that `/vi` and `/zh` — each tree's HOME — match exactly,
@@ -78,15 +100,29 @@ const rowFor = (en: string): PanelRow => ({
 });
 
 const PANEL_ROWS: PanelRow[] = [
-  rowFor("/"),
-  ...SECONDARY_NAV.map((item) => rowFor(item.to)),
-  // Every other translated page, whichever language it was translated into.
-  ...[...new Set([...VI_ROUTES.map((r) => r.en), ...ZH_ROUTES.flatMap((r) => r.en ?? [])])]
-    .filter((en) => en !== "/" && !SECONDARY_NAV.some((item) => item.to === en))
-    .map(rowFor),
+  ...alphabetical(
+    [...new Set([...SECONDARY_NAV.map((item) => item.to), ...VI_ROUTES.map((r) => r.en), ...ZH_ROUTES.flatMap((r) => r.en ?? [])])].map(rowFor),
+    (row) => (row.en ? englishLabel(row.en) : row.vi?.label ?? ""),
+    (row) => row.en?.to === "/",
+    "en",
+  ),
   // A page with no English pair still has a row, or it has no place in the menu.
   ...ZH_ROUTES.filter((route) => !route.en).map((zh) => ({ zh })),
 ];
+
+/*
+ * The phone menu, which has no room for columns: each language is its own list,
+ * sorted in its own alphabet — Vietnamese order for Vietnamese, pinyin for
+ * Chinese, which is how a Chinese dictionary is ordered. The English pages are
+ * the bar's five, then every other English page the panel has. The menu is closed
+ * in the prerendered HTML, so these sorts never meet hydration.
+ */
+const MOBILE_PRIMARY = alphabetical(PRIMARY_NAV, englishLabel, () => false, "en");
+const MOBILE_MORE = PANEL_ROWS.flatMap((row) =>
+  row.en && !PRIMARY_NAV.some((item) => item.to === row.en?.to) ? [row.en] : [],
+);
+const MOBILE_VI = alphabetical(VI_ROUTES, (r) => r.label, (r) => r.vi === "/vi", "vi");
+const MOBILE_ZH = alphabetical(ZH_ROUTES, (r) => r.label, (r) => r.zh === "/zh", "zh");
 
 /**
  * A dropdown panel that opens on hover AND on click, focus and keyboard.
@@ -505,7 +541,7 @@ const Navbar = () => {
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
                       中文
                     </p>
-                    {ZH_ROUTES.map((route) => (
+                    {MOBILE_ZH.map((route) => (
                       <TreeLink key={route.zh} to={route.zh} label={route.label} lang="zh-Hans" />
                     ))}
                     <TreeLink to="/search" label="搜索房源" lang="zh-Hans" />
@@ -517,7 +553,7 @@ const Navbar = () => {
                   </>
                 ) : (
                   <>
-                    {PRIMARY_NAV.map((item) => (
+                    {MOBILE_PRIMARY.map((item) => (
                       <NavLink
                         key={item.to}
                         item={item}
@@ -531,7 +567,7 @@ const Navbar = () => {
 
                     <div className="my-2 h-px w-full bg-gray-200" />
 
-                    {SECONDARY_NAV.map((item) => (
+                    {MOBILE_MORE.map((item) => (
                       <NavLink
                         key={item.to}
                         item={item}
@@ -548,7 +584,7 @@ const Navbar = () => {
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-gray-500">
                       Tiếng Việt
                     </p>
-                    {VI_ROUTES.map((route) => (
+                    {MOBILE_VI.map((route) => (
                       <TreeLink key={route.vi} to={route.vi} label={route.label} lang="vi" />
                     ))}
 
@@ -560,7 +596,7 @@ const Navbar = () => {
                     >
                       中文
                     </p>
-                    {ZH_ROUTES.map((route) => (
+                    {MOBILE_ZH.map((route) => (
                       <TreeLink key={route.zh} to={route.zh} label={route.label} lang="zh-Hans" />
                     ))}
                   </>

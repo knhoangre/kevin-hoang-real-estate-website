@@ -37,19 +37,23 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: '/contact', labelKey: 'nav.contact' },
 ];
 
-/** The hamburger panel on desktop; the top of the list on mobile. */
+/**
+ * The hamburger panel's English pages, beside the translated ones the Navbar
+ * adds. The Navbar sorts the panel A to Z by English name (Kevin, 2026-11-06), so
+ * the order here does not decide anything; it is kept alphabetical to match.
+ * "Vietnamese Services" is the page ABOUT Vietnamese-language help, written in
+ * English — distinct from the /vi tree, which is the same site written IN
+ * Vietnamese.
+ */
 export const SECONDARY_NAV: NavItem[] = [
-  { to: '/buyer', labelKey: 'nav.buyer' },
-  { to: '/seller', labelKey: 'nav.seller' },
-  { to: '/relocation', labelKey: 'nav.relocation' },
-  { to: '/testimonials', labelKey: 'nav.testimonials' },
-  { to: '/neighborhoods', labelKey: 'nav.neighborhoods' },
-  { to: '/market', labelKey: 'nav.market' },
   { to: '/blog', labelKey: 'nav.blog' },
+  { to: '/buyer', labelKey: 'nav.buyer' },
   { to: '/calculator', labelKey: 'nav.calculator' },
-  // Last on purpose. It is the service page ABOUT Vietnamese-language help,
-  // written in English — distinct from the /vi tree below it in the panel,
-  // which is the same site written IN Vietnamese.
+  { to: '/market', labelKey: 'nav.market' },
+  { to: '/relocation', labelKey: 'nav.relocation' },
+  { to: '/neighborhoods', labelKey: 'nav.neighborhoods' },
+  { to: '/seller', labelKey: 'nav.seller' },
+  { to: '/testimonials', labelKey: 'nav.testimonials' },
   { to: '/vietnamese-speaking-real-estate-agent', labelKey: 'nav.vietnamese' },
 ];
 
@@ -85,6 +89,7 @@ const DARK_HERO_EXACT = new Set([
   '/home-valuation',
   '/vietnamese-speaking-real-estate-agent',
   '/chinese-speaking-real-estate-agent',
+  '/maggie-li',
   '/relocation',
   '/faq',
   '/buyer',

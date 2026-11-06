@@ -1,22 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "npm:resend@3.1.0";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+// This form is public, and what is typed into it lands in an HTML email, which
+// since the Chinese pages also goes to someone outside this business. The email
+// is built (and escaped) in the shared module.
+import { contactEmail, pagePath } from '../_shared/contactMessage.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-/**
- * This form is public, and what is typed into it lands in an HTML email, which
- * since the Chinese pages also goes to someone outside this business.
- */
-const esc = (value: unknown) =>
-  String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -24,9 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    // console.log('Received request:', req.method);
-    const { firstName, lastName, email, phone, message, lang } = await req.json();
-    // console.log('Parsed request data:', { firstName, lastName, email, phone, messageLength: message?.length });
+    const { firstName, lastName, email, phone, message, lang, page } = await req.json();
 
     // The Chinese contact form. Kevin does not read Chinese, so its messages go
     // to Maggie Li as well, and the source says how the person arrived. Her
@@ -351,156 +342,29 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    // console.log('Initialized Resend client');
+    const notice = contactEmail({
+      firstName: String(firstName),
+      lastName: String(lastName),
+      email: String(email),
+      phone: formattedPhone ? String(formattedPhone) : '',
+      message: String(message),
+      page: pagePath(page),
+      zh: fromChinesePage,
+    });
 
     try {
-      // console.log('Attempting to send email...');
       const data = await resend.emails.send({
         from: "Kevin Hoang <contact@kevinhoang.co>",
         to: fromChinesePage
           ? ["maggie.li@raveis.com", "knhoangre@gmail.com"]
           : ["knhoangre@gmail.com"],
-        // Spelled reply_to: resend@3.1.0 silently drops replyTo. Only on the
-        // Chinese form for now, where whoever replies is not the site's owner.
-        ...(fromChinesePage ? { reply_to: email } : {}),
-        subject: fromChinesePage
-          ? "New message from the Chinese pages on kevinhoang.co"
-          : "New Contact Form Submission",
-        html: `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                  line-height: 1.6;
-                  color: #1a1a1a;
-                  max-width: 600px;
-                  margin: 0 auto;
-                  padding: 0;
-                  background-color: #f5f5f5;
-                }
-                .container {
-                  background-color: #ffffff;
-                  border-radius: 12px;
-                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-                  margin: 20px;
-                  overflow: hidden;
-                }
-                .header {
-                  background-color: #1a1a1a;
-                  color: white;
-                  padding: 24px;
-                  text-align: center;
-                }
-                .header h2 {
-                  margin: 0;
-                  font-size: 24px;
-                  font-weight: 600;
-                  letter-spacing: -0.5px;
-                }
-                .content {
-                  padding: 32px;
-                }
-                .field {
-                  margin-bottom: 24px;
-                }
-                .field:last-child {
-                  margin-bottom: 0;
-                }
-                .label {
-                  font-weight: 600;
-                  color: #666;
-                  font-size: 14px;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                  margin-bottom: 8px;
-                  display: block;
-                }
-                .value {
-                  color: #1a1a1a;
-                  font-size: 16px;
-                  line-height: 1.5;
-                }
-                .message {
-                  background-color: #f8f9fa;
-                  padding: 20px;
-                  border-radius: 8px;
-                  border: 1px solid #e9ecef;
-                  font-size: 16px;
-                  line-height: 1.6;
-                  color: #1a1a1a;
-                }
-                .action-button {
-                  display: inline-block;
-                  padding: 12px 24px;
-                  background-color: #1a1a1a;
-                  color: white;
-                  text-decoration: none;
-                  border-radius: 6px;
-                  font-weight: 500;
-                  transition: background-color 0.2s ease;
-                }
-                .action-button:hover {
-                  background-color: #333;
-                }
-                @media (max-width: 600px) {
-                  .container {
-                    margin: 10px;
-                  }
-                  .content {
-                    padding: 24px;
-                  }
-                }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h2>${fromChinesePage ? "New message from the Chinese pages" : "New Contact Form Submission"}</h2>
-                </div>
-                <div class="content">
-                  <div class="field">
-                    <span class="label">Name</span>
-                    <div class="value">${esc(firstName)} ${esc(lastName)}</div>
-                  </div>
-                  <div class="field">
-                    <span class="label">Email</span>
-                    <div class="value">${esc(email)}</div>
-                  </div>
-                  ${phone ? `
-                  <div class="field">
-                    <span class="label">Phone</span>
-                    <div class="value">
-                      <div style="display: flex; gap: 12px;">
-                        <a href="tel:+1${phone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center;">
-                          <span style="display: block; margin-bottom: 4px;">📞</span>
-                          Call
-                        </a>
-                        <a href="sms:+1${phone.replace(/\D/g, '')}" class="action-button" style="flex: 1; text-align: center; background-color: #4CAF50;">
-                          <span style="display: block; margin-bottom: 4px;">💬</span>
-                          Text
-                        </a>
-                      </div>
-                      <div style="margin-top: 8px; text-align: center; color: #666; font-size: 14px;">
-                        ${esc(phone)}
-                      </div>
-                    </div>
-                  </div>
-                  ` : ''}
-                  <div class="field">
-                    <span class="label">Message</span>
-                    <div class="message">${esc(message)}</div>
-                  </div>
-                </div>
-              </div>
-            </body>
-          </html>
-        `
+        // Spelled reply_to: resend@3.1.0 silently drops replyTo. Replying is
+        // almost always the next thing to do, so it reaches the person.
+        reply_to: email,
+        subject: notice.subject,
+        html: notice.html,
+        text: notice.text,
       });
-      // console.log('Email sent successfully:', data);
 
       return new Response(
         JSON.stringify({ success: true, data }),
@@ -511,11 +375,6 @@ serve(async (req) => {
       );
     } catch (error) {
       console.error('Resend API error:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
       return new Response(
         JSON.stringify({
           error: 'Failed to send email',
@@ -530,11 +389,6 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('General error:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
     return new Response(
       JSON.stringify({
         error: 'Internal server error',

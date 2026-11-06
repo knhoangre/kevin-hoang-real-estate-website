@@ -35,6 +35,7 @@ node scripts/investment-check.ts       # /investments: the strategy math, leased
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
 node scripts/market-email-check.ts     # the monthly market email: sign-ups, who is due, what it says over the real public/data/market-latest.json
 node scripts/valuation-request-check.ts # the /home-valuation request: what it must carry, its CRM source, escaping
+node scripts/contact-email-check.ts    # the contact forms' email to Kevin: where it came from, its buttons, escaping; --html out.html renders one
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
 node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
@@ -364,6 +365,9 @@ returns, and the mismatches are the list. Sections with detail routes belong in
     every section that raises it also states that clients of every background are
     served. Do not edit that framing away.
   - [/relocation](src/pages/Relocation.tsx) — **origin market** (CT → MA)
+  - [/maggie-li](src/pages/MaggieLi.tsx) — **Maggie the person**, as /about is
+    Kevin; `/chinese-speaking-real-estate-agent` is the language page and owns
+    "Chinese-speaking agent"
   - `/neighborhoods/:slug` — **place**, informational only
   - `/vi/*` — **language**, and unlike the four above these are *documents in
     Vietnamese*, not English pages about Vietnamese service. They pair with an
@@ -2448,7 +2452,7 @@ Two senders, and only one of them is ours today.
 
 - **Real prerendered routes, one per entry** in
   [src/lib/viRoutes.ts](src/lib/viRoutes.ts) with the English page each one
-  pairs with — thirteen since 2026-09-27. They exist because the language
+  pairs with — seventeen since 2026-11-06. They exist because the language
   toggle swaps copy *after* hydration — so before this, not one word of
   Vietnamese appeared in any prerendered document and no crawler had ever seen
   any of it. The toggle still works everywhere else; `/vi` supersedes it only
@@ -2470,9 +2474,23 @@ Two senders, and only one of them is ours today.
   English links, then all eleven Vietnamese ones beneath — twenty rows, taller
   than a laptop screen. The rows are derived from `VI_ROUTES`, so a new
   Vietnamese route arrives beside its English page without being listed twice.
-  Both columns carry a heading ("English", "Tiếng Việt"); a heading over one
-  column only read as a layout mistake. Since `/vi/bai-viet` and
-  `/vi/dich-vu-tieng-viet` were added every English row has a partner.
+  Every column carries a heading ("English", "Tiếng Việt", "中文"); a heading
+  over one column only read as a layout mistake.
+- **Every row of that menu has all three languages, and the rows are A to Z by
+  their English name, Home first** (Kevin, 2026-11-06: the order was confusing,
+  and he wanted no empty cells). He chose to have pages written for every gap
+  rather than leave cells empty, so four Vietnamese pages (`/vi/mua-nha-lan-dau`,
+  `/vi/thi-truong`, `/vi/dich-vu-tieng-trung`, `/vi/maggie-li`), two Chinese
+  (`/zh/shichang`, `/zh/yuenanyu-fuwu`) and one English (`/maggie-li`) exist for
+  that reason. A new English page in the menu needs a partner in both trees, or
+  its row has a gap again. The order is read from en.json, not `t()`, so the
+  toggle does not reshuffle it. On a phone each language is its own list, sorted
+  in its own alphabet (Vietnamese order; pinyin for Chinese). The menu is closed
+  in the prerendered HTML, so `localeCompare` there never meets hydration.
+- **`/vi/thi-truong` and `/zh/shichang` are /market's table, not translated
+  reports.** All three render [MarketGlance](src/components/market/MarketGlance.tsx)
+  from the same summary.json, with only the words passed in, and each town links
+  to its English report. The sentences in a report stay English.
 - **`/vi/dich-vu-tieng-viet` shares its copy with the English page's toggle**
   through [src/data/viServices.tsx](src/data/viServices.tsx); only the links
   differ. It has its OWN h1 and title because the toggle copy's h1 is the `/vi`
@@ -2559,6 +2577,17 @@ the shell, `CHINESE_PARTNER` in siteConfig.ts her details, and
   content once already. `/zh/wenzhang` links the English posts under Chinese titles
   ([blogTitles.ts](src/data/zh/blogTitles.ts)) and says they are English. Topic
   groups live in [blogTopics.ts](src/data/blogTopics.ts), shared with `/vi/bai-viet`.
+  `/zh/shichang` (2026-11-06) is the same arrangement for the market: the table in
+  Chinese, the reports in English. Kevin let it go up before Maggie read it; it is
+  next on her list, with `/zh/yuenanyu-fuwu`.
+- **`/zh/yuenanyu-fuwu` is Kevin's Vietnamese service, in Chinese**, for a family
+  in which some people would rather work in Vietnamese and some in Chinese. It is
+  about Kevin, so zh-check counts it with `/zh/guanyu`: his name in the title, not
+  hers. Its buttons still reach Maggie, his phone is not linked (the way to him is
+  `/vi/lien-he` and `/contact`), and no sentence has him do anything in Chinese.
+- **`/zh/maggie-li` has partners since 2026-11-06**, `/maggie-li` and
+  `/vi/maggie-li`, so no Chinese page is unpaired any more. Both say only what the
+  Chinese page says about her.
 - **English on purpose:** `/search` and listings (MLS PIN: noindex), the ten closings,
   `/needham-real-estate-agent` (it is about hiring Kevin), the legal pages (not
   without a lawyer), sign-in, applications, admin.
@@ -3042,6 +3071,14 @@ deliberately runs *under* it use `pt-32`. `pt-16` is the old wrong value.
   every message written on the page the navbar and footer link to was discarded
   while its sender was told it had been delivered. One transport now, so a fix to
   either reaches both. `generate_lead` fires only after a genuine success.
+  It sends the page's path, so the email to Kevin says which form it was.
+- **The contact email is [_shared/contactMessage.ts](supabase/functions/_shared/contactMessage.ts)**,
+  in the valuation request's layout: the page it came from, the person's name,
+  how to reach them, the message with its line breaks, and Reply / Call / Text
+  pills. Tables and inline styles only: the old one was a `<style>` block, flexbox
+  and emoji buttons, which Gmail drops (Kevin, 2026-11-06: "looks terrible").
+  `reply_to` is the person on every form now, not only the Chinese one. The path
+  is kept only if it is a plain path, because it becomes a link.
 - **Analytics ship disabled.** [Analytics.tsx](src/components/Analytics.tsx) is
   driven by `SITE.ga4Id` / `SITE.gscVerification`; nothing is injected while they
   are empty. GA is configured `send_page_view: false` with a manual page_view on
