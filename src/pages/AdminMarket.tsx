@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Check, Copy } from 'lucide-react';
 import AdminShell, { ADMIN_BUTTON } from '@/components/AdminShell';
 import MarketAnalysis from '@/components/market/MarketAnalysis';
+import MarketSubscribers from '@/components/admin/MarketSubscribers';
 import { LINK } from '@/components/market/MarketParts';
 import { supabase } from '@/integrations/supabase/client';
 import { useHydrated } from '@/hooks/useHydrated';
@@ -190,6 +191,8 @@ const AdminMarket = () => {
           <MarketAnalysis report={report} posts={published ? [...published.posts].reverse() : []} />
         </div>
       )}
+
+      <MarketSubscribers />
     </AdminShell>
   );
 };

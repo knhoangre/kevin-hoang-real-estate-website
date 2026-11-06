@@ -6,6 +6,7 @@ import { LINK } from '@/components/market/MarketParts';
 import type { MarketIndexTown, MarketReport } from '@/lib/market';
 import { dateLong, monthName, townDescription, townTitle } from '@/lib/marketText';
 import marketIndex from '@/data/market/index.json';
+import MarketEmailSignup from '@/components/market/MarketEmailSignup';
 
 /**
  * /market/<slug> — one town's market, from its newest monthly report.
@@ -43,6 +44,8 @@ const MarketTown = ({ report: r, entry }: { report: MarketReport; entry: MarketI
     >
       <ShellSection width="wide" className="py-16 md:py-20 bg-white">
         <MarketAnalysis report={r} posts={[...entry.posts].reverse()} />
+
+        <MarketEmailSignup town={{ name: town, slug: r.slug }} className="mt-16" />
 
         <aside className="mt-16 rounded-2xl border border-gray-200 p-6 sm:p-8">
           <h2 className="text-lg font-semibold text-ink">More on {town}</h2>

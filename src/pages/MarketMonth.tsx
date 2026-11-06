@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import AuthorCard from '@/components/AuthorCard';
+import MarketEmailSignup from '@/components/market/MarketEmailSignup';
 import { ColumnChart, type ChartPoint } from '@/components/market/MarketCharts';
 import { DataTable, H2, InventoryTable, LINK, MarketSources, RentTable, Thin } from '@/components/market/MarketParts';
 import {
@@ -356,6 +357,7 @@ const MarketMonth = ({ report: r, entry }: { report: MarketReport; entry: Market
             <MarketSources report={r} />
           </section>
 
+          <MarketEmailSignup town={{ name: town, slug: r.slug }} className="mt-12" />
           <AuthorCard className="mt-12" />
         </article>
       </ShellSection>

@@ -53,3 +53,55 @@ export const submitContactMessage = async (values: ContactMessage): Promise<void
 
   if (error) throw error;
 };
+
+/** When a seller expects to sell, as the valuation form offers it. */
+export const VALUATION_TIMINGS = [
+  { value: 'curious', label: 'Just curious about the value' },
+  { value: '0-3', label: 'Within 3 months' },
+  { value: '3-6', label: 'In 3 to 6 months' },
+  { value: '6-12', label: 'In 6 to 12 months' },
+  { value: 'later', label: 'More than a year away' },
+] as const;
+
+export type ValuationTiming = (typeof VALUATION_TIMINGS)[number]['value'];
+
+export interface ValuationRequest {
+  street: string;
+  unit?: string;
+  town: string;
+  zip?: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  timing?: ValuationTiming | null;
+  notes?: string;
+  /** The hidden field. Sent as typed, so the function can tell a bot. */
+  website?: string;
+}
+
+/**
+ * A request for a written valuation, from /home-valuation. Its own function
+ * rather than a message through submit-contact: it carries an address, files
+ * the person in the CRM as a seller, and says which property in the subject.
+ * Normalised here for the same reason as above. Throws on failure.
+ */
+export const submitValuationRequest = async (values: ValuationRequest): Promise<void> => {
+  const clean = (s?: string | null) => (s ?? '').trim();
+  const { error } = await supabase.functions.invoke('submit-valuation-request', {
+    body: {
+      street: clean(values.street),
+      unit: clean(values.unit),
+      town: clean(values.town),
+      zip: clean(values.zip),
+      firstName: clean(values.firstName),
+      lastName: clean(values.lastName),
+      email: clean(values.email).toLowerCase(),
+      phone: clean(values.phone),
+      timing: values.timing ?? null,
+      notes: clean(values.notes),
+      website: clean(values.website),
+    },
+  });
+  if (error) throw error;
+};

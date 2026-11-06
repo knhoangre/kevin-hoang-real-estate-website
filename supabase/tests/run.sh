@@ -168,6 +168,17 @@ done
 echo
 run_tests "$TESTS/showing_reminders_test.sql"
 
+# The monthly market email: who can read the subscriber list, and the claim that
+# sends each month once. Applied twice, like the reminders, for the schedule.
+echo
+for pass in 1 2; do
+  echo "Applying 20261106100000_market_email (pass $pass)"
+  psql_file "$REPO/supabase/migrations/20261106100000_market_email.sql" -q 2>&1 \
+    | grep -v 'NOTICE.*skipping' || true
+done
+echo
+run_tests "$TESTS/market_email_test.sql"
+
 # Which form an application link asks for, over the stand-in rental tables
 # from 02_crm_bootstrap.sql.
 echo

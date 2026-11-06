@@ -54,3 +54,10 @@ content_path = "./templates/password_changed.html"
 enabled = true
 subject = "Your phone number was changed — Kevin Hoang"
 content_path = "./templates/phone_changed.html"
+
+# RFC 8058 one-click unsubscribe from the monthly market email. A mail client
+# POSTs to this function with no key, so it cannot require a JWT; the token in
+# the address is the credential, and all it can do is stop that person's email.
+# Deploy with --no-verify-jwt as well, which is what the CLI applies today.
+[functions.market-unsubscribe]
+verify_jwt = false

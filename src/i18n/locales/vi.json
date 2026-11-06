@@ -25,8 +25,10 @@
     "meta_description": "Đọc đánh giá khách hàng về Kevin Hoang, môi giới Greater Boston—mua, bán, chuyển nhà, căn hộ, nhà đơn và tư vấn bất động sản Massachusetts."
   },
   "hero": {
-    "title": "NÂNG CAO TRẢI NGHIỆM BẤT ĐỘNG SẢN BOSTON",
-    "subtitle": "ĐỐI TÁC BẤT ĐỘNG SẢN CỦA BẠN CHO VIỆC MUA, BÁN VÀ ĐẦU TƯ VÀO CÁC BẤT ĐỘNG SẢN HẤP DẪN NHẤT BOSTON THÔNG QUA CHUYÊN MÔN THỊ TRƯỜNG VÀ CHIẾN LƯỢC ĐỔI MỚI.",
+    "title": "MÔI GIỚI BẤT ĐỘNG SẢN TẠI NEWTON & GREATER BOSTON",
+    "subtitle": "Broker có giấy phép tại Massachusetts, đến với bất động sản từ ngành kỹ thuật cơ khí và phần mềm. Mua và bán nhà tại Newton, Needham, Wellesley, Brookline và {{more}} thị trấn khác, bằng tiếng Anh và tiếng Việt.",
+    "buy": "Mua nhà",
+    "sell": "Bán nhà",
     "cta": "ĐẶT LỊCH TƯ VẤN MIỄN PHÍ"
   },
   "about": {
@@ -34,7 +36,7 @@
     "subtitle": "Broker Bất Động Sản Có Giấy Phép Tại Massachusetts",
     "description": "Với nhiều năm kinh nghiệm trong thị trường bất động sản Greater Boston, tôi cam kết giúp khách hàng đạt được mục tiêu sở hữu nhà thông qua dịch vụ cá nhân hóa và kiến thức thị trường chuyên môn.",
     "paragraph1": "Kevin Hoang là broker bất động sản có giấy phép tại Massachusetts, có trụ sở tại Newton, phục vụ người mua và người bán khắp MetroWest và Greater Boston. Anh sinh ra và lớn lên ở Connecticut, sống ở South Windsor 25 năm trước khi chuyển lên Greater Boston. Giấy phép broker đòi hỏi nhiều năm hành nghề cùng khóa học bổ sung và một kỳ thi riêng của tiểu bang — phần lớn agent đang hành nghề chỉ có giấy phép salesperson.",
-    "paragraph2": "Chuyên về thị trường bất động sản Greater Boston, Kevin kết hợp sự thông thạo kỹ thuật với kiến thức thị trường sâu rộng để mang lại kết quả xuất sắc cho khách hàng. Nền tảng kỹ thuật của anh tỏ ra vô giá trong việc đánh giá tình trạng bất động sản, hiểu các khía cạnh kết cấu, và xác định các cơ hội đầu tư tiềm năng mà người khác có thể bỏ lỡ.",
+    "paragraph2": "Kevin đến với bất động sản từ ngành kỹ thuật cơ khí và phần mềm. Kỹ thuật cơ khí là cách anh đọc một căn nhà: báo cáo kiểm tra nhà thực sự nói gì về hệ thống sưởi, mái nhà, móng và hệ thống điện. Kỹ thuật phần mềm là phần con số: các báo cáo thị trường hàng tháng trên trang này và giá ước tính trên các trang tin đăng đều do chính anh tính từ dữ liệu MLS, kèm cách tính được công bố ngay bên cạnh.",
     "paragraph3": "Dù bạn là người mua nhà lần đầu, nhà đầu tư dày dạn kinh nghiệm, hay đang muốn bán bất động sản của mình, phương pháp tiếp cận sáng tạo và sự tận tâm với thành công của khách hàng khiến Kevin trở thành đối tác lý tưởng cho hành trình bất động sản của bạn tại Massachusetts."
   },
   "services": {
@@ -59,6 +61,27 @@
     "towns_note": "Kèm hướng dẫn từng khu vực",
     "clients": "KHÁCH HÀNG ĐÃ PHỤC VỤ",
     "clients_note": "Mua bán & cho thuê từ 2021"
+  },
+  "homeMarket": {
+    "title": "THỊ TRƯỜNG THÁNG NÀY",
+    "subtitle": "Nhà đơn lập theo báo cáo {{month}}: những gì đã bán trong mười hai tháng qua và lượng nhà đang rao bán. Được tính lại từ dữ liệu MLS vào ngày 3 mỗi tháng.",
+    "median": "Giá bán trung vị, 12 tháng",
+    "ratio": "Giá bán so với giá rao, {{n}} tháng",
+    "supply": "Số tháng tồn kho",
+    "edge": {
+      "sellers": "Người bán có lợi thế",
+      "buyers": "Người mua có thể thương lượng",
+      "balanced": "Gần cân bằng"
+    },
+    "read": "Xem báo cáo {{town}}",
+    "all": "Cả {{n}} thị trấn",
+    "source": "Dựa trên thông tin từ MLS Property Information Network, Inc. (MLS PIN). Các số liệu do {{agent}}, {{brokerage}} tính toán, không phải MLS PIN, và được tin là chính xác nhưng không được bảo đảm."
+  },
+  "homeClosings": {
+    "title": "GIAO DỊCH GẦN ĐÂY",
+    "subtitle": "Những căn nhà Kevin đã hoàn tất giao dịch, mỗi căn có trang riêng: giá chốt, hình ảnh và thông tin chi tiết.",
+    "sold": "Đã bán",
+    "all": "Xem cả {{n}} giao dịch"
   },
   "contact": {
     "title": "LIÊN HỆ",

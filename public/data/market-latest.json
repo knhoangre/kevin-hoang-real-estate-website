@@ -1,0 +1,542 @@
+{
+ "month": "2026-10",
+ "asOf": "2026-11-06",
+ "towns": [
+  {
+   "town": "Newton",
+   "slug": "newton-ma",
+   "month": "2026-10",
+   "path": "/market/newton-ma/2026-10",
+   "summary": "53 homes sold in Newton in October 2026: 24 single-family homes, 25 condos and 4 multi-families. The median single-family home sold for $1,263,000, down 32% on September and down 31% against the twelve-month median of $1,830,000. 25% sold above their final asking price, and the median sold at 97.2% of it. A year earlier, in October 2025, 81 homes sold and the median single-family home went for $1,475,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1830000,
+     "ratio": 0.9839,
+     "window": 3,
+     "monthsSupply": 3.1488
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1085000,
+     "ratio": 0.9733,
+     "window": 3,
+     "monthsSupply": 3.8113
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1327500,
+     "ratio": 0.9575,
+     "window": 3,
+     "monthsSupply": 4.8
+    }
+   ]
+  },
+  {
+   "town": "Needham",
+   "slug": "needham-ma",
+   "month": "2026-10",
+   "path": "/market/needham-ma/2026-10",
+   "summary": "23 homes sold in Needham in October 2026: 16 single-family homes, 6 condos and 1 multi-family. The median single-family home sold for $1,683,000, up 7% on September and down 6% against the twelve-month median of $1,788,000. 31% sold above their final asking price, and the median sold at 99.0% of it. A year earlier, in October 2025, 23 homes sold and the median single-family home went for $1,400,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1787500,
+     "ratio": 0.9796,
+     "window": 3,
+     "monthsSupply": 2.352
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1123500,
+     "ratio": 0.9866,
+     "window": 3,
+     "monthsSupply": 2.3077
+    }
+   ]
+  },
+  {
+   "town": "Wellesley",
+   "slug": "wellesley-ma",
+   "month": "2026-10",
+   "path": "/market/wellesley-ma/2026-10",
+   "summary": "18 homes sold in Wellesley in October 2026: 16 single-family homes, 1 condo and 1 multi-family — the fewest since March 2026. The median single-family home sold for $2,104,000, down 32% on September and down 10% against the twelve-month median of $2,325,000. 38% sold above their final asking price, and the median sold at 97.9% of it. A year earlier, in October 2025, 25 homes sold and the median single-family home went for $2,548,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 2325000,
+     "ratio": 0.973,
+     "window": 3,
+     "monthsSupply": 2.008
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1262500,
+     "ratio": 0.9846,
+     "window": 3,
+     "monthsSupply": 2.16
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1900000,
+     "ratio": null,
+     "window": null,
+     "monthsSupply": 2.4
+    }
+   ]
+  },
+  {
+   "town": "Waltham",
+   "slug": "waltham-ma",
+   "month": "2026-10",
+   "path": "/market/waltham-ma/2026-10",
+   "summary": "38 homes sold in Waltham in October 2026: 22 single-family homes and 16 condos. The median single-family home sold for $850,000, about the same on September and down 2% against the twelve-month median of $870,000. 45% sold above their final asking price, and the median sold at 99.7% of it. A year earlier, in October 2025, 52 homes sold and the median single-family home went for $870,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 870000,
+     "ratio": 0.9968,
+     "window": 3,
+     "monthsSupply": 2.8571
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 660000,
+     "ratio": 0.9894,
+     "window": 3,
+     "monthsSupply": 3.6078
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1120000,
+     "ratio": 1.0001,
+     "window": 6,
+     "monthsSupply": 7.2727
+    }
+   ]
+  },
+  {
+   "town": "Brookline",
+   "slug": "brookline-ma",
+   "month": "2026-10",
+   "path": "/market/brookline-ma/2026-10",
+   "summary": "36 homes sold in Brookline in October 2026: 8 single-family homes, 27 condos and 1 multi-family. The median condo sold for $1,190,000, up 18% on September and up 14% against the twelve-month median of $1,045,000. 22% sold above their final asking price, and the median sold at 98.6% of it. A year earlier, in October 2025, 45 homes sold and the median condo went for $899,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 2600000,
+     "ratio": 0.9659,
+     "window": 3,
+     "monthsSupply": 4.8
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1045000,
+     "ratio": 0.9807,
+     "window": 3,
+     "monthsSupply": 3.8238
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 2200000,
+     "ratio": 0.9733,
+     "window": 12,
+     "monthsSupply": 10.5882
+    }
+   ]
+  },
+  {
+   "town": "Weston",
+   "slug": "weston-ma",
+   "month": "2026-10",
+   "path": "/market/weston-ma/2026-10",
+   "summary": "8 homes sold in Weston in October 2026: 7 single-family homes and 1 condo — the fewest since April 2026. The median single-family home sold for $2,180,000, up 25% on September and down 12% against the twelve-month median of $2,480,000. 43% sold above their final asking price, and the median sold at 98.1% of it. A year earlier, in October 2025, 14 homes sold and the median single-family home went for $2,725,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 2480000,
+     "ratio": 0.9624,
+     "window": 3,
+     "monthsSupply": 3.5478
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1177500,
+     "ratio": 0.9914,
+     "window": 12,
+     "monthsSupply": 0.75
+    }
+   ]
+  },
+  {
+   "town": "Lexington",
+   "slug": "lexington-ma",
+   "month": "2026-10",
+   "path": "/market/lexington-ma/2026-10",
+   "summary": "25 homes sold in Lexington in October 2026: 22 single-family homes and 3 condos. The median single-family home sold for $1,933,000, up 23% on September and up 8% against the twelve-month median of $1,788,000. 32% sold above their final asking price, and the median sold at 97.0% of it. A year earlier, in October 2025, 28 homes sold and the median single-family home went for $1,550,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1787500,
+     "ratio": 0.9762,
+     "window": 3,
+     "monthsSupply": 2.7273
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 1050000,
+     "ratio": 1,
+     "window": 3,
+     "monthsSupply": 6.1622
+    }
+   ]
+  },
+  {
+   "town": "Belmont",
+   "slug": "belmont-ma",
+   "month": "2026-10",
+   "path": "/market/belmont-ma/2026-10",
+   "summary": "23 homes sold in Belmont in October 2026: 18 single-family homes, 3 condos and 2 multi-families — the most since July 2026. The median single-family home sold for $1,628,000, up 7% on September and up 2% against the twelve-month median of $1,600,000. 17% sold above their final asking price, and the median sold at 96.7% of it. A year earlier, in October 2025, 24 homes sold and the median single-family home went for $1,907,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1600000,
+     "ratio": 0.9805,
+     "window": 3,
+     "monthsSupply": 2.2326
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 885000,
+     "ratio": 0.9725,
+     "window": 3,
+     "monthsSupply": 4.32
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1338500,
+     "ratio": 1.0111,
+     "window": 6,
+     "monthsSupply": 4.2857
+    }
+   ]
+  },
+  {
+   "town": "Winchester",
+   "slug": "winchester-ma",
+   "month": "2026-10",
+   "path": "/market/winchester-ma/2026-10",
+   "summary": "20 homes sold in Winchester in October 2026: 16 single-family homes and 4 condos. The median single-family home sold for $1,775,000, down 12% on September and about the same against the twelve-month median of $1,775,000. 44% sold above their final asking price, and the median sold at 98.5% of it. A year earlier, in October 2025, 25 homes sold and the median single-family home went for $1,750,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1775000,
+     "ratio": 0.9759,
+     "window": 3,
+     "monthsSupply": 2.6816
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 918000,
+     "ratio": 1,
+     "window": 3,
+     "monthsSupply": 2.7857
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1245000,
+     "ratio": 0.9775,
+     "window": 12,
+     "monthsSupply": 2.5714
+    }
+   ]
+  },
+  {
+   "town": "Concord",
+   "slug": "concord-ma",
+   "month": "2026-10",
+   "path": "/market/concord-ma/2026-10",
+   "summary": "26 homes sold in Concord in October 2026: 17 single-family homes and 9 condos — the most since May 2026. The median single-family home sold for $1,350,000, down 13% on September and down 22% against the twelve-month median of $1,728,000. 47% sold above their final asking price, and the median sold at 100.0% of it. A year earlier, in October 2025, 12 homes sold and the median single-family home went for $1,625,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1727500,
+     "ratio": 0.9894,
+     "window": 3,
+     "monthsSupply": 3.5556
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 820000,
+     "ratio": 0.9881,
+     "window": 3,
+     "monthsSupply": 2.3415
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 999000,
+     "ratio": null,
+     "window": null,
+     "monthsSupply": 4.8
+    }
+   ]
+  },
+  {
+   "town": "Cambridge",
+   "slug": "cambridge-ma",
+   "month": "2026-10",
+   "path": "/market/cambridge-ma/2026-10",
+   "summary": "68 homes sold in Cambridge in October 2026: 7 single-family homes, 50 condos and 11 multi-families. The median condo sold for $931,000, up 30% on September and down 2% against the twelve-month median of $951,000. 30% sold above their final asking price, and the median sold at 100.0% of it. A year earlier, in October 2025, 69 homes sold and the median condo went for $913,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 2442500,
+     "ratio": 0.9843,
+     "window": 3,
+     "monthsSupply": 2.9492
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 951250,
+     "ratio": 1,
+     "window": 3,
+     "monthsSupply": 3.6753
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 2150000,
+     "ratio": 0.9682,
+     "window": 3,
+     "monthsSupply": 4.5517
+    }
+   ]
+  },
+  {
+   "town": "Somerville",
+   "slug": "somerville-ma",
+   "month": "2026-10",
+   "path": "/market/somerville-ma/2026-10",
+   "summary": "38 homes sold in Somerville in October 2026: 2 single-family homes, 22 condos and 14 multi-families — the fewest since March 2026. The median condo sold for $870,000, up 14% on September and up 2% against the twelve-month median of $850,000. 23% sold above their final asking price, and the median sold at 99.0% of it. A year earlier, in October 2025, 48 homes sold and the median condo went for $949,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 1302500,
+     "ratio": 1.0083,
+     "window": 3,
+     "monthsSupply": 3.6364
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 850000,
+     "ratio": 0.9957,
+     "window": 3,
+     "monthsSupply": 4.2457
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1320000,
+     "ratio": 0.9802,
+     "window": 3,
+     "monthsSupply": 4.2581
+    }
+   ]
+  },
+  {
+   "town": "Medford",
+   "slug": "medford-ma",
+   "month": "2026-10",
+   "path": "/market/medford-ma/2026-10",
+   "summary": "39 homes sold in Medford in October 2026: 18 single-family homes, 12 condos and 9 multi-families. The median single-family home sold for $811,000, about the same on September and down 10% against the twelve-month median of $900,000. 44% sold above their final asking price, and the median sold at 100.0% of it. A year earlier, in October 2025, 43 homes sold and the median single-family home went for $890,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 900000,
+     "ratio": 1,
+     "window": 3,
+     "monthsSupply": 2.1
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 685000,
+     "ratio": 0.9851,
+     "window": 3,
+     "monthsSupply": 3.9568
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 1075500,
+     "ratio": 0.9667,
+     "window": 3,
+     "monthsSupply": 6.75
+    }
+   ]
+  },
+  {
+   "town": "Malden",
+   "slug": "malden-ma",
+   "month": "2026-10",
+   "path": "/market/malden-ma/2026-10",
+   "summary": "30 homes sold in Malden in October 2026: 12 single-family homes, 9 condos and 9 multi-families — the most since July 2026. The median single-family home sold for $751,000, up 10% on September and up 4% against the twelve-month median of $723,000. 58% sold above their final asking price, and the median sold at 101.2% of it. A year earlier, in October 2025, 31 homes sold and the median single-family home went for $698,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 722500,
+     "ratio": 0.992,
+     "window": 3,
+     "monthsSupply": 1.5
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 430000,
+     "ratio": 1,
+     "window": 3,
+     "monthsSupply": 3.1059
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 980000,
+     "ratio": 0.984,
+     "window": 3,
+     "monthsSupply": 3.24
+    }
+   ]
+  },
+  {
+   "town": "Quincy",
+   "slug": "quincy-ma",
+   "month": "2026-10",
+   "path": "/market/quincy-ma/2026-10",
+   "summary": "57 homes sold in Quincy in October 2026: 27 single-family homes, 24 condos and 6 multi-families — the fewest since April 2026. The median single-family home sold for $730,000, down 6% on September and down 4% against the twelve-month median of $760,000. 52% sold above their final asking price, and the median sold at 100.2% of it. A year earlier, in October 2025, 67 homes sold and the median single-family home went for $698,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 760000,
+     "ratio": 1.0079,
+     "window": 3,
+     "monthsSupply": 2.0755
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 500000,
+     "ratio": 0.9867,
+     "window": 3,
+     "monthsSupply": 3.4069
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 970000,
+     "ratio": 1.0008,
+     "window": 3,
+     "monthsSupply": 3.6279
+    }
+   ]
+  },
+  {
+   "town": "Braintree",
+   "slug": "braintree-ma",
+   "month": "2026-10",
+   "path": "/market/braintree-ma/2026-10",
+   "summary": "35 homes sold in Braintree in October 2026: 26 single-family homes, 8 condos and 1 multi-family — the most since July 2026. The median single-family home sold for $713,000, down 15% on September and down 5% against the twelve-month median of $750,000. 54% sold above their final asking price, and the median sold at 100.5% of it. A year earlier, in October 2025, 32 homes sold and the median single-family home went for $681,000.",
+   "closingsFrom": "2025-11-01",
+   "closingsTo": "2026-10-31",
+   "types": [
+    {
+     "type": "SF",
+     "label": "Single-family",
+     "median": 750000,
+     "ratio": 1.0083,
+     "window": 3,
+     "monthsSupply": 1.5868
+    },
+    {
+     "type": "CC",
+     "label": "Condos",
+     "median": 477500,
+     "ratio": 0.9803,
+     "window": 3,
+     "monthsSupply": 3.2308
+    },
+    {
+     "type": "MF",
+     "label": "Multi-family",
+     "median": 760000,
+     "ratio": 1.0009,
+     "window": 12,
+     "monthsSupply": 2.1818
+    }
+   ]
+  }
+ ]
+}

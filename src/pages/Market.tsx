@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import PageShell, { ShellSection } from '@/components/PageShell';
 import AuthorCard from '@/components/AuthorCard';
+import MarketEmailSignup from '@/components/market/MarketEmailSignup';
 import { DataTable, H2, LINK, Thin } from '@/components/market/MarketParts';
 import { MIN_MONTH_SALES, TYPE_NAMES, type Headline, type MarketIndex, type SaleType } from '@/lib/market';
 import { EDGE_LABEL, EDGE_RULE_TEXT, dateLong, money, monthName, months1, pct, ratioPct } from '@/lib/marketText';
 import { itemList } from '@/lib/schema';
-import { SITE } from '@/lib/siteConfig';
+import { SITE, telHref } from '@/lib/siteConfig';
 import summaryJson from '@/data/market/summary.json';
 import indexJson from '@/data/market/index.json';
 
@@ -85,6 +86,7 @@ const Market = () => {
         heading: 'Want these numbers for your street?',
         body: 'A town-wide median is a starting point. For one home, the comparable sales are what matter, and they are what a written valuation is built on.',
         button: 'Ask about your home',
+        contact: { to: '/home-valuation#request', phone: SITE.phone, tel: telHref, email: SITE.email },
       }}
     >
       <ShellSection width="wide" className="py-16 md:py-20 bg-white">
@@ -114,6 +116,8 @@ const Market = () => {
           <TypeTable type="CC" />
           <p className="max-w-3xl text-xs leading-relaxed text-gray-500">{EDGE_RULE_TEXT}</p>
         </section>
+
+        <MarketEmailSignup className="mt-16 max-w-3xl" />
 
         {months.length > 0 && (
           <section aria-labelledby="posts" className="mt-20 space-y-8">

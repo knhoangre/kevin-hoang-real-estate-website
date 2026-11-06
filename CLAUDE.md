@@ -33,12 +33,14 @@ node scripts/marketing-check.ts        # the booklets and sheets: what MLS fills
 node scripts/applications-check.ts     # how /admin/applications files things: a corrected address joins its property
 node scripts/investment-check.ts       # /investments: the strategy math, leased rents and parcel matching; --live hits MassGIS
 node scripts/market-check.ts           # the market reports: windows, medians, supply, bands, rents, and every committed report's sentences
+node scripts/market-email-check.ts     # the monthly market email: sign-ups, who is due, what it says over the real public/data/market-latest.json
+node scripts/valuation-request-check.ts # the /home-valuation request: what it must carry, its CRM source, escaping
 node scripts/showing-reminders-check.ts # the morning showing reminders: which calendar events count, who is emailed, the message
 node scripts/send-listings-check.ts    # Send listings: what the text and email say about a home, what a paste adds
 node scripts/search-filters-check.ts   # /search's buttons: old links, which ones combine, every market status reachable, the index predicates
 node scripts/site-visitors-check.ts    # /admin/visitors' labels and sentences, and who GA4 never counts (localhost, automated browsers, Kevin's devices)
 node scripts/zh-check.mjs              # the BUILT Chinese pages (after npm run build): language tags, Maggie's name, number and address, both brokerages, nothing saying Kevin speaks Chinese
-sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders AND who can read the CRM (needs Docker)
+sh supabase/tests/run.sh          # the IDX comp migrations, the saved-homes RLS, saved investment analyses, the people on a showing tour and on a sent message, the marketing documents, the showing reminders, the market email's subscribers AND who can read the CRM (needs Docker)
 sh cockroach/tests/run.sh         # the sold database: its writer and its read endpoint (needs Docker)
 ```
 
@@ -70,7 +72,7 @@ There is no test framework configured. The closest thing to one is the SEO audit
 ```bash
 docker run --rm -v "$PWD":/app -v "$HOME/.claude/skills/seo-web/scripts":/skill:ro -w /app \
   node:20-alpine node /skill/seo-audit.mjs ./dist --origin https://kevinhoang.co \
-  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,saved,search,investments
+  --private auth,admin,crm,profile,complete-profile,open-house,events,apply,rentals,saved,search,investments,market-email
 ```
 
 The `--private` list must match `PRIVATE_PREFIXES` in [scripts/routes.mjs](scripts/routes.mjs).
@@ -448,6 +450,13 @@ rows to find 24 rentals.
   scroll started for the results and ended beside the Next button, on every
   press. It goes in one step now. Both were found by logging every scroll call
   in a browser, not by reading — neither looks wrong on the page.
+  Since 2026-11-06 the effect is keyed on `location.key`, so a `<Link>` to a
+  hash is scrolled to even when the address already carries it (the
+  valuation page's band links up to `#request`, which the homepage's "Selling a
+  home" may already have put in the bar), and a `<Link>` to a hash on ANOTHER
+  page is scrolled to as well: nothing else does either. A query-only
+  navigation still does nothing; the browser check presses a `?town=` link
+  mid-page to prove it.
 - **The cards and the total are two requests.** `count: 'exact'` makes PostgREST
   count in the same statement, so the 24 cards used to wait on a count of every
   match. `searchListings` returns rows only and `countListings` the total; the
@@ -1827,6 +1836,22 @@ the feed, with a "Copy for a client" button.
     (`MIN_MONTH_SALES`), or the month gets a report file (the town page needs
     it) but no post — a post about four sales is the thin page this corpus was
     cleaned of.
+- **A report is refused when the feed has not reached the end of its month**
+  (`feedCoversMonth`): the newest closing in `idx_sold_archive` must be no more
+  than three days short of the month's last day, or sync-market exits 1 and the
+  Action fails red. The October 2026 reports were built on Nov 3 while the MLS
+  PIN feed had not loaded since Oct 19 (newest closing Oct 16), said Newton had
+  "the fewest sales in twelve months" on 24 closings, and were rebuilt with
+  `--force` on Nov 6 (53). Asked of the archive, not `idx_listings`: the same
+  question statewide there hits the anon timeout.
+- **/market says why Dover has no report**, from `SITE.areaServed` minus
+  `SITE.marketTowns`, under a strip that says 17 towns are covered.
+- **The month's sentence lists every kind that sold**, not only the kinds with
+  enough sales in the year to be reported: Needham's one multi-family was in the
+  total and missing from the list.
+- **sync-market also writes `public/data/market-latest.json`**, the latest
+  figures and each month's opening sentences, for the monthly email (below). The
+  workflow commits it with the reports.
 - **There is no fitted price trend, and that is deliberate.** A regression of
   price on time at constant size was built and found "significant" rises in four
   towns (Somerville multi-family +19% a year). The twelve months run from late
@@ -1855,6 +1880,52 @@ the feed, with a "Copy for a client" button.
   so. It is the same [MarketAnalysis](src/components/market/MarketAnalysis.tsx)
   the public page renders, so the two cannot describe the same numbers
   differently.
+
+### The monthly market email
+
+Sign-up on /market, each town's report, each post and the homepage
+([MarketEmailSignup](src/components/market/MarketEmailSignup.tsx)); the rules and
+words in [_shared/marketEmail.ts](supabase/functions/_shared/marketEmail.ts);
+`market-email` (subscribe, confirm, unsubscribe, run) and `market-unsubscribe`
+(RFC 8058 one-click, `verify_jwt = false` in config.toml because a mail client
+POSTs there with no key; the token is the credential); the tables in
+`20261106100000_market_email`.
+
+- **No monthly email goes until `MAILING_ADDRESS` is set** (Kevin, 2026-11-06).
+  It is marketing mail, CAN-SPAM wants a postal address in every one, and the
+  site publishes none (see NAP). LPT's address or a PO box, in the footer only.
+  Until then `run` answers `{held: …}`; sign-ups and confirmations work.
+- **Double opt-in, and the confirm and unsubscribe pages ask for a press.** Mail
+  scanners open every link on arrival. `/market-email` is noindex and in
+  PRIVATE_PREFIXES and robots.txt; the query string is read after hydration.
+- **At most 60 a day** (`DAILY_BATCH`): Resend's free plan is 100 a day for ALL
+  of the site's mail. pg_cron runs daily at 15:00 UTC and each month is claimed
+  per subscriber in `market_email_sends`, so the rest follow on later days.
+  Confirmations are capped at one per address per 10 minutes and 30 an hour.
+- **`subscribe` answers the same for every address**, new or not, so it cannot
+  be asked who is subscribed. Towns are added, never removed, by a sign-up.
+- **The function reads the figures from the site**, `/data/market-latest.json`,
+  because the repo is private and the Action can hold no secrets.
+- **The admin's list reads the tables through a scoped cast**
+  (`SubscribersSchema` in MarketSubscribers.tsx) until types.ts is regenerated
+  after the migration is pushed. Delete it then.
+
+### Home valuation requests (`/home-valuation`)
+
+[ValuationRequestForm](src/components/ValuationRequestForm.tsx) sits straight
+after the hero; the page's band and the homepage's "Selling a home" link to
+`#request`. It posts to `submit-valuation-request`, whose rules are in
+[_shared/valuationRequest.ts](supabase/functions/_shared/valuationRequest.ts).
+
+- **It files the person through `crm_upsert_contact()`**, tag Seller, source
+  `Home Valuation Request & <street, town>`, `p_prefer_new` TRUE, and stores the
+  request as a `contact_messages` row. Not a fourth hand-rolled find-or-create.
+- **Kevin gets the email with `reply_to` the person; the person gets one note**,
+  at most once a day per address. Past 20 requests an hour nothing is mailed,
+  only stored. A failed CRM write never fails a request that reached Kevin's
+  inbox, and the reverse.
+- The address field is the MassGIS one; ZIP is not `inputMode="numeric"`; the
+  phone has no `maxLength`.
 
 ### Showing tours (`/admin/showings`)
 
@@ -2332,8 +2403,10 @@ strip in the header ignores it.
 Two senders, and only one of them is ours today.
 
 - **Our own mail goes through Resend** from `Kevin Hoang <contact@kevinhoang.co>`
-  — five edge functions now (`submit-contact`, the two sign-in functions,
-  `rental-application-invite`'s `send` action, and `rental-application-submitted`). `RESEND_API_KEY` is a project
+  — `submit-contact`, the two sign-in functions, `rental-application-invite`'s
+  `send` action, `rental-application-submitted`, `submit-valuation-request`,
+  `market-email`, and the showing and listing senders. All of them share
+  Resend's free 100 a day. `RESEND_API_KEY` is a project
   secret; each function no-ops with a readable error without it.
 - **Supabase Auth's own mail** — confirm signup, password reset, email change —
   does NOT go through Resend by default. It ships from
@@ -2666,7 +2739,8 @@ The landing-page heroes are set in the serif. **The homepage is not** — as of
 Playfair is a high-contrast transitional serif: at that size its hairlines and
 ball terminals are doing a great deal of work against a moving background, where
 Inter's even weight simply reads. It also takes the LCP element off the serif.
-The four section h2s — About, Stats, Reviews, Contact — went with it, because a
+The section h2s — About, Stats, the market strip, Recent closings, Reviews,
+Contact — went with it, because a
 serif heading between two sans ones reads as a page assembled from two designs,
 which this site genuinely was until 2026-08-27.
 
@@ -2684,6 +2758,15 @@ block closes back up vertically.
 
 Every one of these strings is already uppercase in `en.json` **and** `vi.json`,
 so the tracking is not applied to mixed-case text in either language.
+
+**The h1 is the page title's words, "NEWTON & GREATER BOSTON REAL ESTATE AGENT"**
+(2026-11-06), with the name and brokerage in the eyebrow and the subtitle naming
+the engineering background, four towns and both languages. "YOUR TRUSTED REAL
+ESTATE PARTNER IN GREATER BOSTON" named no town and no service anyone searches
+for. The four buttons are one line on a laptop and two pairs on a phone: two
+rows of two pushed the skyline below the fold at 1280x720. The homepage body
+also links to the market reports (`HomeMarket`, from summary.json) and three
+closings (`HomeClosings`), which it did not before.
 
 Related: `.numeral` in [index.css](src/index.css) exists because Playfair ships
 old-style figures, so no number goes in the display face either.

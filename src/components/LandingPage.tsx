@@ -5,6 +5,7 @@ import ProseBody from '@/components/ProseBody';
 import SectionHeading from '@/components/SectionHeading';
 import FaqAccordion from '@/components/FaqAccordion';
 import { agentIdentity, faqPage, service, type Crumb, type QA } from '@/lib/schema';
+import type { CtaContact } from '@/components/CtaBand';
 
 /**
  * The half of a landing page that can be translated.
@@ -21,7 +22,7 @@ export interface LandingCopy {
   lede: string;
   faqHeading: string;
   faqs: QA[];
-  cta: { heading: string; body: string };
+  cta: { heading: string; body: string; button?: string };
   body: React.ReactNode;
   /** Small label above the h1. Falls back to the last breadcrumb. */
   eyebrow?: string;
@@ -64,7 +65,7 @@ interface LandingPageProps {
   /** Heading above the FAQ block. Unique per page, for the same reason as h1. */
   faqHeading: string;
   faqs: QA[];
-  cta: { heading: string; body: string };
+  cta: { heading: string; body: string; button?: string };
   eyebrow?: string;
   /**
    * Cinematic hero image. Sized through Unsplash's params — a bare photo URL
@@ -73,6 +74,14 @@ interface LandingPageProps {
    */
   hero: { image: string; alt: string };
   children: React.ReactNode;
+  /**
+   * A section of its own between the hero and the body, for the one page whose
+   * visitors arrive to DO something: /home-valuation's request form. English
+   * only; it is not part of the translatable copy.
+   */
+  beforeBody?: React.ReactNode;
+  /** Where the closing band's button goes, when that is not /contact. */
+  ctaContact?: CtaContact;
   /**
    * Optional Vietnamese rendering of everything above. Supplied only by the
    * page whose audience actually reads it. Swapped in after mount when the
@@ -110,6 +119,8 @@ const LandingPage = ({
   eyebrow,
   hero,
   children,
+  beforeBody,
+  ctaContact,
   vi,
 }: LandingPageProps) => {
   const { i18n } = useTranslation();
@@ -150,8 +161,9 @@ const LandingPage = ({
         text: copy.textLabel,
       }}
       strip={defaultStrip(copy.stripLabels)}
-      cta={{ heading: copy.cta.heading, body: copy.cta.body, button: copy.ctaButton }}
+      cta={{ heading: copy.cta.heading, body: copy.cta.body, button: copy.ctaButton ?? copy.cta.button, contact: ctaContact }}
     >
+      {beforeBody}
       <ShellSection>
         <ProseBody>{copy.body}</ProseBody>
       </ShellSection>

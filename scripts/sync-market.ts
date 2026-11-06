@@ -33,6 +33,8 @@ import { createClient } from '@supabase/supabase-js';
 import { SITE } from '../src/lib/siteConfig.ts';
 import {
   TRACKING_SINCE,
+  TYPE_NAMES,
+  activeTypes,
   addMonths,
   buildReport,
   feedCoversMonth,
@@ -43,6 +45,8 @@ import {
   type MarketReport,
 } from '../src/lib/market.ts';
 import { fetchNewestSale, fetchSalesCoverage, fetchTownRows, type TownRows } from '../src/lib/marketFetch.ts';
+import { monthSummary } from '../src/lib/marketText.ts';
+import type { MarketLatest } from '../supabase/functions/_shared/marketEmail.ts';
 
 const DIR = 'src/data/market';
 
@@ -169,6 +173,7 @@ for (const t of towns) {
 // --- the index and the summary are rebuilt from every report on disk ------------
 const index: MarketIndex = { towns: [] };
 const summary = [];
+const latestTowns: MarketLatest['towns'] = [];
 for (const name of SITE.marketTowns) {
   const t = SITE.areaServed.find((a) => a.name === name);
   if (!t || !existsSync(join(DIR, t.slug))) continue;
@@ -185,10 +190,44 @@ for (const name of SITE.marketTowns) {
     latest: latest.month,
     posts: reports.filter(monthWorthAPost).map((r) => ({ month: r.month, published: r.asOf })),
   });
-  summary.push(headline(latest));
+  const h = headline(latest);
+  summary.push(h);
+  const hasPost = monthWorthAPost(latest);
+  latestTowns.push({
+    town: t.name,
+    slug: t.slug,
+    month: latest.month,
+    path: hasPost ? `/market/${t.slug}/${latest.month}` : `/market/${t.slug}`,
+    summary: monthSummary(latest),
+    closingsFrom: latest.windows[0].from,
+    closingsTo: latest.windows[0].to,
+    types: activeTypes(latest).map((type) => {
+      const x = h.types.find((y) => y.type === type);
+      return {
+        type,
+        label: TYPE_NAMES[type].short,
+        median: x?.median ?? null,
+        ratio: x?.ratio ?? null,
+        window: x?.window ?? null,
+        monthsSupply: x?.monthsSupply ?? null,
+      };
+    }),
+  });
 }
 writeFileSync(join(DIR, 'index.json'), `${JSON.stringify(index, null, 1)}\n`);
 writeFileSync(join(DIR, 'summary.json'), `${JSON.stringify(summary, tidy, 1)}\n`);
+
+// The same latest figures, public, for the monthly email: the market-email
+// function fetches this from the site, because the repo is private and the
+// Action that runs this can hold no secrets to send it anywhere else.
+const latestMonth = latestTowns.reduce((m, t) => (t.month > m ? t.month : m), '');
+const marketLatest: MarketLatest = {
+  month: latestMonth,
+  asOf: summary.reduce((m, x) => (x.asOf > m ? x.asOf : m), ''),
+  towns: latestTowns,
+};
+mkdirSync('public/data', { recursive: true });
+writeFileSync('public/data/market-latest.json', `${JSON.stringify(marketLatest, tidy, 1)}\n`);
 console.log(`index: ${index.towns.length} towns, ${index.towns.reduce((n, t) => n + t.posts.length, 0)} posts`);
 
 if (failed.length) {

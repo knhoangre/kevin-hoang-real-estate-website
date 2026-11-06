@@ -151,6 +151,8 @@ export const PRIVATE_PREFIXES = [
   // it belongs here for the same reason: noindex, never in the sitemap. MLS PIN
   // requires IDX displays be non-indexable.
   '/search',
+  // Confirming or stopping the monthly market email, by a subscriber's token.
+  '/market-email',
 ];
 
 export const isPrivate = (path) =>

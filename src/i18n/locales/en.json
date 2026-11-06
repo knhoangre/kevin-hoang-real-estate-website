@@ -25,8 +25,10 @@
     "meta_description": "Read client reviews for Kevin Hoang, Greater Boston Realtor®—buying, selling, relocation, condos, single-family homes, and Massachusetts real estate guidance."
   },
   "hero": {
-    "title": "YOUR TRUSTED REAL ESTATE PARTNER IN GREATER BOSTON",
-    "subtitle": "Expert guidance for buying and selling homes with personalized service and deep market knowledge.",
+    "title": "NEWTON & GREATER BOSTON REAL ESTATE AGENT",
+    "subtitle": "A licensed Massachusetts broker who came to real estate from mechanical and software engineering. Buying and selling in Newton, Needham, Wellesley, Brookline and {{more}} more towns, in English and Tiếng Việt.",
+    "buy": "Buying a home",
+    "sell": "Selling a home",
     "cta": "Get Started Today"
   },
   "about": {
@@ -34,7 +36,7 @@
     "subtitle": "Licensed Massachusetts Real Estate Broker",
     "description": "With years of experience in the Greater Boston real estate market, I'm committed to helping clients achieve their homeownership goals through personalized service and expert market knowledge.",
     "paragraph1": "Kevin Hoang is a licensed Massachusetts real estate broker based in Newton, serving buyers and sellers across MetroWest and Greater Boston. He was born and raised in Connecticut and lived in South Windsor for 25 years before moving up to Greater Boston. A broker licence requires years of practice as a salesperson plus additional coursework and a separate state exam — most working agents hold a salesperson licence, not a broker's.",
-    "paragraph2": "Specializing in the Greater Boston real estate market, Kevin combines technical proficiency with deep market knowledge to deliver exceptional results for his clients. His engineering background proves invaluable when evaluating property conditions, understanding structural aspects, and identifying potential investment opportunities that others might overlook.",
+    "paragraph2": "Kevin came to real estate from mechanical and software engineering. The mechanical half is how he reads a house: what an inspection is really saying about the heating, the roof, the foundation and the wiring. The software half is the numbers: the monthly market reports on this site and the price estimates on listing pages are his own calculations from MLS data, with the method published beside them.",
     "paragraph3": "Whether you're a first-time homebuyer, seasoned investor, or looking to sell your property, Kevin's innovative approach and dedication to client success make him the ideal partner for your real estate journey in Massachusetts."
   },
   "services": {
@@ -59,6 +61,27 @@
     "towns_note": "With written area guides",
     "clients": "CLIENTS SERVED",
     "clients_note": "Sales & rentals since 2021"
+  },
+  "homeMarket": {
+    "title": "THIS MONTH IN THE MARKET",
+    "subtitle": "Single-family homes as of the {{month}} report: what sold over the last twelve months, and how much is for sale now. Recalculated from MLS data on the 3rd of every month.",
+    "median": "Median sale price, 12 months",
+    "ratio": "Sale-to-asking, {{n}} months",
+    "supply": "Months of supply",
+    "edge": {
+      "sellers": "Sellers have the edge",
+      "buyers": "Buyers have room to negotiate",
+      "balanced": "Close to balanced"
+    },
+    "read": "Read the {{town}} report",
+    "all": "All {{n}} towns",
+    "source": "Based on information from MLS Property Information Network, Inc. (MLS PIN). The figures are calculated by {{agent}}, {{brokerage}}, not by MLS PIN, and are believed accurate but not guaranteed."
+  },
+  "homeClosings": {
+    "title": "RECENT CLOSINGS",
+    "subtitle": "Homes Kevin has closed, each with its own page: the price it closed at, the photographs and the details.",
+    "sold": "Sold",
+    "all": "See all {{n}} closings"
   },
   "contact": {
     "title": "GET IN TOUCH",

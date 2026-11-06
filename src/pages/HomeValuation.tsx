@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 import LandingPage from '@/components/LandingPage';
+import { ShellSection } from '@/components/PageShell';
+import SectionHeading from '@/components/SectionHeading';
+import ValuationRequestForm from '@/components/ValuationRequestForm';
+import { SITE, telHref } from '@/lib/siteConfig';
 import type { QA } from '@/lib/schema';
 
 /**
@@ -65,9 +69,30 @@ const HomeValuation = () => (
     faqHeading="Questions about home valuations"
     faqs={FAQS}
     cta={{
-      heading: 'Request your home valuation',
-      body: 'Send the address and a little about the property, and you will get a written valuation back with the comparable sales it was built from.',
+      heading: 'Rather talk it through first?',
+      body: 'Call or text, and Kevin will explain how the number gets put together for a house like yours before you send anything.',
+      button: 'Request a valuation',
     }}
+    // The band's button goes back up to the form rather than to /contact,
+    // whose form has no address field.
+    ctaContact={{ to: '/home-valuation#request', phone: SITE.phone, tel: telHref, email: SITE.email }}
+    // The form comes straight after the hero: a seller who searched "what is my
+    // home worth" came to ask, and the explanation below is for those who want
+    // to read first. scroll-mt clears the fixed navbar for #request links.
+    beforeBody={
+      <section id="request" className="scroll-mt-20" aria-labelledby="request-heading">
+        <ShellSection className="py-16 md:py-20 bg-bone border-b border-black/5">
+          <SectionHeading id="request-heading" className="mb-4">
+            Request your home valuation
+          </SectionHeading>
+          <p className="mb-8 max-w-2xl leading-relaxed text-gray-700">
+            Send the address and a little about the property, and you will get a written valuation back with the
+            comparable sales it was built from.
+          </p>
+          <ValuationRequestForm />
+        </ShellSection>
+      </section>
+    }
   >
     <h2>How is a home's value actually determined?</h2>
     <p>

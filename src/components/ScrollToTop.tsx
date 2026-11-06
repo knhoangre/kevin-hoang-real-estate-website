@@ -29,26 +29,47 @@ import { useLocation, useNavigationType } from 'react-router-dom';
  * PUSH. The effect re-ran for that, saw "not POP", and sent the reader to the
  * top of the document — once per visit, on the first press only, which is why
  * it looked like nothing in particular. /search scrolls to the top of its own
- * results on a page change, and this overrode it. So the last path scrolled
- * for is remembered, and a run where it has not moved does nothing.
+ * results on a page change, and this overrode it. So the last place is
+ * remembered, and a navigation that moved only the query string does nothing.
+ *
+ * Keyed on the navigation (location.key), not on the address alone, since
+ * 2026-11-06: a <Link> to the hash already in the address bar is a navigation
+ * that changes nothing else, and the form it points at has to be scrolled to.
  */
 const ScrollToTop = () => {
-  const { pathname, hash } = useLocation();
+  const { pathname, search, hash, key } = useLocation();
   const navigationType = useNavigationType();
-  const lastPlace = useRef(`${pathname}${hash}`);
+  const last = useRef({ pathname, search, hash, key });
 
   useEffect(() => {
-    const place = `${pathname}${hash}`;
-    // Same page: only the query string or the navigation type moved.
-    if (place === lastPlace.current) return;
-    lastPlace.current = place;
-
+    const prev = last.current;
+    last.current = { pathname, search, hash, key };
+    // Nothing navigated: the first render, or only the navigation type moved.
+    if (key === prev.key) return;
     // Back/Forward: the browser restores the saved position itself.
     if (navigationType === 'POP') return;
-    // Anchor links own their own scroll target.
-    if (hash) return;
+
+    const pathMoved = pathname !== prev.pathname;
+    const onlyQuery = !pathMoved && hash === prev.hash && search !== prev.search;
+
+    if (hash) {
+      if (onlyQuery) return;
+      // A plain <a href="#x"> is scrolled by the browser and arrives here as
+      // POP. A <Link> to a hash is a PUSH that nothing scrolls — the homepage's
+      // "Selling a home" goes to /home-valuation#request, and the band at the
+      // foot of that page links up to the same form — so the target is found
+      // here, once the page has rendered, which it has by the time this runs.
+      // By the navigation's key, not the address: pressing the band's link
+      // when the address already ends in #request changes nothing else.
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (target) target.scrollIntoView();
+      else if (pathMoved) window.scrollTo(0, 0);
+      return;
+    }
+    // Same page: only the query string moved (Next on /search, a filter).
+    if (!pathMoved && hash === prev.hash) return;
     window.scrollTo(0, 0);
-  }, [pathname, hash, navigationType]);
+  }, [pathname, search, hash, key, navigationType]);
 
   return null;
 };

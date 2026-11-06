@@ -380,6 +380,9 @@ export const routes: RouteRecord[] = [
       // `?mls=` on this route rather than /investments/:mls, so it needs no
       // rewrite of its own. Prerendered as a shell and noindex, like /saved.
       privatePage('investments', 'Investment Analysis', () => import('./pages/Investments'), 'src/pages/Investments.tsx'),
+      // Where the links in the monthly market email land. noindex: each URL is one
+      // subscriber's token.
+      privatePage('market-email', 'Market Report Email', () => import('./pages/MarketEmail'), 'src/pages/MarketEmail.tsx'),
 
       privatePage('admin', 'Admin', () => import('./pages/AdminHome'), 'src/pages/AdminHome.tsx'),
       privatePage('admin/follow-up', 'Follow Up', () => import('./pages/FollowUp'), 'src/pages/FollowUp.tsx'),

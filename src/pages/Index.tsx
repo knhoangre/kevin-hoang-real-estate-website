@@ -4,6 +4,8 @@ import About from "@/components/About";
 import Stats from "@/components/Stats";
 import Contact from "@/components/Contact";
 import Reviews from "@/components/Reviews";
+import HomeMarket from "@/components/HomeMarket";
+import HomeClosings from "@/components/HomeClosings";
 import { Element } from "react-scroll";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -60,6 +62,15 @@ const Index = () => {
       </div>
       <div className="enter">
         <Stats />
+      </div>
+      {/* The market reports and the closings, which the homepage body did not
+          link to until 2026-11-06: the most original pages on the site, behind
+          a navbar item and the footer. */}
+      <div className="enter">
+        <HomeMarket />
+      </div>
+      <div className="enter">
+        <HomeClosings />
       </div>
       <div className="enter">
         <Reviews />

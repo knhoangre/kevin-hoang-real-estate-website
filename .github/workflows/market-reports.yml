@@ -64,7 +64,7 @@ jobs:
 
       - name: Commit and push
         run: |
-          git add src/data/market
+          git add src/data/market public/data/market-latest.json
           if git diff --cached --quiet; then
             echo "No new reports."
             exit 0

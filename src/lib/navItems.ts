@@ -104,6 +104,9 @@ const DARK_HERO_EXACT = new Set([
   '/rentals',
   '/saved',
   '/investments',
+  // Confirming or stopping the market email. Not caught by the /market prefix,
+  // which matches /market and /market/…, not /market-email.
+  '/market-email',
 ]);
 
 /**

@@ -109,6 +109,23 @@ const PrivacyPolicy = () => {
                     They are not sold or shared with other brokerages, lenders or advertisers, and you
                     can remove any of them from the analysis itself at any time.
                   </p>
+
+                  <h3 className="text-xl font-semibold text-ink mb-3">The Monthly Market Report Email</h3>
+                  <p className="text-gray-700 mb-6">
+                    When you sign up for the monthly market report, we keep your email address, the
+                    towns you chose, the page you signed up on, and when you confirmed and when each
+                    report was sent. Nothing is sent until you confirm from the first email, and every
+                    report has a link that stops them. Your address is used for this report only: it is
+                    not sold or shared, and it is not added to any other mailing. Kevin Hoang can see
+                    the list of subscribers. The emails are sent through Resend, our email provider.
+                  </p>
+
+                  <h3 className="text-xl font-semibold text-ink mb-3">Home Valuation Requests</h3>
+                  <p className="text-gray-700 mb-6">
+                    When you request a home valuation, the address, your name, your email or phone and
+                    anything you write are sent to Kevin Hoang and kept in his client records, so he can
+                    prepare the valuation and follow up with you about it.
+                  </p>
                 </section>
 
                 <section className="mb-8">
