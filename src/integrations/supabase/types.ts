@@ -2081,6 +2081,74 @@ export type Database = {
         }
         Relationships: []
       }
+      market_email_sends: {
+        Row: {
+          claimed_at: string
+          error: string | null
+          month: string
+          sent_at: string | null
+          subscriber_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          error?: string | null
+          month: string
+          sent_at?: string | null
+          subscriber_id: string
+        }
+        Update: {
+          claimed_at?: string
+          error?: string | null
+          month?: string
+          sent_at?: string | null
+          subscriber_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_email_sends_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "market_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_subscribers: {
+        Row: {
+          confirm_sent_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          source: string | null
+          token: string
+          towns: string[]
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          confirm_sent_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          source?: string | null
+          token?: string
+          towns: string[]
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          confirm_sent_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string | null
+          token?: string
+          towns?: string[]
+          unsubscribed_at?: string | null
+        }
+        Relationships: []
+      }
       marketing_documents: {
         Row: {
           created_at: string
@@ -2492,6 +2560,7 @@ export type Database = {
           created_at: string
           day: string
           error: string | null
+          how: string | null
           id: string
           kind: string
           recipients: string[]
@@ -2502,6 +2571,7 @@ export type Database = {
           created_at?: string
           day: string
           error?: string | null
+          how?: string | null
           id?: string
           kind: string
           recipients?: string[]
@@ -2512,6 +2582,7 @@ export type Database = {
           created_at?: string
           day?: string
           error?: string | null
+          how?: string | null
           id?: string
           kind?: string
           recipients?: string[]
@@ -2856,6 +2927,7 @@ export type Database = {
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       trigger_idx_sync: { Args: { body: Json }; Returns: number }
+      trigger_market_email: { Args: never; Returns: number }
       trigger_showing_reminders: { Args: never; Returns: number }
     }
     Enums: {

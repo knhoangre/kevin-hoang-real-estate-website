@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import AdminList from '@/components/admin/AdminList';
 import { supabase } from '@/integrations/supabase/client';
 import { SITE } from '@/lib/siteConfig';
@@ -20,28 +19,6 @@ interface Subscriber {
   unsubscribed_at: string | null;
 }
 
-/**
- * A scoped cast, the same stopgap as CompsSchema in idxComps.ts: types.ts cannot
- * describe these two tables until 20261106100000_market_email is pushed and it
- * is regenerated. Delete this and read through `supabase` once it is.
- */
-interface SubscribersSchema {
-  public: {
-    Tables: {
-      market_subscribers: { Row: Subscriber; Insert: never; Update: never; Relationships: [] };
-      market_email_sends: {
-        Row: { subscriber_id: string; month: string; sent_at: string | null };
-        Insert: never;
-        Update: never;
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-  };
-}
-const db = supabase as unknown as SupabaseClient<SubscribersSchema>;
-
 const townName = (slug: string) => SITE.areaServed.find((t) => t.slug === slug)?.name ?? slug;
 const day = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
@@ -54,11 +31,11 @@ const MarketSubscribers = () => {
   useEffect(() => {
     (async () => {
       const [{ data, error: e1 }, { data: sends, error: e2 }] = await Promise.all([
-        db
+        supabase
           .from('market_subscribers')
           .select('id, email, towns, created_at, confirmed_at, unsubscribed_at')
           .order('created_at', { ascending: false }),
-        db.from('market_email_sends').select('subscriber_id, month, sent_at').not('sent_at', 'is', null),
+        supabase.from('market_email_sends').select('subscriber_id, month, sent_at').not('sent_at', 'is', null),
       ]);
       if (e1 || e2) throw e1 ?? e2;
       const latest = new Map<string, string>();

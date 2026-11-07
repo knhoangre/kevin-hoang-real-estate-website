@@ -1910,9 +1910,9 @@ POSTs there with no key; the token is the credential); the tables in
   be asked who is subscribed. Towns are added, never removed, by a sign-up.
 - **The function reads the figures from the site**, `/data/market-latest.json`,
   because the repo is private and the Action can hold no secrets.
-- **The admin's list reads the tables through a scoped cast**
-  (`SubscribersSchema` in MarketSubscribers.tsx) until types.ts is regenerated
-  after the migration is pushed. Delete it then.
+- **The admin's list reads the tables through `supabase` directly**: the
+  migration went live and types.ts was regenerated on 2026-11-07, and the scoped
+  cast that stood in for them was deleted.
 
 ### Home valuation requests (`/home-valuation`)
 
