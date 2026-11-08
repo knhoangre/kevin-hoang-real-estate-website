@@ -1527,15 +1527,17 @@ ul {
 .sh-classic .plate.s2 {
   font-size: 14.5px;
 }
-/* Placed by its INK, not its line box: from the top of HOME to the end of the
-   tail under the p, the title sits mid-way between the address plate and the
-   foot of the band. At 47px the tail ran past the band's foot (Kevin,
-   2026-11-08: "not centered with the white banner"). */
+/* Placed by its INK, not its line box (Kevin, 2026-11-08: "not centered with
+   the white banner"). The two words are middle-aligned, not on one baseline: the
+   middle of the script's letters is level with the middle of HOME's capitals,
+   and the pair, from its highest stroke to its lowest, sits mid-way between the
+   address plate and the foot of the band. The offsets were measured from the
+   rendered ink; re-measure them if a size here changes. */
 .sh-classic .title {
   position: absolute;
   left: 0;
   right: 0;
-  top: 35px;
+  top: 42px;
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -1562,7 +1564,21 @@ ul {
   font-weight: 400;
   font-size: 74px;
   -webkit-text-stroke: 0.7px currentColor;
+  /* Lifted off HOME's baseline until the middles of the two words are level. */
+  position: relative;
+  top: -8.5px;
   line-height: 1;
+}
+/* "upgrades" is a taller word than "expenses": its d rises above HOME and its g
+   and p hang below, 73px of ink in a 74px band. Smaller, and placed for its own
+   ink, it is centred in the band as well. :has() because the sheet's kind is
+   only on its table. */
+.sh-classic:has(.tbl.k-upgrades) .title {
+  top: 59px;
+}
+.sh-classic:has(.tbl.k-upgrades) .title i {
+  font-size: 62px;
+  top: -10px;
 }
 .sh-classic .body {
   position: absolute;
