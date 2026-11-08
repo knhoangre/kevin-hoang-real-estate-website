@@ -304,7 +304,7 @@ export const DESIGNS: DesignDef[] = [
     id: 'sheet-split',
     family: 'sheet',
     label: 'Split',
-    blurb: 'The photograph beside a dark block with the title in white, then a clean ruled list.',
+    blurb: 'The photograph beside a gold block with the title, then a clean ruled list.',
     origin: 'new',
     slots: [cover('header', 'Header photo')],
     statCount: 0,

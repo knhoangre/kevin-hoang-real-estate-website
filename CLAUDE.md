@@ -2312,10 +2312,18 @@ row become several rows). His originals are in `pdf/`, which is not committed.
   and Gallery are new. Sheets: Classic and Classic Blue are his (the blue is the
   second version of his expense sheet); Noir, Gallery, Modern, Arch and Split
   are new, and Gallery was redesigned on 2026-11-07 to match the Gallery
-  booklet's cover. Classic's "expenses" is Playfair italic, not a script (Kevin
-  chose it over the thin Allura). With two agents, no sheet draws a logo; both
-  brokerage names still print. Adding one means `DESIGNS` in `marketing.ts`, a
-  component, and its entry in
+  booklet's cover. **Classic's title is set in the fonts of his own file**,
+  Alegreya SC Medium for HOME and Monsieur La Doulaise for the word after it,
+  read out of the PDF with `pdffonts`. Three look-alikes (a slab, Allura,
+  Playfair italic) went live first and he rejected each; when rebuilding one of
+  his documents, run `pdffonts` on it before choosing a face. His Welcome Home
+  booklet's headline is Alegreya SC Bold in his file and still a slab here.
+  Split's block is champagne, not black (he found black too dark); Noir is the
+  one dark design on purpose. With two agents, no sheet draws a logo; both
+  brokerage names still print. A frame (`.pic`) must never be
+  `position: static`: its picture is absolutely placed inside it, and Classic's
+  two-agent headshot filled the whole footer that way. Adding one means
+  `DESIGNS` in `marketing.ts`, a component, and its entry in
   [designs/index.tsx](src/components/marketing/designs/index.tsx).
 - **The brokerage is always printed** (`brokerageOf`) — 254 CMR 3.09 — per
   agent, because a co-listing can be two brokerages; a blank field falls back to

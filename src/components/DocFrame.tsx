@@ -33,7 +33,7 @@ import { createPortal } from 'react-dom';
  */
 
 const FONTS =
-  'https://fonts.googleapis.com/css2?family=Carlito:wght@400;700&family=Crete+Round&family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&display=swap';
+  'https://fonts.googleapis.com/css2?family=Alegreya+SC:wght@500&family=Carlito:wght@400;700&family=Crete+Round&family=Inter:wght@400;500;600;700;800&family=Monsieur+La+Doulaise&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,500&display=swap';
 
 /** Paper, in CSS pixels at 96 to the inch. */
 const PAPER = {

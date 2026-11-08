@@ -26,6 +26,8 @@
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --slab: 'Crete Round', Rockwell, Georgia, serif;
+  --smallcaps: 'Alegreya SC', Georgia, serif;
+  --flourish: 'Monsieur La Doulaise', 'Snell Roundhand', cursive;
   --office: 'Carlito', Calibri, 'Helvetica Neue', Arial, sans-serif;
   --verdana: Verdana, Geneva, 'DejaVu Sans', sans-serif;
 }
@@ -1529,30 +1531,34 @@ ul {
   position: absolute;
   left: 0;
   right: 0;
-  top: 66px;
+  top: 47px;
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 18px;
+  gap: 30px;
   pointer-events: none;
 }
+/* The two faces of his own sheet, read out of his PDF with pdffonts: Alegreya
+   SC Medium for HOME and Monsieur La Doulaise for the word after it. Look-alikes
+   (a slab, Allura, Playfair italic) were tried first and none looked right
+   to him; the fonts in his file did. */
 .sh-classic .title b {
-  font-family: var(--slab);
-  font-weight: 400;
-  font-size: 35px;
+  font-family: var(--smallcaps);
+  font-weight: 500;
+  font-size: 45px;
   line-height: 1;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-/* The serif's italic, not a script: a thin script beside heavy slab capitals
-   read as a different, weaker word (Kevin, 2026-11-07). */
 .sh-classic .title i {
-  font-family: var(--display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 48px;
+  font-family: var(--flourish);
+  font-style: normal;
+  /* His file sets it heavier than the face's one weight. A browser's own
+     bold is too heavy for a hairline script; a thin outline matches it. */
+  font-weight: 400;
+  font-size: 74px;
+  -webkit-text-stroke: 0.7px currentColor;
   line-height: 1;
-  letter-spacing: 0.01em;
 }
 .sh-classic .body {
   position: absolute;
@@ -1629,16 +1635,16 @@ ul {
 .sh-classic .ft .agent-photo {
   position: absolute;
   left: 50%;
-  top: -140px;
-  width: 160px;
-  height: 160px;
-  margin-left: -80px;
+  top: -152px;
+  width: 176px;
+  height: 176px;
+  margin-left: -88px;
 }
 .sh-classic .ft .agent-text {
   position: absolute;
   left: 0;
   right: 0;
-  top: 46px;
+  top: 44px;
   text-align: center;
   text-transform: uppercase;
 }
@@ -1647,19 +1653,19 @@ ul {
 }
 .sh-classic .ft .agent-name {
   font-weight: 700;
-  font-size: 31px;
+  font-size: 34px;
   line-height: 1.1;
 }
 .sh-classic .ft .agent-title {
   margin-top: 6px;
-  font-size: 18px;
+  font-size: 20px;
 }
 .sh-classic .ft .agent-contact {
   margin-top: 3px;
-  font-size: 19px;
+  font-size: 20px;
 }
 .sh-classic .ft .agent-contact.s1 {
-  font-size: 15.5px;
+  font-size: 17.5px;
 }
 .sh-classic .ft .agent-logo {
   position: absolute;
@@ -1682,22 +1688,26 @@ ul {
 .sh-classic .ft.two .agent-text {
   position: static;
 }
+/* Relative, not static: the picture is absolutely placed inside its frame,
+   and a static frame let it out to fill the whole footer. */
 .sh-classic .ft.two .agent-photo {
-  position: static;
-  width: 62px;
-  height: 62px;
+  position: relative;
+  width: 74px;
+  height: 74px;
   margin: 0 auto 8px;
+  left: auto;
+  top: auto;
 }
 .sh-classic .ft.two .agent-name {
-  font-size: 21px;
+  font-size: 23px;
 }
 .sh-classic .ft.two .agent-title {
   margin-top: 3px;
-  font-size: 13px;
+  font-size: 14.5px;
 }
 .sh-classic .ft.two .agent-contact,
 .sh-classic .ft.two .agent-contact.s1 {
-  font-size: 12.5px;
+  font-size: 13.5px;
 }
 .sh-classic .ft.two .agent-logo {
   display: none;
@@ -1815,17 +1825,17 @@ ul {
 }
 .sh-noir .td {
   padding: 16px 4px;
-  font-size: 14px;
+  font-size: 15.5px;
   line-height: 22px;
 }
 .sh-noir.d-regular .td {
   padding: 11px 4px;
-  font-size: 12.5px;
+  font-size: 14px;
   line-height: 18px;
 }
 .sh-noir.d-compact .td {
   padding: 7px 4px;
-  font-size: 11px;
+  font-size: 12.5px;
   line-height: 15px;
 }
 .sh-noir .td.label {
@@ -1851,10 +1861,10 @@ ul {
 .sh-noir.d-regular .th .td,
 .sh-noir.d-compact .th .td {
   padding: 0 4px 10px;
-  font-size: 9px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
@@ -1896,8 +1906,8 @@ ul {
 }
 .sh-noir .ft .agent-photo {
   flex: none;
-  width: 84px;
-  height: 84px;
+  width: 100px;
+  height: 100px;
   outline: 1px solid var(--champ);
   outline-offset: 5px;
 }
@@ -1908,12 +1918,12 @@ ul {
 .sh-noir .ft .agent-name {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 23px;
+  font-size: 26px;
   line-height: 1.15;
 }
 .sh-noir .ft .agent-title {
   margin-top: 6px;
-  font-size: 8.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -1921,7 +1931,7 @@ ul {
 }
 .sh-noir .ft .agent-contact {
   margin-top: 8px;
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.6;
   color: #d8d3c8;
 }
@@ -1933,11 +1943,18 @@ ul {
   gap: 16px;
 }
 .sh-noir .ft.two .agent-photo {
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
 }
 .sh-noir .ft.two .agent-name {
-  font-size: 18px;
+  font-size: 20px;
+}
+.sh-noir .ft.two .agent-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+.sh-noir .ft.two .agent-contact {
+  font-size: 11.5px;
 }
 
 /* ========================================================================
@@ -2063,10 +2080,10 @@ ul {
 .sh-gallery.d-regular .th .td,
 .sh-gallery.d-compact .th .td {
   padding: 0 4px 10px;
-  font-size: 9.5px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
@@ -2106,8 +2123,8 @@ ul {
 }
 .sh-gallery .ft .agent-photo {
   flex: none;
-  width: 76px;
-  height: 76px;
+  width: 96px;
+  height: 96px;
 }
 .sh-gallery .ft .agent-text {
   min-width: 0;
@@ -2115,12 +2132,12 @@ ul {
 .sh-gallery .ft .agent-name {
   font-family: var(--display);
   font-weight: 500;
-  font-size: 24px;
+  font-size: 27px;
   line-height: 1.15;
 }
 .sh-gallery .ft .agent-title {
   margin-top: 6px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -2128,12 +2145,12 @@ ul {
 }
 .sh-gallery .ft .agent-contact {
   margin-top: 7px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: #555;
 }
 .sh-gallery .ft .agent-contact.s1 {
-  font-size: 10.5px;
+  font-size: 12px;
 }
 .sh-gallery .ft .agent-logo {
   flex: none;
@@ -2150,15 +2167,19 @@ ul {
   gap: 14px;
 }
 .sh-gallery .ft.two .agent-photo {
-  width: 56px;
-  height: 56px;
+  width: 68px;
+  height: 68px;
 }
 .sh-gallery .ft.two .agent-name {
-  font-size: 18px;
+  font-size: 20px;
+}
+.sh-gallery .ft.two .agent-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
 }
 .sh-gallery .ft.two .agent-contact,
 .sh-gallery .ft.two .agent-contact.s1 {
-  font-size: 10px;
+  font-size: 11.5px;
 }
 .sh-gallery .ft.two .agent-text {
   flex: 1;
@@ -2287,10 +2308,10 @@ ul {
 .sh-modern.d-regular .th .td,
 .sh-modern.d-compact .th .td {
   padding: 11px 16px;
-  font-size: 10.5px;
+  font-size: 12.5px;
   line-height: 16px;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #fff;
 }
@@ -2330,8 +2351,8 @@ ul {
 }
 .sh-modern .ft .agent-photo {
   flex: none;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
 }
 .sh-modern .ft .agent-text {
   flex: 1;
@@ -2339,14 +2360,14 @@ ul {
 }
 .sh-modern .ft .agent-name {
   font-weight: 800;
-  font-size: 20px;
+  font-size: 23px;
   line-height: 1.15;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .sh-modern .ft .agent-title {
   margin-top: 6px;
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -2354,12 +2375,12 @@ ul {
 }
 .sh-modern .ft .agent-contact {
   margin-top: 7px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: #444;
 }
 .sh-modern .ft .agent-contact.s1 {
-  font-size: 10.5px;
+  font-size: 12px;
 }
 .sh-modern .ft .agent-logo {
   flex: none;
@@ -2374,15 +2395,19 @@ ul {
   gap: 14px;
 }
 .sh-modern .ft.two .agent-photo {
-  width: 58px;
-  height: 58px;
+  width: 70px;
+  height: 70px;
 }
 .sh-modern .ft.two .agent-name {
-  font-size: 15px;
+  font-size: 17px;
+}
+.sh-modern .ft.two .agent-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
 }
 .sh-modern .ft.two .agent-contact,
 .sh-modern .ft.two .agent-contact.s1 {
-  font-size: 10px;
+  font-size: 11.5px;
 }
 .sh-modern .ft.two .agent-text {
   flex: 1;
@@ -2563,10 +2588,10 @@ ul {
 .sh-arch.d-regular .th .td,
 .sh-arch.d-compact .th .td {
   padding: 0 2px 12px;
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
@@ -2604,8 +2629,8 @@ ul {
 }
 .sh-arch .ft .agent-photo {
   flex: none;
-  width: 72px;
-  height: 72px;
+  width: 92px;
+  height: 92px;
   outline: 1px solid var(--champ);
   outline-offset: 4px;
 }
@@ -2615,12 +2640,12 @@ ul {
 .sh-arch .ft .agent-name {
   font-family: var(--display);
   font-weight: 500;
-  font-size: 23px;
+  font-size: 26px;
   line-height: 1.15;
 }
 .sh-arch .ft .agent-title {
   margin-top: 6px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -2628,12 +2653,12 @@ ul {
 }
 .sh-arch .ft .agent-contact {
   margin-top: 7px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: #5c544a;
 }
 .sh-arch .ft .agent-contact.s1 {
-  font-size: 10.5px;
+  font-size: 12px;
 }
 .sh-arch .ft .agent-logo {
   flex: none;
@@ -2650,15 +2675,19 @@ ul {
   gap: 14px;
 }
 .sh-arch .ft.two .agent-photo {
-  width: 54px;
-  height: 54px;
+  width: 66px;
+  height: 66px;
 }
 .sh-arch .ft.two .agent-name {
-  font-size: 18px;
+  font-size: 20px;
+}
+.sh-arch .ft.two .agent-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
 }
 .sh-arch .ft.two .agent-contact,
 .sh-arch .ft.two .agent-contact.s1 {
-  font-size: 10px;
+  font-size: 11.5px;
 }
 .sh-arch .ft.two .agent-text {
   flex: 1;
@@ -2693,6 +2722,8 @@ ul {
   width: 440px;
   height: 100%;
 }
+/* Champagne, not black: a black half of the header made the sheet too dark
+   (Kevin, 2026-11-08). Ink on champagne is 8:1, so the words stay dark. */
 .sh-split .block {
   flex: 1;
   min-width: 0;
@@ -2700,8 +2731,8 @@ ul {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background: var(--deep);
-  color: #fff;
+  background: var(--champ);
+  color: var(--deep);
 }
 .sh-split .kicker {
   margin-bottom: 22px;
@@ -2709,7 +2740,7 @@ ul {
   font-weight: 600;
   letter-spacing: 0.34em;
   text-transform: uppercase;
-  color: var(--champ);
+  color: var(--deep);
 }
 .sh-split .block h1 span,
 .sh-split .block h1 em {
@@ -2725,14 +2756,13 @@ ul {
   font-style: italic;
   font-weight: 500;
   text-transform: capitalize;
-  color: var(--champ);
 }
 .sh-split .block i {
   display: block;
   width: 40px;
   height: 1px;
   margin: 22px 0 18px;
-  background: var(--champ);
+  background: var(--deep);
 }
 .sh-split .street {
   font-size: 15px;
@@ -2750,7 +2780,7 @@ ul {
   font-size: 9.5px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #c9c2b6;
+  color: #2b2620;
 }
 .sh-split .body {
   position: absolute;
@@ -2800,10 +2830,10 @@ ul {
 .sh-split.d-regular .th .td,
 .sh-split.d-compact .th .td {
   padding: 0 4px 12px;
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 12.5px;
+  line-height: 16px;
   font-weight: 600;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
@@ -2844,8 +2874,8 @@ ul {
 }
 .sh-split .ft .agent-photo {
   flex: none;
-  width: 84px;
-  height: 84px;
+  width: 100px;
+  height: 100px;
 }
 .sh-split .ft .agent-text {
   flex: 1;
@@ -2854,12 +2884,12 @@ ul {
 .sh-split .ft .agent-name {
   font-family: var(--display);
   font-weight: 600;
-  font-size: 23px;
+  font-size: 26px;
   line-height: 1.15;
 }
 .sh-split .ft .agent-title {
   margin-top: 6px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -2867,12 +2897,12 @@ ul {
 }
 .sh-split .ft .agent-contact {
   margin-top: 7px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.5;
   color: #555;
 }
 .sh-split .ft .agent-contact.s1 {
-  font-size: 10.5px;
+  font-size: 12px;
 }
 .sh-split .ft .agent-logo {
   flex: none;
@@ -2887,15 +2917,19 @@ ul {
   gap: 14px;
 }
 .sh-split .ft.two .agent-photo {
-  width: 58px;
-  height: 58px;
+  width: 70px;
+  height: 70px;
 }
 .sh-split .ft.two .agent-name {
-  font-size: 18px;
+  font-size: 20px;
+}
+.sh-split .ft.two .agent-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
 }
 .sh-split .ft.two .agent-contact,
 .sh-split .ft.two .agent-contact.s1 {
-  font-size: 10px;
+  font-size: 11.5px;
 }
 .sh-split .ft.two .agent-text {
   flex: 1;
