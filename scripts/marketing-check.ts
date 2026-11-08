@@ -70,6 +70,7 @@ import {
   placed,
   priceLine,
   printPpi,
+  printedValue,
   refreshPrice,
   rowsFromText,
   seedFromListing,
@@ -77,6 +78,7 @@ import {
   slotsOf,
   statsFrom,
   sumValues,
+  typedMoney,
   type ListingFacts,
   type Photo,
   type Row,
@@ -295,6 +297,31 @@ is(parseMoney('$70 - $80 / MONTH'), null, 'a range is not');
 is(parseMoney('$1,2,3'), null, 'nor is a mangled one');
 is(parseMoney(''), null, 'nor is nothing');
 
+// A value gets its dollar sign and commas as it is typed (Kevin, 2026-11-08).
+is(['1', '12', '120', '1200', '12000', '120000', '1200000'].map(typedMoney),
+  ['$1', '$12', '$120', '$1,200', '$12,000', '$120,000', '$1,200,000'], 'digits read as dollars as they are typed');
+is(typedMoney('$12,000'), '$12,000', 'an amount already written out is left as it is');
+is(typedMoney('$1,20,00'), '$12,000', 'a comma in the wrong place is moved');
+is(typedMoney('$12,0000'), '$120,000', 'a digit typed after the commas moves them');
+is(typedMoney('1234.'), '$1,234.', 'the point stays while the cents are being typed');
+is(typedMoney('1234.5'), '$1,234.5', 'and so does one figure of them');
+is(typedMoney('1234.567'), '1234.567', 'three figures after the point is not an amount, and is left alone');
+is(typedMoney('$'), '$', 'a dollar sign alone is left for the figure to follow');
+is(typedMoney(''), '', 'and an empty box stays empty');
+is(typedMoney('007'), '$7', 'leading zeros go');
+is(typedMoney('.5'), '$0.5', 'cents alone get their zero');
+is(typedMoney('$150 '), '$150 ', 'a space after the figure survives, so " / month" can follow');
+is(typedMoney('$70 - $80 / month'), '$70 - $80 / month', 'a range is free text');
+is(typedMoney('Included'), 'Included', 'and so are words');
+is(typedMoney(typedMoney('98765')), typedMoney('98765'), 'formatting twice is formatting once');
+
+is(printedValue('12000'), '$12,000', 'a bare figure prints as dollars');
+is(printedValue('13086.5'), '$13,086.50', 'with both figures of its cents');
+is(printedValue('$31,186.00'), '$31,186.00', 'and a written-out amount prints as written');
+is(printedValue('$1,234.'), '$1,234.', 'an amount left half typed prints as typed');
+is(printedValue('$70 - $80 / month'), '$70 - $80 / month', 'so do ranges');
+is(printedValue(''), '', 'and nothing prints as nothing');
+
 // Kevin's Natick sheet, all 26 lines.
 const natick: Row[] = [
   ['Painting', '$31,186.00'], ['Refinish floor', '$13,086.00'], ['Water soften system', '$10,973.05'],
@@ -352,6 +379,12 @@ is(natickLayout.pages.flat().length, 26, 'and every line is on one of them');
 is(natickLayout.density, 'compact', 'set small, as his is');
 yes(natickLayout.showValue && !natickLayout.showDate, 'with a value column and no date column');
 is(natickLayout.total, '$386,266.76', 'and the total');
+is(
+  layoutSheet({ kind: 'upgrades', rows: [row('New roof', '12000', '2021'), row('Heat pump', '13400.5', '2022')] }).pages[0]
+    .map((r) => [r.value, r.valueCell]),
+  [['12000', '$12,000'], ['13400.5', '$13,400.50']],
+  'a sheet saved with bare figures prints them as dollars, and keeps what was typed'
+);
 yes(
   natickLayout.pages.every((p) => p.length <= DENSITY.compact.linesPerPage),
   'no page holds more lines than fit above the footer'

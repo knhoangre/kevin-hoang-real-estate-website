@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -49,6 +49,7 @@ import {
   seedFromListing,
   setPhoto,
   slotsOf,
+  typedMoney,
   type Agent,
   type MarketingDoc,
   type Photo,
@@ -144,6 +145,28 @@ const Field = ({
     />
   </div>
 );
+
+/**
+ * A box that grows with what is typed in it, so a long upgrade ("Solar panel
+ * charged camera and wifi control state") is read whole rather than scrolled.
+ */
+const GrowingText = ({ className, ...props }: React.ComponentProps<typeof Textarea>) => {
+  const box = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
+  }, [props.value]);
+  return (
+    <Textarea
+      ref={box}
+      rows={1}
+      className={`min-h-0 resize-none overflow-hidden text-sm leading-5 ${className ?? ''}`}
+      {...props}
+    />
+  );
+};
 
 /** Move item `from` one place up or down. Out of range, the list comes back as it was. */
 const moved = <T,>(items: T[], from: number, by: -1 | 1): T[] => {
@@ -437,6 +460,27 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
       'rows',
       doc.rows.map((r, i) => (i === index ? { ...r, ...patch } : r))
     );
+
+  /**
+   * A value gets its dollar sign and commas as it is typed (`typedMoney`). The
+   * text is rewritten, so the cursor is put back the same distance from the
+   * end: what follows it is unchanged, and a comma added before it does not
+   * send it to the end of the box.
+   *
+   * The box is rewritten HERE, before React renders, and React then finds it
+   * already holding the value and leaves it and the cursor alone. Putting the
+   * cursor back a frame later landed after the next keystroke when typing fast:
+   * "150 / month" came out "$10 / month5".
+   */
+  const setValue = (index: number, el: HTMLTextAreaElement) => {
+    const next = typedMoney(el.value);
+    if (next !== el.value) {
+      const at = Math.max(0, next.length - (el.value.length - el.selectionEnd));
+      el.value = next;
+      el.setSelectionRange(at, at);
+    }
+    setRow(index, { value: next });
+  };
 
   /** Several lines pasted into one row become several rows. One line pastes as usual. */
   const pasteRows = (index: number, event: React.ClipboardEvent) => {
@@ -900,68 +944,76 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
               hint={
                 doc.kind === 'expenses'
                   ? 'A name and what it costs, in your own words: "$70 – $80 / month". Paste a whole list into the first box and it splits into lines.'
-                  : 'A year and a value are both optional — a column appears only when something is in it, and a total only when every value is a plain dollar amount. Paste a whole list into the first box and it splits into lines.'
+                  : 'A year and a value are both optional — a column appears only when something is in it, and a total only when every value is a plain dollar amount. Type 12000 and it becomes $12,000. Paste a whole list into the first box and it splits into lines.'
               }
             >
-              <div className="space-y-2">
+              {/*
+                One card a line: what it is across the whole width, then the
+                year, the figure and the buttons under it. They were one row,
+                and on an upgrade sheet the year, the value and three buttons
+                left the description six pixels wide (Kevin, 2026-11-08).
+              */}
+              <div className="space-y-2.5">
                 {doc.rows.map((row, i) => (
-                  <div key={i} className="flex items-start gap-1.5">
-                    {doc.kind === 'upgrades' && (
-                      <Input
-                        aria-label={`Line ${i + 1} year`}
-                        value={row.date}
-                        placeholder="Year"
-                        className="numeral w-[4.25rem] shrink-0 px-2"
-                        onChange={(event) => setRow(i, { date: event.target.value })}
-                      />
-                    )}
-                    <Input
+                  <div key={i} className="space-y-2 rounded-lg border border-gray-200 bg-bone/60 p-2">
+                    <GrowingText
                       aria-label={`Line ${i + 1}`}
                       value={row.label}
                       placeholder={doc.kind === 'expenses' ? 'Water & sewer' : 'New roof'}
-                      className="min-w-0 flex-1"
+                      className="bg-white"
                       onChange={(event) => setRow(i, { label: event.target.value })}
                       onPaste={(event) => pasteRows(i, event)}
                     />
-                    <Textarea
-                      aria-label={`Line ${i + 1} ${doc.kind === 'expenses' ? 'price' : 'value'}`}
-                      value={row.value}
-                      rows={Math.max(1, row.value.split('\n').length)}
-                      placeholder={doc.kind === 'expenses' ? '$150 / month' : '$12,000'}
-                      className="numeral min-h-0 w-32 shrink-0 resize-none px-2 py-2 text-sm leading-5"
-                      onChange={(event) => setRow(i, { value: event.target.value })}
-                    />
-                    <button
-                      type="button"
-                      className={ICON_BUTTON}
-                      aria-label={`Move line ${i + 1} up`}
-                      disabled={i === 0}
-                      onClick={() => set('rows', moved(doc.rows, i, -1))}
-                    >
-                      <ArrowUp className="h-4 w-4" aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      className={ICON_BUTTON}
-                      aria-label={`Move line ${i + 1} down`}
-                      disabled={i === doc.rows.length - 1}
-                      onClick={() => set('rows', moved(doc.rows, i, 1))}
-                    >
-                      <ArrowDown className="h-4 w-4" aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      className={ICON_BUTTON}
-                      aria-label={`Remove line ${i + 1}`}
-                      onClick={() =>
-                        set(
-                          'rows',
-                          doc.rows.filter((_, j) => j !== i)
-                        )
-                      }
-                    >
-                      <X className="h-4 w-4" aria-hidden />
-                    </button>
+                    <div className="flex items-start gap-1.5">
+                      {doc.kind === 'upgrades' && (
+                        <Input
+                          aria-label={`Line ${i + 1} year`}
+                          value={row.date}
+                          placeholder="Year"
+                          className="numeral w-[4.75rem] shrink-0 bg-white px-2"
+                          onChange={(event) => setRow(i, { date: event.target.value })}
+                        />
+                      )}
+                      <Textarea
+                        aria-label={`Line ${i + 1} ${doc.kind === 'expenses' ? 'price' : 'value'}`}
+                        value={typedMoney(row.value)}
+                        rows={Math.max(1, row.value.split('\n').length)}
+                        placeholder={doc.kind === 'expenses' ? '$150 / month' : '$12,000'}
+                        className="numeral min-h-0 min-w-0 flex-1 resize-none bg-white px-2 py-2 text-sm leading-5"
+                        onChange={(event) => setValue(i, event.currentTarget)}
+                      />
+                      <button
+                        type="button"
+                        className={ICON_BUTTON}
+                        aria-label={`Move line ${i + 1} up`}
+                        disabled={i === 0}
+                        onClick={() => set('rows', moved(doc.rows, i, -1))}
+                      >
+                        <ArrowUp className="h-4 w-4" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        className={ICON_BUTTON}
+                        aria-label={`Move line ${i + 1} down`}
+                        disabled={i === doc.rows.length - 1}
+                        onClick={() => set('rows', moved(doc.rows, i, 1))}
+                      >
+                        <ArrowDown className="h-4 w-4" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        className={ICON_BUTTON}
+                        aria-label={`Remove line ${i + 1}`}
+                        onClick={() =>
+                          set(
+                            'rows',
+                            doc.rows.filter((_, j) => j !== i)
+                          )
+                        }
+                      >
+                        <X className="h-4 w-4" aria-hidden />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1097,19 +1149,25 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
         </div>
 
         {/* ------------------------------------------------------------- paper */}
-        <div className="min-w-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto">
+        <div className="min-w-0">
           {/*
-            Pinned while the paper scrolls under it: to the top of this column's
-            own scroll on a wide screen, under the fixed navbar on a phone. It
-            used to scroll away with the page, so zooming the headshot at the
-            foot of a sheet meant scrolling up to the slider and back down to
-            see what it did (Kevin, 2026-11-07).
+            The picture bar is pinned under the navbar for the whole height of
+            this column, which runs as long as the fields beside it. It used to
+            scroll away with the page (Kevin, 2026-11-07), and then it was pinned
+            inside the paper's own scroll, where it still left: a scroll over the
+            paper runs on into the page once the paper reaches its end, the page
+            pushes the paper up as it ends, and the bar went with it while the
+            headshot was still in view (Kevin, 2026-11-08). Pinned to this column
+            instead, nothing the paper does can move it.
+
+            On a wide screen the bar is one line of a fixed height, because the
+            paper below it is pinned that far down.
           */}
-          <div className="sticky top-20 z-10 mb-3 flex min-h-[3.25rem] flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm lg:top-0">
+          <div className="sticky top-20 z-20 mb-3 flex min-h-[3.25rem] flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm lg:top-24 lg:h-[3.75rem] lg:flex-nowrap lg:gap-x-4 lg:py-2">
             {selected && chosen ? (
               <>
                 <p className="min-w-0 truncate text-sm font-semibold text-ink">{labelOf(selected)}</p>
-                <label className="flex min-w-[11rem] flex-1 items-center gap-3 text-xs font-medium text-gray-600">
+                <label className="flex min-w-[11rem] flex-1 items-center gap-3 text-xs font-medium text-gray-600 lg:min-w-[8rem]">
                   Zoom
                   <Slider
                     aria-label="Zoom"
@@ -1120,7 +1178,7 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
                     onValueChange={([zoom]) => put(selected, { ...chosen, zoom })}
                   />
                 </label>
-                <div className="flex gap-2">
+                <div className="flex shrink-0 gap-2">
                   <button
                     type="button"
                     className={SMALL_BUTTON}
@@ -1144,29 +1202,32 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm leading-5 text-gray-600">
                 Click a picture to select it. Drag it to move it in its frame; double-click to choose
                 another.
               </p>
             )}
           </div>
 
-          <div className="rounded-xl bg-gray-200/80 p-3 sm:p-4">
-            <DocFrame
-              ref={frame}
-              family={design.family}
-              css={printCss}
-              title={`${title || 'Untitled'} — ${kind.label}`}
-            >
-              <DocPages doc={doc} />
-            </DocFrame>
+          {/* Under the bar: its 3.75rem, the 0.75rem between them, and 1rem left below. */}
+          <div className="lg:sticky lg:top-[10.5rem] lg:max-h-[calc(100vh-11.5rem)] lg:overflow-y-auto">
+            <div className="rounded-xl bg-gray-200/80 p-3 sm:p-4">
+              <DocFrame
+                ref={frame}
+                family={design.family}
+                css={printCss}
+                title={`${title || 'Untitled'} — ${kind.label}`}
+              >
+                <DocPages doc={doc} />
+              </DocFrame>
+            </div>
+            {!sheet && (
+              <p className="mt-3 text-xs leading-relaxed text-gray-500">
+                Page 1 is the outside of the booklet: the back on its left half, the front cover on its
+                right. Page 2 is the inside.{around.on && ' Page 3 is the neighborhood page.'}
+              </p>
+            )}
           </div>
-          {!sheet && (
-            <p className="mt-3 text-xs leading-relaxed text-gray-500">
-              Page 1 is the outside of the booklet: the back on its left half, the front cover on its
-              right. Page 2 is the inside.{around.on && ' Page 3 is the neighborhood page.'}
-            </p>
-          )}
         </div>
       </div>
 

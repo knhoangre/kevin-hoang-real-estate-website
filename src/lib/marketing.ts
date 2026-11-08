@@ -853,6 +853,36 @@ export const formatMoney = (amount: number, cents: boolean): string =>
   }).format(amount);
 
 /**
+ * A value as it is being typed, with its dollar sign and commas: "12000" reads
+ * "$12,000" by the time the last zero is in (Kevin, 2026-11-08 — his upgrade
+ * values printed as bare digits).
+ *
+ * Only a plain amount IN PROGRESS is rewritten — digits, commas, one "$", a
+ * point and up to two cents — and it is rebuilt from its digits, so a comma in
+ * the wrong place is simply moved. Anything else is left exactly as typed:
+ * the column is free text, an expense line is "$70 - $80 / month", and the
+ * space after "$150" has to survive for " / month" to follow it.
+ */
+export const typedMoney = (value: string): string => {
+  const m = /^\$?([\d,]*)(\.\d{0,2})?$/.exec(value);
+  if (!m) return value;
+  const digits = m[1].replace(/,/g, '').replace(/^0+(?=\d)/, '');
+  if (!digits && !m[2]) return value;
+  return `$${(digits || '0').replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${m[2] ?? ''}`;
+};
+
+/**
+ * A value as it prints. A plain amount gets its dollar sign and commas, and
+ * cents when it has any ("13086.5" is "$13,086.50"); anything else prints as
+ * typed. A sheet saved before values were formatted prints right without being
+ * retyped.
+ */
+export const printedValue = (value: string): string => {
+  const amount = parseMoney(value);
+  return amount === null ? value : formatMoney(amount, /\.\d/.test(value));
+};
+
+/**
  * The total of a sheet's values — or null, which is the usual answer.
  *
  * Only when EVERY printed row carries a plain dollar amount. One row reading
@@ -892,6 +922,8 @@ export const DENSITY: Record<Density, { linesPerPage: number; fontPx: number }> 
 export interface SheetRow extends Row {
   /** The date to print: blank when it repeats the row above, so a year heads its group. */
   dateCell: string;
+  /** The value to print: a plain amount with its dollar sign and commas (`printedValue`). */
+  valueCell: string;
 }
 
 export interface SheetLayout {
@@ -949,7 +981,7 @@ export const layoutSheet = (doc: Pick<MarketingDoc, 'kind' | 'rows'> & { note?: 
     return rows.map((r) =>
       Math.max(
         linesOf(r.label, Math.floor(labelPx / charPx)),
-        showValue ? linesOf(r.value, Math.max(6, Math.floor(valuePx / charPx))) : 1
+        showValue ? linesOf(printedValue(r.value), Math.max(6, Math.floor(valuePx / charPx))) : 1
       )
     );
   };
@@ -972,7 +1004,11 @@ export const layoutSheet = (doc: Pick<MarketingDoc, 'kind' | 'rows'> & { note?: 
     }
     const page = pages[pages.length - 1];
     const above = page[page.length - 1];
-    page.push({ ...row, dateCell: above && above.date.trim() === row.date.trim() ? '' : row.date.trim() });
+    page.push({
+      ...row,
+      dateCell: above && above.date.trim() === row.date.trim() ? '' : row.date.trim(),
+      valueCell: printedValue(row.value),
+    });
     used += tall[i];
   });
   // What goes under the last row needs room of its own; if the last page is

@@ -2281,10 +2281,17 @@ row become several rows). His originals are in `pdf/`, which is not committed.
 - **A drag uses pointer capture, not listeners on `window`.** The frames are in
   another document; the `window` a module sees is not the one the pointer is
   over. Zoom is a slider, since a wheel over a page that also scrolls is a fight.
-  **The bar holding it is sticky over the paper** (top of the paper column's
-  own scroll on a wide screen, under the navbar on a phone): it scrolled away
-  with the page, so zooming the headshot at the foot of a sheet meant scrolling
-  up to the slider and back down to see it (Kevin, 2026-11-07).
+  **The bar holding it is pinned under the navbar for the whole height of the
+  editor's right-hand column**, which is as tall as the fields beside it, and
+  the paper is pinned below it on a wide screen. It scrolled away with the page,
+  so zooming the headshot at the foot of a sheet meant scrolling up to the
+  slider and back down (Kevin, 2026-11-07); then it was pinned INSIDE the
+  paper's own scroll, where it still left: a scroll over the paper runs on into
+  the page at the paper's end, the page pushes the paper column up as the grid
+  ends, and the bar went with it while the headshot was still on screen
+  (Kevin, 2026-11-08). The paper's `lg:top-[10.5rem]` is the bar's fixed
+  `lg:h-[3.75rem]` below `top-24`; change one and change the other. Check it by
+  wheeling over the paper to the footer at 1280x720 and reading the bar's top.
 - **`photoUrl(…, 'print')` asks for more than the host holds and gets the
   original**, which is whatever the listing agent uploaded: 2048px wide on one
   Newton listing, 1280px on another, 481px on a third. A frame whose picture
@@ -2306,6 +2313,16 @@ row become several rows). His originals are in `pdf/`, which is not committed.
   Arch, Split) makes the room by shrinking the photo at `d-regular` and
   `d-compact`, which the page carries as a class. Every table is 640px wide,
   because `layoutSheet` wraps lines at that width.
+- **A plain amount gets its dollar sign and commas, twice over** (Kevin,
+  2026-11-08: "12000" printed bare). `typedMoney` rewrites the box as it is
+  typed, and only while the text is digits, commas, a "$" and up to two cents,
+  so "$70 - $80 / month" and the space before " / month" survive; the box is
+  rewritten in the change handler itself, because a cursor put back a frame
+  later lands after the next keystroke. `printedValue` formats again at print
+  (`SheetRow.valueCell`), so a sheet saved with bare figures prints right.
+  Each line in the editor is a card with the description across its width:
+  in one row, the year, the value and three buttons left the description six
+  pixels wide on an upgrade sheet.
 - **The designs share ONE pool of frame keys** (`cover`, `back1`, `in1`…), which
   is what lets a design be switched without losing the pictures chosen and
   cropped. Booklets: Classic and Welcome Home are rebuilt from his files; Noir

@@ -59,7 +59,7 @@ const Table = ({
           <div key={i} className="tr">
             {showDate && <span className="td date num">{row.dateCell}</span>}
             <span className="td label">{row.label}</span>
-            {showValue && <span className="td value num">{row.value}</span>}
+            {showValue && <span className="td value num">{row.valueCell}</span>}
           </div>
         ))}
         {last && total ? (
