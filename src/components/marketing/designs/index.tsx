@@ -1,7 +1,15 @@
 import { designOf, type MarketingDoc } from '@/lib/marketing';
 import AroundPage from './Around';
 import { ClassicBooklet, GalleryBooklet, NoirBooklet, WelcomeBooklet } from './Booklets';
-import { ClassicSheet, GallerySheet, NoirSheet } from './Sheets';
+import {
+  ArchSheet,
+  ClassicBlueSheet,
+  ClassicSheet,
+  GallerySheet,
+  ModernSheet,
+  NoirSheet,
+  SplitSheet,
+} from './Sheets';
 
 /**
  * A design's name -> the component that draws it.
@@ -17,8 +25,12 @@ const DRAW: Record<string, (props: { doc: MarketingDoc }) => JSX.Element> = {
   noir: NoirBooklet,
   gallery: GalleryBooklet,
   'sheet-classic': ClassicSheet,
+  'sheet-classic-blue': ClassicBlueSheet,
   'sheet-noir': NoirSheet,
   'sheet-gallery': GallerySheet,
+  'sheet-modern': ModernSheet,
+  'sheet-arch': ArchSheet,
+  'sheet-split': SplitSheet,
 };
 
 /** The pages of a document, in whichever design it names. */

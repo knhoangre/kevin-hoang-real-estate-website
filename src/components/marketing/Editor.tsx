@@ -70,8 +70,8 @@ import { pill } from '@/lib/pill';
  *
  * THE PAPER IS LIVE. Every field redraws it as it is typed, and its pictures
  * are adjusted on it — click one to select it, drag it, zoom it with the
- * slider above. There is no "preview" step, because the thing on the right is
- * the thing that prints (DocFrame).
+ * slider in the bar pinned above the paper. There is no "preview" step,
+ * because the thing on the right is the thing that prints (DocFrame).
  *
  * IT SAVES ITSELF, a moment after the last change, and says so. A document here
  * is an hour of choosing and cropping; a Save button is one more thing to
@@ -1098,7 +1098,14 @@ const Editor = ({ id, onClose }: { id: string; onClose: () => void }) => {
 
         {/* ------------------------------------------------------------- paper */}
         <div className="min-w-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:self-start lg:overflow-y-auto">
-          <div className="mb-3 flex min-h-[3.25rem] flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5">
+          {/*
+            Pinned while the paper scrolls under it: to the top of this column's
+            own scroll on a wide screen, under the fixed navbar on a phone. It
+            used to scroll away with the page, so zooming the headshot at the
+            foot of a sheet meant scrolling up to the slider and back down to
+            see what it did (Kevin, 2026-11-07).
+          */}
+          <div className="sticky top-20 z-10 mb-3 flex min-h-[3.25rem] flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 shadow-sm lg:top-0">
             {selected && chosen ? (
               <>
                 <p className="min-w-0 truncate text-sm font-semibold text-ink">{labelOf(selected)}</p>

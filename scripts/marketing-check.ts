@@ -222,7 +222,11 @@ for (const design of DESIGNS) {
   is(new Set(design.slots.map((s) => s.key)).size, design.slots.length, `${design.family} "${design.label}" has no frame twice`);
 }
 is(designsFor('booklet').map((d) => d.id), ['classic', 'welcome', 'noir', 'gallery'], 'four booklets: two of his, two new');
-is(designsFor('expenses').map((d) => d.id), ['sheet-classic', 'sheet-noir', 'sheet-gallery'], 'three sheets, one of his');
+is(
+  designsFor('expenses').map((d) => d.id),
+  ['sheet-classic', 'sheet-classic-blue', 'sheet-noir', 'sheet-gallery', 'sheet-modern', 'sheet-arch', 'sheet-split'],
+  'seven sheets, two of his'
+);
 is(designsFor('upgrades').map((d) => d.id), designsFor('expenses').map((d) => d.id), 'expenses and upgrades share them');
 is(designOf({ kind: 'expenses', design: 'classic' }).id, 'sheet-classic', 'a booklet design named on a sheet falls back to a sheet design');
 

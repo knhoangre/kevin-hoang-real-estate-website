@@ -2281,6 +2281,10 @@ row become several rows). His originals are in `pdf/`, which is not committed.
 - **A drag uses pointer capture, not listeners on `window`.** The frames are in
   another document; the `window` a module sees is not the one the pointer is
   over. Zoom is a slider, since a wheel over a page that also scrolls is a fight.
+  **The bar holding it is sticky over the paper** (top of the paper column's
+  own scroll on a wide screen, under the navbar on a phone): it scrolled away
+  with the page, so zooming the headshot at the foot of a sheet meant scrolling
+  up to the slider and back down to see it (Kevin, 2026-11-07).
 - **`photoUrl(…, 'print')` asks for more than the host holds and gets the
   original**, which is whatever the listing agent uploaded: 2048px wide on one
   Newton listing, 1280px on another, 481px on a third. A frame whose picture
@@ -2295,13 +2299,24 @@ row become several rows). His originals are in `pdf/`, which is not committed.
   his three upgrade sheets: dates and upgrades, upgrades alone, upgrades and
   values with a total. An expense sheet is never totalled — its lines are ranges
   and per-visit prices. Page breaks are worked out from the text, and each
-  design's table must fit `DENSITY`'s line counts above its footer; re-check
-  that after changing a sheet's CSS (the check script prints the clearance).
+  design's table must fit `DENSITY`'s line counts above its footer. Nothing in
+  the check script measures that: re-check it in a browser after changing a
+  sheet's CSS, at all three densities, by comparing each page's list (and note)
+  with the top of its footer. A sheet with a large photograph (Gallery, Modern,
+  Arch, Split) makes the room by shrinking the photo at `d-regular` and
+  `d-compact`, which the page carries as a class. Every table is 640px wide,
+  because `layoutSheet` wraps lines at that width.
 - **The designs share ONE pool of frame keys** (`cover`, `back1`, `in1`…), which
   is what lets a design be switched without losing the pictures chosen and
-  cropped. Classic and Welcome Home are rebuilt from his files; Noir and Gallery
-  are new. Adding one means `DESIGNS` in `marketing.ts`, a component, and its
-  entry in [designs/index.tsx](src/components/marketing/designs/index.tsx).
+  cropped. Booklets: Classic and Welcome Home are rebuilt from his files; Noir
+  and Gallery are new. Sheets: Classic and Classic Blue are his (the blue is the
+  second version of his expense sheet); Noir, Gallery, Modern, Arch and Split
+  are new, and Gallery was redesigned on 2026-11-07 to match the Gallery
+  booklet's cover. Classic's "expenses" is Playfair italic, not a script (Kevin
+  chose it over the thin Allura). With two agents, no sheet draws a logo; both
+  brokerage names still print. Adding one means `DESIGNS` in `marketing.ts`, a
+  component, and its entry in
+  [designs/index.tsx](src/components/marketing/designs/index.tsx).
 - **The brokerage is always printed** (`brokerageOf`) — 254 CMR 3.09 — per
   agent, because a co-listing can be two brokerages; a blank field falls back to
   `SITE.brokerage`. A logo is an optional upload, and the dark designs do not

@@ -11,7 +11,7 @@ import Pic from '../Pic';
 import { brokerageOf, brokerages, step } from './parts';
 
 /**
- * The three sheets — one design each for home expenses and home upgrades, which
+ * The sheets — every design draws both home expenses and home upgrades, which
  * are the same sheet with a different word in the title.
  *
  * A sheet is a header, a list and a footer on a portrait letter page. WHICH
@@ -125,11 +125,16 @@ const Footer = ({ doc, logo, joiner }: { doc: MarketingDoc; logo: boolean; joine
   </div>
 );
 
-/** Every page of a sheet: the same header and footer around each page of rows. */
+/**
+ * Every page of a sheet: the same header and footer around each page of rows.
+ * The page carries its density (`d-airy`, `d-regular`, `d-compact`), which is
+ * how a design with a large photograph gives it up as the list grows.
+ */
 const pagesOf = (
   doc: MarketingDoc,
   className: string,
-  render: (table: JSX.Element) => JSX.Element
+  render: (table: JSX.Element) => JSX.Element,
+  { tail = false }: { tail?: boolean } = {}
 ): JSX.Element => {
   const layout = layoutSheet(doc);
   return (
@@ -142,7 +147,7 @@ const pagesOf = (
               layout={layout}
               rows={rows}
               last={i === layout.pages.length - 1}
-              tail={className === 'sh-classic'}
+              tail={tail}
             />
           )}
         </div>
@@ -153,24 +158,34 @@ const pagesOf = (
 
 /* ------------------------------------------------------------------ Classic */
 
-export const ClassicSheet: Design = ({ doc }) => {
+/** His sheet, in black or in the steel blue of his second version. */
+const classic = (doc: MarketingDoc, className: string): JSX.Element => {
   const where = whereOf(doc);
-  return pagesOf(doc, 'sh-classic', (table) => (
-    <>
-      <div className="hd">
-        <Pic slot="header" />
-        <div className="frost" />
-        {where && <p className={`plate num ${step(where, 44, 54)}`}>{where}</p>}
-        <h1 className="title">
-          <b>Home</b>
-          <i>{sheetWord(doc.kind)}</i>
-        </h1>
-      </div>
-      <div className="body">{table}</div>
-      <Footer doc={doc} logo joiner="  |  " />
-    </>
-  ));
+  return pagesOf(
+    doc,
+    className,
+    (table) => (
+      <>
+        <div className="hd">
+          <Pic slot="header" />
+          <div className="frost" />
+          {where && <p className={`plate num ${step(where, 44, 54)}`}>{where}</p>}
+          <h1 className="title">
+            <b>Home</b>
+            <i>{sheetWord(doc.kind)}</i>
+          </h1>
+        </div>
+        <div className="body">{table}</div>
+        <Footer doc={doc} logo joiner="  |  " />
+      </>
+    ),
+    { tail: true }
+  );
 };
+
+export const ClassicSheet: Design = ({ doc }) => classic(doc, 'sh-classic');
+
+export const ClassicBlueSheet: Design = ({ doc }) => classic(doc, 'sh-classic sh-blue');
 
 /* --------------------------------------------------------------------- Noir */
 
@@ -196,20 +211,86 @@ export const NoirSheet: Design = ({ doc }) =>
 
 /* ------------------------------------------------------------------ Gallery */
 
+/** "Home Expenses": each word capitalised, as a title is. */
+const titleCase = (kind: MarketingDoc['kind']) => title(kind).replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** The Gallery booklet's cover, with the list under it. */
 export const GallerySheet: Design = ({ doc }) => {
   const where = whereOf(doc);
   return pagesOf(doc, 'sh-gallery', (table) => (
     <>
-      <div className="hd">
-        <div className="words">
-          <p className="kicker">{brokerages(doc).join('  ·  ')}</p>
-          <h1>{title(doc.kind).replace(/\b\w/g, (c) => c.toUpperCase())}</h1>
-          {where && <p className="num">{where}</p>}
-        </div>
-        <Pic slot="header" />
+      <p className="kicker">{brokerages(doc).join('  ·  ')}</p>
+      <Pic slot="header" className="photo" />
+      <div className="words">
+        <h1>{titleCase(doc.kind)}</h1>
+        <i />
+        {where && <p className={`num ${step(where, 52, 64)}`}>{where}</p>}
       </div>
       <div className="body">{table}</div>
       <Footer doc={doc} logo joiner="  ·  " />
     </>
   ));
 };
+
+/* ------------------------------------------------------------------- Modern */
+
+export const ModernSheet: Design = ({ doc }) => {
+  const where = whereOf(doc);
+  return pagesOf(doc, 'sh-modern', (table) => (
+    <>
+      <Pic slot="header" className="photo" />
+      <div className="card">
+        <i />
+        <h1>{title(doc.kind)}</h1>
+        {where && <p className={`num ${step(where, 50, 62)}`}>{where}</p>}
+      </div>
+      <div className="body">{table}</div>
+      <Footer doc={doc} logo joiner="  |  " />
+    </>
+  ));
+};
+
+/* --------------------------------------------------------------------- Arch */
+
+export const ArchSheet: Design = ({ doc }) =>
+  pagesOf(doc, 'sh-arch', (table) => (
+    <>
+      <div className="field" />
+      <Pic slot="header" className="arch" />
+      <div className="words">
+        <p className="kicker">{brokerages(doc).join('  ·  ')}</p>
+        <h1>
+          <em>Home</em>
+          <b>{sheetWord(doc.kind)}</b>
+        </h1>
+        <i />
+        {doc.street.trim() && <p className={`street lnum ${step(doc.street, 26, 34)}`}>{doc.street}</p>}
+        {doc.cityLine.trim() && <p className="city num">{doc.cityLine}</p>}
+      </div>
+      <div className="body">{table}</div>
+      <Footer doc={doc} logo joiner="  ·  " />
+    </>
+  ));
+
+/* -------------------------------------------------------------------- Split */
+
+export const SplitSheet: Design = ({ doc }) =>
+  pagesOf(doc, 'sh-split', (table) => (
+    <>
+      <div className="band">
+        <Pic slot="header" className="photo" />
+        <div className="block">
+          <p className="kicker">{brokerages(doc).join('  ·  ')}</p>
+          <h1>
+            <span>Home</span>
+            <em>{sheetWord(doc.kind)}</em>
+          </h1>
+          <i />
+          {doc.street.trim() && <p className={`street lnum ${step(doc.street, 24, 32)}`}>{doc.street}</p>}
+          {doc.cityLine.trim() && <p className="city num">{doc.cityLine}</p>}
+        </div>
+      </div>
+      <div className="body">{table}</div>
+      <Footer doc={doc} logo joiner="  ·  " />
+    </>
+  ));

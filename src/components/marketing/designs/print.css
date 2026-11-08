@@ -26,7 +26,6 @@
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --slab: 'Crete Round', Rockwell, Georgia, serif;
-  --script: 'Allura', 'Snell Roundhand', cursive;
   --office: 'Carlito', Calibri, 'Helvetica Neue', Arial, sans-serif;
   --verdana: Verdana, Geneva, 'DejaVu Sans', sans-serif;
 }
@@ -1442,7 +1441,7 @@ ul {
 }
 
 /* ========================================================================
-   SHEETS — the table all three share
+   SHEETS — the table every design shares
    ======================================================================== */
 
 .tbl {
@@ -1493,7 +1492,7 @@ ul {
 }
 .sh-classic .frost {
   position: absolute;
-  left: 10px;
+  left: 0;
   right: 0;
   top: 34px;
   height: 93px;
@@ -1530,27 +1529,30 @@ ul {
   position: absolute;
   left: 0;
   right: 0;
-  top: 56px;
-  height: 68px;
+  top: 66px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 16px;
+  gap: 18px;
   pointer-events: none;
 }
 .sh-classic .title b {
   font-family: var(--slab);
   font-weight: 400;
   font-size: 35px;
+  line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+/* The serif's italic, not a script: a thin script beside heavy slab capitals
+   read as a different, weaker word (Kevin, 2026-11-07). */
 .sh-classic .title i {
-  margin-top: -4px;
-  font-family: var(--script);
-  font-style: normal;
-  font-size: 64px;
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 48px;
   line-height: 1;
+  letter-spacing: 0.01em;
 }
 .sh-classic .body {
   position: absolute;
@@ -1699,6 +1701,28 @@ ul {
 }
 .sh-classic .ft.two .agent-logo {
   display: none;
+}
+
+/* ========================================================================
+   SHEET — Classic Blue (the second version of his expense sheet)
+   ======================================================================== */
+
+/* His own file, recoloured: the plate, the headings and the name in steel
+   blue, the footer a cooler grey. The rules stay black, as they are there. */
+.sh-classic.sh-blue {
+  --blue: #5d89b4;
+}
+.sh-classic.sh-blue .plate {
+  background: var(--blue);
+}
+.sh-classic.sh-blue .th .td {
+  color: var(--blue);
+}
+.sh-classic.sh-blue .ft {
+  background: #f3f3f3;
+}
+.sh-classic.sh-blue .ft .agent-name {
+  color: var(--blue);
 }
 
 /* ========================================================================
@@ -1917,86 +1941,117 @@ ul {
 }
 
 /* ========================================================================
-   SHEET — Gallery (new)
+   SHEET — Gallery (the Gallery booklet's cover, with the list under it)
    ======================================================================== */
+
+/* A design with a large photograph gives it up as the list grows: the page's
+   density (d-airy, d-regular, d-compact — see layoutSheet) sets the photo's
+   height and moves everything under it, so 7, 10 and 14 lines each fit above
+   the footer. The same arrangement in Modern, Arch and Split. */
 
 .sh-gallery {
   color: var(--ink);
 }
-.sh-gallery .hd {
-  position: absolute;
-  left: 64px;
-  right: 64px;
-  top: 64px;
-  height: 176px;
-  display: flex;
-  justify-content: space-between;
-  gap: 32px;
-  border-bottom: 1px solid var(--champ);
-}
-.sh-gallery .words {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: 26px;
-}
 .sh-gallery .kicker {
-  font-size: 8.5px;
+  position: absolute;
+  left: 88px;
+  width: 640px;
+  top: 46px;
+  text-align: center;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.36em;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
+.sh-gallery .photo {
+  position: absolute;
+  left: 88px;
+  top: 76px;
+  width: 640px;
+  height: 320px;
+}
+.sh-gallery.d-regular .photo {
+  height: 260px;
+}
+.sh-gallery.d-compact .photo {
+  height: 210px;
+}
+.sh-gallery .words {
+  position: absolute;
+  left: 88px;
+  width: 640px;
+  top: 426px;
+  text-align: center;
+}
+.sh-gallery.d-regular .words {
+  top: 366px;
+}
+.sh-gallery.d-compact .words {
+  top: 314px;
+}
 .sh-gallery .words h1 {
-  margin-top: 12px;
   font-family: var(--display);
   font-weight: 500;
-  font-size: 44px;
-  line-height: 1.05;
+  font-size: 40px;
+  line-height: 1.1;
+}
+.sh-gallery .words i {
+  display: block;
+  width: 48px;
+  height: 1px;
+  margin: 18px auto 16px;
+  background: var(--champ);
 }
 .sh-gallery .words p {
-  margin-top: 14px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: #555;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #666;
 }
-.sh-gallery .hd .pic {
-  flex: none;
-  width: 200px;
-  height: 150px;
+.sh-gallery .words p.s1 {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+}
+.sh-gallery .words p.s2 {
+  font-size: 9px;
+  letter-spacing: 0.14em;
 }
 .sh-gallery .body {
   position: absolute;
   left: 88px;
-  top: 272px;
+  top: 542px;
   width: 640px;
 }
+.sh-gallery.d-regular .body {
+  top: 482px;
+}
+.sh-gallery.d-compact .body {
+  top: 430px;
+}
 .sh-gallery .td {
-  padding: 16px 4px;
-  font-size: 15px;
+  padding: 10px 4px;
+  font-size: 15.5px;
   line-height: 22px;
 }
 .sh-gallery.d-regular .td {
-  padding: 11px 4px;
-  font-size: 13.5px;
-  line-height: 18px;
+  padding: 8px 4px;
+  font-size: 14px;
+  line-height: 19px;
 }
 .sh-gallery.d-compact .td {
-  padding: 7px 4px;
-  font-size: 11.5px;
-  line-height: 15px;
-}
-.sh-gallery .td.label {
-  font-weight: 500;
+  padding: 6px 4px;
+  font-size: 12.5px;
+  line-height: 16px;
 }
 .sh-gallery .td.value {
   text-align: right;
   font-weight: 600;
 }
 .sh-gallery .td.date {
-  color: #777;
+  color: var(--champ-ink);
+  font-weight: 600;
 }
 .sh-gallery .tr {
   border-bottom: 1px solid #ebe7df;
@@ -2008,12 +2063,12 @@ ul {
 .sh-gallery.d-regular .th .td,
 .sh-gallery.d-compact .th .td {
   padding: 0 4px 10px;
-  font-size: 8.5px;
+  font-size: 9.5px;
   line-height: 14px;
   font-weight: 600;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: #777;
+  color: var(--champ-ink);
 }
 .sh-gallery .tr.total {
   border-top: 1px solid var(--ink);
@@ -2026,24 +2081,24 @@ ul {
 .sh-gallery .note {
   margin-top: 14px;
   padding: 0 4px;
-  font-size: 9.5px;
+  font-size: 10px;
   line-height: 1.5;
   color: #777;
   white-space: pre-line;
 }
 .sh-gallery .ft {
   position: absolute;
-  left: 64px;
-  right: 64px;
-  bottom: 56px;
-  height: 104px;
+  left: 88px;
+  right: 88px;
+  bottom: 48px;
+  height: 116px;
   display: flex;
   align-items: center;
-  gap: 32px;
+  justify-content: center;
+  gap: 40px;
   border-top: 1px solid var(--champ);
 }
 .sh-gallery .ft .agent {
-  flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -2051,48 +2106,802 @@ ul {
 }
 .sh-gallery .ft .agent-photo {
   flex: none;
-  width: 68px;
-  height: 68px;
+  width: 76px;
+  height: 76px;
 }
 .sh-gallery .ft .agent-text {
-  flex: 1;
   min-width: 0;
 }
 .sh-gallery .ft .agent-name {
   font-family: var(--display);
   font-weight: 500;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1.15;
 }
 .sh-gallery .ft .agent-title {
-  margin-top: 5px;
-  font-size: 8.5px;
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-gallery .ft .agent-contact {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #555;
+}
+.sh-gallery .ft .agent-contact.s1 {
+  font-size: 10.5px;
+}
+.sh-gallery .ft .agent-logo {
+  flex: none;
+  width: 120px;
+  height: 44px;
+  margin-left: 8px;
+}
+.sh-gallery .ft.two {
+  justify-content: space-between;
+  gap: 28px;
+}
+.sh-gallery .ft.two .agent {
+  flex: 1;
+  gap: 14px;
+}
+.sh-gallery .ft.two .agent-photo {
+  width: 56px;
+  height: 56px;
+}
+.sh-gallery .ft.two .agent-name {
+  font-size: 18px;
+}
+.sh-gallery .ft.two .agent-contact,
+.sh-gallery .ft.two .agent-contact.s1 {
+  font-size: 10px;
+}
+.sh-gallery .ft.two .agent-text {
+  flex: 1;
+}
+/* Two agents, two brokerages' names, and no logos: as on Classic, there is no
+   room for them beside two headshots, and the names are what must print. */
+.sh-gallery .ft.two .agent-logo {
+  display: none;
+}
+
+/* ========================================================================
+   SHEET — Modern (new)
+   ======================================================================== */
+
+.sh-modern {
+  color: var(--ink);
+}
+.sh-modern .photo {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  width: 768px;
+  height: 400px;
+}
+.sh-modern.d-regular .photo {
+  height: 320px;
+}
+.sh-modern.d-compact .photo {
+  height: 260px;
+}
+/* The card sits over the photograph's lower edge. */
+.sh-modern .card {
+  position: absolute;
+  left: 88px;
+  width: 640px;
+  top: 360px;
+  height: 124px;
+  padding: 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+.sh-modern.d-regular .card {
+  top: 280px;
+}
+.sh-modern.d-compact .card {
+  top: 220px;
+}
+.sh-modern .card i {
+  display: block;
+  width: 44px;
+  height: 4px;
+  background: var(--champ);
+}
+.sh-modern .card h1 {
+  margin-top: 16px;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.sh-modern .card p {
+  margin-top: 12px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #555;
+}
+.sh-modern .card p.s1 {
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+}
+.sh-modern .card p.s2 {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+.sh-modern .body {
+  position: absolute;
+  left: 88px;
+  top: 514px;
+  width: 640px;
+}
+.sh-modern.d-regular .body {
+  top: 434px;
+}
+.sh-modern.d-compact .body {
+  top: 374px;
+}
+.sh-modern .td {
+  padding: 12px 16px;
+  font-size: 16.5px;
+  line-height: 22px;
+}
+.sh-modern.d-regular .td {
+  padding: 9.5px 16px;
+  font-size: 15px;
+  line-height: 20px;
+}
+.sh-modern.d-compact .td {
+  padding: 7px 16px;
+  font-size: 13.5px;
+  line-height: 17px;
+}
+.sh-modern .td.label {
+  font-weight: 500;
+}
+.sh-modern .td.value {
+  text-align: right;
+  font-weight: 700;
+}
+.sh-modern .td.date {
+  color: var(--champ-ink);
+  font-weight: 700;
+}
+.sh-modern .tr:nth-child(even) {
+  background: #f4f1eb;
+}
+.sh-modern .tr.th {
+  background: var(--deep);
+}
+.sh-modern .th .td,
+.sh-modern.d-regular .th .td,
+.sh-modern.d-compact .th .td {
+  padding: 11px 16px;
+  font-size: 10.5px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.sh-modern .tr.total {
+  background: none;
+  border-top: 2px solid var(--deep);
+}
+.sh-modern .tr.total .td {
+  font-weight: 800;
+}
+.sh-modern .note {
+  margin-top: 14px;
+  padding: 0 16px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #777;
+  white-space: pre-line;
+}
+.sh-modern .ft {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  height: 124px;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  border-top: 4px solid var(--champ);
+}
+.sh-modern .ft .agent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.sh-modern .ft .agent-photo {
+  flex: none;
+  width: 80px;
+  height: 80px;
+}
+.sh-modern .ft .agent-text {
+  flex: 1;
+  min-width: 0;
+}
+.sh-modern .ft .agent-name {
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.15;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sh-modern .ft .agent-title {
+  margin-top: 6px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-modern .ft .agent-contact {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #444;
+}
+.sh-modern .ft .agent-contact.s1 {
+  font-size: 10.5px;
+}
+.sh-modern .ft .agent-logo {
+  flex: none;
+  width: 130px;
+  height: 48px;
+}
+.sh-modern .ft.two {
+  padding: 0 40px;
+  gap: 28px;
+}
+.sh-modern .ft.two .agent {
+  gap: 14px;
+}
+.sh-modern .ft.two .agent-photo {
+  width: 58px;
+  height: 58px;
+}
+.sh-modern .ft.two .agent-name {
+  font-size: 15px;
+}
+.sh-modern .ft.two .agent-contact,
+.sh-modern .ft.two .agent-contact.s1 {
+  font-size: 10px;
+}
+.sh-modern .ft.two .agent-text {
+  flex: 1;
+}
+.sh-modern .ft.two .agent-logo {
+  display: none;
+}
+
+/* ========================================================================
+   SHEET — Arch (new)
+   ======================================================================== */
+
+/* Cream, a quarter-inch inside the paper's edge, so the white margin an office
+   printer leaves reads as a border rather than as a mistake (as Noir's does). */
+.sh-arch {
+  --cream: #f5eee3;
+  --dots: #b3a07e;
+  color: #2b2620;
+}
+.sh-arch .field {
+  position: absolute;
+  inset: 24px;
+  background: var(--cream);
+}
+.sh-arch .arch {
+  position: absolute;
+  left: 88px;
+  top: 72px;
+  width: 272px;
+  height: 384px;
+  border-radius: 136px 136px 0 0;
+  outline: 1px solid var(--champ);
+  outline-offset: 7px;
+}
+.sh-arch.d-regular .arch {
+  height: 320px;
+}
+.sh-arch.d-compact .arch {
+  height: 260px;
+}
+.sh-arch .words {
+  position: absolute;
+  left: 408px;
+  right: 88px;
+  top: 72px;
+  height: 384px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sh-arch.d-regular .words {
+  height: 320px;
+}
+.sh-arch.d-compact .words {
+  height: 260px;
+}
+.sh-arch .kicker {
+  margin-bottom: 22px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-arch .words h1 em {
+  display: block;
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 46px;
+  line-height: 1;
+}
+.sh-arch .words h1 b {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sh-arch .words i {
+  display: block;
+  width: 48px;
+  height: 1px;
+  margin: 24px 0 20px;
+  background: var(--champ);
+}
+.sh-arch .street {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.25;
+}
+.sh-arch .street.s1 {
+  font-size: 16px;
+}
+.sh-arch .street.s2 {
+  font-size: 14px;
+}
+.sh-arch .city {
+  margin-top: 6px;
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #6b6256;
+}
+.sh-arch .body {
+  position: absolute;
+  left: 88px;
+  top: 500px;
+  width: 640px;
+}
+.sh-arch.d-regular .body {
+  top: 436px;
+}
+.sh-arch.d-compact .body {
+  top: 376px;
+}
+.sh-arch .td {
+  padding: 12px 2px;
+  font-size: 16px;
+  line-height: 22px;
+}
+.sh-arch.d-regular .td {
+  padding: 9px 2px;
+  font-size: 14.5px;
+  line-height: 20px;
+}
+.sh-arch.d-compact .td {
+  padding: 6.5px 2px;
+  font-size: 13px;
+  line-height: 17px;
+}
+.sh-arch .td.value {
+  text-align: right;
+  font-weight: 600;
+}
+.sh-arch .td.date {
+  color: var(--champ-ink);
+  font-weight: 600;
+}
+/* Dotted leaders from each item to its figure, the way a price list is set:
+   one run after the item, the other before the figure, meeting at the column
+   edge. Not on the headings, and not where there is no figure to lead to. */
+.sh-arch .tbl.has-value .tr:not(.th) .td.label {
+  display: flex;
+  align-items: baseline;
+  padding-right: 0;
+}
+.sh-arch .tbl.has-value .tr:not(.th) .td.label::after {
+  content: '';
+  flex: 1 0 14px;
+  margin-left: 10px;
+  border-bottom: 1.5px dotted var(--dots);
+}
+.sh-arch .tbl.has-value .tr:not(.th) .td.value {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  padding-left: 0;
+}
+.sh-arch .tbl.has-value .tr:not(.th) .td.value::before {
+  content: '';
+  flex: 1 0 0;
+  margin-right: 10px;
+  border-bottom: 1.5px dotted var(--dots);
+}
+.sh-arch .tbl.has-value .tr:has(.td.value:empty) .td.label::after,
+.sh-arch .tbl.has-value .tr .td.value:empty::before {
+  visibility: hidden;
+}
+.sh-arch .tr.th {
+  border-bottom: 1px solid #2b2620;
+}
+.sh-arch .th .td,
+.sh-arch.d-regular .th .td,
+.sh-arch.d-compact .th .td {
+  padding: 0 2px 12px;
+  font-size: 10px;
+  line-height: 14px;
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--champ-ink);
 }
-.sh-gallery .ft .agent-contact {
-  margin-top: 6px;
-  font-size: 10.5px;
+.sh-arch .tr.total {
+  border-top: 1px solid #2b2620;
+}
+.sh-arch .tr.total .td {
+  font-weight: 700;
+}
+.sh-arch .note {
+  margin-top: 14px;
+  padding: 0 2px;
+  font-size: 10px;
   line-height: 1.5;
-  color: #555;
+  color: #6b6256;
+  white-space: pre-line;
 }
-.sh-gallery .ft .agent-logo {
+.sh-arch .ft {
+  position: absolute;
+  left: 88px;
+  right: 88px;
+  bottom: 48px;
+  height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  border-top: 1px solid #d8ccb6;
+}
+.sh-arch .ft .agent {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.sh-arch .ft .agent-photo {
   flex: none;
-  width: 116px;
-  height: 42px;
+  width: 72px;
+  height: 72px;
+  outline: 1px solid var(--champ);
+  outline-offset: 4px;
 }
-.sh-gallery .ft.two .agent-photo {
+.sh-arch .ft .agent-text {
+  min-width: 0;
+}
+.sh-arch .ft .agent-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 23px;
+  line-height: 1.15;
+}
+.sh-arch .ft .agent-title {
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-arch .ft .agent-contact {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #5c544a;
+}
+.sh-arch .ft .agent-contact.s1 {
+  font-size: 10.5px;
+}
+.sh-arch .ft .agent-logo {
+  flex: none;
+  width: 120px;
+  height: 44px;
+  margin-left: 8px;
+}
+.sh-arch .ft.two {
+  justify-content: space-between;
+  gap: 28px;
+}
+.sh-arch .ft.two .agent {
+  flex: 1;
+  gap: 14px;
+}
+.sh-arch .ft.two .agent-photo {
   width: 54px;
   height: 54px;
 }
-.sh-gallery .ft.two .agent-name {
-  font-size: 17px;
+.sh-arch .ft.two .agent-name {
+  font-size: 18px;
 }
-.sh-gallery .ft.two .agent-logo {
+.sh-arch .ft.two .agent-contact,
+.sh-arch .ft.two .agent-contact.s1 {
+  font-size: 10px;
+}
+.sh-arch .ft.two .agent-text {
+  flex: 1;
+}
+.sh-arch .ft.two .agent-logo {
+  display: none;
+}
+
+/* ========================================================================
+   SHEET — Split (new)
+   ======================================================================== */
+
+.sh-split {
+  color: var(--ink);
+}
+.sh-split .band {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  width: 768px;
+  height: 420px;
+  display: flex;
+}
+.sh-split.d-regular .band {
+  height: 340px;
+}
+.sh-split.d-compact .band {
+  height: 280px;
+}
+.sh-split .photo {
+  flex: none;
+  width: 440px;
+  height: 100%;
+}
+.sh-split .block {
+  flex: 1;
+  min-width: 0;
+  padding: 0 36px 0 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--deep);
+  color: #fff;
+}
+.sh-split .kicker {
+  margin-bottom: 22px;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--champ);
+}
+.sh-split .block h1 span,
+.sh-split .block h1 em {
+  display: block;
+  font-family: var(--display);
+  font-size: 46px;
+  line-height: 1.05;
+}
+.sh-split .block h1 span {
+  font-weight: 600;
+}
+.sh-split .block h1 em {
+  font-style: italic;
+  font-weight: 500;
+  text-transform: capitalize;
+  color: var(--champ);
+}
+.sh-split .block i {
+  display: block;
+  width: 40px;
+  height: 1px;
+  margin: 22px 0 18px;
+  background: var(--champ);
+}
+.sh-split .street {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.sh-split .street.s1 {
+  font-size: 13px;
+}
+.sh-split .street.s2 {
+  font-size: 12px;
+}
+.sh-split .city {
+  margin-top: 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #c9c2b6;
+}
+.sh-split .body {
+  position: absolute;
+  left: 88px;
+  top: 492px;
+  width: 640px;
+}
+.sh-split.d-regular .body {
+  top: 412px;
+}
+.sh-split.d-compact .body {
+  top: 352px;
+}
+.sh-split .td {
+  padding: 12.5px 4px;
+  font-size: 16px;
+  line-height: 22px;
+}
+.sh-split.d-regular .td {
+  padding: 10px 4px;
+  font-size: 15px;
+  line-height: 20px;
+}
+.sh-split.d-compact .td {
+  padding: 7px 4px;
+  font-size: 13.5px;
+  line-height: 17px;
+}
+.sh-split .td.label {
+  font-weight: 500;
+}
+.sh-split .td.value {
+  text-align: right;
+  font-weight: 600;
+}
+.sh-split .td.date {
+  color: var(--champ-ink);
+  font-weight: 600;
+}
+.sh-split .tr {
+  border-bottom: 1px solid var(--line);
+}
+.sh-split .tr.th {
+  border-bottom: 1.5px solid var(--ink);
+}
+.sh-split .th .td,
+.sh-split.d-regular .th .td,
+.sh-split.d-compact .th .td {
+  padding: 0 4px 12px;
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-split .tr.total {
+  border-top: 1.5px solid var(--ink);
+  border-bottom: 0;
+  margin-top: -1px;
+}
+.sh-split .tr.total .td {
+  font-weight: 700;
+}
+.sh-split .note {
+  margin-top: 14px;
+  padding: 0 4px;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #777;
+  white-space: pre-line;
+}
+.sh-split .ft {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  height: 128px;
+  padding: 0 64px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  border-top: 2px solid var(--deep);
+}
+.sh-split .ft .agent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.sh-split .ft .agent-photo {
+  flex: none;
   width: 84px;
-  height: 30px;
+  height: 84px;
+}
+.sh-split .ft .agent-text {
+  flex: 1;
+  min-width: 0;
+}
+.sh-split .ft .agent-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 23px;
+  line-height: 1.15;
+}
+.sh-split .ft .agent-title {
+  margin-top: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--champ-ink);
+}
+.sh-split .ft .agent-contact {
+  margin-top: 7px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #555;
+}
+.sh-split .ft .agent-contact.s1 {
+  font-size: 10.5px;
+}
+.sh-split .ft .agent-logo {
+  flex: none;
+  width: 130px;
+  height: 48px;
+}
+.sh-split .ft.two {
+  padding: 0 40px;
+  gap: 28px;
+}
+.sh-split .ft.two .agent {
+  gap: 14px;
+}
+.sh-split .ft.two .agent-photo {
+  width: 58px;
+  height: 58px;
+}
+.sh-split .ft.two .agent-name {
+  font-size: 18px;
+}
+.sh-split .ft.two .agent-contact,
+.sh-split .ft.two .agent-contact.s1 {
+  font-size: 10px;
+}
+.sh-split .ft.two .agent-text {
+  flex: 1;
+}
+.sh-split .ft.two .agent-logo {
+  display: none;
 }
 
 /* ========================================================================
