@@ -1527,11 +1527,15 @@ ul {
 .sh-classic .plate.s2 {
   font-size: 14.5px;
 }
+/* Placed by its INK, not its line box: from the top of HOME to the end of the
+   tail under the p, the title sits mid-way between the address plate and the
+   foot of the band. At 47px the tail ran past the band's foot (Kevin,
+   2026-11-08: "not centered with the white banner"). */
 .sh-classic .title {
   position: absolute;
   left: 0;
   right: 0;
-  top: 47px;
+  top: 35px;
   display: flex;
   align-items: baseline;
   justify-content: center;
